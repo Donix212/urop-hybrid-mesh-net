@@ -1,3 +1,4 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2015 Università di Firenze, Italy
  *
@@ -23,187 +24,189 @@
 
 #include "ns3/ipv6-address.h"
 #include "ns3/mac64-address.h"
-#include "ns3/ndisc-cache.h"
-#include "ns3/output-stream-wrapper.h"
 #include "ns3/ptr.h"
 #include "ns3/timer.h"
+#include "ns3/output-stream-wrapper.h"
+#include "ns3/ndisc-cache.h"
 
 namespace ns3
 {
 
 /**
- * @ingroup sixlowpan
- * @brief Neighbor Discovery cache for 6LoWPAN ND. Keeps also RAs, prefixes and contexts.
+ * \ingroup sixlowpan
+ * \class SixLowPanNdiscCache
+ * \brief Neighbor Discovery cache for 6LoWPAN ND. Keeps also RAs, prefixes and contexts.
  */
 class SixLowPanNdiscCache : public virtual NdiscCache
 {
+public:
+  class SixLowPanEntry;
+
+  /**
+   * \brief Get the type ID
+   * \return type ID
+   */
+  static TypeId GetTypeId ();
+
+  /**
+   * \brief Constructor.
+   */
+  SixLowPanNdiscCache ();
+
+  /**
+   * \brief Destructor.
+   */
+  ~SixLowPanNdiscCache ();
+
+  /**
+   * \brief Lookup in the cache.
+   * \param dst destination address
+   * \return the entry if found, 0 otherwise
+   */
+  virtual NdiscCache::Entry* Lookup (Ipv6Address dst);
+
+  /**
+   * \brief Add an entry.
+   * \param to address to add
+   * \return an new Entry
+   */
+  virtual NdiscCache::Entry* Add (Ipv6Address to);
+
+
+  /**
+   * \brief Print the SixLowPanNdisc cache entries
+   *
+   * \param stream the ostream the SixLowPanNdisc cache entries is printed to
+   */
+  virtual void PrintNdiscCache (Ptr<OutputStreamWrapper> stream);
+
+  /**
+   * \class SixLowPanEntry
+   * \brief A record that holds information about an SixLowPanNdiscCache entry.
+   */
+  class SixLowPanEntry : public NdiscCache::Entry
+  {
   public:
-    class SixLowPanEntry;
+    /**
+     * \brief Constructor.
+     * \param nd The NdiscCache this entry belongs to.
+     */
+    SixLowPanEntry (NdiscCache* nd);
+
+    virtual void Print (std::ostream &os) const;
 
     /**
-     * @brief Get the type ID
-     * @return type ID
+     * \brief Changes the state to this entry to REGISTERED.
+     * It starts the registered timer.
+     * \param time the lifetime in units of 60 seconds (from ARO)
      */
-    static TypeId GetTypeId();
+    void MarkRegistered (uint16_t time);
 
     /**
-     * @brief Constructor.
+     * \brief Changes the state to this entry to TENTATIVE.
+     * It starts the tentative timer (20 seconds).
      */
-    SixLowPanNdiscCache();
+    void MarkTentative ();
 
     /**
-     * @brief Destructor.
+     * \brief Change the state to this entry to GARBAGE.
      */
-    ~SixLowPanNdiscCache() override;
+    void MarkGarbage ();
 
     /**
-     * @brief Lookup in the cache.
-     * @param dst destination address
-     * @return the entry if found, 0 otherwise
+     * \brief Is the entry REGISTERED.
+     * \return true if the type of entry is REGISTERED, false otherwise
      */
-    NdiscCache::Entry* Lookup(Ipv6Address dst) override;
+    bool IsRegistered () const;
 
     /**
-     * @brief Add an entry.
-     * @param to address to add
-     * @return an new Entry
+     * \brief Is the entry TENTATIVE.
+     * \return true if the type of entry is TENTATIVE, false otherwise
      */
-    NdiscCache::Entry* Add(Ipv6Address to) override;
+    bool IsTentative () const;
 
     /**
-     * @brief Print the SixLowPanNdisc cache entries
-     *
-     * @param stream the ostream the SixLowPanNdisc cache entries is printed to
+     * \brief Is the entry GARBAGE-COLLECTIBLE.
+     * \return true if the type of entry GARBAGE-COLLECTIBLE, false otherwise
      */
-    void PrintNdiscCache(Ptr<OutputStreamWrapper> stream) override;
+    bool IsGarbage () const;
 
     /**
-     * @brief A record that holds information about an SixLowPanNdiscCache entry.
+     * \brief Function called when timer timeout.
      */
-    class SixLowPanEntry : public NdiscCache::Entry
-    {
-      public:
-        /**
-         * @brief Constructor.
-         * @param nd The NdiscCache this entry belongs to.
-         */
-        SixLowPanEntry(NdiscCache* nd);
+    void FunctionTimeout ();
 
-        void Print(std::ostream& os) const override;
-
-        /**
-         * @brief Changes the state to this entry to REGISTERED.
-         * It starts the registered timer.
-         * @param time the lifetime in units of 60 seconds (from ARO)
-         */
-        void MarkRegistered(uint16_t time);
-
-        /**
-         * @brief Changes the state to this entry to TENTATIVE.
-         * It starts the tentative timer (20 seconds).
-         */
-        void MarkTentative();
-
-        /**
-         * @brief Change the state to this entry to GARBAGE.
-         */
-        void MarkGarbage();
-
-        /**
-         * @brief Is the entry REGISTERED.
-         * @return true if the type of entry is REGISTERED, false otherwise
-         */
-        bool IsRegistered() const;
-
-        /**
-         * @brief Is the entry TENTATIVE.
-         * @return true if the type of entry is TENTATIVE, false otherwise
-         */
-        bool IsTentative() const;
-
-        /**
-         * @brief Is the entry GARBAGE-COLLECTIBLE.
-         * @return true if the type of entry GARBAGE-COLLECTIBLE, false otherwise
-         */
-        bool IsGarbage() const;
-
-        /**
-         * @brief Function called when timer timeout.
-         */
-        void FunctionTimeout();
-
-        /**
-         * @brief Get the ROVR field.
-         * @return the ROVR
-         */
-        std::vector<uint8_t> GetRovr() const;
-
-        /**
-         * @brief Set the ROVR field.
-         * @param rovr the ROVR value
-         */
-        void SetRovr(const std::vector<uint8_t>& rovr);
-
-      private:
-        /**
-         * @brief The SixLowPanEntry type enumeration.
-         */
-        enum SixLowPanNdiscCacheEntryType_e
-        {
-            REGISTERED, /**< Have an explicit registered lifetime */
-            TENTATIVE,  /**< Have a short lifetime, typically get converted to REGISTERED */
-            GARBAGE     /**< Allow for garbage collection when low on memory */
-        };
-
-        /**
-         * @brief The ROVR value.
-         */
-        std::vector<uint8_t> m_rovr;
-
-        /**
-         * @brief The state of the entry.
-         */
-        SixLowPanNdiscCacheEntryType_e m_type;
-
-        /**
-         * @brief Timer (used for REGISTERED entries).
-         */
-        Timer m_registeredTimer;
-
-        /**
-         * @brief Timer (used for TENTATIVE entries).
-         */
-        Timer m_tentativeTimer;
-    };
-
-  protected:
     /**
-     * @brief Dispose this object.
+     * \brief Get the ROVR field.
+     * \return the ROVR
      */
-    void DoDispose() override;
+    std::vector<uint8_t> GetRovr (void) const;
+
+    /**
+     * \brief Set the ROVR field.
+     * \param rovr the ROVR value
+     */
+    void SetRovr (const std::vector<uint8_t> &rovr);
 
   private:
     /**
-     * @brief 6LoWPAN Neighbor Discovery Cache container
+     * \brief The SixLowPanEntry type enumeration.
      */
-    typedef std::unordered_map<Ipv6Address, SixLowPanNdiscCache::SixLowPanEntry*, Ipv6AddressHash>
-        SixLowPanCache;
+    enum SixLowPanNdiscCacheEntryType_e
+    {
+      REGISTERED, /**< Have an explicit registered lifetime */
+      TENTATIVE, /**< Have a short lifetime, typically get converted to REGISTERED */
+      GARBAGE /**< Allow for garbage collection when low on memory */
+    };
 
     /**
-     * @brief 6LoWPAN Neighbor Discovery Cache container iterator
+     * \brief The ROVR value.
      */
-    typedef std::unordered_map<Ipv6Address, SixLowPanNdiscCache::SixLowPanEntry*, Ipv6AddressHash>::
-        iterator SixLowPanCacheI;
+    std::vector<uint8_t> m_rovr;
+
+    /**
+     * \brief The state of the entry.
+     */
+    SixLowPanNdiscCacheEntryType_e m_type;
+
+    /**
+     * \brief Timer (used for REGISTERED entries).
+     */
+    Timer m_registeredTimer;
+
+    /**
+     * \brief Timer (used for TENTATIVE entries).
+     */
+    Timer m_tentativeTimer;
+  };
+
+protected:
+  /**
+   * \brief Dispose this object.
+   */
+  virtual void DoDispose ();
+
+private:
+  /**
+   * \brief 6LoWPAN Neighbor Discovery Cache container
+   */
+  typedef std::unordered_map<Ipv6Address, SixLowPanNdiscCache::SixLowPanEntry *, Ipv6AddressHash> SixLowPanCache;
+
+  /**
+   * \brief 6LoWPAN Neighbor Discovery Cache container iterator
+   */
+  typedef std::unordered_map<Ipv6Address, SixLowPanNdiscCache::SixLowPanEntry *, Ipv6AddressHash>::iterator SixLowPanCacheI;
 };
 
 /**
- * @brief Stream insertion operator.
+ * \brief Stream insertion operator.
  *
- * @param os the reference to the output stream
- * @param entry the SixLowPanNdiscCache::SixLowPanEntry
- * @return the reference to the output stream
+ * \param os the reference to the output stream
+ * \param entry the SixLowPanNdiscCache::SixLowPanEntry
+ * \returns the reference to the output stream
  */
-std::ostream& operator<<(std::ostream& os, const SixLowPanNdiscCache::SixLowPanEntry& entry);
+std::ostream & operator << (std::ostream& os, SixLowPanNdiscCache::SixLowPanEntry const& entry);
+
 
 } /* namespace ns3 */
 
