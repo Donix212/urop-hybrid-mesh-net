@@ -1,3 +1,4 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2015 Università di Firenze, Italy
  *
@@ -23,186 +24,186 @@
 #define SIXLOWPAN_ND_HEADER_H
 
 #include "ns3/header.h"
-#include "ns3/icmpv6-header.h"
 #include "ns3/ipv6-address.h"
 #include "ns3/mac64-address.h"
+#include "ns3/icmpv6-header.h"
 
 namespace ns3
 {
 
 /**
- * @ingroup sixlowpan
- * @brief ICMPv6 Extended Duplicate Address Request or Confirmation header (see \RFC{8505}).
+ * \ingroup sixlowpan
+ * \class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf
+ * \brief ICMPv6 Extended Duplicate Address Request or Confirmation header (see \RFC{8505}).
  */
 class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
 {
-  public:
-    /**
-     * @brief Constructor.
-     */
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf();
+public:
 
-    /**
-     * @brief Constructor.
-     * @param request duplicate address request or duplicate address confirm
-     */
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf(bool request);
+  /**
+   * \brief Constructor.
+   */
+  Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf ();
 
-    /**
-     * @brief Constructor (DAR).
-     * @param time the registration lifetime (units of 60 seconds)
-     * @param rovr the ROVR value.
-     * @param address the registered address
-     */
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf(uint16_t time,
-                                                     std::vector<uint8_t> rovr,
-                                                     Ipv6Address address);
+  /**
+   * \brief Constructor.
+   * \param request duplicate address request or duplicate address confirm
+   */
+  Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf (bool request);
 
-    /**
-     * @brief Constructor (DAC).
-     * @param status the status (DAC)
-     * @param time the registration lifetime (units of 60 seconds)
-     * @param rovr the ROVR value.
-     * @param address the registered address
-     */
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf(uint8_t status,
-                                                     uint16_t time,
-                                                     std::vector<uint8_t> rovr,
-                                                     Ipv6Address address);
+  /**
+   * \brief Constructor (DAR).
+   * \param time the registration lifetime (units of 60 seconds)
+   * \param rovr the ROVR value.
+   * \param address the registered address
+   */
+  Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf (uint16_t time, std::vector<uint8_t> rovr, Ipv6Address address);
 
-    /**
-     * @brief Destructor.
-     */
-    ~Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf() override;
+  /**
+   * \brief Constructor (DAC).
+   * \param status the status (DAC)
+   * \param time the registration lifetime (units of 60 seconds)
+   * \param rovr the ROVR value.
+   * \param address the registered address
+   */
+  Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf (uint8_t status, uint16_t time, std::vector<uint8_t> rovr, Ipv6Address address);
 
-    /**
-     * @brief Get the UID of this class.
-     * @return UID
-     */
-    static TypeId GetTypeId();
+  /**
+   * \brief Destructor.
+   */
+  virtual ~Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf ();
 
-    /**
-     * @brief Get the instance type ID.
-     * @return instance type ID
-     */
-    TypeId GetInstanceTypeId() const override;
+  /**
+   * \brief Get the UID of this class.
+   * \return UID
+   */
+  static TypeId GetTypeId ();
 
-    /**
-     * @brief Get the status field.
-     * @return status value
-     */
-    uint8_t GetStatus() const;
+  /**
+   * \brief Get the instance type ID.
+   * \return instance type ID
+   */
+  virtual TypeId GetInstanceTypeId () const;
 
-    /**
-     * @brief Set the status field.
-     * @param status the status value
-     */
-    void SetStatus(uint8_t status);
+  /**
+   * \brief Get the status field.
+   * \return status value
+   */
+  uint8_t GetStatus () const;
 
-    /**
-     * @brief Get the transaction ID field.
-     * @return Transaction ID value
-     */
-    uint8_t GetTransaction_ID() const;
+  /**
+   * \brief Set the status field.
+   * \param status the status value
+   */
+  void SetStatus (uint8_t status);
 
-    /**
-     * @brief Set the transaction ID field.
-     * @param tid the transaction ID value
-     */
-    void SetTransaction_ID(uint8_t tid);
+  /**
+   * \brief Get the transaction ID field.
+   * \return Transaction ID value
+   */
+  uint8_t GetTransaction_ID () const;
 
-    /**
-     * @brief Get the registration lifetime field.
-     * @return registration lifetime value (units of 60 seconds)
-     */
-    uint16_t GetRegTime() const;
+  /**
+   * \brief Set the transaction ID field.
+   * \param tid the transaction ID value
+   */
+  void SetTransaction_ID (uint8_t tid);
 
-    /**
-     * @brief Set the registration lifetime field.
-     * @param time the registration lifetime value (units of 60 seconds)
-     */
-    void SetRegTime(uint16_t time);
+  /**
+   * \brief Get the registration lifetime field.
+   * \return registration lifetime value (units of 60 seconds)
+   */
+  uint16_t GetRegTime () const;
 
-    /**
-     * @brief Get the ROVR field.
-     * @return the ROVR
-     */
-    std::vector<uint8_t> GetRovr() const;
+  /**
+   * \brief Set the registration lifetime field.
+   * \param time the registration lifetime value (units of 60 seconds)
+   */
+  void SetRegTime (uint16_t time);
 
-    /**
-     * @brief Set the ROVR field.
-     * @param rovr the ROVR value
-     */
-    void SetRovr(const std::vector<uint8_t>& rovr);
+  /**
+   * \brief Get the ROVR field.
+   * \return the ROVR
+   */
+  std::vector<uint8_t> GetRovr (void) const;
 
-    /**
-     * @brief Get the registered address field.
-     * @return registered address value
-     */
-    Ipv6Address GetRegAddress() const;
+  /**
+   * \brief Set the ROVR field.
+   * \param rovr the ROVR value
+   */
+  void SetRovr (const std::vector<uint8_t> &rovr);
 
-    /**
-     * @brief Set the registered address field.
-     * @param registered the registered address value
-     */
-    void SetRegAddress(Ipv6Address registered);
+  /**
+   * \brief Get the registered address field.
+   * \return registered address value
+   */
+  Ipv6Address GetRegAddress () const;
 
-    /**
-     * @brief Print informations.
-     * @param os output stream
-     */
-    void Print(std::ostream& os) const override;
+  /**
+   * \brief Set the registered address field.
+   * \param registered the registered address value
+   */
+  void SetRegAddress (Ipv6Address registered);
 
-    /**
-     * @brief Get the serialized size.
-     * @return serialized size
-     */
-    uint32_t GetSerializedSize() const override;
+  /**
+   * \brief Print informations.
+   * \param os output stream
+   */
+  virtual void Print (std::ostream& os) const;
 
-    /**
-     * @brief Serialize the packet.
-     * @param start start offset
-     */
-    void Serialize(Buffer::Iterator start) const override;
+  /**
+   * \brief Get the serialized size.
+   * \return serialized size
+   */
+  virtual uint32_t GetSerializedSize () const;
 
-    /**
-     * @brief Deserialize the packet.
-     * @param start start offset
-     * @return length of packet
-     */
-    uint32_t Deserialize(Buffer::Iterator start) override;
+  /**
+   * \brief Serialize the packet.
+   * \param start start offset
+   */
+  virtual void Serialize (Buffer::Iterator start) const;
 
-  private:
-    /**
-     * @brief The status value.
-     */
-    uint8_t m_status;
+  /**
+   * \brief Deserialize the packet.
+   * \param start start offset
+   * \return length of packet
+   */
+  virtual uint32_t Deserialize (Buffer::Iterator start);
 
-    /**
-     * @brief The Transaction ID value.
-     */
-    uint16_t m_tid;
+private:
 
-    /**
-     * @brief The registration lifetime value (units of 60 seconds).
-     */
-    uint16_t m_regTime;
-    /**
-     * @brief The ROVR value.
-     */
-    std::vector<uint8_t> m_rovr;
+  /**
+   * \brief The status value.
+   */
+  uint8_t m_status;
 
-    /**
-     * @brief The registered address value.
-     */
-    Ipv6Address m_regAddress;
+  /**
+   * \brief The Transaction ID value.
+   */
+  uint16_t m_tid;
+
+  /**
+   * \brief The registration lifetime value (units of 60 seconds).
+   */
+  uint16_t m_regTime;
+  /**
+   * \brief The ROVR value.
+   */
+  std::vector<uint8_t> m_rovr;
+
+  /**
+   * \brief The registered address value.
+   */
+  Ipv6Address m_regAddress;
+
 };
 
 /**
- * @ingroup sixlowpan
- * @brief ICMPv6 Extended Address Registration Option header \RFC{8505}.
+ * \ingroup sixlowpan
+ * \class Icmpv6OptionSixLowPanExtendedAddressRegistration
+ * \brief ICMPv6 Extended Address Registration Option header \RFC{8505}.
  *
-  @verbatim
+  \verbatim
       0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -214,462 +215,465 @@ class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
     ...            Registration Ownership Verifier (ROVR)           ...
      |                                                               |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   @endverbatim
+   \endverbatim
  */
 class Icmpv6OptionSixLowPanExtendedAddressRegistration : public Icmpv6OptionHeader
 {
-  public:
-    /**
-     * @brief Constructor.
-     */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration();
+public:
 
-    /**
-     * @brief Constructor.
-     * @param time the registration lifetime (units of 60 seconds)
-     * @param rovr the ROVR value
-     * @param tid the TID value
-     */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration(uint16_t time,
-                                                     const std::vector<uint8_t>& rovr,
-                                                     uint8_t tid);
+  /**
+   * \brief Constructor.
+   */
+  Icmpv6OptionSixLowPanExtendedAddressRegistration ();
 
-    /**
-     * @brief Constructor.
-     * @param status the status value
-     * @param time the registration lifetime (units of 60 seconds)
-     * @param rovr the ROVR value
-     * @param tid the TID value
-     */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration(uint8_t status,
-                                                     uint16_t time,
-                                                     const std::vector<uint8_t>& rovr,
-                                                     uint8_t tid);
+  /**
+   * \brief Constructor.
+   * \param time the registration lifetime (units of 60 seconds)
+   * \param rovr the ROVR value
+   * \param tid the TID value
+   */
+  Icmpv6OptionSixLowPanExtendedAddressRegistration (uint16_t time, const std::vector<uint8_t> &rovr, uint8_t tid);
 
-    /**
-     * @brief Destructor.
-     */
-    ~Icmpv6OptionSixLowPanExtendedAddressRegistration() override;
+  /**
+   * \brief Constructor.
+   * \param status the status value
+   * \param time the registration lifetime (units of 60 seconds)
+   * \param rovr the ROVR value
+   * \param tid the TID value
+   */
+  Icmpv6OptionSixLowPanExtendedAddressRegistration (uint8_t status, uint16_t time, const std::vector<uint8_t> &rovr, uint8_t tid);
 
-    /**
-     * @brief Get the UID of this class.
-     * @return UID
-     */
-    static TypeId GetTypeId();
+  /**
+   * \brief Destructor.
+   */
+  virtual ~Icmpv6OptionSixLowPanExtendedAddressRegistration ();
 
-    /**
-     * @brief Get the instance type ID.
-     * @return instance type ID
-     */
-    TypeId GetInstanceTypeId() const override;
+  /**
+   * \brief Get the UID of this class.
+   * \return UID
+   */
+  static TypeId GetTypeId ();
 
-    /**
-     * @brief Get the status field.
-     * @return status value
-     */
-    uint8_t GetStatus() const;
+  /**
+   * \brief Get the instance type ID.
+   * \return instance type ID
+   */
+  virtual TypeId GetInstanceTypeId () const;
 
-    /**
-     * @brief Set the status field.
-     * @param status the status value
-     */
-    void SetStatus(uint8_t status);
+  /**
+   * \brief Get the status field.
+   * \return status value
+   */
+  uint8_t GetStatus () const;
 
-    /**
-     * @brief Get the opaque field.
-     * @return opaque value
-     */
-    uint8_t GetOpaque() const;
+  /**
+   * \brief Set the status field.
+   * \param status the status value
+   */
+  void SetStatus (uint8_t status);
 
-    /**
-     * @brief Set the opaque field.
-     * @param opaque the opaque value
-     */
-    void SetOpaque(uint8_t opaque);
+  /**
+   * \brief Get the opaque field.
+   * \return opaque value
+   */
+  uint8_t GetOpaque () const;
 
-    /**
-     * @brief Get the I-TwoBit field.
-     * @return I-TwoBit value
-     */
-    uint8_t GetI() const;
+  /**
+   * \brief Set the opaque field.
+   * \param opaque the opaque value
+   */
+  void SetOpaque (uint8_t opaque);
 
-    /**
-     * @brief Set the I-TwoBit  field.
-     * @param twobits the TwoBit  value
-     */
-    void SetI(uint8_t twobits);
+  /**
+   * \brief Get the I-TwoBit field.
+   * \return I-TwoBit value
+   */
+  uint8_t GetI () const;
 
-    /**
-     * @brief Get the R flag.
-     * @return R flag
-     */
-    bool GetFlagR() const;
+  /**
+   * \brief Set the I-TwoBit  field.
+   * \param twobits the TwoBit  value
+   */
+  void SetI (uint8_t twobits);
 
-    /**
-     * @brief Set the R flag.
-     * @param r value
-     */
-    void SetFlagR(bool r);
+  /**
+   * \brief Get the R flag.
+   * \return R flag
+   */
+  bool GetFlagR () const;
 
-    /**
-     * @brief Get the transaction ID field.
-     * @return Transaction ID value
-     */
-    uint8_t GetTransactionId() const;
+  /**
+   * \brief Set the R flag.
+   * \param r value
+   */
+  void SetFlagR (bool r);
 
-    /**
-     * @brief Set the transaction ID field.
-     * @param tid the transaction ID value
-     */
-    void SetTransactionId(uint8_t tid);
+  /**
+   * \brief Get the transaction ID field.
+   * \return Transaction ID value
+   */
+  uint8_t GetTransactionId () const;
 
-    /**
-     * @brief Get the registration lifetime field.
-     * @return registration lifetime value (units of 60 seconds)
-     */
-    uint16_t GetRegTime() const;
+  /**
+   * \brief Set the transaction ID field.
+   * \param tid the transaction ID value
+   */
+  void SetTransactionId (uint8_t tid);
 
-    /**
-     * @brief Set the registration lifetime field.
-     * @param time the registration lifetime value (units of 60 seconds)
-     */
-    void SetRegTime(uint16_t time);
+  /**
+   * \brief Get the registration lifetime field.
+   * \return registration lifetime value (units of 60 seconds)
+   */
+  uint16_t GetRegTime () const;
 
-    /**
-     * @brief Get the ROVR field.
-     * @return the ROVR
-     */
-    std::vector<uint8_t> GetRovr() const;
+  /**
+   * \brief Set the registration lifetime field.
+   * \param time the registration lifetime value (units of 60 seconds)
+   */
+  void SetRegTime (uint16_t time);
 
-    /**
-     * @brief Set the ROVR field.
-     * @param rovr the ROVR value
-     */
-    void SetRovr(const std::vector<uint8_t>& rovr);
+  /**
+   * \brief Get the ROVR field.
+   * \return the ROVR
+   */
+  std::vector<uint8_t> GetRovr (void) const;
 
-    /**
-     * @brief Print informations.
-     * @param os output stream
-     */
-    void Print(std::ostream& os) const override;
+  /**
+   * \brief Set the ROVR field.
+   * \param rovr the ROVR value
+   */
+  void SetRovr (const std::vector<uint8_t> &rovr);
 
-    /**
-     * @brief Get the serialized size.
-     * @return serialized size
-     */
-    uint32_t GetSerializedSize() const override;
+  /**
+   * \brief Print informations.
+   * \param os output stream
+   */
+  virtual void Print (std::ostream& os) const;
 
-    /**
-     * @brief Serialize the packet.
-     * @param start start offset
-     */
-    void Serialize(Buffer::Iterator start) const override;
+  /**
+   * \brief Get the serialized size.
+   * \return serialized size
+   */
+  virtual uint32_t GetSerializedSize () const;
 
-    /**
-     * @brief Deserialize the packet.
-     * @param start start offset
-     * @return length of packet
-     */
-    uint32_t Deserialize(Buffer::Iterator start) override;
+  /**
+   * \brief Serialize the packet.
+   * \param start start offset
+   */
+  virtual void Serialize (Buffer::Iterator start) const;
 
-  private:
-    /**
-     * @brief The status value.
-     */
-    uint8_t m_status;
+  /**
+   * \brief Deserialize the packet.
+   * \param start start offset
+   * \return length of packet
+   */
+  virtual uint32_t Deserialize (Buffer::Iterator start);
 
-    /**
-     * @brief The opaque value.
-     */
-    uint8_t m_opaque;
+private:
 
-    /**
-     * @brief The I Two bit value.
-     */
-    uint8_t m_i;
+  /**
+   * \brief The status value.
+   */
+  uint8_t m_status;
 
-    /**
-     * @brief The R flag.
-     */
-    bool m_flagR;
+  /**
+   * \brief The opaque value.
+   */
+  uint8_t m_opaque;
 
-    /**
-     * @brief The Transaction ID value.
-     */
-    uint16_t m_tid;
+  /**
+   * \brief The I Two bit value.
+   */
+  uint8_t m_i;
 
-    /**
-     * @brief The registration lifetime value (units of 60 seconds).
-     */
-    uint16_t m_regTime;
+  /**
+   * \brief The R flag.
+   */
+  bool m_flagR;
 
-    /**
-     * @brief The ROVR value.
-     */
-    std::vector<uint8_t> m_rovr;
+  /**
+   * \brief The Transaction ID value.
+   */
+  uint16_t m_tid;
+
+  /**
+   * \brief The registration lifetime value (units of 60 seconds).
+   */
+  uint16_t m_regTime;
+
+  /**
+   * \brief The ROVR value.
+   */
+  std::vector<uint8_t> m_rovr;
 };
 
 /**
- * @ingroup sixlowpan
- * @brief ICMPv6 SixLowPan Context Option header (see \RFC{8505}).
+ * \ingroup sixlowpan
+ * \class Icmpv6OptionSixLowPanContext
+ * \brief ICMPv6 SixLowPan Context Option header (see \RFC{8505}).
  */
 class Icmpv6OptionSixLowPanContext : public Icmpv6OptionHeader
 {
-  public:
-    /**
-     * @brief Constructor.
-     */
-    Icmpv6OptionSixLowPanContext();
+public:
 
-    /**
-     * @brief Constructor.
-     * @param c the c flag
-     * @param cid the context identifier
-     * @param time the valid lifetime (units of 60 seconds)
-     * @param prefix the context prefix
-     */
-    Icmpv6OptionSixLowPanContext(bool c, uint8_t cid, uint16_t time, Ipv6Prefix prefix);
+  /**
+   * \brief Constructor.
+   */
+  Icmpv6OptionSixLowPanContext ();
 
-    /**
-     * @brief Destructor.
-     */
-    ~Icmpv6OptionSixLowPanContext() override;
+  /**
+   * \brief Constructor.
+   * \param c the c flag
+   * \param cid the context identifier
+   * \param time the valid lifetime (units of 60 seconds)
+   * \param prefix the context prefix
+   */
+  Icmpv6OptionSixLowPanContext (bool c, uint8_t cid, uint16_t time, Ipv6Prefix prefix);
 
-    /**
-     * @brief Get the UID of this class.
-     * @return UID
-     */
-    static TypeId GetTypeId();
+  /**
+   * \brief Destructor.
+   */
+  virtual ~Icmpv6OptionSixLowPanContext ();
 
-    /**
-     * @brief Get the instance type ID.
-     * @return instance type ID
-     */
-    TypeId GetInstanceTypeId() const override;
+  /**
+   * \brief Get the UID of this class.
+   * \return UID
+   */
+  static TypeId GetTypeId ();
 
-    /**
-     * @brief Get the context length field.
-     * @return context length value
-     */
-    uint8_t GetContextLen() const;
+  /**
+   * \brief Get the instance type ID.
+   * \return instance type ID
+   */
+  virtual TypeId GetInstanceTypeId () const;
 
-    /**
-     * @brief Is compression flag ?
-     * @return true if context is valid for use in compression, false otherwise
-     */
-    bool IsFlagC() const;
+  /**
+   * \brief Get the context length field.
+   * \return context length value
+   */
+  uint8_t GetContextLen () const;
 
-    /**
-     * @brief Set the C flag.
-     * @param c the C flag
-     */
-    void SetFlagC(bool c);
+  /**
+   * \brief Is compression flag ?
+   * \return true if context is valid for use in compression, false otherwise
+   */
+  bool IsFlagC () const;
 
-    /**
-     * @brief Get the context identifier field.
-     * @return context identifier value
-     */
-    uint8_t GetCid() const;
+  /**
+   * \brief Set the C flag.
+   * \param c the C flag
+   */
+  void SetFlagC (bool c);
 
-    /**
-     * @brief Set the context identifier field.
-     * @param cid the context identifier value
-     */
-    void SetCid(uint8_t cid);
+  /**
+   * \brief Get the context identifier field.
+   * \return context identifier value
+   */
+  uint8_t GetCid () const;
 
-    /**
-     * @brief Get the valid lifetime field.
-     * @return valid lifetime value (units of 60 seconds)
-     */
-    uint16_t GetValidTime() const;
+  /**
+   * \brief Set the context identifier field.
+   * \param cid the context identifier value
+   */
+  void SetCid (uint8_t cid);
 
-    /**
-     * @brief Set the valid lifetime field.
-     * @param time the valid lifetime value (units of 60 seconds)
-     */
-    void SetValidTime(uint16_t time);
+  /**
+   * \brief Get the valid lifetime field.
+   * \return valid lifetime value (units of 60 seconds)
+   */
+  uint16_t GetValidTime () const;
 
-    /**
-     * @brief Get the context prefix field.
-     * @return context prefix value
-     */
-    Ipv6Prefix GetContextPrefix() const;
+  /**
+   * \brief Set the valid lifetime field.
+   * \param time the valid lifetime value (units of 60 seconds)
+   */
+  void SetValidTime (uint16_t time);
 
-    /**
-     * @brief Set the context prefix field.
-     * @param prefix the context prefix value
-     */
-    void SetContextPrefix(Ipv6Prefix prefix);
+  /**
+   * \brief Get the context prefix field.
+   * \return context prefix value
+   */
+  Ipv6Prefix GetContextPrefix () const;
 
-    /**
-     * @brief Print informations.
-     * @param os output stream
-     */
-    void Print(std::ostream& os) const override;
+  /**
+   * \brief Set the context prefix field.
+   * \param prefix the context prefix value
+   */
+  void SetContextPrefix (Ipv6Prefix prefix);
 
-    /**
-     * @brief Get the serialized size.
-     * @return serialized size
-     */
-    uint32_t GetSerializedSize() const override;
+  /**
+   * \brief Print informations.
+   * \param os output stream
+   */
+  virtual void Print (std::ostream& os) const;
 
-    /**
-     * @brief Serialize the packet.
-     * @param start start offset
-     */
-    void Serialize(Buffer::Iterator start) const override;
+  /**
+   * \brief Get the serialized size.
+   * \return serialized size
+   */
+  virtual uint32_t GetSerializedSize () const;
 
-    /**
-     * @brief Deserialize the packet.
-     * @param start start offset
-     * @return length of packet
-     */
-    uint32_t Deserialize(Buffer::Iterator start) override;
+  /**
+   * \brief Serialize the packet.
+   * \param start start offset
+   */
+  virtual void Serialize (Buffer::Iterator start) const;
 
-  private:
-    /**
-     * @brief The context length value.
-     */
-    uint8_t m_contextLen;
+  /**
+   * \brief Deserialize the packet.
+   * \param start start offset
+   * \return length of packet
+   */
+  virtual uint32_t Deserialize (Buffer::Iterator start);
 
-    /**
-     * @brief The compression flag, indicates that this context is valid for use in compression.
-     */
-    bool m_c;
+private:
 
-    /**
-     * @brief The context identifier value.
-     */
-    uint8_t m_cid;
+  /**
+   * \brief The context length value.
+   */
+  uint8_t m_contextLen;
 
-    /**
-     * @brief The valid lifetime value (units of 60 seconds).
-     */
-    uint16_t m_validTime;
+  /**
+   * \brief The compression flag, indicates that this context is valid for use in compression.
+   */
+  bool m_c;
 
-    /**
-     * @brief The context prefix value.
-     */
-    Ipv6Prefix m_prefix;
+  /**
+   * \brief The context identifier value.
+   */
+  uint8_t m_cid;
+
+  /**
+   * \brief The valid lifetime value (units of 60 seconds).
+   */
+  uint16_t m_validTime;
+
+  /**
+   * \brief The context prefix value.
+   */
+  Ipv6Prefix m_prefix;
+
 };
 
 /**
- * @ingroup sixlowpan
- * @brief ICMPv6 Authoritative Border Router Option header (see \RFC{8505}).
+ * \ingroup sixlowpan
+ * \class Icmpv6OptionSixLowPanAuthoritativeBorderRouter
+ * \brief ICMPv6 Authoritative Border Router Option header (see \RFC{8505}).
  */
 class Icmpv6OptionSixLowPanAuthoritativeBorderRouter : public Icmpv6OptionHeader
 {
-  public:
-    /**
-     * @brief Constructor.
-     */
-    Icmpv6OptionSixLowPanAuthoritativeBorderRouter();
+public:
 
-    /**
-     * @brief Constructor.
-     * @param version the version value
-     * @param time the valid lifetime (units of 60 seconds)
-     * @param address the 6LBR address
-     */
-    Icmpv6OptionSixLowPanAuthoritativeBorderRouter(uint32_t version,
-                                                   uint16_t time,
-                                                   Ipv6Address address);
+  /**
+   * \brief Constructor.
+   */
+  Icmpv6OptionSixLowPanAuthoritativeBorderRouter ();
 
-    /**
-     * @brief Destructor.
-     */
-    ~Icmpv6OptionSixLowPanAuthoritativeBorderRouter() override;
+  /**
+   * \brief Constructor.
+   * \param version the version value
+   * \param time the valid lifetime (units of 60 seconds)
+   * \param address the 6LBR address
+   */
+  Icmpv6OptionSixLowPanAuthoritativeBorderRouter (uint32_t version, uint16_t time, Ipv6Address address);
 
-    /**
-     * @brief Get the UID of this class.
-     * @return UID
-     */
-    static TypeId GetTypeId();
+  /**
+   * \brief Destructor.
+   */
+  virtual ~Icmpv6OptionSixLowPanAuthoritativeBorderRouter ();
 
-    /**
-     * @brief Get the instance type ID.
-     * @return instance type ID
-     */
-    TypeId GetInstanceTypeId() const override;
+  /**
+   * \brief Get the UID of this class.
+   * \return UID
+   */
+  static TypeId GetTypeId ();
 
-    /**
-     * @brief Get the version field.
-     * @return version value
-     */
-    uint32_t GetVersion() const;
+  /**
+   * \brief Get the instance type ID.
+   * \return instance type ID
+   */
+  virtual TypeId GetInstanceTypeId () const;
 
-    /**
-     * @brief Set the version field.
-     * @param version the version value
-     */
-    void SetVersion(uint32_t version);
+  /**
+   * \brief Get the version field.
+   * \return version value
+   */
+  uint32_t GetVersion () const;
 
-    /**
-     * @brief Get the valid lifetime field.
-     * @return valid lifetime value (units of 60 seconds)
-     */
-    uint16_t GetValidLifeTime() const;
+  /**
+   * \brief Set the version field.
+   * \param version the version value
+   */
+  void SetVersion (uint32_t version);
 
-    /**
-     * @brief Set the valid lifetime field.
-     * @param time the valid lifetime value (units of 60 seconds)
-     */
-    void SetValidLifeTime(uint16_t time);
+  /**
+   * \brief Get the valid lifetime field.
+   * \return valid lifetime value (units of 60 seconds)
+   */
+  uint16_t GetValidLifeTime () const;
 
-    /**
-     * @brief Get the 6LBR address field.
-     * @return 6LBR address value
-     */
-    Ipv6Address GetRouterAddress() const;
+  /**
+   * \brief Set the valid lifetime field.
+   * \param time the valid lifetime value (units of 60 seconds)
+   */
+  void SetValidLifeTime (uint16_t time);
 
-    /**
-     * @brief Set the 6LBR address field.
-     * @param router the 6LBR address value
-     */
-    void SetRouterAddress(Ipv6Address router);
+  /**
+   * \brief Get the 6LBR address field.
+   * \return 6LBR address value
+   */
+  Ipv6Address GetRouterAddress () const;
 
-    /**
-     * @brief Print informations.
-     * @param os output stream
-     */
-    void Print(std::ostream& os) const override;
+  /**
+   * \brief Set the 6LBR address field.
+   * \param router the 6LBR address value
+   */
+  void SetRouterAddress (Ipv6Address router);
 
-    /**
-     * @brief Get the serialized size.
-     * @return serialized size
-     */
-    uint32_t GetSerializedSize() const override;
+  /**
+   * \brief Print informations.
+   * \param os output stream
+   */
+  virtual void Print (std::ostream& os) const;
 
-    /**
-     * @brief Serialize the packet.
-     * @param start start offset
-     */
-    void Serialize(Buffer::Iterator start) const override;
+  /**
+   * \brief Get the serialized size.
+   * \return serialized size
+   */
+  virtual uint32_t GetSerializedSize () const;
 
-    /**
-     * @brief Deserialize the packet.
-     * @param start start offset
-     * @return length of packet
-     */
-    uint32_t Deserialize(Buffer::Iterator start) override;
+  /**
+   * \brief Serialize the packet.
+   * \param start start offset
+   */
+  virtual void Serialize (Buffer::Iterator start) const;
 
-  private:
-    /**
-     * @brief The version value.
-     */
-    uint32_t m_version;
+  /**
+   * \brief Deserialize the packet.
+   * \param start start offset
+   * \return length of packet
+   */
+  virtual uint32_t Deserialize (Buffer::Iterator start);
 
-    /**
-     * @brief The valid lifetime value (units of 60 seconds).
-     */
-    uint16_t m_validTime;
+private:
+  /**
+   * \brief The version value.
+   */
+  uint32_t m_version;
 
-    /**
-     * @brief The 6LBR address value.
-     */
-    Ipv6Address m_routerAddress;
+  /**
+   * \brief The valid lifetime value (units of 60 seconds).
+   */
+  uint16_t m_validTime;
+
+  /**
+   * \brief The 6LBR address value.
+   */
+  Ipv6Address m_routerAddress;
+
 };
 
 } /* namespace ns3 */
+
 
 #endif /* SIXLOWPAN_ND_HEADER_H */
