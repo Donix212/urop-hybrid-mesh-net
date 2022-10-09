@@ -317,7 +317,20 @@ class SixLowPanNetDevice : public NetDevice
     TracedCallback<Ptr<const Packet>, Ptr<SixLowPanNetDevice>, uint32_t> m_txTrace;
 
     /**
-     * @brief Callback to trace TX (transmission) packets.
+     * \brief Callback to trace TX (transmission) packets.
+     *
+     * Data passed:
+     * \li Packet received (including 6LoWPAN header)
+     * \li Ptr to SixLowPanNetDevice
+     * \li interface index
+     * \deprecated The non-const \c Ptr<SixLowPanNetDevice> argument
+     * is deprecated and will be changed to \c Ptr<const SixLowPanNetDevice>
+     * in a future release.
+     */
+    TracedCallback<Ptr<const Packet>, Ptr<SixLowPanNetDevice>, uint32_t> m_txPreTrace;
+
+    /**
+     * \brief Callback to trace RX (reception) packets.
      *
      * Data passed:
      * \li Packet received (including 6LoWPAN header)
@@ -342,6 +355,8 @@ class SixLowPanNetDevice : public NetDevice
      */
     // NS_DEPRECATED() - tag for future removal
     TracedCallback<Ptr<const Packet>, Ptr<SixLowPanNetDevice>, uint32_t> m_rxTrace;
+
+    TracedCallback<Ptr<const Packet>, Ptr<SixLowPanNetDevice>, uint32_t> m_rxPostTrace;
 
     /**
      * @brief Callback to trace RX (reception) packets.

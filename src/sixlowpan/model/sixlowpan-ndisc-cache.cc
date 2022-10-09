@@ -1,3 +1,4 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2015 Università di Firenze, Italy
  *
@@ -19,276 +20,260 @@
  *         Adnan Rashid <adnanrashidpk@gmail.com>
  */
 
-#include "sixlowpan-ndisc-cache.h"
-
-#include "sixlowpan-nd-context.h"
-#include "sixlowpan-nd-prefix.h"
-#include "sixlowpan-nd-protocol.h"
-
-#include "ns3/ipv6-address.h"
-#include "ns3/ipv6-l3-protocol.h"
-#include "ns3/ipv6-routing-protocol.h"
 #include "ns3/log.h"
+#include "ns3/uinteger.h"
+#include "ns3/names.h"
+#include "ns3/ipv6-address.h"
 #include "ns3/mac16-address.h"
 #include "ns3/mac64-address.h"
-#include "ns3/names.h"
+#include "ns3/ipv6-l3-protocol.h"
+#include "ns3/ipv6-routing-protocol.h"
 #include "ns3/node.h"
-#include "ns3/uinteger.h"
+
+#include "sixlowpan-ndisc-cache.h"
+#include "sixlowpan-nd-protocol.h"
+#include "sixlowpan-nd-context.h"
+#include "sixlowpan-nd-prefix.h"
+
 
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE("SixLowPanNdiscCache");
+NS_LOG_COMPONENT_DEFINE ("SixLowPanNdiscCache");
 
-NS_OBJECT_ENSURE_REGISTERED(SixLowPanNdiscCache);
+NS_OBJECT_ENSURE_REGISTERED (SixLowPanNdiscCache);
 
-TypeId
-SixLowPanNdiscCache::GetTypeId()
+TypeId SixLowPanNdiscCache::GetTypeId ()
 {
-    static TypeId tid =
-        TypeId("ns3::SixLowPanNdiscCache").SetParent<NdiscCache>().SetGroupName("SixLowPan");
-    return tid;
+  static TypeId tid = TypeId ("ns3::SixLowPanNdiscCache")
+    .SetParent<NdiscCache> ()
+    .SetGroupName ("SixLowPan")
+  ;
+  return tid;
 }
 
-SixLowPanNdiscCache::SixLowPanNdiscCache()
+SixLowPanNdiscCache::SixLowPanNdiscCache ()
 {
-    NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION (this);
 }
 
-SixLowPanNdiscCache::~SixLowPanNdiscCache()
+SixLowPanNdiscCache::~SixLowPanNdiscCache ()
 {
-    NS_LOG_FUNCTION(this);
-    Flush();
+  NS_LOG_FUNCTION (this);
+  Flush ();
 }
 
-void
-SixLowPanNdiscCache::DoDispose()
+void SixLowPanNdiscCache::DoDispose ()
 {
-    NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION (this);
 
-    Flush();
-    NdiscCache::DoDispose();
+  Flush ();
+  NdiscCache::DoDispose ();
 }
 
-NdiscCache::Entry*
-SixLowPanNdiscCache::Lookup(Ipv6Address dst)
+NdiscCache::Entry* SixLowPanNdiscCache::Lookup (Ipv6Address dst)
 {
-    NS_LOG_FUNCTION(this << dst);
-    SixLowPanNdiscCache::SixLowPanEntry* entry;
+  NS_LOG_FUNCTION (this << dst);
+  SixLowPanNdiscCache::SixLowPanEntry* entry;
 
-    if (m_ndCache.find(dst) != m_ndCache.end())
+  if (m_ndCache.find (dst) != m_ndCache.end ())
     {
-        entry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(m_ndCache[dst]);
+      entry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*> (m_ndCache[dst]);
     }
-    else
+  else
     {
-        entry = nullptr;
+      entry = 0;
     }
-    return entry;
+  return entry;
 }
 
-NdiscCache::Entry*
-SixLowPanNdiscCache::Add(Ipv6Address to)
+NdiscCache::Entry* SixLowPanNdiscCache::Add (Ipv6Address to)
 {
-    NS_LOG_FUNCTION(this << to);
-    NS_ASSERT(m_ndCache.find(to) == m_ndCache.end());
+  NS_LOG_FUNCTION (this << to);
+  NS_ASSERT (m_ndCache.find (to) == m_ndCache.end ());
 
-    SixLowPanNdiscCache::SixLowPanEntry* entry = new SixLowPanNdiscCache::SixLowPanEntry(this);
-    entry->SetIpv6Address(to);
-    m_ndCache[to] = entry;
-    return entry;
+  SixLowPanNdiscCache::SixLowPanEntry* entry = new SixLowPanNdiscCache::SixLowPanEntry (this);
+  entry->SetIpv6Address (to);
+  m_ndCache[to] = entry;
+  return entry;
 }
 
-void
-SixLowPanNdiscCache::PrintNdiscCache(Ptr<OutputStreamWrapper> stream)
+void SixLowPanNdiscCache::PrintNdiscCache (Ptr<OutputStreamWrapper> stream)
 {
-    NS_LOG_FUNCTION(this << stream);
-    std::ostream* os = stream->GetStream();
+  NS_LOG_FUNCTION (this << stream);
+  std::ostream* os = stream->GetStream ();
 
-    for (auto i = m_ndCache.begin(); i != m_ndCache.end(); i++)
+  for (auto i = m_ndCache.begin (); i != m_ndCache.end (); i++)
     {
-        *os << i->first << " dev ";
-        std::string found = Names::FindName(GetDevice());
-        if (Names::FindName(GetDevice()) != "")
+      *os << i->first << " dev ";
+      std::string found = Names::FindName (GetDevice ());
+      if (Names::FindName (GetDevice ()) != "")
         {
-            *os << found;
+          *os << found;
         }
-        else
+      else
         {
-            *os << static_cast<int>(GetDevice()->GetIfIndex());
-        }
-
-        SixLowPanNdiscCache::SixLowPanEntry* entry =
-            dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(i->second);
-        *os << " lladdr " << entry->GetMacAddress();
-
-        if (entry->IsReachable())
-        {
-            *os << " REACHABLE ";
-        }
-        else if (entry->IsDelay())
-        {
-            *os << " DELAY ";
-        }
-        else if (entry->IsIncomplete())
-        {
-            *os << " INCOMPLETE ";
-        }
-        else if (entry->IsProbe())
-        {
-            *os << " PROBE ";
-        }
-        else
-        {
-            *os << " STALE ";
+          *os << static_cast<int> (GetDevice ()->GetIfIndex ());
         }
 
-        if (entry->IsRegistered())
+      SixLowPanNdiscCache::SixLowPanEntry* entry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*> (i->second);
+      *os << " lladdr " << entry->GetMacAddress ();
+
+      if (entry->IsReachable ())
         {
-            *os << "REGISTERED\n";
+          *os << " REACHABLE ";
         }
-        else if (entry->IsTentative())
+      else if (entry->IsDelay ())
         {
-            *os << "TENTATIVE\n";
+          *os << " DELAY ";
         }
-        else
+      else if (entry->IsIncomplete ())
         {
-            *os << "GARBAGE-COLLECTIBLE\n";
+          *os << " INCOMPLETE ";
+        }
+      else if (entry->IsProbe ())
+        {
+          *os << " PROBE ";
+        }
+      else
+        {
+          *os << " STALE ";
+        }
+
+      if (entry->IsRegistered ())
+        {
+          *os << "REGISTERED\n";
+        }
+      else if (entry->IsTentative ())
+        {
+          *os << "TENTATIVE\n";
+        }
+      else
+        {
+          *os << "GARBAGE-COLLECTIBLE\n";
         }
     }
 }
 
-SixLowPanNdiscCache::SixLowPanEntry::SixLowPanEntry(NdiscCache* nd)
-    : NdiscCache::Entry::Entry(nd),
-      m_type(GARBAGE),
-      m_registeredTimer(Timer::CANCEL_ON_DESTROY),
-      m_tentativeTimer(Timer::CANCEL_ON_DESTROY)
+SixLowPanNdiscCache::SixLowPanEntry::SixLowPanEntry (NdiscCache* nd)
+  : NdiscCache::Entry::Entry (nd),
+    m_type (GARBAGE),
+    m_registeredTimer (Timer::CANCEL_ON_DESTROY),
+    m_tentativeTimer (Timer::CANCEL_ON_DESTROY)
 {
-    NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION (this);
 }
 
-void
-SixLowPanNdiscCache::SixLowPanEntry::Print(std::ostream& os) const
+void SixLowPanNdiscCache::SixLowPanEntry::Print (std::ostream &os) const
 {
-    NdiscCache::Entry::Print(os);
-    switch (m_type)
-    {
+  NdiscCache::Entry::Print (os);
+  switch (m_type)
+  {
     case REGISTERED:
-        os << " - REGISTERED";
-        break;
+      os << " - REGISTERED";
+      break;
     case GARBAGE:
-        os << " - GARBAGE-COLLECTIBLE";
-        break;
+      os << " - GARBAGE-COLLECTIBLE";
+      break;
     case TENTATIVE:
-        os << " - TENTATIVE";
-        break;
-    }
+      os << " - TENTATIVE";
+      break;
+  }
 }
 
-void
-SixLowPanNdiscCache::SixLowPanEntry::MarkRegistered(uint16_t time)
+
+void SixLowPanNdiscCache::SixLowPanEntry::MarkRegistered (uint16_t time)
 {
-    NS_LOG_FUNCTION(this);
-    m_type = REGISTERED;
+  NS_LOG_FUNCTION (this);
+  m_type = REGISTERED;
 
-    //  Ptr<Node> node = m_ndCache->GetDevice ()->GetNode ();
-    //  std::cout << "++++ " << node->GetId () << " + " << Now ().As (Time::S) << " MarkRegistered -
-    //  " << *this << std::endl;
+//  Ptr<Node> node = m_ndCache->GetDevice ()->GetNode ();
+//  std::cout << "++++ " << node->GetId () << " + " << Now ().As (Time::S) << " MarkRegistered - " << *this << std::endl;
 
-    if (m_tentativeTimer.IsRunning())
+  if (m_tentativeTimer.IsRunning ())
     {
-        m_tentativeTimer.Cancel();
+      m_tentativeTimer.Cancel ();
     }
 
-    if (m_registeredTimer.IsRunning())
+  if (m_registeredTimer.IsRunning ())
     {
-        m_registeredTimer.Cancel();
+      m_registeredTimer.Cancel ();
     }
-    m_registeredTimer.SetFunction(&SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout, this);
-    m_registeredTimer.SetDelay(Minutes(time));
-    m_registeredTimer.Schedule();
+  m_registeredTimer.SetFunction (&SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout, this);
+  m_registeredTimer.SetDelay (Minutes (time));
+  m_registeredTimer.Schedule ();
 }
 
-void
-SixLowPanNdiscCache::SixLowPanEntry::MarkTentative()
+void SixLowPanNdiscCache::SixLowPanEntry::MarkTentative ()
 {
-    NS_LOG_FUNCTION(this);
-    m_type = TENTATIVE;
+  NS_LOG_FUNCTION (this);
+  m_type = TENTATIVE;
 
-    if (m_tentativeTimer.IsRunning())
+  if (m_tentativeTimer.IsRunning ())
     {
-        m_tentativeTimer.Cancel();
+      m_tentativeTimer.Cancel ();
     }
-    m_tentativeTimer.SetFunction(&SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout, this);
-    m_tentativeTimer.SetDelay(Seconds(SixLowPanNdProtocol::TENTATIVE_NCE_LIFETIME));
-    m_tentativeTimer.Schedule();
+  m_tentativeTimer.SetFunction (&SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout, this);
+  m_tentativeTimer.SetDelay (Seconds (SixLowPanNdProtocol::TENTATIVE_NCE_LIFETIME));
+  m_tentativeTimer.Schedule ();
 }
 
-void
-SixLowPanNdiscCache::SixLowPanEntry::MarkGarbage()
+void SixLowPanNdiscCache::SixLowPanEntry::MarkGarbage ()
 {
-    NS_LOG_FUNCTION(this);
-    m_type = GARBAGE;
+  NS_LOG_FUNCTION (this);
+  m_type = GARBAGE;
 }
 
-bool
-SixLowPanNdiscCache::SixLowPanEntry::IsRegistered() const
+bool SixLowPanNdiscCache::SixLowPanEntry::IsRegistered () const
 {
-    NS_LOG_FUNCTION(this);
-    return (m_type == REGISTERED);
+  NS_LOG_FUNCTION (this);
+  return (m_type == REGISTERED);
 }
 
-bool
-SixLowPanNdiscCache::SixLowPanEntry::IsTentative() const
+bool SixLowPanNdiscCache::SixLowPanEntry::IsTentative () const
 {
-    NS_LOG_FUNCTION(this);
-    return (m_type == TENTATIVE);
+  NS_LOG_FUNCTION (this);
+  return (m_type == TENTATIVE);
 }
 
-bool
-SixLowPanNdiscCache::SixLowPanEntry::IsGarbage() const
+bool SixLowPanNdiscCache::SixLowPanEntry::IsGarbage () const
 {
-    NS_LOG_FUNCTION(this);
-    return (m_type == GARBAGE);
+  NS_LOG_FUNCTION (this);
+  return (m_type == GARBAGE);
 }
 
-void
-SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout()
+void SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout ()
 {
-    NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION (this);
 
-    Ptr<Node> node = m_ndCache->GetDevice()->GetNode();
-    //  std::cout << "**** " << node->GetId () << " * " << Now ().As (Time::S) << " timeout -
-    //  removing entry " << *this << std::endl;
+  Ptr<Node> node = m_ndCache->GetDevice ()->GetNode ();
+//  std::cout << "**** " << node->GetId () << " * " << Now ().As (Time::S) << " timeout - removing entry " << *this << std::endl;
 
-    Ptr<Ipv6L3Protocol> ipv6l3Protocol = node->GetObject<Ipv6L3Protocol>();
-    ipv6l3Protocol->GetRoutingProtocol()->NotifyRemoveRoute(
-        GetIpv6Address(),
-        Ipv6Prefix(128),
-        Ipv6Address::GetAny(),
-        ipv6l3Protocol->GetInterfaceForDevice(m_ndCache->GetDevice()));
-    m_ndCache->Remove(this);
+  Ptr<Ipv6L3Protocol> ipv6l3Protocol = node->GetObject<Ipv6L3Protocol> ();
+  ipv6l3Protocol->GetRoutingProtocol ()->NotifyRemoveRoute (GetIpv6Address (), Ipv6Prefix (128), Ipv6Address::GetAny (),
+                                                            ipv6l3Protocol->GetInterfaceForDevice (m_ndCache->GetDevice ()));
+  m_ndCache->Remove (this);
 
-    return;
+  return;
 }
 
-std::vector<uint8_t>
-SixLowPanNdiscCache::SixLowPanEntry::GetRovr() const
+std::vector<uint8_t> SixLowPanNdiscCache::SixLowPanEntry::GetRovr (void) const
 {
-    return m_rovr;
+  return m_rovr;
 }
 
-void
-SixLowPanNdiscCache::SixLowPanEntry::SetRovr(const std::vector<uint8_t>& rovr)
+void SixLowPanNdiscCache::SixLowPanEntry::SetRovr (const std::vector<uint8_t> &rovr)
 {
-    m_rovr = std::move(rovr);
+  m_rovr = std::move (rovr);
 }
 
-std::ostream&
-operator<<(std::ostream& os, const SixLowPanNdiscCache::SixLowPanEntry& entry)
+std::ostream& operator << (std::ostream& os, SixLowPanNdiscCache::SixLowPanEntry const& entry)
 {
-    entry.Print(os);
-    return os;
+  entry.Print (os);
+  return os;
 }
+
+
+
 
 } /* namespace ns3 */
