@@ -82,7 +82,7 @@ SixLowPanNdiscCache::Lookup(Ipv6Address dst)
     }
     else
     {
-        entry = 0;
+        entry = nullptr;
     }
     return entry;
 }
@@ -273,7 +273,7 @@ SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout()
 }
 
 std::vector<uint8_t>
-SixLowPanNdiscCache::SixLowPanEntry::GetRovr(void) const
+SixLowPanNdiscCache::SixLowPanEntry::GetRovr() const
 {
     return m_rovr;
 }
