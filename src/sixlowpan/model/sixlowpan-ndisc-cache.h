@@ -55,28 +55,28 @@ class SixLowPanNdiscCache : public virtual NdiscCache
     /**
      * \brief Destructor.
      */
-    ~SixLowPanNdiscCache();
+    ~SixLowPanNdiscCache() override;
 
     /**
      * \brief Lookup in the cache.
      * \param dst destination address
      * \return the entry if found, 0 otherwise
      */
-    virtual NdiscCache::Entry* Lookup(Ipv6Address dst);
+    NdiscCache::Entry* Lookup(Ipv6Address dst) override;
 
     /**
      * \brief Add an entry.
      * \param to address to add
      * \return an new Entry
      */
-    virtual NdiscCache::Entry* Add(Ipv6Address to);
+    NdiscCache::Entry* Add(Ipv6Address to) override;
 
     /**
      * \brief Print the SixLowPanNdisc cache entries
      *
      * \param stream the ostream the SixLowPanNdisc cache entries is printed to
      */
-    virtual void PrintNdiscCache(Ptr<OutputStreamWrapper> stream);
+    void PrintNdiscCache(Ptr<OutputStreamWrapper> stream) override;
 
     /**
      * \class SixLowPanEntry
@@ -91,7 +91,7 @@ class SixLowPanNdiscCache : public virtual NdiscCache
          */
         SixLowPanEntry(NdiscCache* nd);
 
-        virtual void Print(std::ostream& os) const;
+        void Print(std::ostream& os) const override;
 
         /**
          * \brief Changes the state to this entry to REGISTERED.
@@ -138,7 +138,7 @@ class SixLowPanNdiscCache : public virtual NdiscCache
          * \brief Get the ROVR field.
          * \return the ROVR
          */
-        std::vector<uint8_t> GetRovr(void) const;
+        std::vector<uint8_t> GetRovr() const;
 
         /**
          * \brief Set the ROVR field.
@@ -182,7 +182,7 @@ class SixLowPanNdiscCache : public virtual NdiscCache
     /**
      * \brief Dispose this object.
      */
-    virtual void DoDispose();
+    void DoDispose() override;
 
   private:
     /**
