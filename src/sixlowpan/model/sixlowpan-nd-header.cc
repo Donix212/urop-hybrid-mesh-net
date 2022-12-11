@@ -136,7 +136,7 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::SetRegTime(uint16_t time)
 }
 
 std::vector<uint8_t>
-Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::GetRovr(void) const
+Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::GetRovr() const
 {
     NS_LOG_FUNCTION(this);
     return m_rovr;
@@ -214,9 +214,9 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::Serialize(Buffer::Iterator sta
     i.WriteU8(m_tid);
     i.WriteU16(m_regTime);
 
-    for (uint8_t index = 0; index < m_rovr.size(); index++)
+    for (const auto& rovr : m_rovr)
     {
-        i.WriteU8(m_rovr[index]);
+        i.WriteU8(rovr);
     }
 }
 
@@ -411,7 +411,7 @@ Icmpv6OptionSixLowPanExtendedAddressRegistration::SetRegTime(uint16_t time)
 }
 
 std::vector<uint8_t>
-Icmpv6OptionSixLowPanExtendedAddressRegistration::GetRovr(void) const
+Icmpv6OptionSixLowPanExtendedAddressRegistration::GetRovr() const
 {
     NS_LOG_FUNCTION(this);
     return m_rovr;
@@ -484,9 +484,9 @@ Icmpv6OptionSixLowPanExtendedAddressRegistration::Serialize(Buffer::Iterator sta
     i.WriteU8(m_tid);
     i.WriteU16(m_regTime);
 
-    for (uint8_t index = 0; index < m_rovr.size(); index++)
+    for (const auto& rovr : m_rovr)
     {
-        i.WriteU8(m_rovr[index]);
+        i.WriteU8(rovr);
     }
 }
 
