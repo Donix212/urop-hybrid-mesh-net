@@ -620,7 +620,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         /* Update NDISC table with information of src */
         Ptr<NdiscCache> cache = FindCache(sixDevice);
 
-        SixLowPanNdiscCache::SixLowPanEntry* entry = 0;
+        SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
         entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
 
         // \todo double check the NCE statuses.
@@ -849,7 +849,7 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     /* Update Neighbor Cache */
     Ptr<SixLowPanNdiscCache> sixCache = DynamicCast<SixLowPanNdiscCache>(FindCache(sixDevice));
     NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
-    SixLowPanNdiscCache::SixLowPanEntry* sixEntry = 0;
+    SixLowPanNdiscCache::SixLowPanEntry* sixEntry = nullptr;
     sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Lookup(src));
     if (!sixEntry)
     {
@@ -1053,7 +1053,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         pending.llaHdr = llaHdr;
         pending.addressesToBeregistered.push_back(interface->GetLinkLocalAddress().GetAddress());
 
-        for (auto iter : prefixList)
+        for (const auto& iter : prefixList)
         {
             Ipv6Address gaddr = Ipv6Address::MakeAutoconfiguredAddress(macAddr, iter.GetPrefix());
             pending.addressesToBeregistered.push_back(gaddr);
@@ -1335,7 +1335,7 @@ SixLowPanNdProtocol::ScreeningRas(Ptr<SixLowPanRaEntry> ra)
 }
 
 void
-SixLowPanNdProtocol::AddressReRegistration(void)
+SixLowPanNdProtocol::AddressReRegistration()
 {
     NS_LOG_FUNCTION(this);
 
@@ -1349,7 +1349,7 @@ SixLowPanNdProtocol::AddressReRegistration(void)
 }
 
 void
-SixLowPanNdProtocol::AddressRegistration(void)
+SixLowPanNdProtocol::AddressRegistration()
 {
     NS_LOG_FUNCTION(this);
 
@@ -1469,13 +1469,14 @@ SixLowPanNdProtocol::AddressRegistration(void)
     // << std::endl;
 
     if (m_addressRegistrationTimeoutEvent.IsRunning())
+    {
         std::cout << "** FUUUUUCK" << std::endl;
+    }
 
     m_addressRegistrationTimeoutEvent =
         Simulator::Schedule(m_retransmissionTime,
                             &SixLowPanNdProtocol::AddressRegistrationTimeout,
                             this);
-    return;
 }
 
 void
@@ -1548,7 +1549,9 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     // It might be a re-registration.... must check first if the address has been registered
 
     if (IsAddressRegistrationInProgress())
+    {
         return;
+    }
 
     m_addressRegistrationCounter = 0;
     m_addrPendingReg.isValid = false;
@@ -1663,7 +1666,6 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
                                     this);
         }
     }
-    return;
 }
 
 void
@@ -1753,7 +1755,6 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
         // If the re-registration failed (for all of the candidate next hops), remove the address.
         // If we don't have any address anyomore, start sending RS (again).
     }
-    return;
 }
 
 void
