@@ -74,7 +74,7 @@ class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
     /**
      * \brief Destructor.
      */
-    virtual ~Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf();
+    ~Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf() override;
 
     /**
      * \brief Get the UID of this class.
@@ -86,7 +86,7 @@ class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
      * \brief Get the instance type ID.
      * \return instance type ID
      */
-    virtual TypeId GetInstanceTypeId() const;
+    TypeId GetInstanceTypeId() const override;
 
     /**
      * \brief Get the status field.
@@ -128,7 +128,7 @@ class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
      * \brief Get the ROVR field.
      * \return the ROVR
      */
-    std::vector<uint8_t> GetRovr(void) const;
+    std::vector<uint8_t> GetRovr() const;
 
     /**
      * \brief Set the ROVR field.
@@ -152,26 +152,26 @@ class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
      * \brief Print informations.
      * \param os output stream
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /**
      * \brief Get the serialized size.
      * \return serialized size
      */
-    virtual uint32_t GetSerializedSize() const;
+    uint32_t GetSerializedSize() const override;
 
     /**
      * \brief Serialize the packet.
      * \param start start offset
      */
-    virtual void Serialize(Buffer::Iterator start) const;
+    void Serialize(Buffer::Iterator start) const override;
 
     /**
      * \brief Deserialize the packet.
      * \param start start offset
      * \return length of packet
      */
-    virtual uint32_t Deserialize(Buffer::Iterator start);
+    uint32_t Deserialize(Buffer::Iterator start) override;
 
   private:
     /**
@@ -251,7 +251,7 @@ class Icmpv6OptionSixLowPanExtendedAddressRegistration : public Icmpv6OptionHead
     /**
      * \brief Destructor.
      */
-    virtual ~Icmpv6OptionSixLowPanExtendedAddressRegistration();
+    ~Icmpv6OptionSixLowPanExtendedAddressRegistration() override;
 
     /**
      * \brief Get the UID of this class.
@@ -263,7 +263,7 @@ class Icmpv6OptionSixLowPanExtendedAddressRegistration : public Icmpv6OptionHead
      * \brief Get the instance type ID.
      * \return instance type ID
      */
-    virtual TypeId GetInstanceTypeId() const;
+    TypeId GetInstanceTypeId() const override;
 
     /**
      * \brief Get the status field.
@@ -341,7 +341,7 @@ class Icmpv6OptionSixLowPanExtendedAddressRegistration : public Icmpv6OptionHead
      * \brief Get the ROVR field.
      * \return the ROVR
      */
-    std::vector<uint8_t> GetRovr(void) const;
+    std::vector<uint8_t> GetRovr() const;
 
     /**
      * \brief Set the ROVR field.
@@ -353,26 +353,26 @@ class Icmpv6OptionSixLowPanExtendedAddressRegistration : public Icmpv6OptionHead
      * \brief Print informations.
      * \param os output stream
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /**
      * \brief Get the serialized size.
      * \return serialized size
      */
-    virtual uint32_t GetSerializedSize() const;
+    uint32_t GetSerializedSize() const override;
 
     /**
      * \brief Serialize the packet.
      * \param start start offset
      */
-    virtual void Serialize(Buffer::Iterator start) const;
+    void Serialize(Buffer::Iterator start) const override;
 
     /**
      * \brief Deserialize the packet.
      * \param start start offset
      * \return length of packet
      */
-    virtual uint32_t Deserialize(Buffer::Iterator start);
+    uint32_t Deserialize(Buffer::Iterator start) override;
 
   private:
     /**
@@ -436,7 +436,7 @@ class Icmpv6OptionSixLowPanContext : public Icmpv6OptionHeader
     /**
      * \brief Destructor.
      */
-    virtual ~Icmpv6OptionSixLowPanContext();
+    ~Icmpv6OptionSixLowPanContext() override;
 
     /**
      * \brief Get the UID of this class.
@@ -448,7 +448,7 @@ class Icmpv6OptionSixLowPanContext : public Icmpv6OptionHeader
      * \brief Get the instance type ID.
      * \return instance type ID
      */
-    virtual TypeId GetInstanceTypeId() const;
+    TypeId GetInstanceTypeId() const override;
 
     /**
      * \brief Get the context length field.
@@ -508,26 +508,26 @@ class Icmpv6OptionSixLowPanContext : public Icmpv6OptionHeader
      * \brief Print informations.
      * \param os output stream
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /**
      * \brief Get the serialized size.
      * \return serialized size
      */
-    virtual uint32_t GetSerializedSize() const;
+    uint32_t GetSerializedSize() const override;
 
     /**
      * \brief Serialize the packet.
      * \param start start offset
      */
-    virtual void Serialize(Buffer::Iterator start) const;
+    void Serialize(Buffer::Iterator start) const override;
 
     /**
      * \brief Deserialize the packet.
      * \param start start offset
      * \return length of packet
      */
-    virtual uint32_t Deserialize(Buffer::Iterator start);
+    uint32_t Deserialize(Buffer::Iterator start) override;
 
   private:
     /**
@@ -582,7 +582,7 @@ class Icmpv6OptionSixLowPanAuthoritativeBorderRouter : public Icmpv6OptionHeader
     /**
      * \brief Destructor.
      */
-    virtual ~Icmpv6OptionSixLowPanAuthoritativeBorderRouter();
+    ~Icmpv6OptionSixLowPanAuthoritativeBorderRouter() override;
 
     /**
      * \brief Get the UID of this class.
@@ -594,7 +594,7 @@ class Icmpv6OptionSixLowPanAuthoritativeBorderRouter : public Icmpv6OptionHeader
      * \brief Get the instance type ID.
      * \return instance type ID
      */
-    virtual TypeId GetInstanceTypeId() const;
+    TypeId GetInstanceTypeId() const override;
 
     /**
      * \brief Get the version field.
@@ -636,26 +636,26 @@ class Icmpv6OptionSixLowPanAuthoritativeBorderRouter : public Icmpv6OptionHeader
      * \brief Print informations.
      * \param os output stream
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /**
      * \brief Get the serialized size.
      * \return serialized size
      */
-    virtual uint32_t GetSerializedSize() const;
+    uint32_t GetSerializedSize() const override;
 
     /**
      * \brief Serialize the packet.
      * \param start start offset
      */
-    virtual void Serialize(Buffer::Iterator start) const;
+    void Serialize(Buffer::Iterator start) const override;
 
     /**
      * \brief Deserialize the packet.
      * \param start start offset
      * \return length of packet
      */
-    virtual uint32_t Deserialize(Buffer::Iterator start);
+    uint32_t Deserialize(Buffer::Iterator start) override;
 
   private:
     /**
