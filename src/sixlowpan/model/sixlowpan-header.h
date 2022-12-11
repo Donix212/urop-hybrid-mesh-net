@@ -996,7 +996,7 @@ class SixLowPanNhcExtension : public Header
      * @brief Get the NhcDispatch type.
      * @return The NhcDispatch type.
      */
-    virtual SixLowPanDispatch::NhcDispatch_e GetNhcDispatchType() const;
+    SixLowPanDispatch::NhcDispatch_e GetNhcDispatchType() const;
 
     /**
      * @brief Set the Extension Header Type.
@@ -1133,7 +1133,7 @@ class SixLowPanUdpNhcExtension : public Header
      * @brief Get the NhcDispatch type.
      * @return The NhcDispatch type.
      */
-    virtual SixLowPanDispatch::NhcDispatch_e GetNhcDispatchType() const;
+    SixLowPanDispatch::NhcDispatch_e GetNhcDispatchType() const;
 
     /**
      * @brief Set the compressed Src and Dst Ports.
@@ -1392,28 +1392,28 @@ class Icmpv6OptionSixLowPanCapabilityIndication : public Icmpv6OptionHeader
      * \brief Return the instance type identifier.
      * \return Instance type ID.
      */
-    virtual TypeId GetInstanceTypeId(void) const;
+    TypeId GetInstanceTypeId(void) const override;
 
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /**
      * \brief Get the serialized size of the packet.
      * \return Size.
      */
-    virtual uint32_t GetSerializedSize(void) const;
+    uint32_t GetSerializedSize(void) const override;
 
     /**
      * \brief Serialize the packet.
      * \param [in] start Buffer iterator.
      */
-    virtual void Serialize(Buffer::Iterator start) const;
+    void Serialize(Buffer::Iterator start) const override;
 
     /**
      * \brief Deserialize the packet.
      * \param [in] start Buffer iterator.
      * \return Size of the packet.
      */
-    virtual uint32_t Deserialize(Buffer::Iterator start);
+    uint32_t Deserialize(Buffer::Iterator start) override;
 
     /**
      * \brief The Capability field bit.

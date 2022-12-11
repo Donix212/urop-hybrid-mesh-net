@@ -107,7 +107,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     /**
      * \brief Destructor.
      */
-    virtual ~SixLowPanNdProtocol();
+    ~SixLowPanNdProtocol() override;
 
     /**
      * \brief Get the type ID.
@@ -115,9 +115,9 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     static TypeId GetTypeId();
 
-    virtual TypeId GetInstanceTypeId(void) const;
-    virtual void DoInitialize(void);
-    virtual void NotifyNewAggregate();
+    TypeId GetInstanceTypeId() const override;
+    void DoInitialize() override;
+    void NotifyNewAggregate() override;
 
     /**
      * Assign a fixed random variable stream number to the random variables
@@ -129,20 +129,20 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     int64_t AssignStreams(int64_t stream);
 
-    virtual enum IpL4Protocol::RxStatus Receive(Ptr<Packet> p,
-                                                const Ipv6Header& header,
-                                                Ptr<Ipv6Interface> interface);
+    enum IpL4Protocol::RxStatus Receive(Ptr<Packet> p,
+                                        const Ipv6Header& header,
+                                        Ptr<Ipv6Interface> interface) override;
 
-    virtual Ptr<NdiscCache> CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface);
+    Ptr<NdiscCache> CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface) override;
 
-    virtual bool Lookup(Ptr<Packet> p,
-                        const Ipv6Header& ipHeader,
-                        Ipv6Address dst,
-                        Ptr<NetDevice> device,
-                        Ptr<NdiscCache> cache,
-                        Address* hardwareDestination);
+    bool Lookup(Ptr<Packet> p,
+                const Ipv6Header& ipHeader,
+                Ipv6Address dst,
+                Ptr<NetDevice> device,
+                Ptr<NdiscCache> cache,
+                Address* hardwareDestination) override;
 
-    virtual void FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr);
+    void FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr) override;
 
     /**
      * \brief Send a NS for 6LoWPAN ND (+ EARO, SLLAO).
@@ -259,7 +259,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     /**
      * \brief Dispose this object.
      */
-    virtual void DoDispose();
+    void DoDispose() override;
 
   private:
     /**
@@ -653,12 +653,12 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     /**
      * Address re-registration procedure
      */
-    void AddressReRegistration(void);
+    void AddressReRegistration();
 
     /**
      * Address registration procedure
      */
-    void AddressRegistration(void);
+    void AddressRegistration();
 
     /**
      * Address registration Success or Failure
