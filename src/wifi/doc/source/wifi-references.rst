@@ -68,3 +68,7 @@ References
 .. [corbet2012] \ J. Corbet, "TCP Small Queues", `LWN.net, July 17, 2012 <https://lwn.net/Articles/507065/>`__
 
 .. [grazia2022] \ C. Grazia, N. Patriciello, T. Hoiland-Jorgensen, M. Klapez and M. Casoni, "Aggregating Without Bloating: Hard Times for TCP on Wi-Fi", IEEE/ACM Transactions on Networking, Vol. 30, No.5, October 2022.
+
+.. [grunblatt] \ Rémy Grünblatt, Isabelle Guérin-Lassous, and Olivier Simonin. 2019. Simulation and Performance Evaluation of the Intel Rate Adaptation Algorithm. In MSWiM 2019 - 22nd ACM International Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems. ACM, Miami Beach, United States, 27–34.
+
+.. [leon] \ Juan V. Leon Rosas, Thomas R. Henderson and Sumit Roy, “ Verification of ns-3 Wi-Fi Rate Adaptation Models on AWGN Channels” WNS3, 2023.
