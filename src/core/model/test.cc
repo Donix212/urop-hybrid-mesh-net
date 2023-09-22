@@ -231,10 +231,7 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
                                      TestSuite::Type testType,
                                      TestCase::Duration maximumTestDuration);
 
-    /** Container type for the test. */
-    typedef std::vector<TestSuite*> TestSuiteVector;
-
-    TestSuiteVector m_suites;       //!< The list of tests.
+    std::list<TestSuite*> m_suites; //!< The list of tests.
     std::string m_tempDir;          //!< The temporary directory.
     bool m_verbose{false};          //!< Produce verbose output.
     bool m_assertOnFailure{false};  //!< \c true if we should assert on failure.
