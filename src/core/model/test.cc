@@ -234,12 +234,12 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
     /** Container type for the test. */
     typedef std::vector<TestSuite*> TestSuiteVector;
 
-    TestSuiteVector m_suites; //!< The list of tests.
-    std::string m_tempDir;    //!< The temporary directory.
-    bool m_verbose;           //!< Produce verbose output.
-    bool m_assertOnFailure;   //!< \c true if we should assert on failure.
-    bool m_continueOnFailure; //!< \c true if we should continue on failure.
-    bool m_updateData;        //!< \c true if we should update reference data.
+    TestSuiteVector m_suites;       //!< The list of tests.
+    std::string m_tempDir;          //!< The temporary directory.
+    bool m_verbose{false};          //!< Produce verbose output.
+    bool m_assertOnFailure{false};  //!< \c true if we should assert on failure.
+    bool m_continueOnFailure{true}; //!< \c true if we should continue on failure.
+    bool m_updateData{false};       //!< \c true if we should update reference data.
 };
 
 TestCaseFailure::TestCaseFailure(std::string _cond,
@@ -513,10 +513,6 @@ TestSuite::DoRun()
 }
 
 TestRunnerImpl::TestRunnerImpl()
-    : m_tempDir(""),
-      m_assertOnFailure(false),
-      m_continueOnFailure(true),
-      m_updateData(false)
 {
     NS_LOG_FUNCTION(this);
 }
