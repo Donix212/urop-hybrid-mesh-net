@@ -748,38 +748,35 @@ void
 TestRunnerImpl::PrintHelp(const char* program_name) const
 {
     NS_LOG_FUNCTION(this << program_name);
-    std::cout
-        << "Usage: " << program_name << " [OPTIONS]" << std::endl
-        << std::endl
-        << "Options: " << std::endl
-        << "  --help                 : print these options" << std::endl
-        << "  --print-test-name-list : print the list of names of tests available" << std::endl
-        << "  --list                 : an alias for --print-test-name-list" << std::endl
-        << "  --print-test-types     : print the type of tests along with their names" << std::endl
-        << "  --print-test-type-list : print the list of types of tests available" << std::endl
-        << "  --print-temp-dir       : print name of temporary directory before running "
-        << std::endl
-        << "                           the tests" << std::endl
-        << "  --test-type=TYPE       : process only tests of type TYPE" << std::endl
-        << "  --test-name=NAME       : process only test whose name matches NAME" << std::endl
-        << "  --suite=NAME           : an alias (here for compatibility reasons only) " << std::endl
-        << "                           for --test-name=NAME" << std::endl
-        << "  --assert-on-failure    : when a test fails, crash immediately (useful" << std::endl
-        << "                           when running under a debugger" << std::endl
-        << "  --stop-on-failure      : when a test fails, stop immediately" << std::endl
-        << "  --fullness=FULLNESS    : choose the duration of tests to run: QUICK, " << std::endl
-        << "                           EXTENSIVE, or TAKES_FOREVER, where EXTENSIVE " << std::endl
-        << "                           includes QUICK and TAKES_FOREVER includes " << std::endl
-        << "                           QUICK and EXTENSIVE (only QUICK tests are " << std::endl
-        << "                           run by default)" << std::endl
-        << "  --verbose              : print details of test execution" << std::endl
-        << "  --xml                  : format test run output as xml" << std::endl
-        << "  --tempdir=DIR          : set temp dir for tests to store output files" << std::endl
-        << "  --datadir=DIR          : set data dir for tests to read reference files" << std::endl
-        << "  --out=FILE             : send test result to FILE instead of standard "
-        << "output" << std::endl
-        << "  --append=FILE          : append test result to FILE instead of standard "
-        << "output" << std::endl;
+    std::cout << "Usage: " << program_name << " [OPTIONS]\n"
+              << "\n"
+              << "Options:\n"
+              << "  --help                 : print these options\n"
+              << "  --print-test-name-list : print the list of names of tests available\n"
+              << "  --list                 : an alias for --print-test-name-list\n"
+              << "  --print-test-types     : print the type of tests along with their names\n"
+              << "  --print-test-type-list : print the list of types of tests available\n"
+              << "  --print-temp-dir       : print name of temporary directory before running\n"
+              << "                           the tests\n"
+              << "  --test-type=TYPE       : process only tests of type TYPE\n"
+              << "  --test-name=NAME       : process only test whose name matches NAME\n"
+              << "  --suite=NAME           : an alias (here for compatibility reasons only)\n"
+              << "                           for --test-name=NAME\n"
+              << "  --assert-on-failure    : when a test fails, crash immediately (useful\n"
+              << "                           when running under a debugger\n"
+              << "  --stop-on-failure      : when a test fails, stop immediately\n"
+              << "  --fullness=FULLNESS    : choose the duration of tests to run: QUICK,\n"
+              << "                           EXTENSIVE, or TAKES_FOREVER, where EXTENSIVE\n"
+              << "                           includes QUICK and TAKES_FOREVER includes\n"
+              << "                           QUICK and EXTENSIVE (only QUICK tests are\n"
+              << "                           run by default)\n"
+              << "  --verbose              : print details of test execution\n"
+              << "  --xml                  : format test run output as xml\n"
+              << "  --tempdir=DIR          : set temp dir for tests to store output files\n"
+              << "  --datadir=DIR          : set data dir for tests to read reference files\n"
+              << "  --out=FILE             : send test result to FILE instead of standard output\n"
+              << "  --append=FILE          : append test result to FILE instead of standard output"
+              << std::endl;
 }
 
 void
@@ -812,16 +809,12 @@ void
 TestRunnerImpl::PrintTestTypeList() const
 {
     NS_LOG_FUNCTION(this);
-    std::cout << "  core:        Run all TestSuite-based tests (exclude examples)" << std::endl;
-    std::cout << "  example:     Examples (to see if example programs run successfully)"
-              << std::endl;
     std::cout
-        << "  performance: Performance Tests (check to see if the system is as fast as expected)"
-        << std::endl;
-    std::cout << "  system:      System Tests (spans modules to check integration of modules)"
-              << std::endl;
-    std::cout << "  unit:        Unit Tests (within modules to check basic functionality)"
-              << std::endl;
+        << "  core:         Run all TestSuite-based tests (exclude examples)\n"
+        << "  example:      Examples (to see if example programs run successfully)\n"
+        << "  performance:  Performance Tests (check to see if the system is as fast as expected)\n"
+        << "  system:       System Tests (spans modules to check integration of modules)\n"
+        << "  unit:         Unit Tests (within modules to check basic functionality)" << std::endl;
 }
 
 std::list<TestCase*>
