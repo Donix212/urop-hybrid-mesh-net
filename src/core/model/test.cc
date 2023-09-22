@@ -281,9 +281,9 @@ TestCase::~TestCase()
     NS_ASSERT(m_runner == nullptr);
     m_parent = nullptr;
     delete m_result;
-    for (auto i = m_children.begin(); i != m_children.end(); ++i)
+    for (auto test : m_children)
     {
-        delete *i;
+        delete test;
     }
     m_children.clear();
 }
@@ -345,10 +345,9 @@ TestCase::Run(TestRunnerImpl* runner)
     Config::Reset();
     DoSetup();
     m_result->clock.Start();
-    for (auto i = m_children.begin(); i != m_children.end(); ++i)
+    for (auto test : m_children)
     {
         RngSeedManager::ResetNextStreamIndex();
-        TestCase* test = *i;
         test->Run(runner);
         if (IsFailed())
         {
@@ -565,13 +564,13 @@ TestRunnerImpl::IsTopLevelSourceDir(std::string path) const
     //
 
     std::list<std::string> files = SystemPath::ReadFiles(path);
-    for (auto i = files.begin(); i != files.end(); ++i)
+    for (const auto& file : files)
     {
-        if (*i == "VERSION")
+        if (file == "VERSION")
         {
             haveVersion = true;
         }
-        else if (*i == "LICENSE")
+        else if (file == "LICENSE")
         {
             haveLicense = true;
         }
@@ -617,12 +616,9 @@ TestRunnerImpl::ReplaceXmlSpecialCharacters(std::string xml) const
     specials['\''] = "&quot;";
 
     std::string result;
-    std::size_t length = xml.length();
 
-    for (size_t i = 0; i < length; ++i)
+    for (auto character : xml)
     {
-        char character = xml[i];
-
         auto it = specials.find(character);
 
         if (it == specials.end())
@@ -698,9 +694,9 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
         *os << Indent(level + 1) << "<Result>" << statusString << "</Result>" << std::endl;
         *os << Indent(level + 1) << "<Time real=\"" << real << "\" user=\"" << user
             << "\" system=\"" << system << "\"/>" << std::endl;
-        for (uint32_t i = 0; i < test->m_result->failure.size(); i++)
+
+        for (const auto& failure : test->m_result->failure)
         {
-            TestCaseFailure failure = test->m_result->failure[i];
             *os << Indent(level + 2) << "<FailureDetails>" << std::endl
                 << Indent(level + 3) << "<Condition>" << ReplaceXmlSpecialCharacters(failure.cond)
                 << "</Condition>" << std::endl
@@ -715,9 +711,8 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
                 << Indent(level + 3) << "<Line>" << failure.line << "</Line>" << std::endl
                 << Indent(level + 2) << "</FailureDetails>" << std::endl;
         }
-        for (uint32_t i = 0; i < test->m_children.size(); i++)
+        for (auto child : test->m_children)
         {
-            TestCase* child = test->m_children[i];
             PrintReport(child, os, xml, level + 1);
         }
         *os << Indent(level) << "</Test>" << std::endl;
@@ -728,13 +723,13 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
             << std::endl;
         if (m_verbose)
         {
-            for (uint32_t i = 0; i < test->m_result->failure.size(); i++)
+            for (const auto& failure : test->m_result->failure)
             {
-                *os << Indent(level) << test->m_result->failure[i] << std::endl;
+                *os << Indent(level) << failure << std::endl;
             }
-            for (uint32_t i = 0; i < test->m_children.size(); i++)
+
+            for (auto child : test->m_children)
             {
-                TestCase* child = test->m_children[i];
                 PrintReport(child, os, xml, level + 1);
             }
         }
@@ -796,10 +791,10 @@ TestRunnerImpl::PrintTestNameList(std::list<TestCase*>::const_iterator begin,
     label[TestSuite::Type::EXAMPLE] = "example      ";
     label[TestSuite::Type::PERFORMANCE] = "performance  ";
 
-    for (auto i = begin; i != end; ++i)
+    for (auto testCase : testCaseList)
     {
-        auto test = dynamic_cast<TestSuite*>(*i);
-        NS_ASSERT(test != nullptr);
+        auto test = dynamic_cast<TestSuite*>(testCase);
+        NS_ASSERT(test);
         if (printTestType)
         {
             std::cout << label[test->GetTestType()];
@@ -830,10 +825,11 @@ TestRunnerImpl::FilterTests(std::string testName,
                             TestCase::Duration maximumTestDuration)
 {
     NS_LOG_FUNCTION(this << testName << testType);
+
     std::list<TestCase*> tests;
-    for (uint32_t i = 0; i < m_suites.size(); ++i)
+
+    for (auto test : m_suites)
     {
-        TestSuite* test = m_suites[i];
         if (testType != TestSuite::Type::ALL && test->GetTestType() != testType)
         {
             // skip test
@@ -891,13 +887,10 @@ TestRunnerImpl::Run(int argc, char* argv[])
     TestCase::Duration maximumTestDuration = TestCase::Duration::QUICK;
     char* progname = argv[0];
 
-    char** argi = argv;
-    ++argi;
+    std::vector<std::string> args(argv + 1, argv + argc);
 
-    while (*argi != nullptr)
+    for (const auto& arg : args)
     {
-        std::string arg = *argi;
-
         if (arg == "--assert-on-failure")
         {
             m_assertOnFailure = true;
@@ -985,7 +978,6 @@ TestRunnerImpl::Run(int argc, char* argv[])
             PrintHelp(progname);
             return 0;
         }
-        argi++;
     }
     TestSuite::Type testType;
     if (testTypeString.empty() || testTypeString == "core")
@@ -1071,10 +1063,8 @@ TestRunnerImpl::Run(int argc, char* argv[])
         return 1;
     }
 
-    for (auto i = tests.begin(); i != tests.end(); ++i)
+    for (auto test : tests)
     {
-        TestCase* test = *i;
-
 #ifdef ENABLE_DES_METRICS
         {
             /*
@@ -1087,13 +1077,12 @@ TestRunnerImpl::Run(int argc, char* argv[])
             std::string testname = test->GetName();
             std::string runner = "[" + SystemPath::Split(argv[0]).back() + "]";
 
-            std::vector<std::string> desargs;
-            desargs.push_back(testname);
-            desargs.push_back(runner);
-            for (int i = 1; i < argc; ++i)
-            {
-                desargs.push_back(argv[i]);
-            }
+            std::vector<std::string> desargs{
+                testname,
+                runner,
+            };
+
+            desargs.insert(desargs.end(), args.begin(), args.end());
 
             DesMetrics::Get()->Initialize(desargs, m_tempDir);
         }
