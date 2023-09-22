@@ -215,7 +215,7 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
      * Print the help text.
      * @param [in] programName The name of the invoking program.
      */
-    void PrintHelp(const char* programName) const;
+    void PrintHelp(const std::string& programName) const;
     /**
      * Generate the list of tests matching the constraints.
      *
@@ -745,10 +745,10 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
 }
 
 void
-TestRunnerImpl::PrintHelp(const char* program_name) const
+TestRunnerImpl::PrintHelp(const std::string& programName) const
 {
-    NS_LOG_FUNCTION(this << program_name);
-    std::cout << "Usage: " << program_name << " [OPTIONS]\n"
+    NS_LOG_FUNCTION(this << programName);
+    std::cout << "Usage: " << programName << " [OPTIONS]\n"
               << "\n"
               << "Options:\n"
               << "  --help                 : print these options\n"
@@ -883,7 +883,7 @@ TestRunnerImpl::Run(int argc, char* argv[])
     bool printTestNameList = false;
     bool printTestTypeAndName = false;
     TestCase::Duration maximumTestDuration = TestCase::Duration::QUICK;
-    char* progname = argv[0];
+    std::string progName = argv[0];
 
     std::vector<std::string> args(argv + 1, argv + argc);
 
@@ -966,14 +966,14 @@ TestRunnerImpl::Run(int argc, char* argv[])
             else
             {
                 // Wrong fullness option
-                PrintHelp(progname);
+                PrintHelp(progName);
                 return 3;
             }
         }
         else
         {
             // Print the help if arg == "--help" or arg is an un-recognized command-line argument
-            PrintHelp(progname);
+            PrintHelp(progName);
             return 0;
         }
     }
