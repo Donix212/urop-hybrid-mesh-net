@@ -442,22 +442,20 @@ TestCase::CreateTempDirFilename(std::string filename)
     {
         return CreateDataDirFilename(filename);
     }
-    else
-    {
-        std::list<std::string> names;
-        const TestCase* current = this;
-        while (current != nullptr)
-        {
-            names.push_front(current->m_name);
-            current = current->m_parent;
-        }
-        std::string tempDir = SystemPath::Append(m_runner->GetTempDir(),
-                                                 SystemPath::Join(names.begin(), names.end()));
-        tempDir = SystemPath::CreateValidSystemPath(tempDir);
 
-        SystemPath::MakeDirectories(tempDir);
-        return SystemPath::Append(tempDir, filename);
+    std::list<std::string> names;
+    const TestCase* current = this;
+    while (current != nullptr)
+    {
+        names.push_front(current->m_name);
+        current = current->m_parent;
     }
+    std::string tempDir =
+        SystemPath::Append(m_runner->GetTempDir(), SystemPath::Join(names.begin(), names.end()));
+    tempDir = SystemPath::CreateValidSystemPath(tempDir);
+
+    SystemPath::MakeDirectories(tempDir);
+    return SystemPath::Append(tempDir, filename);
 }
 
 bool
@@ -1064,7 +1062,8 @@ TestRunnerImpl::Run(int argc, char* argv[])
         std::cerr << "Error:  no tests match the requested string" << std::endl;
         return 1;
     }
-    else if (tests.size() > 1)
+
+    if (tests.size() > 1)
     {
         std::cerr << "Error:  tests should be launched separately (one at a time)" << std::endl;
         return 1;
