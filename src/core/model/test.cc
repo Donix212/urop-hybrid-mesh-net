@@ -612,13 +612,14 @@ std::string
 TestRunnerImpl::ReplaceXmlSpecialCharacters(std::string xml) const
 {
     NS_LOG_FUNCTION(this << xml);
-    typedef std::map<char, std::string> specials_map;
-    specials_map specials;
-    specials['<'] = "&lt;";
-    specials['>'] = "&gt;";
-    specials['&'] = "&amp;";
-    specials['"'] = "&#39;";
-    specials['\''] = "&quot;";
+
+    const std::map<char, std::string> specials{
+        {'<', "&lt;"},
+        {'>', "&gt;"},
+        {'&', "&amp;"},
+        {'"', "&#39;"},
+        {'\'', "&quot;"},
+    };
 
     std::string result;
 
