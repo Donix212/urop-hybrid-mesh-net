@@ -345,17 +345,24 @@ TestCase::Run(TestRunnerImpl* runner)
     Config::Reset();
     DoSetup();
     m_result->clock.Start();
+
+    bool testFailed = false;
+
     for (auto test : m_children)
     {
         RngSeedManager::ResetNextStreamIndex();
         test->Run(runner);
         if (IsFailed())
         {
-            goto out;
+            testFailed = true;
+            break;
         }
     }
-    DoRun();
-out:
+
+    if (!testFailed)
+    {
+        DoRun();
+    }
     m_result->clock.End();
     DoTeardown();
     Config::Reset();
