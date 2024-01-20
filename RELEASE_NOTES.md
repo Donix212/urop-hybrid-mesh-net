@@ -37,6 +37,7 @@ been tested on Linux. As of this release, the latest known version to work with 
 ### New user-visible features
 
 - (core) Added class `ObjectContainer` that serves as a base class for all containers.
+- (core) Implemented `ObjectContainer::begin()` and `ObjectContainer::end()` functions of the STL library.
 
 ### Bugs fixed
 

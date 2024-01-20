@@ -18,6 +18,7 @@ This file is a best-effort approach to solving this issue; we will do our best b
 
 * (applications) New trace sources `SourceApplication::ConnectionSucceeded` and `SourceApplication::ConnectionFailed` have been added to report connection success/failure events.
 * (core) Added class `ObjectContainer` that serves as a base class for all containers.
+* (core) Implemented `ObjectContainer::begin()` and `ObjectContainer::end()` functions of the STL library.
 
 ### Changes to existing API
 

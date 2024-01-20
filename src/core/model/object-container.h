@@ -29,8 +29,14 @@ template <class T>
 class ObjectContainer
 {
   public:
-    /// Iterator to the list of object pointers
+    /**
+     * Iterators to the list of object pointers
+     * @{
+     */
     using Iterator = typename std::vector<Ptr<T>>::const_iterator;
+    using iterator = Iterator;
+    using const_iterator = Iterator;
+    /** @} */
 
     /**
      * Create an empty ObjectContainer.
@@ -125,6 +131,13 @@ class ObjectContainer
      * for-loop to run through the objects.
      *
      * @code
+     *   // Range-based for loop
+     *   for (auto& i : container)
+     *   {
+     *       i.method(); // some method
+     *   }
+     *
+     *   // Iterator-based for loop
      *   for (auto i = container.Begin(); i != container.End(); i++)
      *   {
      *       (*i)->method(); // some method
@@ -132,8 +145,12 @@ class ObjectContainer
      * @endcode
      *
      * @return An iterator referring to the first object in the container
+     *
+     * @{
      */
     Iterator Begin() const;
+    const_iterator begin() const;
+    /** @} */
 
     /**
      * @brief Get an iterator that indicates the past-the-last object in the container.
@@ -144,6 +161,12 @@ class ObjectContainer
      * for-loop to run through the objects.
      *
      * @code
+     *   // Range-based for loop
+     *   for (auto& i : container)
+     *   {
+     *       i.method(); // some method
+     *   }
+     *
      *   for (auto i = container.Begin(); i != container.End(); i++)
      *   {
      *       (*i)->method(); // some method
@@ -151,8 +174,12 @@ class ObjectContainer
      * @endcode
      *
      * @return An iterator indicating an ending condition for a loop
+     *
+     * @{
      */
     Iterator End() const;
+    const_iterator end() const;
+    /** @} */
 
     /**
      * @brief Get the number of objects stored in this container.
@@ -308,10 +335,24 @@ ObjectContainer<T>::Begin() const
 }
 
 template <class T>
+typename ObjectContainer<T>::const_iterator
+ObjectContainer<T>::begin() const
+{
+    return Begin();
+}
+
+template <class T>
 typename ObjectContainer<T>::Iterator
 ObjectContainer<T>::End() const
 {
     return m_objects.end();
+}
+
+template <class T>
+typename ObjectContainer<T>::const_iterator
+ObjectContainer<T>::end() const
+{
+    return End();
 }
 
 template <class T>
