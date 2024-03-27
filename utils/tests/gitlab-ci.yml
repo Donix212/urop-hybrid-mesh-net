@@ -58,8 +58,8 @@ workflow:
     - if [[ "$CI_JOB_STAGE" == "build" ]] && [[ "`./utils/ccache-miss-rate.py`" != "0" ]];
       then `touch build/tests-$CI_COMMIT_REF_SLUG.txt`;
       fi
-    - if [[ "$CI_JOB_STAGE" == "test" ]] && [[ "$MODE" != "debug" ]] && [[ -f build/tests-$CI_COMMIT_REF_SLUG.txt ]];
-      then ./test.py -n;
+    - if ([[ "$CI_JOB_STAGE" == "test" ]] && [[ "$MODE" != "debug" ]] && [[ -f build/tests-$CI_COMMIT_REF_SLUG.txt ]]) || ([[ "$FORCE_TESTS" == "Force" ]]);
+      then ./test.py -n $VALGRIND_FLAG $FULLNESS;
       if [[ $? == 0 ]];
       then `rm build/tests-$CI_COMMIT_REF_SLUG.txt` || true;
       fi;
