@@ -88,6 +88,29 @@ workflow:
       - build/
       - .lock-*
 
+# Base build job for jobs running in Ubuntu.
+# Contains all dependencies required by ns-3.
+# Derived jobs can override the Ubuntu version by setting the "image:" key to the appropriate Ubuntu version.
+.base-build-ubuntu:
+  extends: .base-build
+  image: ubuntu:latest
+  before_script:
+    - apt update
+    - apt upgrade -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y
+      $COMPILER cmake ninja-build ccache valgrind
+      python3 python3-dev
+      gsl-bin libgsl-dev $LIBGSL
+      libboost-all-dev
+      libgtk-3-dev
+      libfl-dev
+      libxml2 libxml2-dev
+      libopenmpi-dev openmpi-bin openmpi-common openmpi-doc
+      libsqlite3-dev sqlite3
+      libeigen3-dev
+      qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+      ssh
+
 # Weekly jobs for other distribution and compilers
 include:
   - "utils/tests/gitlab-ci-per-commit.yml"
