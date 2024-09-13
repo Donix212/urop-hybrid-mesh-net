@@ -409,7 +409,7 @@ PacketSocket::ForwardUp(Ptr<NetDevice> device,
         m_deliveryQueue.emplace(copy, address);
         m_rxAvailable += packet->GetSize();
         NS_LOG_LOGIC("UID is " << packet->GetUid() << " PacketSocket " << this);
-        NotifyDataRecv();
+        NotifyDataRecv(packet->GetSize());
     }
     else
     {

@@ -514,7 +514,7 @@ Ipv4RawSocketImpl::ForwardUp(Ptr<const Packet> p,
         data.fromIp = ipHeader.GetSource();
         data.fromProtocol = ipHeader.GetProtocol();
         m_recv.push_back(data);
-        NotifyDataRecv();
+        NotifyDataRecv(copy->GetSize());
         return true;
     }
     return false;

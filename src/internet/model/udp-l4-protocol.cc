@@ -417,6 +417,16 @@ UdpL4Protocol::Receive(Ptr<Packet> packet, const Ipv6Header& header, Ptr<Ipv6Int
     return IpL4Protocol::RX_OK;
 }
 
+uint32_t UdpL4Protocol::GetNSockets()
+{
+    return m_sockets.size();
+}
+
+Ptr<UdpSocketImpl> UdpL4Protocol::GetSocket(uint32_t index)
+{
+    return m_sockets[index];
+}
+
 void
 UdpL4Protocol::Send(Ptr<Packet> packet,
                     Ipv4Address saddr,

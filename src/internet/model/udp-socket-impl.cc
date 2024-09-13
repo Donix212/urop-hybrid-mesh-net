@@ -1057,7 +1057,7 @@ UdpSocketImpl::ForwardUp(Ptr<Packet> packet,
         Address address = InetSocketAddress(header.GetSource(), port);
         m_deliveryQueue.emplace(packet, address);
         m_rxAvailable += packet->GetSize();
-        NotifyDataRecv();
+        NotifyDataRecv(packet->GetSize());
     }
     else
     {
@@ -1120,7 +1120,7 @@ UdpSocketImpl::ForwardUp6(Ptr<Packet> packet,
         Address address = Inet6SocketAddress(header.GetSource(), port);
         m_deliveryQueue.emplace(packet, address);
         m_rxAvailable += packet->GetSize();
-        NotifyDataRecv();
+        NotifyDataRecv(packet->GetSize());
     }
     else
     {

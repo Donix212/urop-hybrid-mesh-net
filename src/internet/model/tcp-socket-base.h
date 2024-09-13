@@ -19,6 +19,7 @@
 #include "ns3/sequence-number.h"
 #include "ns3/timer.h"
 #include "ns3/traced-value.h"
+#include "ns3/data-rate.h"
 
 #include <queue>
 #include <stdint.h>
@@ -239,6 +240,31 @@ class TcpSocketBase : public TcpSocket
      */
     TcpSocketBase(const TcpSocketBase& sock);
     ~TcpSocketBase() override;
+
+        // Structure to represent internal TCP information
+    struct TcpSocketInfo
+    {
+      bool ts;
+      bool sack;
+      bool ecn;
+      bool ecnseen;
+      std::string cong_alg;
+      uint8_t w_scale;
+      double rto;
+      double rtt;
+      uint32_t cwnd;
+      uint32_t ss_thresh;
+      uint32_t seg_size;
+      DataRate pacing_rate;
+      DataRate max_pacing_rate;
+    };
+
+    /**
+     * \brief Returns the associated information of the TCP connection
+     * \return The instance of TcpSocketInfo class, containing the TCP information.
+     */
+    TcpSocketInfo ProcessTcpSocketInfo();
+
 
     // Set associated Node, TcpL4Protocol, RttEstimator to this socket
 
@@ -582,6 +608,7 @@ class TcpSocketBase : public TcpSocket
     // Necessary implementations of null functions from ns3::Socket
     SocketErrno GetErrno() const override;     // returns m_errno
     SocketType GetSocketType() const override; // returns socket type
+    TcpSocket::TcpStates_t GetSocketState() const; // returns socket state
     Ptr<Node> GetNode() const override;        // returns m_node
     int Bind() override;  // Bind a socket by setting up endpoint in TcpL4Protocol
     int Bind6() override; // Bind a socket by setting up endpoint in TcpL4Protocol

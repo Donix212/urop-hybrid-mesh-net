@@ -28,6 +28,7 @@
 #include "tcp-header.h"
 #include "tcp-l4-protocol.h"
 #include "tcp-option-sack-permitted.h"
+#include "tcp-socket-state.h"
 #include "tcp-option-sack.h"
 #include "tcp-option-ts.h"
 #include "tcp-option-winscale.h"
@@ -529,6 +530,14 @@ TcpSocketBase::GetSocketType() const
 {
     return NS3_SOCK_STREAM;
 }
+
+/* Inherit from Socket class: Returns socket state */
+TcpSocket::TcpStates_t
+TcpSocketBase::GetSocketState() const
+{
+    return m_state.Get();
+}
+
 
 /* Inherit from Socket class: Returns associated node */
 Ptr<Node>
@@ -2546,7 +2555,7 @@ TcpSocketBase::ProcessWait(Ptr<Packet> packet, const TcpHeader& tcpHeader)
         SendEmptyPacket(TcpHeader::ACK);
         if (!m_shutdownRecv)
         {
-            NotifyDataRecv();
+            NotifyDataRecv(packet->GetSize());
         }
     }
 }
@@ -3560,7 +3569,7 @@ TcpSocketBase::ReceivedData(Ptr<Packet> p, const TcpHeader& tcpHeader)
     { // NextRxSeq advanced, we have something to send to the app
         if (!m_shutdownRecv)
         {
-            NotifyDataRecv();
+            NotifyDataRecv(p->GetSize());
         }
         // Handle exceptions
         if (m_closeNotified)
@@ -4713,6 +4722,32 @@ TcpSocketBase::SetUseEcn(TcpSocketState::UseEcn_t useEcn)
 {
     NS_LOG_FUNCTION(this << useEcn);
     m_tcb->m_useEcn = useEcn;
+}
+
+TcpSocketBase::TcpSocketInfo TcpSocketBase::ProcessTcpSocketInfo() {
+    TcpSocketBase::TcpSocketInfo tcpInfo;
+    tcpInfo.ts = m_timestampEnabled;
+    tcpInfo.sack = m_sackEnabled;
+    if(m_tcb->m_useEcn == TcpSocketState::UseEcn_t::Off) {
+        tcpInfo.ecn = false;
+    } else {
+        tcpInfo.ecn = true;
+    }
+    if(m_tcb->m_ecnState == TcpSocketState::EcnState_t::ECN_ECE_RCVD) {
+        tcpInfo.ecnseen = true;
+    } else {
+        tcpInfo.ecnseen = false;
+    }
+    tcpInfo.cong_alg = m_congestionControl->GetName();
+    tcpInfo.w_scale = CalculateWScale();
+    tcpInfo.rto = m_rto.Get().ToDouble(Time::S);
+    tcpInfo.rtt = m_rtt->GetEstimate().ToDouble(Time::US);
+    tcpInfo.cwnd = m_tcb->m_cWnd.Get();
+    tcpInfo.ss_thresh= m_tcb->m_ssThresh.Get();
+    tcpInfo.seg_size = m_tcb->m_segmentSize;
+    tcpInfo.pacing_rate = m_tcb->m_pacingRate.Get();
+    tcpInfo.max_pacing_rate = m_tcb->m_maxPacingRate;
+    return tcpInfo;
 }
 
 uint32_t

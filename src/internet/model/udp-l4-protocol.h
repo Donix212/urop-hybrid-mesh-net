@@ -263,6 +263,9 @@ class UdpL4Protocol : public IpL4Protocol
                      Ipv6Address payloadSource,
                      Ipv6Address payloadDestination,
                      const uint8_t payload[8]) override;
+    
+    uint32_t GetNSockets();
+    Ptr<UdpSocketImpl> GetSocket(uint32_t index);
 
     // From IpL4Protocol
     void SetDownTarget(IpL4Protocol::DownTargetCallback cb) override;

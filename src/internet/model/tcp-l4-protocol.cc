@@ -216,6 +216,18 @@ TcpL4Protocol::CreateSocket()
     return CreateSocket(m_congestionTypeId, m_recoveryTypeId);
 }
 
+uint32_t TcpL4Protocol::GetNSockets()
+{
+    return m_sockets.size();
+}
+
+Ptr<TcpSocketBase>
+TcpL4Protocol::GetSocket(uint32_t index) 
+{
+    return m_sockets[index];
+}
+
+
 Ipv4EndPoint*
 TcpL4Protocol::Allocate()
 {

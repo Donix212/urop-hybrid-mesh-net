@@ -101,6 +101,22 @@ class Socket : public Object
     };
 
     /**
+     * \enum SocketState
+     * \brief Enumeration of the possible socket states.
+     *
+     * Names and corresponding values are derived from the
+     * Linux Socket Stats Utility
+    */
+
+   enum SocketState
+   {
+      NS3_SOCKET_ESTABLISHED,
+      NS3_SOCKET_UNCONN,
+      NS3_SOCKET_LISTEN
+   };
+
+
+    /**
      * \enum SocketPriority
      * \brief Enumeration of the possible socket priorities.
      *
@@ -978,6 +994,16 @@ class Socket : public Object
      */
     virtual void Ipv6LeaveGroup();
 
+    /**
+     * \brief Query the value of bytes sent of this socket
+    */
+    virtual uint32_t GetBytesSent() const;
+
+    /**
+     * \brief Query the value of bytes received of this socket
+    */
+    virtual uint32_t GetBytesRcvd() const;
+
   protected:
     /**
      * \brief Notify through the callback (if set) that the connection has been
@@ -1041,7 +1067,7 @@ class Socket : public Object
     /**
      * \brief Notify through the callback (if set) that some data have been received.
      */
-    void NotifyDataRecv();
+    void NotifyDataRecv(uint32_t size);
 
     // inherited function, no doc necessary
     void DoDispose() override;
@@ -1103,6 +1129,10 @@ class Socket : public Object
 
     uint8_t m_ipv6Tclass;   //!< the socket IPv6 Tclass
     uint8_t m_ipv6HopLimit; //!< the socket IPv6 Hop Limit
+
+    uint64_t m_bytesReceived;  //!< bytes sent by the socket
+    uint64_t m_bytesSent;      //!< bytes received by the socket
+
 };
 
 /**

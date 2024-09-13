@@ -123,6 +123,20 @@ class TcpL4Protocol : public IpL4Protocol
     Ptr<Socket> CreateSocket(TypeId congestionTypeId);
 
     /**
+     * \brief Get the number of sockets associated with TCP L4 protocol.
+     * \return number of sockets.
+     */
+    uint32_t GetNSockets();
+
+     /**
+     * \brief Retrieve the index-th socket associated to this protocol.
+     *
+     * \param index the index of the requested socket
+     * \returns the requested socket.
+     */
+    Ptr<TcpSocketBase> GetSocket(uint32_t index);
+
+    /**
      * \brief Allocate an IPv4 Endpoint
      * \return the Endpoint
      */
