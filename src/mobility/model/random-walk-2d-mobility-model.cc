@@ -199,6 +199,58 @@ RandomWalk2dMobilityModel::Rebound(Time delayLeft)
     m_helper.UpdateWithBounds(m_bounds);
     Vector position = m_helper.GetCurrentPosition();
     Vector velocity = m_helper.GetVelocity();
+    double speed = velocity.GetLength();
+    // We want the smallest spatial step which can be made in one increment of time
+    // Since speed is implicitly in m/s, we need the smallest Time step, expressed in s:
+    const double epsilon = Time(1).GetSeconds() * speed;
+    double distanceLeft = std::abs(position.x - m_bounds.xMin);
+    double distanceRight = std::abs(m_bounds.xMax - position.x);
+    double distanceBottom = std::abs(position.y - m_bounds.yMin);
+    double distanceTop = std::abs(m_bounds.yMax - position.y);
+    if (distanceRight <= epsilon && distanceLeft <= epsilon)
+    {
+        if (distanceRight <= distanceLeft)
+        {
+            position.x = m_bounds.xMax;
+        }
+        else
+        {
+            position.x = m_bounds.xMin;
+        }
+    }
+    else if (distanceLeft <= epsilon || distanceRight <= epsilon)
+    {
+        if (distanceRight <= epsilon)
+        {
+            position.x = m_bounds.xMax;
+        }
+        else
+        {
+            position.x = m_bounds.xMin;
+        }
+    }
+    if (distanceTop <= epsilon && distanceBottom <= epsilon)
+    {
+        if (distanceTop <= distanceBottom)
+        {
+            position.y = m_bounds.yMax;
+        }
+        else
+        {
+            position.y = m_bounds.yMin;
+        }
+    }
+    else if (distanceTop <= epsilon || distanceBottom <= epsilon)
+    {
+        if (distanceTop <= epsilon)
+        {
+            position.y = m_bounds.yMax;
+        }
+        else
+        {
+            position.y = m_bounds.yMin;
+        }
+    }
     switch (m_bounds.GetClosestSideOrCorner(position))
     {
     case Rectangle::RIGHTSIDE:
