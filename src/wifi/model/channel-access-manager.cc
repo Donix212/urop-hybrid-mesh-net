@@ -647,7 +647,7 @@ ChannelAccessManager::GetAccessGrantStart(bool ignoreNav) const
 {
     NS_LOG_FUNCTION(this << ignoreNav);
     auto rxAccessStart = m_lastRx.end;
-    if ((m_lastRx.end <= Simulator::Now()) && !m_lastRxReceivedOk)
+    if (!m_lastRxReceivedOk && (m_lastRx.end <= Simulator::Now()))
     {
         rxAccessStart += GetEifsNoDifs();
     }
@@ -714,14 +714,18 @@ void
 ChannelAccessManager::UpdateBackoff()
 {
     NS_LOG_FUNCTION(this);
-    uint32_t k = 0;
+
+    const auto now = Simulator::Now();
+    const auto slot = GetSlot();
     const auto accessGrantStart = GetAccessGrantStart();
+
+    uint32_t k = 0;
     for (auto txop : m_txops)
     {
         Time backoffStart = GetBackoffStartFor(txop, accessGrantStart);
-        if (backoffStart <= Simulator::Now())
+        if (backoffStart <= now)
         {
-            uint32_t nIntSlots = ((Simulator::Now() - backoffStart) / GetSlot()).GetHigh();
+            uint32_t nIntSlots = ((now - backoffStart) / slot).GetHigh();
             /*
              * EDCA behaves slightly different to DCA. For EDCA we
              * decrement once at the slot boundary at the end of AIFS as
@@ -739,7 +743,7 @@ ChannelAccessManager::UpdateBackoff()
             }
             uint32_t n = std::min(nIntSlots, txop->GetBackoffSlots(m_linkId));
             NS_LOG_DEBUG("dcf " << k << " dec backoff slots=" << n);
-            Time backoffUpdateBound = backoffStart + (n * GetSlot());
+            Time backoffUpdateBound = backoffStart + (n * slot);
             txop->UpdateBackoffSlotsNow(n, backoffUpdateBound, m_linkId);
         }
         ++k;
