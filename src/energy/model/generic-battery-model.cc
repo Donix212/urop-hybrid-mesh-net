@@ -114,6 +114,7 @@ GenericBatteryModel::GenericBatteryModel()
       m_currentFiltered(0),
       m_entn(0),
       m_expZone(0),
+      m_supplyVoltageV(0),
       m_lastUpdateTime(Seconds(0.0))
 {
     NS_LOG_FUNCTION(this);
