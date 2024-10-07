@@ -53,6 +53,7 @@ Changes from ns-3.42 to ns-3-dev
 
 * (lr-wpan) Beacons are now transmitted using CSMA-CA when requested from a beacon request command.
 * (lr-wpan) Upon a beacon request command, beacons are transmitted after a jitter to reduce the probability of collisions.
+* (wifi) The default TXOP limit for Wi-Fi AC_BE and AC_BK access categories has been updated (shortened) to use the standard values.
 
 Changes from ns-3.41 to ns-3.42
 -------------------------------

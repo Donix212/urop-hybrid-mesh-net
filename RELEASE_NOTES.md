@@ -54,6 +54,7 @@ per device, or a PCAP file per PHY, or a PCAP file per link. By default, a singl
 - (wifi) Avoid firing WifiMac::DroppedMpdu trace twice in some cases
 - (wifi) Fix assignment of AIDs to non-AP STAs/MLDs to ensure they are unique
 - (wifi) Fix starting Sequence Number when ADDBA Response arrives after timeout
+- (wifi) #289 - TXOP limit needs updating
 - (uan) !2087 - Fix Thorp attenuation formula
 - (uan) !2088 - Fix PER calculation of M-QAM
 - (uan) !2127 - Fix bug in energy update in UanPhyGen::RxEndEvent()
