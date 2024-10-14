@@ -1579,27 +1579,7 @@ def run_tests():
 
     jobs = 0
     threads = []
-
-    #
-    # In Python 2.6 you can just use multiprocessing module, but we don't want
-    # to introduce that dependency yet; so we jump through a few hoops.
-    #
-    processors = 1
-
-    if sys.platform != "win32":
-        if "SC_NPROCESSORS_ONLN" in os.sysconf_names:
-            processors = os.sysconf("SC_NPROCESSORS_ONLN")
-        else:
-            proc = subprocess.Popen(
-                "sysctl -n hw.ncpu", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            stdout_results, stderr_results = proc.communicate()
-            stdout_results = stdout_results.decode()
-            stderr_results = stderr_results.decode()
-            if len(stderr_results) == 0:
-                processors = int(stdout_results)
-    else:
-        processors = os.cpu_count()
+    processors = os.cpu_count() or 1
 
     if args.process_limit:
         if processors < args.process_limit:
