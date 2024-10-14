@@ -44,7 +44,7 @@ def get_color(cl):
     return ""
 
 
-class color_dict(object):
+class ColorDict(object):
     def __getattr__(self, a):
         return get_color(a)
 
@@ -52,7 +52,7 @@ class color_dict(object):
         return get_color(a)
 
 
-colors = color_dict()
+colors = ColorDict()
 
 #
 # XXX This should really be part of a ns3 command to list the configuration
@@ -1072,7 +1072,7 @@ class Job:
         self.elapsed_time = elapsed_time
 
 
-class worker_thread(threading.Thread):
+class WorkerThread(threading.Thread):
     """
     The worker thread class that handles the actual running of a given test.
     Once spawned, it receives requests for work through its input_queue and
@@ -1597,7 +1597,7 @@ def run_tests():
     # per processor running concurrently.
     #
     for i in range(processors):
-        thread = worker_thread(input_queue, output_queue)
+        thread = WorkerThread(input_queue, output_queue)
         threads.append(thread)
         thread.start()
 
