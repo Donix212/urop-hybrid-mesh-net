@@ -853,9 +853,6 @@ TEST_LOGS = bool(os.getenv("TEST_LOGS", False))
 
 
 def run_job_synchronously(shell_command, directory, valgrind, is_python, build_path=""):
-    if VALGRIND_SUPPRESSIONS_FILE is not None:
-        suppressions_path = os.path.join(NS3_BASEDIR, VALGRIND_SUPPRESSIONS_FILE)
-
     if is_python:
         path_cmd = PYTHON[0] + " " + os.path.join(NS3_BASEDIR, shell_command)
     else:
@@ -865,62 +862,37 @@ def run_job_synchronously(shell_command, directory, valgrind, is_python, build_p
             path_cmd = os.path.join(NS3_BUILDDIR, shell_command)
 
     if valgrind:
+        cmd = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-reachable=yes",
+            "--error-exitcode=2",
+            "--errors-for-leak-kinds=all",
+        ]
         if VALGRIND_SUPPRESSIONS_FILE:
-            cmd = (
-                "valgrind --suppressions=%s --leak-check=full --show-reachable=yes --error-exitcode=2 --errors-for-leak-kinds=all %s"
-                % (suppressions_path, path_cmd)
-            )
-        else:
-            cmd = (
-                "valgrind --leak-check=full --show-reachable=yes --error-exitcode=2 --errors-for-leak-kinds=all %s"
-                % (path_cmd)
-            )
+            suppressions_path = os.path.join(NS3_BASEDIR, VALGRIND_SUPPRESSIONS_FILE)
+            cmd.append(f"--suppressions={suppressions_path}")
     else:
-        cmd = path_cmd
+        cmd = path_cmd.split(" ")
 
     if args.verbose:
         print("Synchronously execute %s" % cmd)
 
     start_time = time.time()
-    proc = subprocess.Popen(
+
+    proc = subprocess.run(
         cmd,
         shell=True,
         cwd=directory,
-        stdout=subprocess.PIPE if not TEST_LOGS else subprocess.DEVNULL,
-        stderr=subprocess.PIPE if not TEST_LOGS else subprocess.STDOUT,
+        capture_output=(not TEST_LOGS),
+        text=True,
+        check=False,
     )
-    stdout_results, stderr_results = proc.communicate()
-    stdout_results = b"" if stdout_results is None else stdout_results
-    stderr_results = b"" if stderr_results is None else stderr_results
+    stdout_results = proc.stdout.strip() if proc.stdout else ""
+    stderr_results = proc.stderr.strip() if proc.stderr else ""
 
     elapsed_time = time.time() - start_time
-
     retval = proc.returncode
-
-    def decode_stream_results(stream_results: bytes, stream_name: str) -> str:
-        try:
-            stream_results = stream_results.decode()
-        except UnicodeDecodeError:
-
-            def decode(byte_array: bytes):
-                try:
-                    byte_array.decode()
-                except UnicodeDecodeError:
-                    return byte_array
-
-            # Find lines where the decoding error happened
-            non_utf8_lines = list(map(lambda line: decode(line), stream_results.splitlines()))
-            non_utf8_lines = list(filter(lambda line: line is not None, non_utf8_lines))
-            print(
-                f"Non-decodable characters found in {stream_name} output of {cmd}: {non_utf8_lines}"
-            )
-
-            # Continue decoding on errors
-            stream_results = stream_results.decode(errors="backslashreplace")
-        return stream_results
-
-    stdout_results = decode_stream_results(stdout_results, "stdout")
-    stderr_results = decode_stream_results(stderr_results, "stderr")
 
     if args.verbose:
         print("Return code = ", retval)
