@@ -17,8 +17,6 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 
-from utils import get_list_from_file
-
 # Global variable
 args = None
 
@@ -125,6 +123,32 @@ core_valgrind_skip_tests = [
     "lte-tdtbfq-ff-mac-scheduler",
     "lte-pss-ff-mac-scheduler",
 ]
+
+
+def get_list_from_file(file_path: str, list_name: str) -> list:
+    """
+    Looks for a Python list called "list_name" in the file specified by "file_path"
+    and returns it.
+    If the file or list name isn't found, this function will return an empty list.
+
+    @param file_path Path to the file containing the list.
+    @param list_name Name of the list variable.
+    @return List content.
+    """
+
+    # Check if file exists
+    if not os.path.exists(file_path):
+        return []
+
+    variables = {}
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        exec(f.read(), {}, variables)
+
+    if list_name in variables:
+        return variables[list_name]
+    else:
+        return []
 
 
 #
