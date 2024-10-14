@@ -152,12 +152,6 @@ def get_list_from_file(file_path: str, list_name: str) -> list:
         return []
 
 
-#
-# Parse the examples-to-run file if it exists.
-#
-# This function adds any C++ examples or Python examples that are to be run
-# to the lists in example_tests and python_tests, respectively.
-#
 def parse_examples_to_run_file(
     examples_to_run_path,
     cpp_executable_dir,
@@ -166,6 +160,13 @@ def parse_examples_to_run_file(
     example_names_original,
     python_tests,
 ):
+    """
+    Parse the examples-to-run file if it exists.
+
+    This function adds any C++ examples or Python examples that are to be run
+    to the lists in example_tests and python_tests, respectively.
+    """
+
     # Look for the examples-to-run file exists.
     if not os.path.exists(examples_to_run_path):
         return
@@ -335,11 +336,12 @@ def read_test(test):
     return (result, name, reason, time_real)
 
 
-#
-# A simple example of writing a text file with a test result summary.  It is
-# expected that this output will be fine for developers looking for problems.
-#
 def node_to_text(test, f, test_type="Suite"):
+    """
+    A simple example of writing a text file with a test result summary.  It is
+    expected that this output will be fine for developers looking for problems.
+    """
+
     (result, name, reason, time_real) = read_test(test)
     if reason:
         reason = " (%s)" % reason
@@ -380,13 +382,14 @@ def translate_to_text(results_file, text_file):
     print("done.")
 
 
-#
-# A simple example of writing an HTML file with a test result summary.  It is
-# expected that this will eventually be made prettier as time progresses and
-# we have time to tweak it.  This may end up being moved to a separate module
-# since it will probably grow over time.
-#
 def translate_to_html(results_file, html_file):
+    """
+    A simple example of writing an HTML file with a test result summary.  It is
+    expected that this will eventually be made prettier as time progresses and
+    we have time to tweak it.  This may end up being moved to a separate module
+    since it will probably grow over time.
+    """
+
     html_file += ".html" if ".html" not in html_file else ""
     print("Writing results to html file %s..." % html_file, end="")
 
@@ -667,28 +670,29 @@ def sigint_hook(signal, frame):
     return 0
 
 
-#
-# In general, the build process itself naturally takes care of figuring out
-# which tests are built into the test runner.  For example, if ns3 configure
-# determines that ENABLE_EMU is false due to some missing dependency,
-# the tests for the emu net device simply will not be built and will
-# therefore not be included in the built test runner.
-#
-# Examples, however, are a different story.  In that case, we are just given
-# a list of examples that could be run.  Instead of just failing, for example,
-# an example if its library support is not present, we look into the ns3
-# saved configuration for relevant configuration items.
-#
-# XXX This function pokes around in the ns3 internal state file.  To be a
-# little less hacky, we should add a command to ns3 to return this info
-# and use that result.
-#
 platform = sys.platform
 platform = "bsd" if "bsd" in platform else platform
 lock_filename = ".lock-ns3_%s_build" % platform
 
 
 def read_ns3_config():
+    """
+    In general, the build process itself naturally takes care of figuring out
+    which tests are built into the test runner.  For example, if ns3 configure
+    determines that ENABLE_EMU is false due to some missing dependency,
+    the tests for the emu net device simply will not be built and will
+    therefore not be included in the built test runner.
+
+    Examples, however, are a different story.  In that case, we are just given
+    a list of examples that could be run.  Instead of just failing, for example,
+    an example if its library support is not present, we look into the ns3
+    saved configuration for relevant configuration items.
+
+    XXX This function pokes around in the ns3 internal state file.  To be a
+    little less hacky, we should add a command to ns3 to return this info
+    and use that result.
+    """
+
     try:
         # sys.platform reports linux2 for python2 and linux for python3
         with open(lock_filename, "rt", encoding="utf-8") as f:
@@ -723,17 +727,18 @@ def read_ns3_config():
             print("%s ==" % item, ast.literal_eval(item))
 
 
-#
-# It seems pointless to fork a process to run ns3 to fork a process to run
-# the test runner, so we just run the test runner directly.  The main thing
-# that ns3 would do for us would be to sort out the shared library path but
-# we can deal with that easily and do here.
-#
-# There can be many different ns-3 repositories on a system, and each has
-# its own shared libraries, so ns-3 doesn't hardcode a shared library search
-# path -- it is cooked up dynamically, so we do that too.
-#
 def make_paths():
+    """
+    It seems pointless to fork a process to run ns3 to fork a process to run
+    the test runner, so we just run the test runner directly.  The main thing
+    that ns3 would do for us would be to sort out the shared library path but
+    we can deal with that easily and do here.
+
+    There can be many different ns-3 repositories on a system, and each has
+    its own shared libraries, so ns-3 doesn't hardcode a shared library search
+    path -- it is cooked up dynamically, so we do that too.
+    """
+
     have_DYLD_LIBRARY_PATH = False
     have_LD_LIBRARY_PATH = False
     have_PATH = False
@@ -931,11 +936,12 @@ def run_job_synchronously(shell_command, directory, valgrind, is_python, build_p
     return (retval, stdout_results, stderr_results, elapsed_time)
 
 
-#
-# This class defines a unit of testing work.  It will typically refer to
-# a test suite to run using the test-runner, or an example to run directly.
-#
 class Job:
+    """
+    This class defines a unit of testing work.  It will typically refer to
+    a test suite to run using the test-runner, or an example to run directly.
+    """
+
     def __init__(self):
         self.is_break = False
         self.is_skip = False
@@ -952,127 +958,127 @@ class Job:
         self.elapsed_time = 0
         self.build_path = ""
 
-    #
-    # A job is either a standard job or a special job indicating that a worker
-    # thread should exist.  This special job is indicated by setting is_break
-    # to true.
-    #
     def set_is_break(self, is_break):
+        """
+        A job is either a standard job or a special job indicating that a worker
+        thread should exist.  This special job is indicated by setting is_break
+        to true.
+        """
         self.is_break = is_break
 
-    #
-    # If a job is to be skipped, we actually run it through the worker threads
-    # to keep the PASS, FAIL, CRASH and SKIP processing all in one place.
-    #
     def set_is_skip(self, is_skip):
+        """
+        If a job is to be skipped, we actually run it through the worker threads
+        to keep the PASS, FAIL, CRASH and SKIP processing all in one place.
+        """
         self.is_skip = is_skip
 
-    #
-    # If a job is to be skipped, log the reason.
-    #
     def set_skip_reason(self, skip_reason):
+        """
+        If a job is to be skipped, log the reason.
+        """
         self.skip_reason = skip_reason
 
-    #
-    # Examples are treated differently than standard test suites.  This is
-    # mostly because they are completely unaware that they are being run as
-    # tests.  So we have to do some special case processing to make them look
-    # like tests.
-    #
     def set_is_example(self, is_example):
+        """
+        Examples are treated differently than standard test suites.  This is
+        mostly because they are completely unaware that they are being run as
+        tests.  So we have to do some special case processing to make them look
+        like tests.
+        """
         self.is_example = is_example
 
-    #
-    # Examples are treated differently than standard test suites.  This is
-    # mostly because they are completely unaware that they are being run as
-    # tests.  So we have to do some special case processing to make them look
-    # like tests.
-    #
     def set_is_pyexample(self, is_pyexample):
+        """
+        Examples are treated differently than standard test suites.  This is
+        mostly because they are completely unaware that they are being run as
+        tests.  So we have to do some special case processing to make them look
+        like tests.
+        """
         self.is_pyexample = is_pyexample
 
-    #
-    # This is the shell command that will be executed in the job.  For example,
-    #
-    #  "utils/ns3-dev-test-runner-debug --test-name=some-test-suite"
-    #
     def set_shell_command(self, shell_command):
+        """
+        This is the shell command that will be executed in the job.  For example,
+
+        "utils/ns3-dev-test-runner-debug --test-name=some-test-suite"
+        """
         self.shell_command = shell_command
 
-    #
-    # This is the build path where ns-3 was built.  For example,
-    #
-    #  "/home/craigdo/repos/ns-3-allinone-test/ns-3-dev/build/debug"
-    #
     def set_build_path(self, build_path):
+        """
+        This is the build path where ns-3 was built.  For example,
+
+        "/home/craigdo/repos/ns-3-allinone-test/ns-3-dev/build/debug"
+        """
         self.build_path = build_path
 
-    #
-    # This is the display name of the job, typically the test suite or example
-    # name.  For example,
-    #
-    #  "some-test-suite" or "udp-echo"
-    #
     def set_display_name(self, display_name):
+        """
+        This is the display name of the job, typically the test suite or example
+        name.  For example,
+        "some-test-suite" or "udp-echo"
+        """
         self.display_name = display_name
 
-    #
-    # This is the base directory of the repository out of which the tests are
-    # being run.  It will be used deep down in the testing framework to determine
-    # where the source directory of the test was, and therefore where to find
-    # provided test vectors.  For example,
-    #
-    #  "/home/user/repos/ns-3-dev"
-    #
     def set_basedir(self, basedir):
+        """
+        This is the base directory of the repository out of which the tests are
+        being run.  It will be used deep down in the testing framework to determine
+        where the source directory of the test was, and therefore where to find
+        provided test vectors.  For example,
+
+        "/home/user/repos/ns-3-dev"
+        """
         self.basedir = basedir
 
-    #
-    # This is the directory to which a running test suite should write any
-    # temporary files.
-    #
     def set_tempdir(self, tempdir):
+        """
+        This is the directory to which a running test suite should write any
+        temporary files.
+        """
         self.tempdir = tempdir
 
-    #
-    # This is the current working directory that will be given to an executing
-    # test as it is being run.  It will be used for examples to tell them where
-    # to write all of the pcap files that we will be carefully ignoring.  For
-    # example,
-    #
-    #  "/tmp/unchecked-traces"
-    #
     def set_cwd(self, cwd):
+        """
+        This is the current working directory that will be given to an executing
+        test as it is being run.  It will be used for examples to tell them where
+        to write all of the pcap files that we will be carefully ignoring.  For
+        example,
+
+        "/tmp/unchecked-traces"
+        """
         self.cwd = cwd
 
-    #
-    # This is the temporary results file name that will be given to an executing
-    # test as it is being run.  We will be running all of our tests in parallel
-    # so there must be multiple temporary output files.  These will be collected
-    # into a single XML file at the end and then be deleted.
-    #
     def set_tmp_file_name(self, tmp_file_name):
+        """
+        This is the temporary results file name that will be given to an executing
+        test as it is being run.  We will be running all of our tests in parallel
+        so there must be multiple temporary output files.  These will be collected
+        into a single XML file at the end and then be deleted.
+        """
         self.tmp_file_name = tmp_file_name
 
-    #
-    # The return code received when the job process is executed.
-    #
     def set_returncode(self, returncode):
+        """
+        The return code received when the job process is executed.
+        """
         self.returncode = returncode
 
-    #
-    # The elapsed real time for the job execution.
-    #
     def set_elapsed_time(self, elapsed_time):
+        """
+        The elapsed real time for the job execution.
+        """
         self.elapsed_time = elapsed_time
 
 
-#
-# The worker thread class that handles the actual running of a given test.
-# Once spawned, it receives requests for work through its input_queue and
-# ships the results back through the output_queue.
-#
 class worker_thread(threading.Thread):
+    """
+    The worker thread class that handles the actual running of a given test.
+    Once spawned, it receives requests for work through its input_queue and
+    ships the results back through the output_queue.
+    """
+
     def __init__(self, input_queue, output_queue):
         threading.Thread.__init__(self)
         self.input_queue = input_queue
@@ -1165,10 +1171,11 @@ class worker_thread(threading.Thread):
                 self.output_queue.put(job)
 
 
-#
-# This function loads the list of previously successful or skipped examples and test suites.
-#
 def load_previously_successful_tests():
+    """
+    This function loads the list of previously successful or skipped examples and test suites.
+    """
+
     import glob
 
     previously_run_tests_to_skip = {"test": [], "example": []}
@@ -1200,11 +1207,12 @@ def load_previously_successful_tests():
     return previously_run_tests_to_skip
 
 
-#
-# This is the main function that does the work of interacting with the
-# test-runner itself.
-#
 def run_tests():
+    """
+    This is the main function that does the work of interacting with the
+    test-runner itself.
+    """
+
     #
     # Pull some interesting configuration information out of ns3, primarily
     # so we can know where executables can be found, but also to tell us what
