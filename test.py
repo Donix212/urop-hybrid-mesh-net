@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 #
+
 import argparse
 import fnmatch
 import os
@@ -194,11 +195,11 @@ def parse_examples_to_run_file(
         # Separate the example name from its arguments.
         example_name_original = example_name
         example_name_parts = example_name.split(" ", 1)
+        example_name = example_name_parts[0]
+
         if len(example_name_parts) == 1:
-            example_name = example_name_parts[0]
             example_arguments = ""
         else:
-            example_name = example_name_parts[0]
             example_arguments = example_name_parts[1]
 
         # Add the proper prefix and suffix to the example name to
@@ -259,11 +260,11 @@ def parse_examples_to_run_file(
 
         # Separate the example name from its arguments.
         example_name_parts = example_name.split(" ", 1)
+        example_name = example_name_parts[0]
+
         if len(example_name_parts) == 1:
-            example_name = example_name_parts[0]
             example_arguments = ""
         else:
-            example_name = example_name_parts[0]
             example_arguments = example_name_parts[1]
 
         # Set the full path for the example.
@@ -298,11 +299,11 @@ TMP_OUTPUT_DIR = "testpy-output"
 def read_test(test):
     result = test.find("Result").text
     name = test.find("Name").text
-    if not test.find("Reason") is None:
+    if test.find("Reason"):
         reason = test.find("Reason").text
     else:
         reason = ""
-    if not test.find("Time") is None:
+    if test.find("Time"):
         time_real = test.find("Time").get("real")
     else:
         time_real = ""
@@ -344,7 +345,7 @@ def translate_to_text(results_file, text_file):
         for example in et.findall("Example"):
             result = example.find("Result").text
             name = example.find("Name").text
-            if not example.find("Time") is None:
+            if example.find("Time"):
                 time_real = example.find("Time").get("real")
             else:
                 time_real = ""
@@ -391,14 +392,16 @@ def translate_to_html(results_file, html_file):
             # and print in red.
             #
             if result == "PASS":
-                f.write('<h3 style="color:green">%s: %s (%s)</h3>\n' % (result, name, time))
+                result_color = "green"
             elif result == "SKIP":
-                f.write(
-                    '<h3 style="color:#ff6600">%s: %s (%s) (%s)</h3>\n'
-                    % (result, name, time, reason)
-                )
+                result_color = "#ff6600"
             else:
-                f.write('<h3 style="color:red">%s: %s (%s)</h3>\n' % (result, name, time))
+                result_color = "red"
+
+            f.write(
+                '<h3 style="color:%s">%s: %s (%s)%s</h3>\n'
+                % (result_color, result, name, time, f" ({reason})" if reason else "")
+            )
 
             #
             # The test case information goes in a table.
@@ -423,11 +426,12 @@ def translate_to_html(results_file, html_file):
             # Then go on to the next test suite.  Valgrind and skipped errors look the same.
             #
             if result in ["CRASH", "SKIP", "VALGR"]:
-                f.write("<tr>\n")
                 if result == "SKIP":
-                    f.write('<td style="color:#ff6600">%s</td>\n' % result)
+                    result_color = "#ff6600"
                 else:
-                    f.write('<td style="color:red">%s</td>\n' % result)
+                    result_color = "red"
+                f.write("<tr>\n")
+                f.write('<td style="color:%s">%s</td>\n' % (result_color, result))
                 f.write("</tr>\n")
                 f.write("</table>\n")
                 continue
@@ -582,11 +586,12 @@ def translate_to_html(results_file, html_file):
             # in red; otherwise green.  This goes in a <td> ... </td> table data
             #
             if result == "PASS":
-                f.write('<td style="color:green">%s</td>\n' % result)
+                result_color = "green"
             elif result == "SKIP":
-                f.write('<td style="color:#ff6600">%s</fd>\n' % result)
+                result_color = "#ff6600"
             else:
-                f.write('<td style="color:red">%s</td>\n' % result)
+                result_color = "red"
+            f.write('<td style="color:%s">%s</td>\n' % (result_color, result))
 
             #
             # Write the example name as a new tag data.
@@ -1359,14 +1364,8 @@ def run_tests():
             )
             if rc != 0:
                 # This is usually a sign that ns-3 crashed or exited uncleanly
-                print(("test.py error:  test-runner return code returned {}".format(rc)))
-                print(
-                    (
-                        "To debug, try running {}\n".format(
-                            "'./ns3 run \"test-runner --print-test-name-list\"'"
-                        )
-                    )
-                )
+                print(f"test.py error:  test-runner return code returned {rc}")
+                print("To debug, try running './ns3 run \"test-runner --print-test-name-list\"'\n")
                 return
             if isinstance(standard_out, bytes):
                 standard_out = standard_out.decode()
@@ -1957,21 +1956,10 @@ def run_tests():
             #
             with open(xml_results_file, "a", encoding="utf-8") as f:
                 f.write("<Example>\n")
-                example_name = "  <Name>%s</Name>\n" % job.display_name
-                f.write(example_name)
-
-                if status == "PASS":
-                    f.write("  <Result>PASS</Result>\n")
-                elif status == "FAIL":
-                    f.write("  <Result>FAIL</Result>\n")
-                elif status == "VALGR":
-                    f.write("  <Result>VALGR</Result>\n")
-                elif status == "SKIP":
-                    f.write("  <Result>SKIP</Result>\n")
+                f.write("  <Name>%s</Name>\n" % job.display_name)
+                f.write("  <Result>%s</Result>\n" % status)
+                if status == "SKIP":
                     f.write("  <Reason>%s</Reason>\n" % job.skip_reason)
-                else:
-                    f.write("  <Result>CRASH</Result>\n")
-
                 f.write('  <Time real="%.3f"/>\n' % job.elapsed_time)
                 f.write("</Example>\n")
 
@@ -2029,7 +2017,7 @@ def run_tests():
                     f.write("</Test>\n")
             else:
                 failed_jobs.append(job)
-                if job.returncode == 0 or job.returncode == 1 or job.returncode == 2:
+                if job.returncode in [0, 1, 2]:
                     with open(xml_results_file, "a", encoding="utf-8") as f_to, open(
                         job.tmp_file_name, encoding="utf-8"
                     ) as f_from:
