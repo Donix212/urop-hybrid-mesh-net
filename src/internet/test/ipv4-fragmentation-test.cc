@@ -225,11 +225,6 @@ Ipv4FragmentationTest::StartServer(Ptr<Node> ServerNode)
         InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 9);
         m_socketServer->Bind(local);
         Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket>(m_socketServer);
-        if (udpSocket)
-        {
-            // equivalent to setsockopt (MCAST_JOIN_GROUP)
-            udpSocket->MulticastJoinGroup(0, Ipv4Address("10.0.0.1"));
-        }
     }
 
     m_socketServer->SetRecvCallback(MakeCallback(&Ipv4FragmentationTest::HandleReadServer, this));

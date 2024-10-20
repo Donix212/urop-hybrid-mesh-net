@@ -79,13 +79,14 @@ class UdpClient : public Application
     Time m_interval;  //!< Packet inter-send time
     uint32_t m_size;  //!< Size of the sent packet (including the SeqTsHeader)
 
-    uint32_t m_sent;       //!< Counter for sent packets
-    uint64_t m_totalTx;    //!< Total bytes sent
-    Ptr<Socket> m_socket;  //!< Socket
-    Address m_peerAddress; //!< Remote peer address
-    uint16_t m_peerPort;   //!< Remote peer port
-    uint8_t m_tos;         //!< The packets Type of Service
-    EventId m_sendEvent;   //!< Event to send the next packet
+    uint32_t m_sent;           //!< Counter for sent packets
+    uint64_t m_totalTx;        //!< Total bytes sent
+    Ptr<Socket> m_socket;      //!< Socket
+    Address m_peerAddress;     //!< Remote peer address
+    uint16_t m_peerPort;       //!< Remote peer port
+    uint8_t m_tos;             //!< The packets Type of Service
+    EventId m_sendEvent;       //!< Event to send the next packet
+    uint32_t m_boundInterface; //!< Interface to bind the socket to
 
 #ifdef NS3_LOG_ENABLE
     std::string m_peerAddressString; //!< Remote peer address string

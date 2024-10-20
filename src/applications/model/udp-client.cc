@@ -72,6 +72,11 @@ UdpClient::GetTypeId()
                           UintegerValue(1024),
                           MakeUintegerAccessor(&UdpClient::m_size),
                           MakeUintegerChecker<uint32_t>(12, 65507))
+            .AddAttribute("BoundOutputInterface",
+                          "The interface number to send the packets (device interface index)",
+                          UintegerValue(0),
+                          MakeUintegerAccessor(&UdpClient::m_boundInterface),
+                          MakeUintegerChecker<uint32_t>())
             .AddTraceSource("Tx",
                             "A new packet is created and sent",
                             MakeTraceSourceAccessor(&UdpClient::m_txTrace),
@@ -161,6 +166,13 @@ UdpClient::StartApplication()
         {
             NS_ASSERT_MSG(false, "Incompatible address type: " << m_peerAddress);
         }
+    }
+    if (m_boundInterface)
+    {
+        NS_ASSERT_MSG(m_boundInterface < m_node->GetNDevices(),
+                      "Output interface not found: " << m_boundInterface);
+
+        m_socket->BindToNetDevice(m_node->GetDevice(m_boundInterface));
     }
 
 #ifdef NS3_LOG_ENABLE

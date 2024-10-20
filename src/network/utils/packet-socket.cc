@@ -519,6 +519,26 @@ PacketSocket::GetAllowBroadcast() const
     return false;
 }
 
+int
+PacketSocket::MulticastJoinGroup(const Address& groupAddress, uint32_t interfaceIndex)
+{
+    NS_LOG_FUNCTION(this << groupAddress << interfaceIndex);
+
+    NS_ABORT_MSG("PacketSockets do not support multicast");
+
+    return 0;
+}
+
+int
+PacketSocket::MulticastLeaveGroup(const Address& groupAddress, uint32_t interfaceIndex)
+{
+    NS_LOG_FUNCTION(this << groupAddress << interfaceIndex);
+
+    NS_ABORT_MSG("PacketSockets do not support multicast");
+
+    return 0;
+}
+
 /***************************************************************
  *           PacketSocket Tags
  ***************************************************************/

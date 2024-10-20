@@ -94,6 +94,18 @@ Ipv4Interface::SetDevice(Ptr<NetDevice> device)
 }
 
 void
+Ipv4Interface::SetIndex(uint32_t index)
+{
+    m_interfaceIndex = index;
+}
+
+uint32_t
+Ipv4Interface::GetIndex() const
+{
+    return m_interfaceIndex;
+}
+
+void
 Ipv4Interface::SetTrafficControl(Ptr<TrafficControlLayer> tc)
 {
     NS_LOG_FUNCTION(this << tc);

@@ -11,12 +11,14 @@
 
 #include "ipv4-header.h"
 #include "ipv4-interface.h"
+#include "ipv4-l3-protocol.h"
 
 #include "ns3/callback.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/net-device.h"
 
 #include <stdint.h>
+#include <unordered_set>
 
 namespace ns3
 {
@@ -179,6 +181,37 @@ class Ipv4EndPoint
      */
     bool IsRxEnabled() const;
 
+    /**
+     * Adds a multicast address to the endpoint.
+     *
+     * \param address the address to add
+     * \param interfaceIndex the interface index
+     */
+    void AddMulticastAddress(Ipv4Address address, uint32_t interfaceIndex);
+
+    /**
+     * Removes a multiast address from the endpoint.
+     *
+     * \param address the address to remove
+     * \param interfaceIndex the interface index
+     */
+    void RemoveMulticastAddress(Ipv4Address address, uint32_t interfaceIndex);
+
+    /**
+     * Checks if the endpoint wants to receive a multicast address.
+     *
+     * \param address the address to check
+     * \param interfaceIndex the interface index
+     * \returns true if the endpoint handles the address.
+     */
+    bool IsMulticastAddressHandled(Ipv4Address address, uint32_t interfaceIndex);
+
+    /**
+     * Removes any multicast address associated with the endpoint
+     * from the endpoint.
+     */
+    void CleanMulticastAddresses();
+
   private:
     /**
      * \brief The local address.
@@ -224,6 +257,32 @@ class Ipv4EndPoint
      * \brief true if the endpoint can receive packets.
      */
     bool m_rxEnabled;
+
+    /**
+     * Hash of an Ipv4Address, uint32_t pair
+     */
+    struct Ipv4InterfacePairHash
+    {
+      public:
+        /**
+         * \brief Returns the hash of an IPv4 address / interface pair.
+         * \param x the IPv4 address / interface pair
+         * \return the hash
+         *
+         * This method uses Ipv4AddressHash and std::hash, as speed is
+         * more important than perfection.
+         */
+        std::size_t operator()(const std::pair<Ipv4Address, uint32_t>& x) const
+        {
+            return Ipv4AddressHash()(x.first) ^ std::hash<uint32_t>()(x.second);
+        }
+    };
+
+    /**
+     * IPv4 multicast addresses this endpoint is receiving
+     */
+    std::unordered_set<std::pair<Ipv4Address, uint32_t>, Ipv4InterfacePairHash>
+        m_multicastAddresses;
 };
 
 } // namespace ns3

@@ -390,7 +390,8 @@ Ipv4DeduplicationTest::DoRun()
                               "Could not bind socket for node " << Names::FindName(*iter));
 
         auto udpSocket = socket->GetObject<UdpSocket>();
-        udpSocket->MulticastJoinGroup(0, Ipv4Address(targetAddr.c_str())); // future proof?
+        // Join the multicast group on interface 1
+        udpSocket->MulticastJoinGroup(Ipv4Address(targetAddr.c_str()), 1);
         udpSocket->SetAttribute("IpMulticastTtl", StringValue("4"));
 
         socket->SetRecvCallback(MakeCallback(&Ipv4DeduplicationTest::ReceivePkt, this));

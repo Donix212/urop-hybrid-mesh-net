@@ -268,6 +268,47 @@ class Ipv4L3Protocol : public Ipv4
                                        Ptr<Ipv4> ipv4,
                                        uint32_t interface);
 
+    // /**
+    //  * Adds a multicast address to the list of addresses to pass to local deliver.
+    //  * \param address the address.
+    //  */
+    // void AddMulticastAddress(Ipv4Address address);
+
+    // /**
+    //  * Adds a multicast address to the list of addresses to pass to local deliver.
+    //  * \param address the address.
+    //  * \param interface the incoming interface.
+    //  */
+    // void AddMulticastAddress(Ipv4Address address, uint32_t interface);
+
+    // /**
+    //  * Removes a multicast address from the list of addresses to pass to local deliver.
+    //  * \param address the address.
+    //  */
+    // void RemoveMulticastAddress(Ipv4Address address);
+
+    // /**
+    //  * Removes a multicast address from the list of addresses to pass to local deliver.
+    //  * \param address the address.
+    //  * \param interface the incoming interface.
+    //  */
+    // void RemoveMulticastAddress(Ipv4Address address, uint32_t interface);
+
+    // /**
+    //  * Checks if the address has been registered.
+    //  * \param address the address.
+    //  * \return true if the address is registered.
+    //  */
+    // bool IsRegisteredMulticastAddress(Ipv4Address address) const;
+
+    // /**
+    //  * Checks if the address has been registered for a specific interface.
+    //  * \param address the address.
+    //  * \param interface the incoming interface.
+    //  * \return true if the address is registered.
+    //  */
+    // bool IsRegisteredMulticastAddress(Ipv4Address address, uint32_t interface) const;
+
   protected:
     void DoDispose() override;
     /**
@@ -639,6 +680,56 @@ class Ipv4L3Protocol : public Ipv4
     Ipv4RoutingProtocol::MulticastForwardCallback m_mcb; ///< Multicast forward callback
     Ipv4RoutingProtocol::LocalDeliverCallback m_lcb;     ///< Local delivery callback
     Ipv4RoutingProtocol::ErrorCallback m_ecb;            ///< Error callback
+
+    // /**
+    //  * \brief IPv4 multicast addresses / interface key.
+    //  */
+    // typedef std::pair<Ipv4Address, uint64_t> Ipv4RegisteredMulticastAddressKey_t;
+
+    // /**
+    //  * \brief Container of the IPv4 multicast addresses.
+    //  */
+    // typedef std::map<Ipv4RegisteredMulticastAddressKey_t, uint32_t>
+    //     Ipv4RegisteredMulticastAddress_t;
+
+    // /**
+    //  * \brief Container Iterator of the IPv4 multicast addresses.
+    //  */
+    // typedef std::map<Ipv4RegisteredMulticastAddressKey_t, uint32_t>::iterator
+    //     Ipv4RegisteredMulticastAddressIter_t;
+
+    // /**
+    //  * \brief Container Const Iterator of the IPv4 multicast addresses.
+    //  */
+    // typedef std::map<Ipv4RegisteredMulticastAddressKey_t, uint32_t>::const_iterator
+    //     Ipv4RegisteredMulticastAddressCIter_t;
+
+    // /**
+    //  * \brief Container of the IPv4 multicast addresses.
+    //  */
+    // typedef std::map<Ipv4Address, uint32_t> Ipv4RegisteredMulticastAddressNoInterface_t;
+
+    // /**
+    //  * \brief Container Iterator of the IPv4 multicast addresses.
+    //  */
+    // typedef std::map<Ipv4Address, uint32_t>::iterator
+    //     Ipv4RegisteredMulticastAddressNoInterfaceIter_t;
+
+    // /**
+    //  * \brief Container Const Iterator of the IPv4 multicast addresses.
+    //  */
+    // typedef std::map<Ipv4Address, uint32_t>::const_iterator
+    //     Ipv4RegisteredMulticastAddressNoInterfaceCIter_t;
+
+    // /**
+    //  * \brief List of multicast IP addresses of interest, divided per interface.
+    //  */
+    // Ipv4RegisteredMulticastAddress_t m_multicastAddresses;
+
+    // /**
+    //  * \brief List of multicast IP addresses of interest for all the interfaces.
+    //  */
+    // Ipv4RegisteredMulticastAddressNoInterface_t m_multicastAddressesNoInterface;
 };
 
 } // Namespace ns3

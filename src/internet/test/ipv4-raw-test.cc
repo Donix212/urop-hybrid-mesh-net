@@ -292,17 +292,6 @@ Ipv4RawSocketImplTest::DoRun()
     m_receivedPacket->RemoveAllByteTags();
     m_receivedPacket2->RemoveAllByteTags();
 
-#if 0
-  // Simple broadcast test
-
-  SendData (txSocket, "255.255.255.255");
-  NS_TEST_EXPECT_MSG_EQ (m_receivedPacket->GetSize (), 143, "recv: 255.255.255.255");
-  NS_TEST_EXPECT_MSG_EQ (m_receivedPacket2->GetSize (), 0, "second socket should not receive it (it is bound specifically to the second interface's address");
-
-  m_receivedPacket->RemoveAllByteTags ();
-  m_receivedPacket2->RemoveAllByteTags ();
-#endif
-
     // Simple Link-local multicast test
 
     txSocket->Bind(InetSocketAddress(Ipv4Address("10.0.0.2"), 0));
@@ -316,21 +305,37 @@ Ipv4RawSocketImplTest::DoRun()
     m_receivedPacket->RemoveAllByteTags();
     m_receivedPacket2->RemoveAllByteTags();
 
-#if 0
-  // Broadcast test with multiple receiving sockets
+    // Broadcast send needs to bind the sending socket to an interface,
+    // otherwise it can't send packets.
 
-  // When receiving broadcast packets, all sockets sockets bound to
-  // the address/port should receive a copy of the same packet -- if
-  // the socket address matches.
-  rxSocket2->Dispose ();
-  rxSocket2 = rxSocketFactory->CreateSocket ();
-  rxSocket2->SetRecvCallback (MakeCallback (&Ipv4RawSocketImplTest::ReceivePkt2, this));
-  NS_TEST_EXPECT_MSG_EQ (rxSocket2->Bind (InetSocketAddress (Ipv4Address ("0.0.0.0"), 0)), 0, "trivial");
+    // Simple broadcast test
 
-  SendData (txSocket, "255.255.255.255");
-  NS_TEST_EXPECT_MSG_EQ (m_receivedPacket->GetSize (), 143, "recv: 255.255.255.255");
-  NS_TEST_EXPECT_MSG_EQ (m_receivedPacket2->GetSize (), 143, "recv: 255.255.255.255");
-#endif
+    txSocket->BindToNetDevice(net1.Get(1));
+    SendData(txSocket, "255.255.255.255");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket->GetSize(), 143, "recv: 255.255.255.255");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket2->GetSize(),
+                          0,
+                          "second socket should not receive it (it is bound specifically to the "
+                          "second interface's address");
+
+    m_receivedPacket->RemoveAllByteTags();
+    m_receivedPacket2->RemoveAllByteTags();
+
+    // Broadcast test with multiple receiving sockets
+
+    // When receiving broadcast packets, all sockets sockets bound to
+    // the address/port should receive a copy of the same packet -- if
+    // the socket address matches.
+    rxSocket2->Dispose();
+    rxSocket2 = rxSocketFactory->CreateSocket();
+    rxSocket2->SetRecvCallback(MakeCallback(&Ipv4RawSocketImplTest::ReceivePkt2, this));
+    NS_TEST_EXPECT_MSG_EQ(rxSocket2->Bind(InetSocketAddress(Ipv4Address("0.0.0.0"), 0)),
+                          0,
+                          "trivial");
+
+    SendData(txSocket, "255.255.255.255");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket->GetSize(), 143, "recv: 255.255.255.255");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket2->GetSize(), 143, "recv: 255.255.255.255");
 
     m_receivedPacket = nullptr;
     m_receivedPacket2 = nullptr;

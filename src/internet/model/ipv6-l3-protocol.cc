@@ -1103,6 +1103,9 @@ Ipv6L3Protocol::Receive(Ptr<NetDevice> device,
         bool isRegisteredOnInterface =
             IsRegisteredMulticastAddress(hdr.GetDestination(), interface);
         bool isRegisteredGlobally = IsRegisteredMulticastAddress(hdr.GetDestination());
+
+        // std::cout << "IPv6 - received " << hdr.GetDestination() << " and "
+        //           << isRegisteredOnInterface << " - " << isRegisteredGlobally << std::endl;
         if (isSolicited || isRegisteredGlobally || isRegisteredOnInterface)
         {
             LocalDeliver(packet, hdr, interface);

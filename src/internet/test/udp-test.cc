@@ -342,32 +342,33 @@ UdpSocketImplTest::DoRun()
     QueueDiscContainer qdiscs = tch.Install(net1.Get(1));
 
     Ptr<Ipv4> ipv4;
-    uint32_t netdev_idx;
+    std::vector<uint32_t> netdevIdxTx;
+    std::vector<uint32_t> netdevIdxRx;
     Ipv4InterfaceAddress ipv4Addr;
 
     // Receiver Node
     ipv4 = rxNode->GetObject<Ipv4>();
-    netdev_idx = ipv4->AddInterface(net1.Get(0));
+    netdevIdxRx.emplace_back(ipv4->AddInterface(net1.Get(0)));
     ipv4Addr = Ipv4InterfaceAddress(Ipv4Address("10.0.0.1"), Ipv4Mask("/24"));
-    ipv4->AddAddress(netdev_idx, ipv4Addr);
-    ipv4->SetUp(netdev_idx);
+    ipv4->AddAddress(netdevIdxRx.back(), ipv4Addr);
+    ipv4->SetUp(netdevIdxRx.back());
 
-    netdev_idx = ipv4->AddInterface(net2.Get(0));
+    netdevIdxRx.emplace_back(ipv4->AddInterface(net2.Get(0)));
     ipv4Addr = Ipv4InterfaceAddress(Ipv4Address("10.0.1.1"), Ipv4Mask("/24"));
-    ipv4->AddAddress(netdev_idx, ipv4Addr);
-    ipv4->SetUp(netdev_idx);
+    ipv4->AddAddress(netdevIdxRx.back(), ipv4Addr);
+    ipv4->SetUp(netdevIdxRx.back());
 
     // Sender Node
     ipv4 = txNode->GetObject<Ipv4>();
-    netdev_idx = ipv4->AddInterface(net1.Get(1));
+    netdevIdxTx.emplace_back(ipv4->AddInterface(net1.Get(1)));
     ipv4Addr = Ipv4InterfaceAddress(Ipv4Address("10.0.0.2"), Ipv4Mask("/24"));
-    ipv4->AddAddress(netdev_idx, ipv4Addr);
-    ipv4->SetUp(netdev_idx);
+    ipv4->AddAddress(netdevIdxTx.back(), ipv4Addr);
+    ipv4->SetUp(netdevIdxTx.back());
 
-    netdev_idx = ipv4->AddInterface(net2.Get(1));
+    netdevIdxTx.emplace_back(ipv4->AddInterface(net2.Get(1)));
     ipv4Addr = Ipv4InterfaceAddress(Ipv4Address("10.0.1.2"), Ipv4Mask("/24"));
-    ipv4->AddAddress(netdev_idx, ipv4Addr);
-    ipv4->SetUp(netdev_idx);
+    ipv4->AddAddress(netdevIdxTx.back(), ipv4Addr);
+    ipv4->SetUp(netdevIdxTx.back());
 
     // Create the UDP sockets
     Ptr<SocketFactory> rxSocketFactory = rxNode->GetObject<UdpSocketFactory>();
@@ -443,12 +444,28 @@ UdpSocketImplTest::DoRun()
     SendDataTo(txSocket, "224.0.0.9");
     NS_TEST_EXPECT_MSG_EQ(m_receivedPacket->GetSize(),
                           0,
-                          "first socket should not receive it (it is bound specifically to the "
-                          "first interface's address");
-    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket2->GetSize(), 123, "recv2: 224.0.0.9");
+                          "first socket should not receive it "
+                          "(it doid not join the multicast group");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket2->GetSize(),
+                          0,
+                          "second socket should not receive it "
+                          "(it did not join the multicast group)");
 
     m_receivedPacket->RemoveAllByteTags();
     m_receivedPacket2->RemoveAllByteTags();
+
+    // Simple Link-local multicast test
+
+    // the packet is sent to the interface 0.
+    rxSocket2->MulticastJoinGroup(Ipv4Address("224.0.0.9"), netdevIdxRx[0]);
+
+    txSocket->BindToNetDevice(net1.Get(1));
+    SendDataTo(txSocket, "224.0.0.9");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket->GetSize(),
+                          0,
+                          "first socket should not receive it "
+                          "(it doid not join the multicast group");
+    NS_TEST_EXPECT_MSG_EQ(m_receivedPacket2->GetSize(), 123, "recv2: 224.0.0.9");
 
     // Simple getpeername tests
 

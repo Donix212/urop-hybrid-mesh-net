@@ -183,6 +183,20 @@ class Ipv4Interface : public Object
     Ipv4InterfaceAddress RemoveAddress(Ipv4Address address);
 
     /**
+     * Set the interface index
+     *
+     * \param index the interface index.
+     */
+    void SetIndex(uint32_t index);
+
+    /**
+     * Get the interface index
+     *
+     * \return The interface index.
+     */
+    uint32_t GetIndex() const;
+
+    /**
      * This callback is set when an address is removed from an interface with
      * auto-generated Arp cache and it allow the neighbor cache helper to update
      * neighbor's Arp cache
@@ -229,6 +243,7 @@ class Ipv4Interface : public Object
     bool m_ifup;                        //!< The state of this interface
     bool m_forwarding;                  //!< Forwarding state.
     uint16_t m_metric;                  //!< Interface metric
+    uint32_t m_interfaceIndex;          //!< Interface index
     Ipv4InterfaceAddressList m_ifaddrs; //!< Address list
     Ptr<Node> m_node;                   //!< The associated node
     Ptr<NetDevice> m_device;            //!< The associated NetDevice

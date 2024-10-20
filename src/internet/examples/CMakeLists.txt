@@ -25,3 +25,13 @@ build_lib_example(
     ${libinternet}
     ${libnetwork}
 )
+
+build_lib_example(
+  NAME udp-multicast
+  SOURCE_FILES udp-multicast.cc
+  LIBRARIES_TO_LINK
+    ${libapplications}
+    ${libcsma}
+    ${libinternet}
+    ${libnetwork}
+)

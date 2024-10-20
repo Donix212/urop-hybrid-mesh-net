@@ -1,5 +1,6 @@
 #include "ipv4-raw-socket-impl.h"
 
+#include "icmpv4-l4-protocol.h"
 #include "icmpv4.h"
 #include "ipv4-packet-info-tag.h"
 #include "ipv4-routing-protocol.h"
@@ -38,7 +39,7 @@ Ipv4RawSocketImpl::GetTypeId()
                           "Protocol number to match.",
                           UintegerValue(0),
                           MakeUintegerAccessor(&Ipv4RawSocketImpl::m_protocol),
-                          MakeUintegerChecker<uint16_t>())
+                          MakeUintegerChecker<uint8_t>())
             .AddAttribute("IcmpFilter",
                           "Any icmp header whose type field matches a bit in this filter is "
                           "dropped. Type must be less than 32.",
@@ -439,7 +440,7 @@ Ipv4RawSocketImpl::RecvFrom(uint32_t maxSize, uint32_t flags, Address& fromAddre
 }
 
 void
-Ipv4RawSocketImpl::SetProtocol(uint16_t protocol)
+Ipv4RawSocketImpl::SetProtocol(uint8_t protocol)
 {
     NS_LOG_FUNCTION(this << protocol);
     m_protocol = protocol;
@@ -465,57 +466,79 @@ Ipv4RawSocketImpl::ForwardUp(Ptr<const Packet> p,
         }
     }
 
-    NS_LOG_LOGIC("src = " << m_src << " dst = " << m_dst);
-    if ((m_src == Ipv4Address::GetAny() || ipHeader.GetDestination() == m_src) &&
-        (m_dst == Ipv4Address::GetAny() || ipHeader.GetSource() == m_dst) &&
-        ipHeader.GetProtocol() == m_protocol)
+    if (ipHeader.GetProtocol() == m_protocol)
     {
-        Ptr<Packet> copy = p->Copy();
-        // Should check via getsockopt ()..
-        if (IsRecvPktInfo())
+        bool forMe = false;
+        bool multicastForMe = false;
+
+        Ipv4Address pktSrc = ipHeader.GetSource();
+        Ipv4Address pktDst = ipHeader.GetDestination();
+
+        // This is for packets directed to the address the socket was bound to.
+        if ((m_src == Ipv4Address::GetAny() || pktDst == m_src) &&
+            (m_dst == Ipv4Address::GetAny() || pktSrc == m_dst))
         {
-            Ipv4PacketInfoTag tag;
-            copy->RemovePacketTag(tag);
-            tag.SetAddress(ipHeader.GetDestination());
-            tag.SetTtl(ipHeader.GetTtl());
-            tag.SetRecvIf(incomingInterface->GetDevice()->GetIfIndex());
-            copy->AddPacketTag(tag);
+            forMe = true;
         }
 
-        // Check only version 4 options
-        if (IsIpRecvTos())
+        // THis is for when the multicast addresses added with MulticastJoinGroup
+        if (pktDst.IsMulticast())
         {
-            SocketIpTosTag ipTosTag;
-            ipTosTag.SetTos(ipHeader.GetTos());
-            copy->AddPacketTag(ipTosTag);
+            bool specific = m_multicastAddresses.contains({pktDst, incomingInterface->GetIndex()});
+            bool generic = m_multicastAddresses.contains({pktDst, 0});
+
+            multicastForMe = specific || generic;
         }
 
-        if (IsIpRecvTtl())
+        if (forMe || multicastForMe)
         {
-            SocketIpTtlTag ipTtlTag;
-            ipTtlTag.SetTtl(ipHeader.GetTtl());
-            copy->AddPacketTag(ipTtlTag);
-        }
-
-        if (m_protocol == 1)
-        {
-            Icmpv4Header icmpHeader;
-            copy->PeekHeader(icmpHeader);
-            uint8_t type = icmpHeader.GetType();
-            if (type < 32 && ((uint32_t(1) << type) & m_icmpFilter))
+            Ptr<Packet> copy = p->Copy();
+            // Should check via getsockopt ()..
+            if (IsRecvPktInfo())
             {
-                // filter out icmp packet.
-                return false;
+                Ipv4PacketInfoTag tag;
+                copy->RemovePacketTag(tag);
+                tag.SetAddress(pktDst);
+                tag.SetTtl(ipHeader.GetTtl());
+                tag.SetRecvIf(incomingInterface->GetDevice()->GetIfIndex());
+                copy->AddPacketTag(tag);
             }
+
+            // Check only version 4 options
+            if (IsIpRecvTos())
+            {
+                SocketIpTosTag ipTosTag;
+                ipTosTag.SetTos(ipHeader.GetTos());
+                copy->AddPacketTag(ipTosTag);
+            }
+
+            if (IsIpRecvTtl())
+            {
+                SocketIpTtlTag ipTtlTag;
+                ipTtlTag.SetTtl(ipHeader.GetTtl());
+                copy->AddPacketTag(ipTtlTag);
+            }
+
+            if (m_protocol == Icmpv4L4Protocol::PROT_NUMBER)
+            {
+                Icmpv4Header icmpHeader;
+                copy->PeekHeader(icmpHeader);
+                uint8_t type = icmpHeader.GetType();
+                if (type < 32 && ((uint32_t(1) << type) & m_icmpFilter))
+                {
+                    // filter out icmp packet.
+                    return false;
+                }
+            }
+            copy->AddHeader(ipHeader);
+            Data data;
+            data.packet = copy;
+            data.fromIp = pktSrc;
+            data.fromProtocol = ipHeader.GetProtocol();
+            m_recv.push_back(data);
+            NotifyDataRecv();
+            return true;
         }
-        copy->AddHeader(ipHeader);
-        Data data;
-        data.packet = copy;
-        data.fromIp = ipHeader.GetSource();
-        data.fromProtocol = ipHeader.GetProtocol();
-        m_recv.push_back(data);
-        NotifyDataRecv();
-        return true;
     }
     return false;
 }
@@ -532,6 +555,54 @@ Ipv4RawSocketImpl::GetAllowBroadcast() const
 {
     NS_LOG_FUNCTION(this);
     return true;
+}
+
+int
+Ipv4RawSocketImpl::MulticastJoinGroup(const Address& groupAddress, uint32_t interfaceIndex)
+{
+    NS_LOG_FUNCTION(this << groupAddress << interfaceIndex);
+
+    if (!Ipv4Address::IsMatchingType(groupAddress))
+    {
+        NS_LOG_LOGIC("Ipv4RawSocketImpl: NOT added address: " << groupAddress
+                                                              << " (not an Ipv4Address address)");
+        return -1;
+    }
+
+    Ipv4Address addr = Ipv4Address::ConvertFrom(groupAddress);
+    if (!addr.IsMulticast())
+    {
+        NS_LOG_LOGIC("Ipv4RawSocketImpl: NOT added address: " << addr
+                                                              << " (not a multicast address)");
+        return -1;
+    }
+
+    m_multicastAddresses.insert({addr, interfaceIndex});
+    return 0;
+}
+
+int
+Ipv4RawSocketImpl::MulticastLeaveGroup(const Address& groupAddress, uint32_t interfaceIndex)
+{
+    NS_LOG_FUNCTION(this << groupAddress << interfaceIndex);
+
+    if (!Ipv4Address::IsMatchingType(groupAddress))
+    {
+        NS_LOG_LOGIC("Ipv4RawSocketImpl: NOT removed address: " << groupAddress
+                                                                << " (not an Ipv4Address address)");
+        return -1;
+    }
+
+    Ipv4Address addr = Ipv4Address::ConvertFrom(groupAddress);
+    if (!addr.IsMulticast())
+    {
+        NS_LOG_LOGIC("Ipv4RawSocketImpl: NOT removed address: " << addr
+                                                                << " (not a multicast address)");
+        return -1;
+    }
+
+    m_multicastAddresses.erase({addr, interfaceIndex});
+    return 0;
 }
 
 } // namespace ns3

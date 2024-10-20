@@ -60,7 +60,7 @@ class UdpClientHelper : public ApplicationHelper
     UdpClientHelper();
 
     /**
-     *  Create UdpClientHelper which will make life easier for people trying
+     * Create UdpClientHelper which will make life easier for people trying
      * to set up simulations with udp-client-server. Use this variant with
      * addresses that do not include a port value (e.g., Ipv4Address and
      * Ipv6Address).
@@ -71,7 +71,7 @@ class UdpClientHelper : public ApplicationHelper
 
     UdpClientHelper(const Address& ip, uint16_t port);
     /**
-     *  Create UdpClientHelper which will make life easier for people trying
+     * Create UdpClientHelper which will make life easier for people trying
      * to set up simulations with udp-client-server. Use this variant with
      * addresses that do include a port value (e.g., InetSocketAddress and
      * Inet6SocketAddress).

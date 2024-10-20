@@ -199,37 +199,37 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
     EndPoints retval3; // Matches all but local address
     EndPoints retval4; // Exact match on all 4
 
-    NS_LOG_DEBUG("Looking up endpoint for destination address " << daddr << ":" << dport);
+    NS_LOG_INFO("Looking up endpoint for destination address " << daddr << ":" << dport);
     for (auto i = m_endPoints.begin(); i != m_endPoints.end(); i++)
     {
         Ipv4EndPoint* endP = *i;
 
-        NS_LOG_DEBUG("Looking at endpoint dport="
-                     << endP->GetLocalPort() << " daddr=" << endP->GetLocalAddress()
-                     << " sport=" << endP->GetPeerPort() << " saddr=" << endP->GetPeerAddress());
+        NS_LOG_INFO("Looking at endpoint dport="
+                    << endP->GetLocalPort() << " daddr=" << endP->GetLocalAddress()
+                    << " sport=" << endP->GetPeerPort() << " saddr=" << endP->GetPeerAddress());
 
         if (!endP->IsRxEnabled())
         {
-            NS_LOG_LOGIC("Skipping endpoint " << &endP
-                                              << " because endpoint can not receive packets");
+            NS_LOG_INFO("Skipping endpoint " << &endP
+                                             << " because endpoint can not receive packets");
             continue;
         }
 
         if (endP->GetLocalPort() != dport)
         {
-            NS_LOG_LOGIC("Skipping endpoint " << &endP << " because endpoint dport "
-                                              << endP->GetLocalPort()
-                                              << " does not match packet dport " << dport);
+            NS_LOG_INFO("Skipping endpoint " << &endP << " because endpoint dport "
+                                             << endP->GetLocalPort()
+                                             << " does not match packet dport " << dport);
             continue;
         }
         if (endP->GetBoundNetDevice())
         {
             if (endP->GetBoundNetDevice() != incomingInterface->GetDevice())
             {
-                NS_LOG_LOGIC("Skipping endpoint "
-                             << &endP << " because endpoint is bound to specific device and"
-                             << endP->GetBoundNetDevice() << " does not match packet device "
-                             << incomingInterface->GetDevice());
+                NS_LOG_INFO("Skipping endpoint "
+                            << &endP << " because endpoint is bound to specific device and"
+                            << endP->GetBoundNetDevice() << " does not match packet device "
+                            << incomingInterface->GetDevice());
                 continue;
             }
         }
@@ -237,6 +237,7 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
         bool localAddressMatchesExact = false;
         bool localAddressIsAny = false;
         bool localAddressIsSubnetAny = false;
+        bool isMulticastHandledByInterface = false;
 
         // We have 3 cases:
         // 1) Exact local / destination address match
@@ -244,7 +245,13 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
         // 3) Local endpoint bound to x.y.z.0 -> matches Subnet-directed broadcast packet (e.g.,
         // x.y.z.255 in a /24 net) and direct destination match.
 
-        if (endP->GetLocalAddress() == daddr)
+        if (daddr.IsMulticast())
+        {
+            isMulticastHandledByInterface =
+                endP->IsMulticastAddressHandled(daddr, incomingInterface->GetIndex());
+        }
+
+        if (endP->GetLocalAddress() == daddr || isMulticastHandledByInterface)
         {
             // Case 1:
             localAddressMatchesExact = true;
@@ -264,14 +271,15 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
                 Ipv4Address addrNetpart = addr.GetLocal().CombineMask(addr.GetMask());
                 if (endP->GetLocalAddress() == addrNetpart)
                 {
-                    NS_LOG_LOGIC("Endpoint is SubnetDirectedAny "
-                                 << endP->GetLocalAddress() << "/"
-                                 << addr.GetMask().GetPrefixLength());
+                    NS_LOG_INFO("Endpoint is SubnetDirectedAny "
+                                << endP->GetLocalAddress() << "/"
+                                << addr.GetMask().GetPrefixLength());
 
                     Ipv4Address daddrNetPart = daddr.CombineMask(addr.GetMask());
                     if (addrNetpart == daddrNetPart)
                     {
                         localAddressIsSubnetAny = true;
+                        continue;
                     }
                 }
             }
@@ -303,27 +311,27 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
 
         if (localAddressMatchesExact && remoteAddressMatchesExact && remotePortMatchesExact)
         { // All 4 match - this is the case of an open TCP connection, for example.
-            NS_LOG_LOGIC("Found an endpoint for case 4, adding " << endP->GetLocalAddress() << ":"
-                                                                 << endP->GetLocalPort());
+            NS_LOG_INFO("Found an endpoint for case 4, adding " << endP->GetLocalAddress() << ":"
+                                                                << endP->GetLocalPort());
             retval4.push_back(endP);
         }
         if (localAddressMatchesWildCard && remoteAddressMatchesExact && remotePortMatchesExact)
         { // All but local address - no idea what this case could be.
-            NS_LOG_LOGIC("Found an endpoint for case 3, adding " << endP->GetLocalAddress() << ":"
-                                                                 << endP->GetLocalPort());
+            NS_LOG_INFO("Found an endpoint for case 3, adding " << endP->GetLocalAddress() << ":"
+                                                                << endP->GetLocalPort());
             retval3.push_back(endP);
         }
         if (localAddressMatchesExact && remoteAddressMatchesWildCard && remotePortMatchesWildCard)
         { // Only local port and local address matches exactly - Not yet opened connection
-            NS_LOG_LOGIC("Found an endpoint for case 2, adding " << endP->GetLocalAddress() << ":"
-                                                                 << endP->GetLocalPort());
+            NS_LOG_INFO("Found an endpoint for case 2, adding " << endP->GetLocalAddress() << ":"
+                                                                << endP->GetLocalPort());
             retval2.push_back(endP);
         }
         if (localAddressMatchesWildCard && remoteAddressMatchesWildCard &&
-            remotePortMatchesWildCard)
+            remotePortMatchesWildCard && !daddr.IsMulticast())
         { // Only local port matches exactly - Endpoint open to "any" connection
-            NS_LOG_LOGIC("Found an endpoint for case 1, adding " << endP->GetLocalAddress() << ":"
-                                                                 << endP->GetLocalPort());
+            NS_LOG_INFO("Found an endpoint for case 1, adding " << endP->GetLocalAddress() << ":"
+                                                                << endP->GetLocalPort());
             retval1.push_back(endP);
         }
     }
@@ -346,6 +354,8 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
     {
         retval = retval1;
     }
+
+    NS_LOG_INFO("Found " << retval.size() << " endpoins");
 
     NS_ABORT_MSG_IF(retval.size() > 1,
                     "Too many endpoints - perhaps you created too many sockets without binding "

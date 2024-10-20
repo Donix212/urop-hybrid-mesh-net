@@ -10,6 +10,7 @@
 
 #include "ipv4-end-point.h"
 #include "ipv4-header.h"
+#include "ipv4-l3-protocol.h"
 #include "ipv4-packet-info-tag.h"
 #include "ipv4-route.h"
 #include "ipv4-routing-protocol.h"
@@ -189,6 +190,7 @@ UdpSocketImpl::DeallocateEndPoint()
 {
     if (m_endPoint != nullptr)
     {
+        // m_endPoint->CleanMulticastAddresses();
         m_udp->DeAllocate(m_endPoint);
         m_endPoint = nullptr;
     }
@@ -294,10 +296,23 @@ UdpSocketImpl::Bind(const Address& address)
         {
             m_endPoint->BindToNetDevice(m_boundnetdevice);
         }
+        if (ipv4.IsMulticast())
+        {
+            if (m_boundnetdevice)
+            {
+                MulticastJoinGroup(
+                    ipv4,
+                    m_udp->GetObject<Ipv4L3Protocol>()->GetInterfaceForDevice(m_boundnetdevice));
+            }
+            else
+            {
+                MulticastJoinGroup(ipv4, 0);
+            }
+        }
     }
     else if (Inet6SocketAddress::IsMatchingType(address))
     {
-        NS_ASSERT_MSG(m_endPoint == nullptr, "Endpoint already allocated.");
+        NS_ASSERT_MSG(m_endPoint6 == nullptr, "Endpoint already allocated.");
 
         Inet6SocketAddress transport = Inet6SocketAddress::ConvertFrom(address);
         Ipv6Address ipv6 = transport.GetIpv6();
@@ -388,7 +403,6 @@ UdpSocketImpl::Close()
         m_errno = Socket::ERROR_BADF;
         return -1;
     }
-    Ipv6LeaveGroup();
     m_shutdownRecv = true;
     m_shutdownSend = true;
     DeallocateEndPoint();
@@ -933,23 +947,90 @@ UdpSocketImpl::GetPeerName(Address& address) const
 }
 
 int
-UdpSocketImpl::MulticastJoinGroup(uint32_t interface, const Address& groupAddress)
+UdpSocketImpl::MulticastJoinGroup(const Address& groupAddress, uint32_t interface)
 {
-    NS_LOG_FUNCTION(interface << groupAddress);
-    /*
-     1) sanity check interface
-     2) sanity check that it has not been called yet on this interface/group
-     3) determine address family of groupAddress
-     4) locally store a list of (interface, groupAddress)
-     5) call ipv4->MulticastJoinGroup () or Ipv6->MulticastJoinGroup ()
-    */
-    return 0;
+    NS_LOG_FUNCTION(this << groupAddress << interface);
+
+    if (Ipv4Address::IsMatchingType(groupAddress))
+    {
+        NS_ASSERT_MSG(m_endPoint != nullptr,
+                      "UdpSocketImpl: Endpoint not yet created, use Bind first");
+
+        Ipv4Address addr = Ipv4Address::ConvertFrom(groupAddress);
+        if (!addr.IsMulticast())
+        {
+            NS_LOG_LOGIC("UdpSocketImpl: NOT added address: " << addr
+                                                              << " (not a multicast address)");
+            return -1;
+        }
+        NS_LOG_LOGIC("UdpSocketImpl: added multicast address: " << addr);
+
+        Ptr<Ipv4L3Protocol> ipv4 = m_udp->GetObject<Ipv4L3Protocol>();
+        if (m_endPoint->GetBoundNetDevice())
+        {
+            int32_t boundInterface = ipv4->GetInterfaceForDevice(m_endPoint->GetBoundNetDevice());
+            NS_LOG_LOGIC("UdpSocketImpl: interface is bound, overriding interface index: "
+                         << interface << " -> " << boundInterface);
+            // ipv4->AddMulticastAddress(addr, boundInterface);
+            m_endPoint->AddMulticastAddress(addr, boundInterface);
+        }
+        else if (interface)
+        {
+            // ipv4->AddMulticastAddress(addr, interface);
+            m_endPoint->AddMulticastAddress(addr, interface);
+        }
+        else
+        {
+            // ipv4->AddMulticastAddress(addr);
+            m_endPoint->AddMulticastAddress(addr, 0);
+        }
+        return 0;
+    }
+    else if (Ipv6Address::IsMatchingType(groupAddress))
+    {
+        NS_ASSERT_MSG(m_endPoint6 != nullptr,
+                      "UdpSocketImpl: Endpoint not yet created, use Bind first");
+
+        Ipv6Address addr = Ipv6Address::ConvertFrom(groupAddress);
+        if (!addr.IsMulticast())
+        {
+            NS_LOG_LOGIC("UdpSocketImpl: NOT added address: " << addr
+                                                              << " (not a multicast address)");
+            return -1;
+        }
+        NS_LOG_LOGIC("UdpSocketImpl: added multicast address: " << addr);
+
+        Ptr<Ipv6L3Protocol> ipv6 = m_udp->GetObject<Ipv6L3Protocol>();
+        if (m_endPoint6->GetBoundNetDevice())
+        {
+            int32_t boundInterface = ipv6->GetInterfaceForDevice(m_endPoint6->GetBoundNetDevice());
+            NS_LOG_LOGIC("UdpSocketImpl: interface is bound, overriding interface index: "
+                         << interface << " -> " << boundInterface);
+            ipv6->AddMulticastAddress(addr, boundInterface);
+            // m_endPoint6->AddMulticastAddress(addr, boundInterface);
+        }
+        else if (interface)
+        {
+            ipv6->AddMulticastAddress(addr, interface);
+            // m_endPoint6->AddMulticastAddress(addr, interface);
+        }
+        else
+        {
+            ipv6->AddMulticastAddress(addr);
+            // m_endPoint6->AddMulticastAddress(addr, 0);
+        }
+        return 0;
+    }
+
+    NS_LOG_LOGIC("UdpSocketImpl: unknown address type: " << groupAddress);
+
+    return -1;
 }
 
 int
-UdpSocketImpl::MulticastLeaveGroup(uint32_t interface, const Address& groupAddress)
+UdpSocketImpl::MulticastLeaveGroup(const Address& groupAddress, uint32_t interface)
 {
-    NS_LOG_FUNCTION(interface << groupAddress);
+    NS_LOG_FUNCTION(this << groupAddress << interface);
     /*
      1) sanity check interface
      2) determine address family of groupAddress
@@ -957,6 +1038,78 @@ UdpSocketImpl::MulticastLeaveGroup(uint32_t interface, const Address& groupAddre
         if not already present (but return 0)
      5) call ipv4->MulticastLeaveGroup () or Ipv6->MulticastLeaveGroup ()
     */
+
+    if (Ipv4Address::IsMatchingType(groupAddress))
+    {
+        NS_ASSERT_MSG(m_endPoint != nullptr,
+                      "UdpSocketImpl: Endpoint not yet created, use Bind first");
+
+        Ipv4Address addr = Ipv4Address::ConvertFrom(groupAddress);
+        if (!addr.IsMulticast())
+        {
+            NS_LOG_LOGIC("UdpSocketImpl: NOT removed address: " << addr
+                                                                << " (not a multicast address)");
+            return -1;
+        }
+        NS_LOG_LOGIC("UdpSocketImpl: remove multicast address: " << addr);
+
+        Ptr<Ipv4L3Protocol> ipv4 = m_udp->GetObject<Ipv4L3Protocol>();
+        if (m_endPoint->GetBoundNetDevice())
+        {
+            int32_t boundInterface = ipv4->GetInterfaceForDevice(m_endPoint->GetBoundNetDevice());
+            NS_LOG_LOGIC("UdpSocketImpl: interface is bound, overriding interface index: "
+                         << interface << " -> " << boundInterface);
+            // ipv4->RemoveMulticastAddress(addr, boundInterface);
+            m_endPoint->RemoveMulticastAddress(addr, boundInterface);
+        }
+        else if (interface)
+        {
+            // ipv4->RemoveMulticastAddress(addr, interface);
+            m_endPoint->RemoveMulticastAddress(addr, interface);
+        }
+        else
+        {
+            // ipv4->RemoveMulticastAddress(addr);
+            m_endPoint->RemoveMulticastAddress(addr, 0);
+        }
+        return 0;
+    }
+    else if (Ipv6Address::IsMatchingType(groupAddress))
+    {
+        NS_ASSERT_MSG(m_endPoint6 != nullptr,
+                      "UdpSocketImpl: Endpoint not yet created, use Bind first");
+
+        Ipv6Address addr = Ipv6Address::ConvertFrom(groupAddress);
+        if (!addr.IsMulticast())
+        {
+            NS_LOG_LOGIC("UdpSocketImpl: NOT removed address: " << addr
+                                                                << " (not a multicast address)");
+            return -1;
+        }
+        NS_LOG_LOGIC("UdpSocketImpl: remove multicast address: " << addr);
+
+        Ptr<Ipv6L3Protocol> ipv6 = m_udp->GetObject<Ipv6L3Protocol>();
+        if (m_endPoint6->GetBoundNetDevice())
+        {
+            int32_t boundInterface = ipv6->GetInterfaceForDevice(m_endPoint6->GetBoundNetDevice());
+            NS_LOG_LOGIC("UdpSocketImpl: interface is bound, overriding interface index: "
+                         << interface << " -> " << boundInterface);
+            ipv6->RemoveMulticastAddress(addr, boundInterface);
+            // m_endPoint6->RemoveMulticastAddress(addr, boundInterface);
+        }
+        else if (interface)
+        {
+            ipv6->RemoveMulticastAddress(addr, interface);
+            // m_endPoint->RemoveMulticastAddress(addr, interface);
+        }
+        else
+        {
+            ipv6->RemoveMulticastAddress(addr);
+            // m_endPoint->RemoveMulticastAddress(addr, 0);
+        }
+        return 0;
+    }
+
     return 0;
 }
 
@@ -1235,53 +1388,6 @@ bool
 UdpSocketImpl::GetAllowBroadcast() const
 {
     return m_allowBroadcast;
-}
-
-void
-UdpSocketImpl::Ipv6JoinGroup(Ipv6Address address,
-                             Socket::Ipv6MulticastFilterMode filterMode,
-                             std::vector<Ipv6Address> sourceAddresses)
-{
-    NS_LOG_FUNCTION(this << address << &filterMode << &sourceAddresses);
-
-    // We can join only one multicast group (or change its params)
-    NS_ASSERT_MSG((m_ipv6MulticastGroupAddress == address || m_ipv6MulticastGroupAddress.IsAny()),
-                  "Can join only one IPv6 multicast group.");
-
-    m_ipv6MulticastGroupAddress = address;
-
-    Ptr<Ipv6L3Protocol> ipv6l3 = m_node->GetObject<Ipv6L3Protocol>();
-    if (ipv6l3)
-    {
-        if (filterMode == INCLUDE && sourceAddresses.empty())
-        {
-            // it is a leave
-            if (m_boundnetdevice)
-            {
-                int32_t index = ipv6l3->GetInterfaceForDevice(m_boundnetdevice);
-                NS_ASSERT_MSG(index >= 0, "Interface without a valid index");
-                ipv6l3->RemoveMulticastAddress(address, index);
-            }
-            else
-            {
-                ipv6l3->RemoveMulticastAddress(address);
-            }
-        }
-        else
-        {
-            // it is a join or a modification
-            if (m_boundnetdevice)
-            {
-                int32_t index = ipv6l3->GetInterfaceForDevice(m_boundnetdevice);
-                NS_ASSERT_MSG(index >= 0, "Interface without a valid index");
-                ipv6l3->AddMulticastAddress(address, index);
-            }
-            else
-            {
-                ipv6l3->AddMulticastAddress(address);
-            }
-        }
-    }
 }
 
 } // namespace ns3

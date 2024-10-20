@@ -98,9 +98,8 @@ class Ipv6RawSocketImpl : public Socket
     int SendTo(Ptr<Packet> p, uint32_t flags, const Address& toAddress) override;
     Ptr<Packet> Recv(uint32_t maxSize, uint32_t flags) override;
     Ptr<Packet> RecvFrom(uint32_t maxSize, uint32_t flags, Address& fromAddress) override;
-    void Ipv6JoinGroup(Ipv6Address address,
-                       Socket::Ipv6MulticastFilterMode filterMode,
-                       std::vector<Ipv6Address> sourceAddresses) override;
+    int MulticastJoinGroup(const Address& groupAddress, uint32_t interfaceIndex) override;
+    int MulticastLeaveGroup(const Address& groupAddress, uint32_t interfaceIndex) override;
 
     /**
      * \brief Set protocol field.

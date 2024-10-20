@@ -419,6 +419,7 @@ Ipv4L3Protocol::AddIpv4Interface(Ptr<Ipv4Interface> interface)
     NS_LOG_FUNCTION(this << interface);
     uint32_t index = m_interfaces.size();
     m_interfaces.push_back(interface);
+    interface->SetIndex(index);
     m_reverseInterfacesContainer[interface->GetDevice()] = index;
     return index;
 }
@@ -508,18 +509,13 @@ Ipv4L3Protocol::IsDestinationAddress(Ipv4Address address, uint32_t iif) const
 
     if (address.IsMulticast())
     {
-#ifdef NOTYET
-        if (MulticastCheckGroup(iif, address))
-#endif
-        {
-            NS_LOG_LOGIC("For me (Ipv4Addr multicast address)");
-            return true;
-        }
+        NS_LOG_LOGIC("Maybe for me (IPv4 multicast address) - filtering is done at socket level.");
+        return true;
     }
 
     if (address.IsBroadcast())
     {
-        NS_LOG_LOGIC("For me (Ipv4Addr broadcast address)");
+        NS_LOG_LOGIC("For me (IPv4 broadcast address)");
         return true;
     }
 
@@ -1881,5 +1877,81 @@ Ipv4L3Protocol::HandleTimeout()
     Time difference = std::get<0>(*m_timeoutEventList.begin()) - now;
     m_timeoutEvent = Simulator::Schedule(difference, &Ipv4L3Protocol::HandleTimeout, this);
 }
+
+// void
+// Ipv4L3Protocol::AddMulticastAddress(Ipv4Address address, uint32_t interface)
+// {
+//     NS_LOG_FUNCTION(address << interface);
+
+//     if (!address.IsMulticast())
+//     {
+//         NS_LOG_WARN("Not adding a non-multicast address " << address);
+//         return;
+//     }
+
+//     auto key = std::make_pair(address, interface);
+//     m_multicastAddresses[key]++;
+// }
+
+// void
+// Ipv4L3Protocol::AddMulticastAddress(Ipv4Address address)
+// {
+//     NS_LOG_FUNCTION(address);
+
+//     if (!address.IsMulticast())
+//     {
+//         NS_LOG_WARN("Not adding a non-multicast address " << address);
+//         return;
+//     }
+
+//     m_multicastAddressesNoInterface[address]++;
+// }
+
+// void
+// Ipv4L3Protocol::RemoveMulticastAddress(Ipv4Address address, uint32_t interface)
+// {
+//     NS_LOG_FUNCTION(address << interface);
+
+//     Ipv4RegisteredMulticastAddressKey_t key = std::make_pair(address, interface);
+
+//     m_multicastAddresses[key]--;
+//     if (m_multicastAddresses[key] == 0)
+//     {
+//         m_multicastAddresses.erase(key);
+//     }
+// }
+
+// void
+// Ipv4L3Protocol::RemoveMulticastAddress(Ipv4Address address)
+// {
+//     NS_LOG_FUNCTION(address);
+
+//     m_multicastAddressesNoInterface[address]--;
+//     if (m_multicastAddressesNoInterface[address] == 0)
+//     {
+//         m_multicastAddressesNoInterface.erase(address);
+//     }
+// }
+
+// bool
+// Ipv4L3Protocol::IsRegisteredMulticastAddress(Ipv4Address address, uint32_t interface) const
+// {
+//     NS_LOG_FUNCTION(address << interface);
+
+//     Ipv4RegisteredMulticastAddressKey_t key = std::make_pair(address, interface);
+//     auto iter = m_multicastAddresses.find(key);
+
+//     return iter != m_multicastAddresses.end();
+// }
+
+// bool
+// Ipv4L3Protocol::IsRegisteredMulticastAddress(Ipv4Address address) const
+// {
+//     NS_LOG_FUNCTION(address);
+
+//     auto iter = m_multicastAddressesNoInterface.find(address);
+
+//     return iter != m_multicastAddressesNoInterface.end();
+// }
 
 } // namespace ns3

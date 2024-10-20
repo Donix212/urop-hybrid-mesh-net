@@ -118,23 +118,6 @@ class Socket : public Object
     };
 
     /**
-     * \enum Ipv6MulticastFilterMode
-     * \brief Enumeration of the possible filter of a socket.
-     *
-     * A socket can have filters on specific sources to include only
-     * packets incoming from them, or to exclude packets incoming
-     * from specific sources.
-     * Moreover, inclusion and exclusion also works as a leave,
-     * since "joining" a group without allowed sources is equivalent
-     * to leaving it.
-     */
-    enum Ipv6MulticastFilterMode
-    {
-        INCLUDE = 1,
-        EXCLUDE
-    };
-
-    /**
      * This method wraps the creation of sockets that is performed
      * on a given node by a SocketFactory specified by TypeId.
      *
@@ -945,38 +928,54 @@ class Socket : public Object
     bool IsIpv6RecvHopLimit() const;
 
     /**
-     * \brief Joins a IPv6 multicast group.
+     * \brief Corresponds to socket option MCAST_JOIN_GROUP
      *
-     * Based on the filter mode and source addresses this can be interpreted as a
-     * join, leave, or modification to source filtering on a multicast group.
+     * \param groupAddress multicast group address
+     * \param interfaceIndex IP interface index, or 0 (any interface)
+     * \returns on success, zero is returned.  On error, -1 is returned,
+     *          and errno is set appropriately
      *
-     * Mind that a socket can join only one multicast group. Any attempt to join another group will
-     * remove the old one.
+     * Enable reception of multicast datagrams for this socket on the
+     * interface number specified.
      *
+     * In the future, this function will generate trigger IGMP
+     * joins as necessary when IGMP is implemented, but for now, this
+     * just enables multicast datagram reception in the system if not already
+     * enabled for this interface/groupAddress combination.
      *
-     * \param address Requested multicast address.
-     * \param filterMode Socket filtering mode (INCLUDE | EXCLUDE).
-     * \param sourceAddresses All the source addresses on which socket is interested or not
-     * interested.
+     * \attention IGMP is not yet implemented in ns-3
+     *
+     * This function may be called repeatedly on a given socket but each
+     * join must be for a different multicast address, or for the same
+     * multicast address but on a different interface from previous joins.
+     * This enables host multihoming, and the ability to join the same
+     * group on different interfaces.
+     *
+     * \note to force the socket to receive only packets from the loopback
+     * interface - which has an index equal to zero - it is necessary to
+     * bind the socket to the `LoopbackNetDevice` using `Socket::BindToNetDevice`.
      */
-    virtual void Ipv6JoinGroup(Ipv6Address address,
-                               Ipv6MulticastFilterMode filterMode,
-                               std::vector<Ipv6Address> sourceAddresses);
+    virtual int MulticastJoinGroup(const Address& groupAddress, uint32_t interfaceIndex) = 0;
 
     /**
-     * \brief Joins a IPv6 multicast group without filters.
+     * \brief Corresponds to socket option MCAST_LEAVE_GROUP
      *
-     * A socket can join only one multicast group. Any attempt to join another group will remove the
-     * old one.
+     * \param groupAddress multicast group address
+     * \param interfaceIndex IP interface index, or 0 (any interface)
+     * \returns on success, zero is returned.  On error, -1 is returned,
+     *          and errno is set appropriately
      *
-     * \param address Group address on which socket wants to join.
+     * Disable reception of multicast datagrams for this socket on the
+     * interface number specified.
+     *
+     * In the future, this function will generate trigger IGMP
+     * leaves as necessary when IGMP is implemented, but for now, this
+     * just disables multicast datagram reception in the system if this
+     * socket is the last for this interface/groupAddress combination.
+     *
+     * \attention IGMP is not yet implemented in ns-3
      */
-    virtual void Ipv6JoinGroup(Ipv6Address address);
-
-    /**
-     * \brief Leaves IPv6 multicast group this socket is joined to.
-     */
-    virtual void Ipv6LeaveGroup();
+    virtual int MulticastLeaveGroup(const Address& groupAddress, uint32_t interfaceIndex) = 0;
 
   protected:
     /**
@@ -1070,7 +1069,6 @@ class Socket : public Object
     Ptr<NetDevice> m_boundnetdevice; //!< the device this socket is bound to (might be null).
     bool
         m_recvPktInfo; //!< if the socket should add packet info tags to the packet forwarded to L4.
-    Ipv6Address m_ipv6MulticastGroupAddress; //!< IPv6 multicast group address.
 
   private:
     Callback<void, Ptr<Socket>> m_connectionSucceeded; //!< connection succeeded callback

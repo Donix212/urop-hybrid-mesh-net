@@ -23,6 +23,7 @@
 #include "ns3/trace-source-accessor.h"
 #include "ns3/udp-socket-factory.h"
 #include "ns3/udp-socket.h"
+#include "ns3/uinteger.h"
 
 namespace ns3
 {
@@ -54,6 +55,11 @@ PacketSink::GetTypeId()
                           BooleanValue(false),
                           MakeBooleanAccessor(&PacketSink::m_enableSeqTsSizeHeader),
                           MakeBooleanChecker())
+            .AddAttribute("BoundInputInterface",
+                          "The interface number to receive the packets (device interface index)",
+                          UintegerValue(0),
+                          MakeUintegerAccessor(&PacketSink::m_boundInterface),
+                          MakeUintegerChecker<uint32_t>())
             .AddTraceSource("Rx",
                             "A packet has been received",
                             MakeTraceSourceAccessor(&PacketSink::m_rxTrace),
@@ -135,13 +141,30 @@ PacketSink::StartApplication() // Called at time specified by Start
             if (udpSocket)
             {
                 // equivalent to setsockopt (MCAST_JOIN_GROUP)
-                udpSocket->MulticastJoinGroup(0, m_local);
+                if (InetSocketAddress::IsMatchingType(m_local))
+                {
+                    udpSocket->MulticastJoinGroup(InetSocketAddress::ConvertFrom(m_local).GetIpv4(),
+                                                  0);
+                }
+                else if (Inet6SocketAddress::IsMatchingType(m_local))
+                {
+                    udpSocket->MulticastJoinGroup(
+                        Inet6SocketAddress::ConvertFrom(m_local).GetIpv6(),
+                        0);
+                }
             }
             else
             {
                 NS_FATAL_ERROR("Error: joining multicast on a non-UDP socket");
             }
         }
+    }
+    if (m_boundInterface)
+    {
+        NS_ASSERT_MSG(m_boundInterface < m_node->GetNDevices(),
+                      "Input interface not found: " << m_boundInterface);
+
+        m_socket->BindToNetDevice(m_node->GetDevice(m_boundInterface));
     }
 
     if (InetSocketAddress::IsMatchingType(m_local))
