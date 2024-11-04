@@ -174,6 +174,12 @@ class Time
     explicit inline Time(double v)
         : m_data(llround(v))
     {
+        if (fmod(v, 1) != 0.0)
+        {
+            NS_LOG_UNCOND("Time being initialized with double "
+                          << v << ", which was rounded to " << llround(v)
+                          << ". It is recommended to use integers instead.");
+        }
         if (g_markingTimes)
         {
             Mark(this);
@@ -504,6 +510,8 @@ class Time
 
     inline static Time FromDouble(double value, Unit unit)
     {
+        NS_LOG_UNCOND("Use of double values for Time initialization is discouraged. "
+                      "For example, IEEE-754 stores 4.6 as 4.599999904632568359375.");
         return From(int64x64_t(value), unit);
     }
 
