@@ -576,6 +576,12 @@ RealtimeSimulatorImpl::Now() const
     return TimeStep(m_currentTs);
 }
 
+Time
+RealtimeSimulatorImpl::GetNextEventTime() const
+{
+    return TimeStep(m_events->PeekNext().key.m_ts);
+}
+
 //
 // Schedule an event for a _relative_ time in the future.
 //

@@ -524,6 +524,12 @@ DistributedSimulatorImpl::Now() const
 }
 
 Time
+DistributedSimulatorImpl::GetNextEventTime() const
+{
+    return TimeStep(m_events->PeekNext().key.m_ts);
+}
+
+Time
 DistributedSimulatorImpl::GetDelayLeft(const EventId& id) const
 {
     if (IsExpired(id))

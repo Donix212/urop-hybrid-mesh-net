@@ -69,6 +69,9 @@ class SimulatorImpl : public Object
     virtual void Run() = 0;
     /** \copydoc Simulator::Now */
     virtual Time Now() const = 0;
+    /** \copydoc Simulator::GetNextEventTime */
+    virtual Time GetNextEventTime() const = 0;
+
     /** \copydoc Simulator::GetDelayLeft */
     virtual Time GetDelayLeft(const EventId& id) const = 0;
     /** \copydoc Simulator::GetMaximumSimulationTime */

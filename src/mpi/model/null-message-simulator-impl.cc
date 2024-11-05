@@ -447,6 +447,12 @@ NullMessageSimulatorImpl::Now() const
 }
 
 Time
+NullMessageSimulatorImpl::GetNextEventTime() const
+{
+    return TimeStep(m_events->PeekNext().key.m_ts);
+}
+
+Time
 NullMessageSimulatorImpl::GetDelayLeft(const EventId& id) const
 {
     if (IsExpired(id))

@@ -432,6 +432,13 @@ class Simulator
     static Time Now();
 
     /**
+     * Return the date of the next scheduled event.
+     *
+     * @returns the date of the next scheduled event.
+     */
+    static Time GetNextEventTime();
+
+    /**
      * Get the remaining time until this event will execute.
      *
      * @param [in] id The event id to analyse.
