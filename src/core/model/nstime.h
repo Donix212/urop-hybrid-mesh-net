@@ -1254,6 +1254,10 @@ std::istream& operator>>(std::istream& is, Time& time);
  * Construct a Time in the indicated unit.
  * \param [in] value The value
  * \return The Time
+ *
+ * Call graph was not generated because of its size.
+ * \hidecallergraph
+ * \hidecallgraph
  * @{
  */
 inline Time

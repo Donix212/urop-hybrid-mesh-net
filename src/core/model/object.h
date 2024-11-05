@@ -73,6 +73,9 @@ struct ObjectDeleter
  * all its aggregates. The DoDispose() method is always automatically
  * invoked from the Unref() method before destroying the Object,
  * even if the user did not call Dispose() directly.
+ *
+ * Inheritance graph was not generated because of its size.
+ * \hideinheritancegraph
  */
 class Object : public SimpleRefCount<Object, ObjectBase, ObjectDeleter>
 {

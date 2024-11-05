@@ -76,6 +76,10 @@ bool SetFailSafe(std::string path, const AttributeValue& value);
  * This method overrides the initial value of the
  * matching attribute. This method cannot fail: it will
  * crash if the input attribute name or value is invalid.
+ *
+ * Call graph was not generated because of its size.
+ * \hidecallergraph
+ * \hidecallgraph
  */
 void SetDefault(std::string name, const AttributeValue& value);
 /**
@@ -86,6 +90,10 @@ void SetDefault(std::string name, const AttributeValue& value);
  *
  * This method overrides the initial value of the
  * matching attribute.
+ *
+ * Call graph was not generated because of its size.
+ * \hidecallergraph
+ * \hidecallgraph
  */
 bool SetDefaultFailSafe(std::string name, const AttributeValue& value);
 /**
@@ -149,6 +157,10 @@ void DisconnectWithoutContext(std::string path, const CallbackBase& cb);
  * If no matching trace sources are found, this method will
  * throw a fatal error.  Use ConnectFailSafe if the absence
  * of matching trace sources should not be fatal.
+ *
+ * Call graph was not generated because of its size.
+ * \hidecallergraph
+ * \hidecallgraph
  */
 void Connect(std::string path, const CallbackBase& cb);
 /**
@@ -161,6 +173,10 @@ void Connect(std::string path, const CallbackBase& cb);
  * to them in such a way that the callback will receive an extra
  * context string upon trace event notification.
  * \returns \c true if any trace sources could be connected.
+ *
+ * Call graph was not generated because of its size.
+ * \hidecallergraph
+ * \hidecallgraph
  */
 bool ConnectFailSafe(std::string path, const CallbackBase& cb);
 /**

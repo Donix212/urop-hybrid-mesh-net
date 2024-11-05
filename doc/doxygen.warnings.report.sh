@@ -322,8 +322,6 @@ else
     cat <<-EOF >> $conf
 
     # doxygen.warnings.report.sh:
-    EXTRACT_ALL = no
-    WARNINGS = no
     WARN_LOGFILE = doc/$WARNINGSLOGFILE
     SOURCE_BROWSER = no
     HTML_OUTPUT = html-warn
@@ -337,6 +335,25 @@ else
     CALLER_GRAPH = no
     GRAPHICAL_HIERARCHY = no
     DIRECTORY_GRAPH = no
+    PREDEFINED = NS3_ASSERT_ENABLE \
+                 NS3_LOG_ENABLE \
+                 "NS_ABORT_MSG_UNLESS(x,y)=1" \
+                 "NS_ABORT_MSG_IF(x,y)=1" \
+                 NS_LOG_COMPONENT_DEFINE()=1 \
+                 NS_LOG_COMPONENT_DEFINE_MASK()=1 \
+                 NS_OBJECT_ENSURE_REGISTERED()=1 \
+                 NS_OBJECT_TEMPLATE_CLASS_DEFINE()=1 \
+                 NS_OBJECT_TEMPLATE_CLASS_TWO_DEFINE()=1 \
+                 NS3_BUILD_PROFILE_DEBUG \
+                 NS3_BUILD_PROFILE_RELEASE \
+                 NS3_BUILD_PROFILE_OPTIMIZED \
+                 INT64X64_USE_CAIRO \
+                 INT64X64_USE_DOUBLE \
+                 INT64X64_USE_CAIRO \
+                 __attribute__(x)= \
+                 __declspec(x)= \
+                 DOXYGEN_SHOULD_SKIP_THIS
+
 EOF
 
     # Swap back to original config

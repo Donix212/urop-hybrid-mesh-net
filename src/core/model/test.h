@@ -1045,6 +1045,9 @@ class TestRunnerImpl;
  * method, and use the NS_TEST_* macros within DoRun.
  *
  * \see sample-test-suite.cc
+ *
+ * Inheritance graph was not generated because of its size.
+ * \hideinheritancegraph
  */
 class TestCase
 {
@@ -1262,6 +1265,9 @@ class TestCase
  * \brief A suite of tests to run.
  *
  * \see sample-test-suite.cc
+ *
+ * Inheritance graph was not generated because of its size.
+ * \hideinheritancegraph
  */
 class TestSuite : public TestCase
 {
