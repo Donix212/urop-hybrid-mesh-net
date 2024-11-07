@@ -2,6 +2,7 @@ set(base_examples
     dumbbell-animation
     grid-animation
     star-animation
+    tree-animation
     colors-link-description
     resources-counters
 )

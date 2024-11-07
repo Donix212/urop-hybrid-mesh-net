@@ -21,12 +21,40 @@ namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("PointToPointStarHelper");
+NS_OBJECT_ENSURE_REGISTERED(PointToPointStarHelper);
+
+TypeId
+PointToPointStarHelper::GetTypeId()
+{
+    static TypeId tid = TypeId("ns3::PointToPointStarHelper")
+                            .SetParent<Object>()
+                            .AddConstructor<PointToPointStarHelper>();
+    return tid;
+}
+
+PointToPointStarHelper::PointToPointStarHelper()
+{
+}
 
 PointToPointStarHelper::PointToPointStarHelper(uint32_t numSpokes, PointToPointHelper p2pHelper)
 {
     m_hub.Create(1);
     m_spokes.Create(numSpokes);
 
+    for (uint32_t i = 0; i < m_spokes.GetN(); ++i)
+    {
+        NetDeviceContainer nd = p2pHelper.Install(m_hub.Get(0), m_spokes.Get(i));
+        m_hubDevices.Add(nd.Get(0));
+        m_spokeDevices.Add(nd.Get(1));
+    }
+}
+
+PointToPointStarHelper::PointToPointStarHelper(ns3::NodeContainer hub,
+                                               uint32_t numSpokes,
+                                               PointToPointHelper p2pHelper)
+    : m_hub(hub)
+{
+    m_spokes.Create(numSpokes);
     for (uint32_t i = 0; i < m_spokes.GetN(); ++i)
     {
         NetDeviceContainer nd = p2pHelper.Install(m_hub.Get(0), m_spokes.Get(i));
@@ -49,6 +77,24 @@ Ptr<Node>
 PointToPointStarHelper::GetSpokeNode(uint32_t i) const
 {
     return m_spokes.Get(i);
+}
+
+NodeContainer
+PointToPointStarHelper::GetSpokeNodes() const
+{
+    return m_spokes;
+}
+
+Ptr<NetDevice>
+PointToPointStarHelper::GetHubNetDevice(uint32_t i) const
+{
+    return m_hubDevices.Get(i);
+}
+
+Ptr<NetDevice>
+PointToPointStarHelper::GetSpokeNetDevice(uint32_t i) const
+{
+    return m_spokeDevices.Get(i);
 }
 
 Ipv4Address
@@ -100,6 +146,15 @@ PointToPointStarHelper::AssignIpv4Addresses(Ipv4AddressHelper address)
 }
 
 void
+PointToPointStarHelper::AssignIpv4AddressForSingleSpoke(Ipv4AddressHelper address,
+                                                        uint32_t spoke_id)
+{
+    NS_ASSERT(spoke_id < SpokeCount());
+    m_hubInterfaces.Add(address.Assign(m_hubDevices.Get(spoke_id)));
+    m_spokeInterfaces.Add(address.Assign(m_spokeDevices.Get(spoke_id)));
+}
+
+void
 PointToPointStarHelper::AssignIpv6Addresses(Ipv6Address addrBase, Ipv6Prefix prefix)
 {
     Ipv6AddressGenerator::Init(addrBase, prefix);
@@ -118,6 +173,25 @@ PointToPointStarHelper::AssignIpv6Addresses(Ipv6Address addrBase, Ipv6Prefix pre
 
         Ipv6AddressGenerator::NextNetwork(prefix);
     }
+}
+
+void
+PointToPointStarHelper::AssignIpv6AddressForSingleSpoke(Ipv6Address addrBase,
+                                                        Ipv6Prefix prefix,
+                                                        uint32_t spoke_id)
+{
+    NS_ASSERT(spoke_id < SpokeCount());
+    Ipv6AddressGenerator::Init(addrBase, prefix);
+    Ipv6Address v6network;
+    Ipv6AddressHelper addressHelper;
+
+    v6network = Ipv6AddressGenerator::GetNetwork(prefix);
+    addressHelper.SetBase(v6network, prefix);
+
+    Ipv6InterfaceContainer ic = addressHelper.Assign(m_hubDevices.Get(spoke_id));
+    m_hubInterfaces6.Add(ic);
+    ic = addressHelper.Assign(m_spokeDevices.Get(spoke_id));
+    m_spokeInterfaces6.Add(ic);
 }
 
 void
