@@ -274,6 +274,10 @@ TcpSocketBase::GetTypeId()
                             "Receive tcp packet from IP protocol",
                             MakeTraceSourceAccessor(&TcpSocketBase::m_rxTrace),
                             "ns3::TcpSocketBase::TcpTxRxTracedCallback")
+            .AddTraceSource("RxDiscard",
+                            "Discard tcp packet received from IP, e.g. due to invalid segments",
+                            MakeTraceSourceAccessor(&TcpSocketBase::m_rxDiscardTrace),
+                            "ns3::TcpSocketBase::TcpTxRxTracedCallback")
             .AddTraceSource("EcnEchoSeq",
                             "Sequence of last received ECN Echo",
                             MakeTraceSourceAccessor(&TcpSocketBase::m_ecnEchoSeq),
@@ -1227,6 +1231,7 @@ TcpSocketBase::ForwardUp(Ptr<Packet> packet,
                            bytesRemoved,
                            packet->GetSize() - bytesRemoved))
     {
+        m_rxDiscardTrace(packet, tcpHeader, this);
         return;
     }
 
@@ -1267,6 +1272,7 @@ TcpSocketBase::ForwardUp6(Ptr<Packet> packet,
                            bytesRemoved,
                            packet->GetSize() - bytesRemoved))
     {
+        m_rxDiscardTrace(packet, tcpHeader, this);
         return;
     }
 
