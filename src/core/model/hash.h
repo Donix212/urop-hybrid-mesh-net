@@ -32,6 +32,10 @@ namespace ns3
  *
  * \brief Generic Hash function interface.
  *
+ * Use the `Hasher` class when you need to generate stable hash values for output.
+ * For general hash operations where stability is not critical, consider using other hash functions
+ * provided by the standard library.
+ *
  * See \ref Hasher for main entry point.
  * See \ref hash-example.cc for example usage.
  */
@@ -40,8 +44,11 @@ namespace ns3
  *
  *  \brief Generic Hash function interface.
  *
- *  This class provides a generic interface for computing hashes
- *  of buffers.  Various getters return hashes of different lengths.
+ *  This class provides a generic interface for computing hashes of buffers. It is designed to
+ *  generate stable hash values that are consistent across different runs, platforms, and compilers,
+ *  making it suitable for generating output where consistency is essential.
+ *
+ *  Various getters return hashes of different lengths.
  *
  *  Call clear() between calls to the getter to reset the
  *  internal state and hash each buffer separately.

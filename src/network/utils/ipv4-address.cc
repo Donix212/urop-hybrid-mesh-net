@@ -9,6 +9,7 @@
 #include "ipv4-address.h"
 
 #include "ns3/assert.h"
+#include "ns3/hash.h"
 #include "ns3/log.h"
 
 #include <cstdlib>
@@ -388,12 +389,6 @@ Ipv4Address::GetLoopback()
     return loopback;
 }
 
-size_t
-Ipv4AddressHash::operator()(const Ipv4Address& x) const
-{
-    return std::hash<uint32_t>()(x.Get());
-}
-
 std::ostream&
 operator<<(std::ostream& os, const Ipv4Address& address)
 {
@@ -430,3 +425,13 @@ ATTRIBUTE_HELPER_CPP(Ipv4Address);
 ATTRIBUTE_HELPER_CPP(Ipv4Mask);
 
 } // namespace ns3
+
+/****************************************************
+ *      Global Functions (outside namespace ns3)
+ ***************************************************/
+
+std::size_t
+std::hash<ns3::Ipv4Address>::operator()(const ns3::Ipv4Address& address) const
+{
+    return address.Get();
+}

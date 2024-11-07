@@ -9,6 +9,8 @@
 #include "address.h"
 
 #include "ns3/assert.h"
+#include "ns3/inet-socket-address.h"
+#include "ns3/inet6-socket-address.h"
 #include "ns3/log.h"
 
 #include <cstring>
@@ -292,3 +294,25 @@ operator>>(std::istream& is, Address& address)
 }
 
 } // namespace ns3
+
+/****************************************************
+ *      Global Functions (outside namespace ns3)
+ ***************************************************/
+
+std::size_t
+std::hash<ns3::Address>::operator()(const ns3::Address& x) const
+{
+    if (ns3::InetSocketAddress::IsMatchingType(x))
+    {
+        ns3::InetSocketAddress a = ns3::InetSocketAddress::ConvertFrom(x);
+        return std::hash<ns3::Ipv4Address>()(a.GetIpv4());
+    }
+    else if (ns3::Inet6SocketAddress::IsMatchingType(x))
+    {
+        ns3::Inet6SocketAddress a = ns3::Inet6SocketAddress::ConvertFrom(x);
+        return std::hash<ns3::Ipv6Address>()(a.GetIpv6());
+    }
+
+    NS_ABORT_MSG("Unexpected address type, neither IPv4 nor IPv6");
+    return 0; // silence the warnings.
+}

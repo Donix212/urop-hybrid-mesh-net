@@ -381,25 +381,6 @@ operator<(const Ipv4Address& a, const Ipv4Address& b)
     return a.m_address < b.m_address;
 }
 
-/**
- * \ingroup address
- *
- * \brief Class providing an hash for IPv4 addresses
- */
-class Ipv4AddressHash
-{
-  public:
-    /**
-     * \brief Returns the hash of an IPv4 address.
-     * \param x the address
-     * \return the hash
-     *
-     * This method uses std::hash rather than class Hash
-     * as speed is more important than cryptographic robustness.
-     */
-    size_t operator()(const Ipv4Address& x) const;
-};
-
 inline bool
 operator==(const Ipv4Mask& a, const Ipv4Mask& b)
 {
@@ -413,5 +394,28 @@ operator!=(const Ipv4Mask& a, const Ipv4Mask& b)
 }
 
 } // namespace ns3
+
+/****************************************************
+ *      Global Functions (outside namespace ns3)
+ ***************************************************/
+
+/**
+ * \ingroup address
+ * Hashing functor taking a Ipv4Address and returning a @c std::size_t.
+ * For use with `unordered_map` and `unordered_set`.
+ * This functor simply return the original IPv4 address. It generate stable hash values that are
+ * consistent across different runs, platforms, and compilers, making it suitable for generating
+ * output where consistency is essential.
+ */
+template <>
+struct std::hash<ns3::Ipv4Address>
+{
+    /**
+     * The functor.
+     * \param address IPv4 address to hash
+     * \return the hash of the address
+     */
+    std::size_t operator()(const ns3::Ipv4Address& address) const;
+};
 
 #endif /* IPV4_ADDRESS_H */

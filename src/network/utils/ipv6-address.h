@@ -670,21 +670,29 @@ operator!=(const Ipv6Prefix& a, const Ipv6Prefix& b)
     return std::memcmp(a.m_prefix, b.m_prefix, 16);
 }
 
-/**
- * \class Ipv6AddressHash
- * \brief Hash function class for IPv6 addresses.
- */
-class Ipv6AddressHash
-{
-  public:
-    /**
-     * \brief Returns the hash of an IPv6 address.
-     * \param x IPv6 address to hash
-     * \returns the hash of the address
-     */
-    size_t operator()(const Ipv6Address& x) const;
-};
-
 } /* namespace ns3 */
+
+/****************************************************
+ *      Global Functions (outside namespace ns3)
+ ***************************************************/
+
+/**
+ * \ingroup address
+ * Hashing functor taking a Ipv6Address and returning a @c std::size_t.
+ * For use with `unordered_map` and `unordered_set`.
+ * This functor uses the `Hasher` class to generate stable hash values that are consistent across
+ * different runs, platforms, and compilers, making it suitable for generating output where
+ * consistency is essential.
+ */
+template <>
+struct std::hash<ns3::Ipv6Address>
+{
+    /**
+     * The functor.
+     * \param address IPv6 address to hash
+     * \return the hash of the address
+     */
+    std::size_t operator()(const ns3::Ipv6Address& address) const;
+};
 
 #endif /* IPV6_ADDRESS_H */
