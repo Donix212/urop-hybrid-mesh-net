@@ -1439,7 +1439,7 @@ class TcpSocketBase : public TcpSocket
     // Guesses over the other connection end
     bool m_isFirstPartialAck{true}; //!< First partial ACK during RECOVERY
 
-    // The following three traces pass a packet with a TCP header
+    // The following four traces pass a packet with a TCP header
     TracedCallback<Ptr<const Packet>,
                    const TcpHeader&,
                    Ptr<const TcpSocketBase>>
@@ -1456,6 +1456,11 @@ class TcpSocketBase : public TcpSocket
                    const TcpHeader&,
                    Ptr<const TcpSocketBase>>
         m_rxTrace; //!< Trace of received packets
+
+    TracedCallback<Ptr<const Packet>,
+                   const TcpHeader&,
+                   Ptr<const TcpSocketBase>>
+        m_rxDiscardTrace; //!< Trace of packets received from IP but discarded by TCP
 
     // Pacing related variable
     Timer m_pacingTimer{Timer::CANCEL_ON_DESTROY}; //!< Pacing Event
