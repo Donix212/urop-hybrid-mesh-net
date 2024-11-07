@@ -169,6 +169,12 @@ Node::GetApplication(uint32_t index) const
     return m_applications[index];
 }
 
+std::vector<Ptr<Application>>
+Node::GetApplications() const
+{
+    return m_applications;
+}
+
 uint32_t
 Node::GetNApplications() const
 {
