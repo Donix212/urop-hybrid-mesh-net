@@ -363,9 +363,12 @@ SequentialRandomVariable::GetValue()
 
 NS_OBJECT_ENSURE_REGISTERED(ExponentialRandomVariable);
 
+const double ExponentialRandomVariable::INFINITE_VALUE = 1e307;
+
 TypeId
 ExponentialRandomVariable::GetTypeId()
 {
+    NS_WARNING_PUSH_DEPRECATED;
     static TypeId tid =
         TypeId("ns3::ExponentialRandomVariable")
             .SetParent<RandomVariableStream>()
@@ -376,17 +379,34 @@ ExponentialRandomVariable::GetTypeId()
                           DoubleValue(1.0),
                           MakeDoubleAccessor(&ExponentialRandomVariable::m_mean),
                           MakeDoubleChecker<double>())
-            .AddAttribute("Bound",
-                          "The upper bound on the values returned by this RNG stream.",
+            .AddAttribute(
+                "Bound",
+                "The upper bound on the values returned by this RNG stream.",
+                DoubleValue(0.0),
+                MakeDoubleAccessor(&ExponentialRandomVariable::SetBound,
+                                   &ExponentialRandomVariable::GetBound),
+                MakeDoubleChecker<double>(),
+                TypeId::DEPRECATED,
+                "DEPRECATED since ns-3.43. Use the LowerBound and UpperBound attributes instead.")
+            .AddAttribute("LowerBound",
+                          "The lower bound on the values returned by this RNG stream.",
                           DoubleValue(0.0),
-                          MakeDoubleAccessor(&ExponentialRandomVariable::m_bound),
+                          MakeDoubleAccessor(&ExponentialRandomVariable::SetLowerBound,
+                                             &ExponentialRandomVariable::GetLowerBound),
+                          MakeDoubleChecker<double>())
+            .AddAttribute("UpperBound",
+                          "The upper bound on the values returned by this RNG stream.",
+                          DoubleValue(INFINITE_VALUE),
+                          MakeDoubleAccessor(&ExponentialRandomVariable::SetUpperBound,
+                                             &ExponentialRandomVariable::GetUpperBound),
                           MakeDoubleChecker<double>());
+    NS_WARNING_POP;
     return tid;
 }
 
 ExponentialRandomVariable::ExponentialRandomVariable()
 {
-    // m_mean and m_bound are initialized after constructor by attributes
+    // m_mean, m_lowerBound, and m_upperBound are initialized after constructor by attributes
     NS_LOG_FUNCTION(this);
 }
 
@@ -399,12 +419,78 @@ ExponentialRandomVariable::GetMean() const
 double
 ExponentialRandomVariable::GetBound() const
 {
-    return m_bound;
+    return m_upperBound;
+}
+
+void
+ExponentialRandomVariable::SetBound(double bound)
+{
+    if (bound < 0.0)
+    {
+        NS_FATAL_ERROR("Upper bound must be non-negative. Upper bound: " << bound);
+    }
+    else
+    {
+        m_lowerBound = 0.0;
+        m_upperBound = bound;
+    }
+}
+
+void
+ExponentialRandomVariable::SetLowerBound(double lowerBound)
+{
+    if (lowerBound < 0.0)
+    {
+        NS_FATAL_ERROR("Lower bound must be non-negative. Lower bound: " << lowerBound);
+    }
+    else
+    {
+        m_lowerBound = lowerBound;
+    }
 }
 
 double
-ExponentialRandomVariable::GetValue(double mean, double bound)
+ExponentialRandomVariable::GetLowerBound() const
 {
+    return m_lowerBound;
+}
+
+void
+ExponentialRandomVariable::SetUpperBound(double upperBound)
+{
+    if (upperBound < 0.0)
+    {
+        NS_FATAL_ERROR("Upper bound must be non-negative. Upper bound: " << upperBound);
+    }
+    else
+    {
+        m_upperBound = upperBound;
+    }
+}
+
+double
+ExponentialRandomVariable::GetUpperBound() const
+{
+    if (m_upperBound < m_lowerBound)
+    {
+        NS_FATAL_ERROR("Upper bound must be greater than or equal to lower bound. LowerBound: "
+                       << m_lowerBound << ", UpperBound: " << m_upperBound);
+    }
+    else
+    {
+        return m_upperBound;
+    }
+}
+
+double
+ExponentialRandomVariable::GetValue(double mean, double lowerBound, double upperBound)
+{
+    if (lowerBound > upperBound || lowerBound < 0.0 || upperBound < 0.0)
+    {
+        NS_FATAL_ERROR("Lower bound must be less than or equal to upper bound and both bounds must "
+                       "be non-negative. LowerBound: "
+                       << lowerBound << ", UpperBound: " << upperBound);
+    }
     while (true)
     {
         // Get a uniform random variable in [0,1].
@@ -418,10 +504,11 @@ ExponentialRandomVariable::GetValue(double mean, double bound)
         double r = -mean * std::log(v);
 
         // Use this value if it's acceptable.
-        if (bound == 0 || r <= bound)
+        if (r >= lowerBound && r <= upperBound)
         {
             NS_LOG_DEBUG("value: " << r << " stream: " << GetStream() << " mean: " << mean
-                                   << " bound: " << bound);
+                                   << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
             return r;
         }
     }
@@ -431,23 +518,37 @@ uint32_t
 ExponentialRandomVariable::GetInteger(uint32_t mean, uint32_t bound)
 {
     NS_LOG_FUNCTION(this << mean << bound);
-    auto v = static_cast<uint32_t>(GetValue(mean, bound));
+    auto v = static_cast<uint32_t>(GetValue(mean, 0.0, bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mean: " << mean
                                    << " bound: " << bound);
+    return v;
+}
+
+uint32_t
+ExponentialRandomVariable::GetInteger(uint32_t mean, uint32_t lowerBound, uint32_t upperBound)
+{
+    NS_LOG_FUNCTION(this << mean << lowerBound << upperBound);
+    auto v = static_cast<uint32_t>(GetValue(mean, lowerBound, upperBound));
+    NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mean: " << mean
+                                   << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
     return v;
 }
 
 double
 ExponentialRandomVariable::GetValue()
 {
-    return GetValue(m_mean, m_bound);
+    return GetValue(m_mean, m_lowerBound, m_upperBound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(ParetoRandomVariable);
 
+const double ParetoRandomVariable::INFINITE_VALUE = 1e307;
+
 TypeId
 ParetoRandomVariable::GetTypeId()
 {
+    NS_WARNING_PUSH_DEPRECATED;
     static TypeId tid =
         TypeId("ns3::ParetoRandomVariable")
             .SetParent<RandomVariableStream>()
@@ -457,7 +558,8 @@ ParetoRandomVariable::GetTypeId()
                 "Scale",
                 "The scale parameter for the Pareto distribution returned by this RNG stream.",
                 DoubleValue(1.0),
-                MakeDoubleAccessor(&ParetoRandomVariable::m_scale),
+                MakeDoubleAccessor(&ParetoRandomVariable::GetScale,
+                                   &ParetoRandomVariable::SetScale),
                 MakeDoubleChecker<double>())
             .AddAttribute(
                 "Shape",
@@ -469,14 +571,30 @@ ParetoRandomVariable::GetTypeId()
                 "Bound",
                 "The upper bound on the values returned by this RNG stream (if non-zero).",
                 DoubleValue(0.0),
-                MakeDoubleAccessor(&ParetoRandomVariable::m_bound),
-                MakeDoubleChecker<double>());
+                MakeDoubleAccessor(&ParetoRandomVariable::SetBound,
+                                   &ParetoRandomVariable::GetBound),
+                MakeDoubleChecker<double>(),
+                TypeId::DEPRECATED,
+                "DEPRECATED since ns-3.43. Use the LowerBound and UpperBound attributes instead.")
+            .AddAttribute("LowerBound",
+                          "The lower bound on the values returned by this RNG stream.",
+                          DoubleValue(1.0),
+                          MakeDoubleAccessor(&ParetoRandomVariable::SetLowerBound,
+                                             &ParetoRandomVariable::GetLowerBound),
+                          MakeDoubleChecker<double>())
+            .AddAttribute("UpperBound",
+                          "The upper bound on the values returned by this RNG stream.",
+                          DoubleValue(INFINITE_VALUE),
+                          MakeDoubleAccessor(&ParetoRandomVariable::SetUpperBound,
+                                             &ParetoRandomVariable::GetUpperBound),
+                          MakeDoubleChecker<double>());
+    NS_WARNING_POP;
     return tid;
 }
 
 ParetoRandomVariable::ParetoRandomVariable()
 {
-    // m_shape, m_shape, and m_bound are initialized after constructor
+    // m_shape, m_shape, m_lowerBound, and m_upperBound are initialized after constructor
     // by attributes
     NS_LOG_FUNCTION(this);
 }
@@ -485,6 +603,13 @@ double
 ParetoRandomVariable::GetScale() const
 {
     return m_scale;
+}
+
+void
+ParetoRandomVariable::SetScale(double scale)
+{
+    m_scale = scale;
+    m_lowerBound = scale;
 }
 
 double
@@ -496,12 +621,50 @@ ParetoRandomVariable::GetShape() const
 double
 ParetoRandomVariable::GetBound() const
 {
-    return m_bound;
+    return m_upperBound;
+}
+
+void
+ParetoRandomVariable::SetBound(double bound)
+{
+    m_lowerBound = m_scale;
+    m_upperBound = bound;
 }
 
 double
-ParetoRandomVariable::GetValue(double scale, double shape, double bound)
+ParetoRandomVariable::GetLowerBound() const
 {
+    return m_lowerBound;
+}
+
+void
+ParetoRandomVariable::SetLowerBound(double lowerBound)
+{
+    m_lowerBound = lowerBound;
+}
+
+double
+ParetoRandomVariable::GetUpperBound() const
+{
+    return m_upperBound;
+}
+
+void
+ParetoRandomVariable::SetUpperBound(double upperBound)
+{
+    m_upperBound = upperBound;
+}
+
+double
+ParetoRandomVariable::GetValue(double scale, double shape, double lowerBound, double upperBound)
+{
+    if (lowerBound > upperBound || lowerBound < scale)
+    {
+        NS_FATAL_ERROR("Lower bound must be less than or equal to upper bound and both bounds must "
+                       "be greater than or equal to scale. Scale: "
+                       << scale << " Lower bound: " << lowerBound
+                       << " Upper bound: " << upperBound);
+    }
     while (true)
     {
         // Get a uniform random variable in [0,1].
@@ -515,19 +678,33 @@ ParetoRandomVariable::GetValue(double scale, double shape, double bound)
         double r = (scale * (1.0 / std::pow(v, 1.0 / shape)));
 
         // Use this value if it's acceptable.
-        if (bound == 0 || r <= bound)
+        if (r >= lowerBound && r <= upperBound)
         {
             NS_LOG_DEBUG("value: " << r << " stream: " << GetStream() << " scale: " << scale
-                                   << " shape: " << shape << " bound: " << bound);
+                                   << " shape: " << shape << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
             return r;
         }
     }
 }
 
 uint32_t
+ParetoRandomVariable::GetInteger(uint32_t scale,
+                                 uint32_t shape,
+                                 uint32_t lowerBound,
+                                 uint32_t upperBound)
+{
+    auto v = static_cast<uint32_t>(GetValue(scale, shape, lowerBound, upperBound));
+    NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " scale: " << scale
+                                   << " shape: " << shape << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
+    return v;
+}
+
+uint32_t
 ParetoRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
 {
-    auto v = static_cast<uint32_t>(GetValue(scale, shape, bound));
+    auto v = static_cast<uint32_t>(GetValue(scale, shape, scale, bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " scale: " << scale
                                    << " shape: " << shape << " bound: " << bound);
     return v;
@@ -536,14 +713,17 @@ ParetoRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
 double
 ParetoRandomVariable::GetValue()
 {
-    return GetValue(m_scale, m_shape, m_bound);
+    return GetValue(m_scale, m_shape, m_lowerBound, m_upperBound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(WeibullRandomVariable);
 
+const double WeibullRandomVariable::INFINITE_VALUE = 1e307;
+
 TypeId
 WeibullRandomVariable::GetTypeId()
 {
+    NS_WARNING_PUSH_DEPRECATED;
     static TypeId tid =
         TypeId("ns3::WeibullRandomVariable")
             .SetParent<RandomVariableStream>()
@@ -564,14 +744,31 @@ WeibullRandomVariable::GetTypeId()
             .AddAttribute("Bound",
                           "The upper bound on the values returned by this RNG stream.",
                           DoubleValue(0.0),
-                          MakeDoubleAccessor(&WeibullRandomVariable::m_bound),
+                          MakeDoubleAccessor(&WeibullRandomVariable::SetBound,
+                                             &WeibullRandomVariable::GetBound),
+                          MakeDoubleChecker<double>(),
+                          TypeId::DEPRECATED,
+                          "DEPRECATED since ns-3.43. Use the LowerBound and UpperBound attributes "
+                          "instead.")
+            .AddAttribute("LowerBound",
+                          "The lower bound on the values returned by this RNG stream.",
+                          DoubleValue(0.0),
+                          MakeDoubleAccessor(&WeibullRandomVariable::SetLowerBound,
+                                             &WeibullRandomVariable::GetLowerBound),
+                          MakeDoubleChecker<double>())
+            .AddAttribute("UpperBound",
+                          "The upper bound on the values returned by this RNG stream.",
+                          DoubleValue(INFINITE_VALUE),
+                          MakeDoubleAccessor(&WeibullRandomVariable::SetUpperBound,
+                                             &WeibullRandomVariable::GetUpperBound),
                           MakeDoubleChecker<double>());
+    NS_WARNING_POP;
     return tid;
 }
 
 WeibullRandomVariable::WeibullRandomVariable()
 {
-    // m_scale, m_shape, and m_bound are initialized after constructor
+    // m_scale, m_shape, m_lowerBound, and m_upperBound are initialized after constructor
     // by attributes
     NS_LOG_FUNCTION(this);
 }
@@ -591,7 +788,59 @@ WeibullRandomVariable::GetShape() const
 double
 WeibullRandomVariable::GetBound() const
 {
-    return m_bound;
+    return m_upperBound;
+}
+
+void
+WeibullRandomVariable::SetBound(double bound)
+{
+    if (bound < 0.0)
+    {
+        NS_FATAL_ERROR("Upper bound must be non-negative. Upper bound: " << bound);
+    }
+    else
+    {
+        m_lowerBound = 0.0;
+        m_upperBound = bound;
+    }
+}
+
+void
+WeibullRandomVariable::SetLowerBound(double lowerBound)
+{
+    if (lowerBound < 0.0)
+    {
+        NS_FATAL_ERROR("Lower bound must be non-negative. Lower bound: " << lowerBound);
+    }
+    else
+    {
+        m_lowerBound = lowerBound;
+    }
+}
+
+double
+WeibullRandomVariable::GetLowerBound() const
+{
+    return m_lowerBound;
+}
+
+void
+WeibullRandomVariable::SetUpperBound(double upperBound)
+{
+    if (upperBound < 0.0)
+    {
+        NS_FATAL_ERROR("Upper bound must be non-negative. Upper bound: " << upperBound);
+    }
+    else
+    {
+        m_upperBound = upperBound;
+    }
+}
+
+double
+WeibullRandomVariable::GetUpperBound() const
+{
+    return m_upperBound;
 }
 
 double
@@ -609,8 +858,14 @@ WeibullRandomVariable::GetMean() const
 }
 
 double
-WeibullRandomVariable::GetValue(double scale, double shape, double bound)
+WeibullRandomVariable::GetValue(double scale, double shape, double lowerBound, double upperBound)
 {
+    if (lowerBound > upperBound || lowerBound < 0.0 || upperBound < 0.0)
+    {
+        NS_FATAL_ERROR("Lower bound must be less than or equal to upper bound and both bounds must "
+                       "be non-negative. Lower bound: "
+                       << lowerBound << " Upper bound: " << upperBound);
+    }
     double exponent = 1.0 / shape;
     while (true)
     {
@@ -625,10 +880,11 @@ WeibullRandomVariable::GetValue(double scale, double shape, double bound)
         double r = scale * std::pow(-std::log(v), exponent);
 
         // Use this value if it's acceptable.
-        if (bound == 0 || r <= bound)
+        if (r >= lowerBound && r <= upperBound)
         {
             NS_LOG_DEBUG("value: " << r << " stream: " << GetStream() << " scale: " << scale
-                                   << " shape: " << shape << " bound: " << bound);
+                                   << " shape: " << shape << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
             return r;
         }
     }
@@ -637,9 +893,22 @@ WeibullRandomVariable::GetValue(double scale, double shape, double bound)
 uint32_t
 WeibullRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
 {
-    auto v = static_cast<uint32_t>(GetValue(scale, shape, bound));
+    auto v = static_cast<uint32_t>(GetValue(scale, shape, 0.0, bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " scale: " << scale
                                    << " shape: " << shape << " bound: " << bound);
+    return v;
+}
+
+uint32_t
+WeibullRandomVariable::GetInteger(uint32_t scale,
+                                  uint32_t shape,
+                                  uint32_t lowerBound,
+                                  uint32_t upperBound)
+{
+    auto v = static_cast<uint32_t>(GetValue(scale, shape, lowerBound, upperBound));
+    NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " scale: " << scale
+                                   << " shape: " << shape << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
     return v;
 }
 
@@ -647,7 +916,7 @@ double
 WeibullRandomVariable::GetValue()
 {
     NS_LOG_FUNCTION(this);
-    return GetValue(m_scale, m_shape, m_bound);
+    return GetValue(m_scale, m_shape, m_lowerBound, m_upperBound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(NormalRandomVariable);
@@ -657,6 +926,7 @@ const double NormalRandomVariable::INFINITE_VALUE = 1e307;
 TypeId
 NormalRandomVariable::GetTypeId()
 {
+    NS_WARNING_PUSH_DEPRECATED;
     static TypeId tid =
         TypeId("ns3::NormalRandomVariable")
             .SetParent<RandomVariableStream>()
@@ -673,18 +943,35 @@ NormalRandomVariable::GetTypeId()
                 DoubleValue(1.0),
                 MakeDoubleAccessor(&NormalRandomVariable::m_variance),
                 MakeDoubleChecker<double>())
-            .AddAttribute("Bound",
-                          "The bound on the values returned by this RNG stream.",
+            .AddAttribute(
+                "Bound",
+                "The bound on the values returned by this RNG stream.",
+                DoubleValue(INFINITE_VALUE),
+                MakeDoubleAccessor(&NormalRandomVariable::SetBound,
+                                   &NormalRandomVariable::GetBound),
+                MakeDoubleChecker<double>(),
+                TypeId::DEPRECATED,
+                "DEPRECATED since ns-3.43. Use the LowerBound and UpperBound attributes instead.")
+            .AddAttribute("LowerBound",
+                          "The lower bound on the values returned by this RNG stream.",
+                          DoubleValue(-INFINITE_VALUE),
+                          MakeDoubleAccessor(&NormalRandomVariable::SetLowerBound,
+                                             &NormalRandomVariable::GetLowerBound),
+                          MakeDoubleChecker<double>())
+            .AddAttribute("UpperBound",
+                          "The upper bound on the values returned by this RNG stream.",
                           DoubleValue(INFINITE_VALUE),
-                          MakeDoubleAccessor(&NormalRandomVariable::m_bound),
+                          MakeDoubleAccessor(&NormalRandomVariable::SetUpperBound,
+                                             &NormalRandomVariable::GetUpperBound),
                           MakeDoubleChecker<double>());
+    NS_WARNING_POP;
     return tid;
 }
 
 NormalRandomVariable::NormalRandomVariable()
     : m_nextValid(false)
 {
-    // m_mean, m_variance, and m_bound are initialized after constructor
+    // m_mean, m_variance, m_lowerBound, and m_upperBound are initialized after constructor
     // by attributes
     NS_LOG_FUNCTION(this);
 }
@@ -701,23 +988,69 @@ NormalRandomVariable::GetVariance() const
     return m_variance;
 }
 
-double
-NormalRandomVariable::GetBound() const
+void
+NormalRandomVariable::SetBound(double bound)
 {
-    return m_bound;
+    m_lowerBound = m_mean - std::abs(bound);
+    m_upperBound = m_mean + std::abs(bound);
 }
 
 double
-NormalRandomVariable::GetValue(double mean, double variance, double bound)
+NormalRandomVariable::GetBound() const
 {
+    if (m_mean - m_lowerBound == m_upperBound - m_mean)
+    {
+        return m_mean - m_lowerBound;
+    }
+    else
+    {
+        NS_FATAL_ERROR("Bounds must be symmetrical with respect to the mean. Mean: "
+                       << m_mean << " Lower bound: " << m_lowerBound
+                       << " Upper bound: " << m_upperBound);
+    }
+}
+
+void
+NormalRandomVariable::SetLowerBound(double lowerBound)
+{
+    m_lowerBound = lowerBound;
+}
+
+double
+NormalRandomVariable::GetLowerBound() const
+{
+    return m_lowerBound;
+}
+
+void
+NormalRandomVariable::SetUpperBound(double upperBound)
+{
+    m_upperBound = upperBound;
+}
+
+double
+NormalRandomVariable::GetUpperBound() const
+{
+    return m_upperBound;
+}
+
+double
+NormalRandomVariable::GetValue(double mean, double variance, double lowerBound, double upperBound)
+{
+    if (lowerBound > upperBound)
+    {
+        NS_FATAL_ERROR("Lower bound must be less than or equal to upper bound. Lower bound: "
+                       << lowerBound << " Upper bound: " << upperBound);
+    }
     if (m_nextValid)
     { // use previously generated
         m_nextValid = false;
         double x2 = mean + m_v2 * m_y * std::sqrt(variance);
-        if (std::fabs(x2 - mean) <= bound)
+        if (x2 >= lowerBound && x2 <= upperBound)
         {
             NS_LOG_DEBUG("value: " << x2 << " stream: " << GetStream() << " mean: " << mean
-                                   << " variance: " << variance << " bound: " << bound);
+                                   << " variance: " << variance << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
             return x2;
         }
     }
@@ -740,22 +1073,24 @@ NormalRandomVariable::GetValue(double mean, double variance, double bound)
             double y = std::sqrt((-2 * std::log(w)) / w);
             double x1 = mean + v1 * y * std::sqrt(variance);
             // if x1 is in bounds, return it, cache v2 and y
-            if (std::fabs(x1 - mean) <= bound)
+            if (x1 >= lowerBound && x1 <= upperBound)
             {
                 m_nextValid = true;
                 m_y = y;
                 m_v2 = v2;
                 NS_LOG_DEBUG("value: " << x1 << " stream: " << GetStream() << " mean: " << mean
-                                       << " variance: " << variance << " bound: " << bound);
+                                       << " variance: " << variance << " lower bound: "
+                                       << lowerBound << " upper bound: " << upperBound);
                 return x1;
             }
             // otherwise try and return the other if it is valid
             double x2 = mean + v2 * y * std::sqrt(variance);
-            if (std::fabs(x2 - mean) <= bound)
+            if (x2 >= lowerBound && x2 <= upperBound)
             {
                 m_nextValid = false;
                 NS_LOG_DEBUG("value: " << x2 << " stream: " << GetStream() << " mean: " << mean
-                                       << " variance: " << variance << " bound: " << bound);
+                                       << " variance: " << variance << " lower bound: "
+                                       << lowerBound << " upper bound: " << upperBound);
                 return x2;
             }
             // otherwise, just run this loop again
@@ -766,16 +1101,29 @@ NormalRandomVariable::GetValue(double mean, double variance, double bound)
 uint32_t
 NormalRandomVariable::GetInteger(uint32_t mean, uint32_t variance, uint32_t bound)
 {
-    auto v = static_cast<uint32_t>(GetValue(mean, variance, bound));
+    auto v = static_cast<uint32_t>(GetValue(mean, variance, mean - bound, mean + bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mean: " << mean
                                    << " variance: " << variance << " bound: " << bound);
+    return v;
+}
+
+uint32_t
+NormalRandomVariable::GetInteger(uint32_t mean,
+                                 uint32_t variance,
+                                 uint32_t lowerBound,
+                                 uint32_t upperBound)
+{
+    auto v = static_cast<uint32_t>(GetValue(mean, variance, lowerBound, upperBound));
+    NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mean: " << mean
+                                   << " variance: " << variance << " lower bound: " << lowerBound
+                                   << " upper bound: " << upperBound);
     return v;
 }
 
 double
 NormalRandomVariable::GetValue()
 {
-    return GetValue(m_mean, m_variance, m_bound);
+    return GetValue(m_mean, m_variance, m_lowerBound, m_upperBound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(LogNormalRandomVariable);
@@ -1859,9 +2207,12 @@ BernoulliRandomVariable::GetValue()
 
 NS_OBJECT_ENSURE_REGISTERED(LaplacianRandomVariable);
 
+const double LaplacianRandomVariable::INFINITE_VALUE = 1e307;
+
 TypeId
 LaplacianRandomVariable::GetTypeId()
 {
+    NS_WARNING_PUSH_DEPRECATED;
     static TypeId tid =
         TypeId("ns3::LaplacianRandomVariable")
             .SetParent<RandomVariableStream>()
@@ -1879,11 +2230,28 @@ LaplacianRandomVariable::GetTypeId()
                 DoubleValue(1.0),
                 MakeDoubleAccessor(&LaplacianRandomVariable::m_scale),
                 MakeDoubleChecker<double>())
-            .AddAttribute("Bound",
-                          "The bound on the values returned by this RNG stream.",
-                          DoubleValue(0.0),
-                          MakeDoubleAccessor(&LaplacianRandomVariable::m_bound),
+            .AddAttribute(
+                "Bound",
+                "The bound on the values returned by this RNG stream.",
+                DoubleValue(INFINITE_VALUE),
+                MakeDoubleAccessor(&LaplacianRandomVariable::SetBound,
+                                   &LaplacianRandomVariable::GetBound),
+                MakeDoubleChecker<double>(),
+                TypeId::DEPRECATED,
+                "DEPRECATED since ns-3.43. Use the LowerBound and UpperBound attributes instead.")
+            .AddAttribute("LowerBound",
+                          "The lower bound on the values returned by this RNG stream.",
+                          DoubleValue(-INFINITE_VALUE),
+                          MakeDoubleAccessor(&LaplacianRandomVariable::SetLowerBound,
+                                             &LaplacianRandomVariable::GetLowerBound),
+                          MakeDoubleChecker<double>())
+            .AddAttribute("UpperBound",
+                          "The upper bound on the values returned by this RNG stream.",
+                          DoubleValue(INFINITE_VALUE),
+                          MakeDoubleAccessor(&LaplacianRandomVariable::SetUpperBound,
+                                             &LaplacianRandomVariable::GetUpperBound),
                           MakeDoubleChecker<double>());
+    NS_WARNING_POP;
     return tid;
 }
 
@@ -1904,17 +2272,65 @@ LaplacianRandomVariable::GetScale() const
     return m_scale;
 }
 
-double
-LaplacianRandomVariable::GetBound() const
+void
+LaplacianRandomVariable::SetBound(double bound)
 {
-    return m_bound;
+    m_lowerBound = m_location - std::abs(bound);
+    m_upperBound = m_location + std::abs(bound);
 }
 
 double
-LaplacianRandomVariable::GetValue(double location, double scale, double bound)
+LaplacianRandomVariable::GetBound() const
 {
-    NS_LOG_FUNCTION(this << location << scale << bound);
+    if (m_location - m_lowerBound == m_upperBound - m_location)
+    {
+        return m_location - m_lowerBound;
+    }
+    else
+    {
+        NS_FATAL_ERROR("Bounds must be symmetrical with respect to the location. Location: "
+                       << m_location << " Lower bound: " << m_lowerBound
+                       << " Upper bound: " << m_upperBound);
+    }
+}
+
+void
+LaplacianRandomVariable::SetLowerBound(double lowerBound)
+{
+    m_lowerBound = lowerBound;
+}
+
+double
+LaplacianRandomVariable::GetLowerBound() const
+{
+    return m_lowerBound;
+}
+
+void
+LaplacianRandomVariable::SetUpperBound(double upperBound)
+{
+    m_upperBound = upperBound;
+}
+
+double
+LaplacianRandomVariable::GetUpperBound() const
+{
+    return m_upperBound;
+}
+
+double
+LaplacianRandomVariable::GetValue(double location,
+                                  double scale,
+                                  double lowerBound,
+                                  double upperBound)
+{
+    NS_LOG_FUNCTION(this << location << scale << lowerBound << upperBound);
     NS_ABORT_MSG_IF(scale <= 0, "Scale parameter should be larger than 0");
+    if (lowerBound > upperBound)
+    {
+        NS_FATAL_ERROR("Lower bound must be less than or equal to upper bound. LowerBound: "
+                       << lowerBound << " UpperBound: " << upperBound);
+    }
 
     while (true)
     {
@@ -1930,7 +2346,7 @@ LaplacianRandomVariable::GetValue(double location, double scale, double bound)
         const auto r = location - (scale * sgn * std::log(1.0 - (2.0 * std::abs(v))));
 
         // Use this value if it's acceptable.
-        if (bound == 0.0 || std::fabs(r - location) <= bound)
+        if (r >= lowerBound && r <= upperBound)
         {
             return r;
         }
@@ -1941,14 +2357,24 @@ uint32_t
 LaplacianRandomVariable::GetInteger(uint32_t location, uint32_t scale, uint32_t bound)
 {
     NS_LOG_FUNCTION(this << location << scale << bound);
-    return static_cast<uint32_t>(GetValue(location, scale, bound));
+    return static_cast<uint32_t>(GetValue(location, scale, location - bound, location + bound));
+}
+
+uint32_t
+LaplacianRandomVariable::GetInteger(uint32_t location,
+                                    uint32_t scale,
+                                    uint32_t lowerBound,
+                                    uint32_t upperBound)
+{
+    NS_LOG_FUNCTION(this << location << scale << lowerBound << upperBound);
+    return static_cast<uint32_t>(GetValue(location, scale, lowerBound, upperBound));
 }
 
 double
 LaplacianRandomVariable::GetValue()
 {
     NS_LOG_FUNCTION(this);
-    return GetValue(m_location, m_scale, m_bound);
+    return GetValue(m_location, m_scale, m_lowerBound, m_upperBound);
 }
 
 double

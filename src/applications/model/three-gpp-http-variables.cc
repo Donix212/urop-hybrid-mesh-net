@@ -202,9 +202,8 @@ ThreeGppHttpVariables::GetMainObjectSize()
     // Validate parameters.
     if (m_mainObjectSizeMax <= m_mainObjectSizeMin)
     {
-        NS_FATAL_ERROR("`MainObjectSizeMax` attribute "
-                       << " must be greater than"
-                       << " the `MainObjectSizeMin` attribute.");
+        NS_FATAL_ERROR("`MainObjectSizeMax` attribute must be greater than the `MainObjectSizeMin` "
+                       "attribute.");
     }
 
     /*
@@ -256,7 +255,7 @@ uint32_t
 ThreeGppHttpVariables::GetNumOfEmbeddedObjects()
 {
     // Validate parameters.
-    const auto upperBound = static_cast<uint32_t>(m_numOfEmbeddedObjectsRng->GetBound());
+    const auto upperBound = static_cast<uint32_t>(m_numOfEmbeddedObjectsRng->GetUpperBound());
     if (upperBound <= m_numOfEmbeddedObjectsScale)
     {
         NS_FATAL_ERROR("`NumOfEmbeddedObjectsMax` attribute "
@@ -425,7 +424,7 @@ void
 ThreeGppHttpVariables::SetNumOfEmbeddedObjectsMax(uint32_t max)
 {
     NS_LOG_FUNCTION(this << max);
-    m_numOfEmbeddedObjectsRng->SetAttribute("Bound", DoubleValue(static_cast<double>(max)));
+    m_numOfEmbeddedObjectsRng->SetAttribute("UpperBound", DoubleValue(static_cast<double>(max)));
 }
 
 void

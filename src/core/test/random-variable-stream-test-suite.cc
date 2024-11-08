@@ -895,12 +895,10 @@ ExponentialTestCase::DoRun()
     NS_TEST_ASSERT_MSG_LT(sum, maxStatistic, "Chi-squared statistic out of range");
 
     double mean = 3.14;
-    double bound = 0.0;
 
     // Create the RNG with the specified range.
     Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable>();
     x->SetAttribute("Mean", DoubleValue(mean));
-    x->SetAttribute("Bound", DoubleValue(bound));
 
     // Calculate the mean of these values.
     double valueMean = Average(x);
@@ -976,12 +974,10 @@ ExponentialAntitheticTestCase::DoRun()
     NS_TEST_ASSERT_MSG_LT(sum, maxStatistic, "Chi-squared statistic out of range");
 
     double mean = 3.14;
-    double bound = 0.0;
 
     // Create the RNG with the specified range.
     Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable>();
     x->SetAttribute("Mean", DoubleValue(mean));
-    x->SetAttribute("Bound", DoubleValue(bound));
 
     // Make this generate antithetic values.
     x->SetAttribute("Antithetic", BooleanValue(true));
@@ -2573,8 +2569,8 @@ NormalCachingTestCase::DoRun()
     SetTestSuiteSeed();
 
     Ptr<NormalRandomVariable> n = CreateObject<NormalRandomVariable>();
-    double v1 = n->GetValue(-10, 1, 10); // Mean -10, variance 1, bounded to [-20,0]
-    double v2 = n->GetValue(10, 1, 10);  // Mean 10, variance 1, bounded to [0,20]
+    double v1 = n->GetValue(-10, 1, -20, 0); // Mean -10, variance 1, bounded to [-20,0]
+    double v2 = n->GetValue(10, 1, 0, 20);   // Mean 10, variance 1, bounded to [0,20]
 
     NS_TEST_ASSERT_MSG_LT(v1, 0, "Incorrect value returned, expected < 0");
     NS_TEST_ASSERT_MSG_GT(v2, 0, "Incorrect value returned, expected > 0");
@@ -2983,7 +2979,8 @@ LaplacianTestCase::DoRun()
 
     double mu = -5.0;
     double scale = 4.0;
-    double bound = 20.0;
+    double lowerBound = -25.0;
+    double upperBound = 15.0;
 
     // Create unbounded RNG with the specified range.
     auto x1 = CreateObject<LaplacianRandomVariable>();
@@ -3011,7 +3008,8 @@ LaplacianTestCase::DoRun()
     auto x2 = CreateObject<LaplacianRandomVariable>();
     x2->SetAttribute("Location", DoubleValue(mu));
     x2->SetAttribute("Scale", DoubleValue(scale));
-    x2->SetAttribute("Bound", DoubleValue(bound));
+    x2->SetAttribute("LowerBound", DoubleValue(lowerBound));
+    x2->SetAttribute("UpperBound", DoubleValue(upperBound));
 
     // Calculate the mean of these values.
     valueMean = Average(x2);
@@ -3020,8 +3018,6 @@ LaplacianTestCase::DoRun()
     NS_TEST_ASSERT_MSG_EQ_TOL(valueMean, expectedMean, TOLERANCE, "Wrong mean value.");
 
     // Check that only the correct values are returned
-    const auto lowerBound = mu - bound;
-    const auto upperBound = mu + bound;
     for (uint32_t i = 0; i < N_MEASUREMENTS; ++i)
     {
         const auto value = x2->GetValue();

@@ -395,7 +395,7 @@ Experiment::SendMultiDestinations(Ptr<Node> sender, NodeContainer c)
     // ExponentialRandomVariable params: (mean, upperbound)
     Ptr<ExponentialRandomVariable> ev = CreateObject<ExponentialRandomVariable>();
     ev->SetAttribute("Mean", DoubleValue(m_expMean));
-    ev->SetAttribute("Bound", DoubleValue(m_totalTime));
+    ev->SetAttribute("UpperBound", DoubleValue(m_totalTime));
 
     double start = 0.0;
     double stop;
