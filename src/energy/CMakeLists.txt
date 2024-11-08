@@ -41,6 +41,8 @@ build_lib(
     model/rv-battery-model.h
     model/simple-device-energy-model.h
   LIBRARIES_TO_LINK ${libnetwork}
-  TEST_SOURCES test/basic-energy-harvester-test.cc
-               test/li-ion-energy-source-test.cc
+  TEST_SOURCES
+    test/basic-energy-harvester-test.cc
+    test/generic-battery-model-test.cc
+    test/li-ion-energy-source-test.cc
 )
