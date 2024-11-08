@@ -16,6 +16,8 @@
 #include "ns3/inet-socket-address.h"
 #include "ns3/inet6-socket-address.h"
 #include "ns3/ptr.h"
+#include "ns3/tcp-header.h"
+#include "ns3/tcp-socket-base.h"
 #include "ns3/traced-callback.h"
 
 #include <unordered_map>
@@ -98,6 +100,18 @@ class PacketSink : public SinkApplication
                                       const Address& to,
                                       const SeqTsSizeHeader& header);
 
+    /**
+     * TracedCallback signature for a packet received by the application's TCP socket but discarded
+     *  (e.g., due to invalid sequence numbers)
+     *
+     * \param p The packet received by TCP but discarded
+     * \param header The TCP header of the discarded packet
+     * \param socket The TCP socket that received the packet
+     */
+    typedef void (*TcpRxDiscardCallback)(Ptr<const Packet> p,
+                                         const TcpHeader& header,
+                                         Ptr<const TcpSocketBase> socket);
+
   protected:
     void DoDispose() override;
 
@@ -137,6 +151,16 @@ class PacketSink : public SinkApplication
      * instances from the stream to export in a trace source.
      */
     void PacketReceived(const Ptr<Packet>& p, const Address& from, const Address& localAddress);
+
+    /**
+     *  \brief Packet received by TCP socket but discarded (e.g. due to invalid sequence numbers)
+     *  \param p the retransmitted packet
+     *  \param tcpHeader the TCP header
+     *  \param sock the TCP socket that received the packet
+     */
+    void TcpRxDiscardedPacket(Ptr<const Packet> p,
+                              const TcpHeader& tcpHeader,
+                              Ptr<const TcpSocketBase> sock);
 
     /**
      * \brief Hashing for the Address class
@@ -194,6 +218,9 @@ class PacketSink : public SinkApplication
     /// headers
     TracedCallback<Ptr<const Packet>, const Address&, const Address&, const SeqTsSizeHeader&>
         m_rxTraceWithSeqTsSize;
+    /// Callback for tracing TCP packet discard events (e.g., due to invalid sequence numbers)
+    TracedCallback<Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>>
+        m_tcpRxDiscardTrace;
 };
 
 } // namespace ns3

@@ -60,7 +60,11 @@ PacketSink::GetTypeId()
             .AddTraceSource("RxWithSeqTsSize",
                             "A packet with SeqTsSize header has been received",
                             MakeTraceSourceAccessor(&PacketSink::m_rxTraceWithSeqTsSize),
-                            "ns3::PacketSink::SeqTsSizeCallback");
+                            "ns3::PacketSink::SeqTsSizeCallback")
+            .AddTraceSource("TcpRxDiscard",
+                            "A packet has been received but discarded by the TCP socket",
+                            MakeTraceSourceAccessor(&PacketSink::m_tcpRxDiscardTrace),
+                            "ns3::PacketSink::TcpRxDiscardCallback");
     return tid;
 }
 
@@ -166,6 +170,13 @@ PacketSink::StartApplication() // Called at time specified by Start
                                     MakeCallback(&PacketSink::HandleAccept, this));
         m_socket->SetCloseCallbacks(MakeCallback(&PacketSink::HandlePeerClose, this),
                                     MakeCallback(&PacketSink::HandlePeerError, this));
+        Ptr<TcpSocketBase> tcpSocket = DynamicCast<TcpSocketBase>(m_socket);
+        if (tcpSocket)
+        {
+            tcpSocket->TraceConnectWithoutContext(
+                "RxDiscard",
+                MakeCallback(&PacketSink::TcpRxDiscardedPacket, this));
+        }
     }
 
     if (m_local.IsInvalid() && !m_socket6)
@@ -198,6 +209,13 @@ PacketSink::StartApplication() // Called at time specified by Start
                                      MakeCallback(&PacketSink::HandleAccept, this));
         m_socket6->SetCloseCallbacks(MakeCallback(&PacketSink::HandlePeerClose, this),
                                      MakeCallback(&PacketSink::HandlePeerError, this));
+        Ptr<TcpSocketBase> tcpSocket6 = DynamicCast<TcpSocketBase>(m_socket6);
+        if (tcpSocket6)
+        {
+            tcpSocket6->TraceConnectWithoutContext(
+                "RxDiscard",
+                MakeCallback(&PacketSink::TcpRxDiscardedPacket, this));
+        }
     }
 }
 
@@ -337,7 +355,23 @@ PacketSink::HandleAccept(Ptr<Socket> s, const Address& from)
 {
     NS_LOG_FUNCTION(this << s << from);
     s->SetRecvCallback(MakeCallback(&PacketSink::HandleRead, this));
+    Ptr<TcpSocketBase> tcpSocket = DynamicCast<TcpSocketBase>(s);
+    if (tcpSocket)
+    {
+        tcpSocket->TraceConnectWithoutContext(
+            "RxDiscard",
+            MakeCallback(&PacketSink::TcpRxDiscardedPacket, this));
+    }
     m_socketList.push_back(s);
+}
+
+void
+PacketSink::TcpRxDiscardedPacket(Ptr<const Packet> p,
+                                 const TcpHeader& tcpHeader,
+                                 Ptr<const TcpSocketBase> sock)
+{
+    NS_LOG_FUNCTION(this << p << tcpHeader << sock);
+    m_tcpRxDiscardTrace(p, tcpHeader, sock);
 }
 
 } // Namespace ns3
