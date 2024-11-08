@@ -121,6 +121,13 @@ class Node : public Object
     Ptr<Application> GetApplication(uint32_t index) const;
 
     /**
+     * \brief Retrieve a vector of all the Applications associated to this Node.
+     *
+     * \returns a vector of all the Applications associated to this Node.
+     */
+    std::vector<Ptr<Application>> GetApplications() const;
+
+    /**
      * \returns the number of Application instances associated to this Node.
      */
     uint32_t GetNApplications() const;
