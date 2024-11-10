@@ -697,6 +697,8 @@ class TcpSocketBase : public TcpSocket
     Time GetPersistTimeout() const override;
     bool SetAllowBroadcast(bool allowBroadcast) override;
     bool GetAllowBroadcast() const override;
+    void SetRandomizeSequenceNumber(bool randomize) override;
+    bool GetRandomizeSequenceNumber() const override;
 
     // Helper functions: Connection set up
 
@@ -1420,6 +1422,8 @@ class TcpSocketBase : public TcpSocket
     uint32_t m_timestampToEcho{0};  //!< Timestamp to echo
 
     EventId m_sendPendingDataEvent{}; //!< micro-delay event to send pending data
+
+    bool m_randomizeSequenceNumber{false}; //!< Randomize initial sequence number
 
     // Fast Retransmit and Recovery
     SequenceNumber32 m_recover{
