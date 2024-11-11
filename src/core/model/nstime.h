@@ -496,14 +496,16 @@ class Time
         Information* info = PeekInformation(unit);
 
         NS_ASSERT_MSG(info->isValid, "Attempted a conversion from an unavailable unit.");
-
+        uint64_t original_value = value;
         if (info->fromMul)
         {
             value *= info->factor;
+            NS_ABORT_MSG_IF((value < original_value), "Overflow detected");
         }
         else
         {
             value /= info->factor;
+            NS_ABORT_MSG_IF((value > original_value), "Underflow detected");
         }
         return Time(value);
     }
@@ -542,6 +544,8 @@ class Time
         {
             retval.MulByInvert(info->timeFrom);
         }
+        NS_ABORT_MSG_IF((value > 0 && retval < 0) || (value < 0 && retval > 0),
+                        "Overflow/underflow detected");
         return Time(retval);
     }
 
@@ -580,6 +584,8 @@ class Time
         {
             v /= info->factor;
         }
+        NS_ABORT_MSG_IF((m_data > 0 && v < 0) || (m_data < 0 && v > 0),
+                        "Overflow/underflow detected");
         return v;
     }
 
@@ -615,6 +621,8 @@ class Time
         {
             retval.MulByInvert(info->timeTo);
         }
+        NS_ABORT_MSG_IF((m_data > 0 && retval < 0) || (m_data < 0 && retval > 0),
+                        "Overflow/underflow detected");
         return retval;
     }
 

@@ -409,7 +409,18 @@ Time::As(const Unit unit /* = Time::AUTO */) const
 std::ostream&
 operator<<(std::ostream& os, const Time& time)
 {
-    os << time.As(Time::GetResolution());
+    if (time == Time::Min())
+    {
+        os << "Time::Min()";
+    }
+    else if (time == Time::Max())
+    {
+        os << "Time::Max()";
+    }
+    else
+    {
+        os << time.As(Time::GetResolution());
+    }
     return os;
 }
 
@@ -424,6 +435,11 @@ operator<<(std::ostream& os, const TimeWithUnit& timeU)
         auto value = static_cast<long double>(timeU.m_time.GetTimeStep());
         // convert to finest scale (fs)
         value *= Scale(Time::GetResolution());
+
+        NS_ABORT_MSG_IF((timeU.m_time.GetInteger() < 0 && value > 0) ||
+                            (timeU.m_time.GetInteger() > 0 && value < 0),
+                        "Overflow/underflow detected");
+
         // find the best unit
         int u = Time::Y;
         while (u != Time::LAST && UNIT_VALUE[u] > value)

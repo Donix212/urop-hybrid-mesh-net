@@ -477,7 +477,7 @@ PeerManagementProtocol::ShiftOwnBeacon(uint32_t interface)
     // Apply beacon shift parameters:
     auto plugin = m_plugins.find(interface);
     NS_ASSERT(plugin != m_plugins.end());
-    plugin->second->SetBeaconShift(TuToTime(shift));
+    plugin->second->SetBeaconShift(TuToTime(shift) - TuToTime(m_maxBeaconShift));
 }
 
 Time
@@ -654,9 +654,9 @@ PeerManagementProtocol::DoInitialize()
 {
     // If beacon interval is equal to the neighbor's one and one o more beacons received
     // by my neighbor coincide with my beacon - apply random uniformly distributed shift from
-    // [-m_maxBeaconShift, m_maxBeaconShift] except 0.
-    m_beaconShift->SetAttribute("Min", DoubleValue(-m_maxBeaconShift));
-    m_beaconShift->SetAttribute("Max", DoubleValue(m_maxBeaconShift));
+    // (0, 2*m_maxBeaconShift] except 0.
+    m_beaconShift->SetAttribute("Min", DoubleValue(0));
+    m_beaconShift->SetAttribute("Max", DoubleValue(2 * m_maxBeaconShift));
 }
 
 void
