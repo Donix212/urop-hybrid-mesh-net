@@ -17,6 +17,7 @@ This file is a best-effort approach to solving this issue; we will do our best b
 ### New API
 
 * (applications) Added two new base classes for source and sink applications, `SourceApplication` and `SinkApplication`, respectively.
+* (tcp) Add attribute `TcpSocket::RandomizeSequenceNumber` to allow for randomized initial sequence numbers.
 
 ### Changes to existing API
 

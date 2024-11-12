@@ -33,6 +33,7 @@
 #include "ns3/nstime.h"
 #include "ns3/object-map.h"
 #include "ns3/packet.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/simulator.h"
 
 #include <iomanip>
@@ -97,6 +98,8 @@ TcpL4Protocol::TcpL4Protocol()
       m_endPoints6(new Ipv6EndPointDemux())
 {
     NS_LOG_FUNCTION(this);
+    m_urv = CreateObject<UniformRandomVariable>();
+    m_urv->SetAttribute("Max", DoubleValue(std::numeric_limits<uint32_t>::max()));
 }
 
 TcpL4Protocol::~TcpL4Protocol()
@@ -791,6 +794,20 @@ IpL4Protocol::DownTargetCallback6
 TcpL4Protocol::GetDownTarget6() const
 {
     return m_downTarget6;
+}
+
+uint32_t
+TcpL4Protocol::GetInitialSequenceNumber()
+{
+    return m_urv->GetInteger();
+}
+
+int64_t
+TcpL4Protocol::AssignStreams(int64_t stream)
+{
+    NS_LOG_FUNCTION(this << stream);
+    m_urv->SetStream(stream);
+    return 1;
 }
 
 } // namespace ns3

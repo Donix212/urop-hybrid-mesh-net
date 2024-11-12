@@ -116,7 +116,13 @@ TcpSocket::GetTypeId()
                 "Persist timeout to probe for rx window",
                 TimeValue(Seconds(6)),
                 MakeTimeAccessor(&TcpSocket::GetPersistTimeout, &TcpSocket::SetPersistTimeout),
-                MakeTimeChecker());
+                MakeTimeChecker())
+            .AddAttribute("RandomizeSequenceNumber",
+                          "Set to true to randomize the initial sequence number",
+                          BooleanValue(false),
+                          MakeBooleanAccessor(&TcpSocket::GetRandomizeSequenceNumber,
+                                              &TcpSocket::SetRandomizeSequenceNumber),
+                          MakeBooleanChecker());
     return tid;
 }
 

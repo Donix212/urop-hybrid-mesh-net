@@ -239,6 +239,20 @@ class TcpSocket : public Socket
      * @returns the persistent timeout
      */
     virtual Time GetPersistTimeout() const = 0;
+
+    /**
+     * @brief Set whether initial sequence number should be randomized
+     *
+     * @param randomize whether initial sequence number should be randomized
+     */
+    virtual void SetRandomizeSequenceNumber(bool randomize) = 0;
+
+    /**
+     * @brief Return true if initial sequence number should be randomized
+     *
+     * @returns Whether initial sequence number should be randomized
+     */
+    virtual bool GetRandomizeSequenceNumber() const = 0;
 };
 
 /**

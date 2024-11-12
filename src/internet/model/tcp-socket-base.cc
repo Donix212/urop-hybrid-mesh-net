@@ -399,6 +399,7 @@ TcpSocketBase::TcpSocketBase(const TcpSocketBase& sock)
       m_sndWindShift(sock.m_sndWindShift),
       m_timestampEnabled(sock.m_timestampEnabled),
       m_timestampToEcho(sock.m_timestampToEcho),
+      m_randomizeSequenceNumber(sock.m_randomizeSequenceNumber),
       m_recover(sock.m_recover),
       m_recoverActive(sock.m_recoverActive),
       m_retxThresh(sock.m_retxThresh),
@@ -780,6 +781,14 @@ TcpSocketBase::Connect(const Address& address)
     m_rtt->Reset();
     m_synCount = m_synRetries;
     m_dataRetrCount = m_dataRetries;
+
+    if (m_randomizeSequenceNumber)
+    {
+        m_tcb->m_nextTxSequence = m_tcp->GetInitialSequenceNumber();
+        NS_LOG_INFO("Initializing TCP sequence number to " << m_tcb->m_nextTxSequence);
+        m_tcb->m_highTxMark = m_tcb->m_nextTxSequence;
+        m_recover = m_tcb->m_nextTxSequence;
+    }
 
     // DoConnect() will do state-checking and send a SYN packet
     return DoConnect();
@@ -1415,6 +1424,9 @@ TcpSocketBase::DoForwardUp(Ptr<Packet> packet, const Address& fromAddress, const
         m_tcb->m_cWnd = GetInitialCwnd() * GetSegSize();
         m_tcb->m_cWndInfl = m_tcb->m_cWnd;
         m_tcb->m_ssThresh = GetInitialSSThresh();
+
+        // Initialize variable tracking the peer's sequence number
+        m_highRxMark = tcpHeader.GetSequenceNumber();
 
         if (tcpHeader.GetFlags() & TcpHeader::ACK)
         {
@@ -3066,6 +3078,13 @@ TcpSocketBase::CompleteFork(Ptr<Packet> p [[maybe_unused]],
     SetupCallback();
     // Set the sequence number and send SYN+ACK
     m_tcb->m_rxBuffer->SetNextRxSequence(h.GetSequenceNumber() + SequenceNumber32(1));
+    if (m_randomizeSequenceNumber)
+    {
+        m_tcb->m_nextTxSequence = m_tcp->GetInitialSequenceNumber();
+        NS_LOG_INFO("Initializing TCP sequence number to " << m_tcb->m_nextTxSequence);
+        m_tcb->m_highTxMark = m_tcb->m_nextTxSequence;
+        m_recover = m_tcb->m_nextTxSequence;
+    }
 
     /* Check if we received an ECN SYN packet. Change the ECN state of receiver to ECN_IDLE if
      * sender has sent an ECN SYN packet and the traffic is ECN Capable
@@ -3802,7 +3821,8 @@ TcpSocketBase::EstimateRtt(const TcpHeader& tcpHeader)
                     m_minRto);
         m_tcb->m_srtt = m_rtt->GetEstimate();
         m_tcb->m_minRtt = std::min(m_tcb->m_srtt.Get(), m_tcb->m_minRtt);
-        NS_LOG_INFO(this << m_tcb->m_srtt << m_tcb->m_minRtt);
+        NS_LOG_INFO("Srtt = " << m_tcb->m_srtt.Get().As(Time::US)
+                              << " MinRtt = " << m_tcb->m_minRtt.As(Time::US));
     }
 }
 
@@ -4319,6 +4339,19 @@ TcpSocketBase::GetAllowBroadcast() const
 }
 
 void
+TcpSocketBase::SetRandomizeSequenceNumber(bool randomize)
+{
+    NS_LOG_FUNCTION(this << randomize);
+    m_randomizeSequenceNumber = randomize;
+}
+
+bool
+TcpSocketBase::GetRandomizeSequenceNumber() const
+{
+    return m_randomizeSequenceNumber;
+}
+
+void
 TcpSocketBase::AddOptions(TcpHeader& header)
 {
     NS_LOG_FUNCTION(this << header);
@@ -4412,7 +4445,7 @@ TcpSocketBase::ProcessOptionSackPermitted(const Ptr<const TcpOption> option)
     Ptr<const TcpOptionSackPermitted> s = DynamicCast<const TcpOptionSackPermitted>(option);
 
     NS_ASSERT(m_sackEnabled == true);
-    NS_LOG_INFO(m_node->GetId() << " Received a SACK_PERMITTED option " << s);
+    NS_LOG_INFO(m_node->GetId() << " Received a SACK_PERMITTED option");
 }
 
 void
@@ -4474,13 +4507,12 @@ TcpSocketBase::ProcessOptionTimestamp(const Ptr<const TcpOption> option,
     m_tcb->m_rcvTimestampValue = ts->GetTimestamp();
     m_tcb->m_rcvTimestampEchoReply = ts->GetEcho();
 
-    if (seq == m_tcb->m_rxBuffer->NextRxSequence() && seq <= m_highTxAck)
+    if (m_state < SYN_RCVD || (seq == m_tcb->m_rxBuffer->NextRxSequence() && seq <= m_highTxAck))
     {
         m_timestampToEcho = ts->GetTimestamp();
     }
-
-    NS_LOG_INFO(m_node->GetId() << " Got timestamp=" << m_timestampToEcho
-                                << " and Echo=" << ts->GetEcho());
+    NS_LOG_INFO("Received timestamp " << ts->GetTimestamp() << " and echo value " << ts->GetEcho()
+                                      << " and now echoing " << m_timestampToEcho);
 }
 
 void

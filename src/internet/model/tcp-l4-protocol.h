@@ -31,6 +31,7 @@ class TcpSocketBase;
 class Ipv4EndPoint;
 class Ipv6EndPoint;
 class NetDevice;
+class UniformRandomVariable;
 
 /**
  * @ingroup internet
@@ -246,6 +247,22 @@ class TcpL4Protocol : public IpL4Protocol
      */
     void DeAllocate(Ipv6EndPoint* endPoint);
 
+    /**
+     * @brief Get a random initial sequence number
+     * @return A random initial sequence number
+     */
+    uint32_t GetInitialSequenceNumber();
+
+    /**
+     * Assign a fixed random variable stream number to the random variables
+     * used by this model.  Return the number of streams (possibly zero) that
+     * have been assigned.
+     *
+     * @param stream first stream index to use
+     * @return the number of stream indices assigned by this model
+     */
+    int64_t AssignStreams(int64_t stream);
+
     // From IpL4Protocol
     IpL4Protocol::RxStatus Receive(Ptr<Packet> p,
                                    const Ipv4Header& incomingIpHeader,
@@ -335,6 +352,7 @@ class TcpL4Protocol : public IpL4Protocol
     uint64_t m_socketIndex{0}; //!< index of the next socket to be created
     IpL4Protocol::DownTargetCallback m_downTarget;   //!< Callback to send packets over IPv4
     IpL4Protocol::DownTargetCallback6 m_downTarget6; //!< Callback to send packets over IPv6
+    Ptr<UniformRandomVariable> m_urv;                //!< For randomized sequence number
 
     /**
      * @brief Send a packet via TCP (IPv4)
