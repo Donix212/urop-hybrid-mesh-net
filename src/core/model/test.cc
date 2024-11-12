@@ -130,7 +130,7 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
 {
   public:
     /** Constructor. */
-    TestRunnerImpl();
+    TestRunnerImpl() = default;
 
     /**
      * Add a new top-level TestSuite.
@@ -508,11 +508,6 @@ TestSuite::GetTestType()
 
 void
 TestSuite::DoRun()
-{
-    NS_LOG_FUNCTION(this);
-}
-
-TestRunnerImpl::TestRunnerImpl()
 {
     NS_LOG_FUNCTION(this);
 }
