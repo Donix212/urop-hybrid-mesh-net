@@ -51,14 +51,14 @@ MODEL_H_TEMPLATE = """\
 // Add a doxygen group for this module.
 // If you have more than one file, this should be in only one of them.
 /**
- * \defgroup {MODULE} Description of the {MODULE}
+ * \\defgroup {MODULE} Description of the {MODULE}
  */
 
 namespace ns3
 {{
 
 // Each class should be documented using Doxygen,
-// and have an \ingroup {MODULE} directive
+// and have an \\ingroup {MODULE} directive
 
 /* ... */
 
@@ -90,7 +90,7 @@ namespace ns3
 {{
 
 // Each class should be documented using Doxygen,
-// and have an \ingroup {MODULE} directive
+// and have an \\ingroup {MODULE} directive
 
 /* ... */
 
@@ -154,14 +154,14 @@ using namespace ns3;
 // Add a doxygen group for tests.
 // If you have more than one test, this should be in only one of them.
 /**
- * \defgroup {MODULE}-tests Tests for {MODULE}
- * \ingroup {MODULE}
- * \ingroup tests
+ * \\defgroup {MODULE}-tests Tests for {MODULE}
+ * \\ingroup {MODULE}
+ * \\ingroup tests
  */
 
 // This is an example TestCase.
 /**
- * \ingroup {MODULE}-tests
+ * \\ingroup {MODULE}-tests
  * Test case for feature 1
  */
 class {CAPITALIZED}TestCase1 : public TestCase
@@ -194,7 +194,7 @@ void
 {CAPITALIZED}TestCase1::DoRun()
 {{
     // A wide variety of test macros are available in src/core/test.h
-    NS_TEST_ASSERT_MSG_EQ(true, true, "true doesn\'t equal true for some reason");
+    NS_TEST_ASSERT_MSG_EQ(true, true, "true doesn't equal true for some reason");
     // Use this one for floating point comparisons
     NS_TEST_ASSERT_MSG_EQ_TOL(0.01, 0.01, 0.001, "Numbers are not equal within tolerance");
 }}
@@ -204,7 +204,7 @@ void
 // this class must be defined
 
 /**
- * \ingroup {MODULE}-tests
+ * \\ingroup {MODULE}-tests
  * TestSuite for module {MODULE}
  */
 class {CAPITALIZED}TestSuite : public TestSuite
@@ -222,7 +222,7 @@ class {CAPITALIZED}TestSuite : public TestSuite
 
 // Do not forget to allocate an instance of this TestSuite
 /**
- * \ingroup {MODULE}-tests
+ * \\ingroup {MODULE}-tests
  * Static variable for test initialization
  */
 static {CAPITALIZED}TestSuite s{COMPOUND}TestSuite;
@@ -584,7 +584,7 @@ def main(argv):
     #
 
     # Alphanumeric and '-' only
-    allowedRE = re.compile("^(\w|-)+$")
+    allowedRE = re.compile(r"^(\w|-)+$")
 
     project_path = None
 
