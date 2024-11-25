@@ -14,6 +14,7 @@
 #include "ipv6-routing-protocol.h"
 #include "ipv6.h"
 
+#include "ns3/iana-ieee802-numbers.h"
 #include "ns3/ipv6-address.h"
 #include "ns3/net-device.h"
 #include "ns3/traced-callback.h"
@@ -59,7 +60,7 @@ class Ipv6L3Protocol : public Ipv6
     static TypeId GetTypeId();
 
     /**
-     * @brief The protocol number for IPv6 (0x86DD).
+     * @brief The protocol number for IPv6 (ns3::iana::ieee802::IPV6).
      */
     static const uint16_t PROT_NUMBER;
 

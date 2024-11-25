@@ -12,14 +12,20 @@
 
 namespace ns3
 {
-namespace IEEE802
+namespace iana
+{
+namespace ieee802
 {
 
-static const uint16_t IPV4 = 0x0800; ///< IPv4 EtherType
-static const uint16_t ARP = 0x0806;  ///< ARP EtherType
-static const uint16_t IPV6 = 0x86DD; ///< IPv6 EtherType
+/** IPv4 EtherType */
+constexpr uint16_t IPV4 = 0x0800;
+/** ARP EtherType */
+constexpr uint16_t ARP = 0x0806;
+/** IPv6 EtherType */
+constexpr uint16_t IPV6 = 0x86DD;
 
-} // namespace IEEE802
+} // namespace ieee802
+} // namespace iana
 } // namespace ns3
 
 #endif // IANA_IEEE_802_NUMBERS_H

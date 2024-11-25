@@ -24,6 +24,7 @@
 
 #include "ns3/boolean.h"
 #include "ns3/callback.h"
+#include "ns3/iana-ieee802-numbers.h"
 #include "ns3/log.h"
 #include "ns3/mac16-address.h"
 #include "ns3/mac64-address.h"
@@ -44,7 +45,7 @@ NS_LOG_COMPONENT_DEFINE("Ipv6L3Protocol");
 
 NS_OBJECT_ENSURE_REGISTERED(Ipv6L3Protocol);
 
-const uint16_t Ipv6L3Protocol::PROT_NUMBER = 0x86DD;
+const uint16_t Ipv6L3Protocol::PROT_NUMBER = iana::ieee802::IPV6;
 
 TypeId
 Ipv6L3Protocol::GetTypeId()

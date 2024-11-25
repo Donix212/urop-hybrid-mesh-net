@@ -115,6 +115,8 @@ set(header_files
     utils/ethernet-trailer.h
     utils/flow-id-tag.h
     utils/generic-phy.h
+    utils/iana-ieee802-numbers.h
+    utils/iana-ppp-numbers.h
     utils/inet-socket-address.h
     utils/inet6-socket-address.h
     utils/ipv4-address.h
