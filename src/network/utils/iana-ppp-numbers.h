@@ -17,10 +17,8 @@ namespace iana
 namespace ppp
 {
 
-/** IPv4 PPP protocol number */
-constexpr uint16_t IPV4 = 0x0021;
-/** IPv6 PPP protocol number */
-constexpr uint16_t IPV6 = 0x0057;
+constexpr uint16_t IPV4 = 0x0021; ///< IPv4 PPP protocol number
+constexpr uint16_t IPV6 = 0x0057; ///< IPv6 PPP protocol number
 
 } // namespace ppp
 } // namespace iana

@@ -10,8 +10,6 @@
 #ifndef RADIOTAP_HEADER_H
 #define RADIOTAP_HEADER_H
 
-#include "iana-ieee802-numbers.h"
-
 #include <ns3/header.h>
 
 #include <array>
@@ -128,15 +126,15 @@ class RadiotapHeader : public Header
      */
     enum ChannelFlags : uint16_t
     {
-        CHANNEL_FLAG_NONE = 0x0000,             /**< No flags set */
-        CHANNEL_FLAG_TURBO = 0x0010,            /**< Turbo Channel */
-        CHANNEL_FLAG_CCK = 0x0020,              /**< CCK channel */
-        CHANNEL_FLAG_OFDM = 0x0040,             /**< OFDM channel */
-        CHANNEL_FLAG_SPECTRUM_2GHZ = 0x0080,    /**< 2 GHz spectrum channel */
-        CHANNEL_FLAG_SPECTRUM_5GHZ = 0x0100,    /**< 5 GHz spectrum channel */
-        CHANNEL_FLAG_PASSIVE = 0x0200,          /**< Only passive scan allowed */
-        CHANNEL_FLAG_DYNAMIC = 0x0400,          /**< Dynamic CCK-OFDM channel */
-        CHANNEL_FLAG_GFSK = iana::ieee802::IPV4 /**< GFSK channel (FHSS PHY) */
+        CHANNEL_FLAG_NONE = 0x0000,          /**< No flags set */
+        CHANNEL_FLAG_TURBO = 0x0010,         /**< Turbo Channel */
+        CHANNEL_FLAG_CCK = 0x0020,           /**< CCK channel */
+        CHANNEL_FLAG_OFDM = 0x0040,          /**< OFDM channel */
+        CHANNEL_FLAG_SPECTRUM_2GHZ = 0x0080, /**< 2 GHz spectrum channel */
+        CHANNEL_FLAG_SPECTRUM_5GHZ = 0x0100, /**< 5 GHz spectrum channel */
+        CHANNEL_FLAG_PASSIVE = 0x0200,       /**< Only passive scan allowed */
+        CHANNEL_FLAG_DYNAMIC = 0x0400,       /**< Dynamic CCK-OFDM channel */
+        CHANNEL_FLAG_GFSK = 0x0800           /**< GFSK channel (FHSS PHY) */
     };
 
     /**

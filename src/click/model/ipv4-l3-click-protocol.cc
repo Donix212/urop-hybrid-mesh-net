@@ -13,7 +13,6 @@
 
 #include "ns3/arp-l3-protocol.h"
 #include "ns3/ethernet-header.h"
-#include "ns3/iana-ieee802-numbers.h"
 #include "ns3/icmpv4-l4-protocol.h"
 #include "ns3/ip-l4-protocol.h"
 #include "ns3/ipv4-raw-socket-impl.h"
@@ -29,8 +28,6 @@ namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("Ipv4L3ClickProtocol");
-
-const uint16_t Ipv4L3ClickProtocol::PROT_NUMBER = iana::ieee802::IPV4;
 
 NS_OBJECT_ENSURE_REGISTERED(Ipv4L3ClickProtocol);
 

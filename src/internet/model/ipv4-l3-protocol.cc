@@ -19,7 +19,6 @@
 
 #include "ns3/boolean.h"
 #include "ns3/callback.h"
-#include "ns3/iana-ieee802-numbers.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/log.h"
 #include "ns3/net-device.h"
@@ -36,8 +35,6 @@ namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("Ipv4L3Protocol");
-
-const uint16_t Ipv4L3Protocol::PROT_NUMBER = iana::ieee802::IPV4;
 
 NS_OBJECT_ENSURE_REGISTERED(Ipv4L3Protocol);
 

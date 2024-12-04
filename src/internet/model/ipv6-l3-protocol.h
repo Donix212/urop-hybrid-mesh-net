@@ -62,7 +62,7 @@ class Ipv6L3Protocol : public Ipv6
     /**
      * @brief The protocol number for IPv6 (ns3::iana::ieee802::IPV6).
      */
-    static const uint16_t PROT_NUMBER;
+    static constexpr uint16_t PROT_NUMBER = iana::ieee802::IPV6;
 
     /**
      * @enum DropReason

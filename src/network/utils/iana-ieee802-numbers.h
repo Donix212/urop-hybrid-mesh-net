@@ -17,12 +17,10 @@ namespace iana
 namespace ieee802
 {
 
-/** IPv4 EtherType */
-constexpr uint16_t IPV4 = 0x0800;
-/** ARP EtherType */
-constexpr uint16_t ARP = 0x0806;
-/** IPv6 EtherType */
-constexpr uint16_t IPV6 = 0x86DD;
+constexpr uint16_t IPV4 = 0x0800;   ///< IPv4 EtherType
+constexpr uint16_t ARP = 0x0806;    ///< ARP EtherType
+constexpr uint16_t IPV6 = 0x86DD;   ///< IPv6 EtherType
+constexpr uint16_t LoWPAN = 0xA0ED; ///< LoWPAN EtherType
 
 } // namespace ieee802
 } // namespace iana

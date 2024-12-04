@@ -78,7 +78,8 @@ class Ipv4L3Protocol : public Ipv4
      * @return the object TypeId
      */
     static TypeId GetTypeId();
-    static const uint16_t PROT_NUMBER; //!< Protocol number (ns3::iana::ieee802::IPV4)
+    static constexpr uint16_t PROT_NUMBER =
+        iana::ieee802::IPV4; //!< Protocol number (ns3::iana::ieee802::IPV4)
 
     Ipv4L3Protocol();
     ~Ipv4L3Protocol() override;

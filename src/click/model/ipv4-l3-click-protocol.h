@@ -62,7 +62,7 @@ class Ipv4L3ClickProtocol : public Ipv4
     /**
      * Protocol number for Ipv4 L3 (ns3::iana::ieee802::IPV4).
      */
-    static const uint16_t PROT_NUMBER;
+    static constexpr uint16_t PROT_NUMBER = iana::ieee802::IPV4;
 
     Ipv4L3ClickProtocol();
     ~Ipv4L3ClickProtocol() override;
