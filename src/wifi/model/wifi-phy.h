@@ -987,7 +987,8 @@ class WifiPhy : public Object
      * @return the bandwidth for the transmission
      */
     MHz_u GetTxBandwidth(WifiMode mode,
-                         MHz_u maxAllowedBandWidth = std::numeric_limits<MHz_u>::max()) const;
+                         MHz_u maxAllowedBandWidth = MHz_u{
+                             std::numeric_limits<double>::max()}) const;
     /**
      * @param antennas the number of antennas on this node.
      */
@@ -1106,7 +1107,9 @@ class WifiPhy : public Object
      * @param txPowerMaxSiso the SISO transmit power restriction for the next transmission
      * @param txPowerMaxMimo the MIMO transmit power restriction for the next transmission
      */
-    void ResetCca(bool powerRestricted, dBm_u txPowerMaxSiso = 0, dBm_u txPowerMaxMimo = 0);
+    void ResetCca(bool powerRestricted,
+                  dBm_u txPowerMaxSiso = dBm_u{0},
+                  dBm_u txPowerMaxMimo = dBm_u{0});
     /**
      * Compute the transmit power for the next transmission.
      * The returned power will satisfy the power density constraints

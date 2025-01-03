@@ -1256,24 +1256,24 @@ HeFrameExchangeManager::GetCtsTxVectorAfterMuRts(const CtrlTriggerHeader& trigge
 
     auto userInfoIt = trigger.FindUserInfoWithAid(staId);
     NS_ASSERT_MSG(userInfoIt != trigger.end(), "User Info field for AID=" << staId << " not found");
-    MHz_u bw = 0;
+    MHz_u bw{0};
 
     if (uint8_t ru = userInfoIt->GetMuRtsRuAllocation(); ru < 65)
     {
-        bw = 20;
+        bw = MHz_u{20};
     }
     else if (ru < 67)
     {
-        bw = 40;
+        bw = MHz_u{40};
     }
     else if (ru == 67)
     {
-        bw = 80;
+        bw = MHz_u{80};
     }
     else
     {
         NS_ASSERT(ru == 68);
-        bw = 160;
+        bw = MHz_u{160};
     }
 
     auto txVector = GetWifiRemoteStationManager()->GetCtsTxVector(m_bssid, GetCtsModeAfterMuRts());
@@ -1562,7 +1562,7 @@ HeFrameExchangeManager::GetHeTbTxVector(CtrlTriggerHeader trigger, Mac48Address 
         trigger.GetApTxPower() -
         static_cast<int8_t>(
             *optRssi); // cast RSSI to be on equal footing with AP Tx power information
-    auto reqTxPower = static_cast<dBm_u>(userInfoIt->GetUlTargetRssi() + pathLossDb);
+    auto reqTxPower = dBm_u{static_cast<double>(userInfoIt->GetUlTargetRssi() + pathLossDb)};
 
     // Convert the transmit power to a power level
     uint8_t numPowerLevels = m_phy->GetNTxPower();
