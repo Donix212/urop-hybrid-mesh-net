@@ -784,7 +784,12 @@ EmlOmnExchangeTest::CheckEmlNotification(Ptr<const WifiPsdu> psdu,
 void
 EmlOmnExchangeTest::TxOk(Ptr<const WifiMpdu> mpdu)
 {
+    NS_LOG_FUNCTION(this << mpdu);
     const auto& hdr = mpdu->GetHeader();
+
+    NS_TEST_EXPECT_MSG_EQ(mpdu->GetAckedLinkId().has_value(),
+                          true,
+                          "Missing WifiMpdu acked link ID value");
 
     if (hdr.IsMgt() && hdr.IsAction())
     {

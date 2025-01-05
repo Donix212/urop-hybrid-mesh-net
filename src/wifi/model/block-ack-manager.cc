@@ -369,6 +369,7 @@ BlockAckManager::NotifyGotAck(uint8_t linkId, Ptr<const WifiMpdu> mpdu)
 {
     NS_LOG_FUNCTION(this << linkId << *mpdu);
     NS_ASSERT(mpdu->GetHeader().IsQosData());
+    mpdu->SetAckedLinkId(linkId);
 
     Mac48Address recipient = mpdu->GetOriginal()->GetHeader().GetAddr1();
     uint8_t tid = mpdu->GetHeader().GetQosTid();
@@ -465,6 +466,7 @@ BlockAckManager::NotifyGotBlockAck(uint8_t linkId,
     {
         uint16_t currentSeq = (*queueIt)->GetHeader().GetSequenceNumber();
         NS_LOG_DEBUG("Current seq=" << currentSeq);
+        (*queueIt)->SetAckedLinkId(linkId);
         if (blockAck.IsPacketReceived(currentSeq, index))
         {
             it->second.first.NotifyAckedMpdu(*queueIt);

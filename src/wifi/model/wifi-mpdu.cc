@@ -367,6 +367,18 @@ WifiMpdu::IsInFlight() const
 }
 
 void
+WifiMpdu::SetAckedLinkId(uint8_t linkId) const
+{
+    m_ackedLinkId = linkId;
+}
+
+std::optional<uint8_t>
+WifiMpdu::GetAckedLinkId() const
+{
+    return m_ackedLinkId;
+}
+
+void
 WifiMpdu::AssignSeqNo(uint16_t seqNo)
 {
     NS_LOG_FUNCTION(this << seqNo);
@@ -413,6 +425,10 @@ WifiMpdu::Print(std::ostream& os) const
     {
         os << ", residualLifetime=" << (GetExpiryTime() - Simulator::Now()).As(Time::US)
            << ", inflight=" << IsInFlight();
+    }
+    if (m_ackedLinkId.has_value())
+    {
+        os << ", ackedLinkId=" << +m_ackedLinkId.value();
     }
     os << ", packet=" << GetPacket();
 }
