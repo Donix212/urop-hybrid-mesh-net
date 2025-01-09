@@ -222,6 +222,14 @@ class WifiMpdu : public SimpleRefCount<WifiMpdu>
      * @return true if this MPDU is in flight on any link, false otherwise
      */
     bool IsInFlight() const;
+    /**
+     * @linkId Link ID on which the MPDU has been acked
+     */
+    void SetAckedLinkId(uint8_t linkId) const;
+    /**
+     * @return Link ID (if any) on which the MPDU has been acked
+     */
+    std::optional<uint8_t> GetAckedLinkId() const;
 
     /**
      * Set the sequence number of this MPDU (and of the original copy, if this is an alias)
@@ -308,6 +316,7 @@ class WifiMpdu : public SimpleRefCount<WifiMpdu>
     static constexpr std::size_t ORIGINAL =
         0;                                  //!< index of original copy in the InstanceInfo variant
     static constexpr std::size_t ALIAS = 1; //!< index of an alias in the InstanceInfo variant
+    mutable std::optional<uint8_t> m_ackedLinkId; ///!< link ID for which MPDU was acknowledged
 };
 
 /**

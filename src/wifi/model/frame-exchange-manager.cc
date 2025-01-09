@@ -1442,6 +1442,7 @@ FrameExchangeManager::ReceivedNormalAck(Ptr<WifiMpdu> mpdu,
     NS_LOG_DEBUG("Received ACK from=" << sender);
     m_txTimer.GotResponseFrom(sender);
 
+    mpdu->SetAckedLinkId(m_linkId);
     NotifyReceivedNormalAck(mpdu);
 
     // When fragmentation is used, only update manager when the last fragment is acknowledged
