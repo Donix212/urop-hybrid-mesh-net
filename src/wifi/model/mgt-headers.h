@@ -82,11 +82,13 @@ struct CanBeInPerStaProfile<Ssid> : std::false_type
 using ProbeRequestElems = std::tuple<Ssid,
                                      SupportedRates,
                                      std::optional<ExtendedSupportedRatesIE>,
+                                     std::optional<DsssParameterSet>,
                                      std::optional<HtCapabilities>,
                                      std::optional<ExtendedCapabilities>,
                                      std::optional<VhtCapabilities>,
                                      std::optional<HeCapabilities>,
                                      std::optional<He6GhzBandCapabilities>,
+                                     std::optional<MultiLinkElement>,
                                      std::optional<EhtCapabilities>>;
 
 /// List of Information Elements included in Probe Response frames
@@ -441,9 +443,11 @@ class MgtProbeRequestHeader : public WifiMgtHeader<MgtProbeRequestHeader, ProbeR
  * @ingroup wifi
  * Implement the header for management frames of type probe response.
  */
-class MgtProbeResponseHeader : public WifiMgtHeader<MgtProbeResponseHeader, ProbeResponseElems>
+class MgtProbeResponseHeader
+    : public MgtHeaderInPerStaProfile<MgtProbeResponseHeader, ProbeResponseElems>
 {
     friend class WifiMgtHeader<MgtProbeResponseHeader, ProbeResponseElems>;
+    friend class MgtHeaderInPerStaProfile<MgtProbeResponseHeader, ProbeResponseElems>;
 
   public:
     ~MgtProbeResponseHeader() override = default;
@@ -491,6 +495,34 @@ class MgtProbeResponseHeader : public WifiMgtHeader<MgtProbeResponseHeader, Prob
     void SerializeImpl(Buffer::Iterator start) const;
     /** @copydoc Header::Deserialize */
     uint32_t DeserializeImpl(Buffer::Iterator start);
+
+    /**
+     * @param frame the frame containing the Multi-Link Element
+     * @return the number of bytes that are needed to serialize this header into a Per-STA Profile
+     *         subelement of the Multi-Link Element
+     */
+    uint32_t GetSerializedSizeInPerStaProfileImpl(const MgtProbeResponseHeader& frame) const;
+
+    /**
+     * Serialize this header into a Per-STA Profile subelement of a Multi-Link Element
+     *
+     * @param start an iterator which points to where the header should be written
+     * @param frame the frame containing the Multi-Link Element
+     */
+    void SerializeInPerStaProfileImpl(Buffer::Iterator start,
+                                      const MgtProbeResponseHeader& frame) const;
+
+    /**
+     * Deserialize this header from a Per-STA Profile subelement of a Multi-Link Element.
+     *
+     * @param start an iterator which points to where the header should be read from
+     * @param length the expected number of bytes to read
+     * @param frame the frame containing the Multi-Link Element
+     * @return the number of bytes read
+     */
+    uint32_t DeserializeFromPerStaProfileImpl(Buffer::Iterator start,
+                                              uint16_t length,
+                                              const MgtProbeResponseHeader& frame);
 
   private:
     uint64_t m_timestamp;               //!< Timestamp

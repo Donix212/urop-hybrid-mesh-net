@@ -9,6 +9,9 @@
 #ifndef MULTI_LINK_ELEMENT_H
 #define MULTI_LINK_ELEMENT_H
 
+#include "common-info-basic-mle.h"
+#include "common-info-probe-req-mle.h"
+
 #include "ns3/nstime.h"
 #include "ns3/wifi-information-element.h"
 #include "ns3/wifi-mac-header.h"
@@ -23,172 +26,20 @@ namespace ns3
 class MgtAssocRequestHeader;
 class MgtReassocRequestHeader;
 class MgtAssocResponseHeader;
+class MgtProbeResponseHeader;
 
 /// variant holding a reference to a (Re)Association Request
 using AssocReqRefVariant = std::variant<std::reference_wrapper<MgtAssocRequestHeader>,
                                         std::reference_wrapper<MgtReassocRequestHeader>>;
 
 /**
- * Common Info field of the Basic Multi-Link element.
- * See Sec. 9.4.2.312.2.2 of 802.11be D1.5
- */
-struct CommonInfoBasicMle
-{
-    /**
-     * Medium Synchronization Delay Information subfield
-     */
-    struct MediumSyncDelayInfo
-    {
-        uint8_t mediumSyncDuration;            //!< Medium Synchronization Duration
-        uint8_t mediumSyncOfdmEdThreshold : 4; //!< Medium Synchronization OFDM ED Threshold
-        uint8_t mediumSyncMaxNTxops : 4;       //!< Medium Synchronization MAximum Number of TXOPs
-    };
-
-    /**
-     * EML Capabilities subfield
-     */
-    struct EmlCapabilities
-    {
-        uint8_t emlsrSupport : 1;         //!< EMLSR Support
-        uint8_t emlsrPaddingDelay : 3;    //!< EMLSR Padding Delay
-        uint8_t emlsrTransitionDelay : 3; //!< EMLSR Transition Delay
-        uint8_t emlmrSupport : 1;         //!< EMLMR Support
-        uint8_t emlmrDelay : 3;           //!< EMLMR Delay
-        uint8_t transitionTimeout : 4;    //!< Transition Timeout
-    };
-
-    /**
-     * MLD Capabilities subfield
-     */
-    struct MldCapabilities
-    {
-        uint8_t maxNSimultaneousLinks : 4;   //!< Max number of simultaneous links
-        uint8_t srsSupport : 1;              //!< SRS Support
-        uint8_t tidToLinkMappingSupport : 2; //!< TID-To-Link Mapping Negotiation Supported
-        uint8_t freqSepForStrApMld : 5; //!< Frequency Separation For STR/AP MLD Type Indication
-        uint8_t aarSupport : 1;         //!< AAR Support
-    };
-
-    /**
-     * Subfields
-     */
-    Mac48Address m_mldMacAddress;                  //!< MLD MAC Address
-    std::optional<uint8_t> m_linkIdInfo;           //!< Link ID Info
-    std::optional<uint8_t> m_bssParamsChangeCount; //!< BSS Parameters Change Count
-    std::optional<MediumSyncDelayInfo>
-        m_mediumSyncDelayInfo;                        //!< Medium Synchronization Delay Information
-    std::optional<EmlCapabilities> m_emlCapabilities; //!< EML Capabilities
-    std::optional<MldCapabilities> m_mldCapabilities; //!< MLD Capabilities
-
-    /**
-     * Get the Presence Bitmap subfield of the Common Info field
-     *
-     * @return the Presence Bitmap subfield of the Common Info field
-     */
-    uint16_t GetPresenceBitmap() const;
-    /**
-     * Get the size of the serialized Common Info field
-     *
-     * @return the size of the serialized Common Info field
-     */
-    uint8_t GetSize() const;
-    /**
-     * Serialize the Common Info field
-     *
-     * @param start iterator pointing to where the Common Info field should be written to
-     */
-    void Serialize(Buffer::Iterator& start) const;
-    /**
-     * Deserialize the Common Info field
-     *
-     * @param start iterator pointing to where the Common Info field should be read from
-     * @param presence the value of the Presence Bitmap field indicating which subfields
-     *                 are present in the Common Info field
-     * @return the number of bytes read
-     */
-    uint8_t Deserialize(Buffer::Iterator start, uint16_t presence);
-
-    /**
-     * @param delay the EMLSR Padding delay
-     * @return the encoded value for the EMLSR Padding Delay subfield
-     */
-    static uint8_t EncodeEmlsrPaddingDelay(Time delay);
-    /**
-     * @param value the value for the EMLSR Padding Delay subfield
-     * @return the corresponding EMLSR Padding delay
-     */
-    static Time DecodeEmlsrPaddingDelay(uint8_t value);
-
-    /**
-     * @param delay the EMLSR Transition delay
-     * @return the encoded value for the EMLSR Transition Delay subfield
-     */
-    static uint8_t EncodeEmlsrTransitionDelay(Time delay);
-    /**
-     * @param value the value for the EMLSR Transition Delay subfield
-     * @return the corresponding EMLSR Transition delay
-     */
-    static Time DecodeEmlsrTransitionDelay(uint8_t value);
-
-    /**
-     * Set the Medium Synchronization Duration subfield of the Medium Synchronization
-     * Delay Information in the Common Info field.
-     *
-     * @param delay the timer duration (must be a multiple of 32 microseconds)
-     */
-    void SetMediumSyncDelayTimer(Time delay);
-    /**
-     * Set the Medium Synchronization OFDM ED Threshold subfield of the Medium Synchronization
-     * Delay Information in the Common Info field.
-     *
-     * @param threshold the threshold in dBm (ranges from -72 to -62 dBm)
-     */
-    void SetMediumSyncOfdmEdThreshold(int8_t threshold);
-    /**
-     * Set the Medium Synchronization Maximum Number of TXOPs subfield of the Medium Synchronization
-     * Delay Information in the Common Info field. A value of zero indicates no limit on the
-     * maximum number of TXOPs.
-     *
-     * @param nTxops the maximum number of TXOPs a non-AP STA is allowed to attempt to
-     *               initiate while the MediumSyncDelay timer is running at a non-AP STA
-     */
-    void SetMediumSyncMaxNTxops(uint8_t nTxops);
-    /**
-     * Get the Medium Synchronization Duration subfield of the Medium Synchronization Delay
-     * Information in the Common Info field. Make sure that the Medium Synchronization Delay
-     * Information subfield is present.
-     *
-     * @return the timer duration
-     */
-    Time GetMediumSyncDelayTimer() const;
-    /**
-     * Get the Medium Synchronization OFDM ED Threshold in dBm. Make sure that the Medium
-     * Synchronization Delay Information subfield is present.
-     *
-     * @return the threshold in dBm
-     */
-    int8_t GetMediumSyncOfdmEdThreshold() const;
-    /**
-     * Get the maximum number of TXOPs a non-AP STA is allowed to attempt to initiate
-     * while the MediumSyncDelay timer is running at a non-AP STA. If no value is returned,
-     * no limit is imposed on the number of TXOPs. Make sure that the Medium Synchronization
-     * Delay Information subfield is present.
-     *
-     * @return the number of TXOPs
-     */
-    std::optional<uint8_t> GetMediumSyncMaxNTxops() const;
-};
-
-/**
  * @brief The Multi-Link element
  * @ingroup wifi
  *
- * The 802.11be Multi-Link element (see Sec.9.4.2.312 of 802.11be D1.5)
+ * The 802.11be Multi-Link element (see Sec.9.4.2.312 of 802.11be D5.0)
  *
  * TODO:
- * - Add setters/getters for EML Capabilities and MLD Capabilities subfields of
- *   the Common Info field of the Basic variant of a Multi-Link Element.
- * - Add support for variants other than the Basic one.
+ * - Add support for variants other than the Basic and Probe Request.
  */
 class MultiLinkElement : public WifiInformationElement
 {
@@ -205,7 +56,7 @@ class MultiLinkElement : public WifiInformationElement
     enum Variant : uint8_t
     {
         BASIC_VARIANT = 0,
-        // PROBE_REQUEST_VARIANT,
+        PROBE_REQUEST_VARIANT,
         // RECONFIGURATION_VARIANT,
         // TDLS_VARIANT,
         // PRIORITY_ACCESS_VARIANT,
@@ -225,7 +76,8 @@ class MultiLinkElement : public WifiInformationElement
     using ContainingFrame = std::variant<std::monostate,
                                          std::reference_wrapper<const MgtAssocRequestHeader>,
                                          std::reference_wrapper<const MgtReassocRequestHeader>,
-                                         std::reference_wrapper<const MgtAssocResponseHeader>>;
+                                         std::reference_wrapper<const MgtAssocResponseHeader>,
+                                         std::reference_wrapper<const MgtProbeResponseHeader>>;
 
     /**
      * Construct a Multi-Link Element with no variant set.
@@ -391,6 +243,21 @@ class MultiLinkElement : public WifiInformationElement
      */
     Time GetTransitionTimeout() const;
 
+    /**
+     * Set the AP MLD ID subfield of Common Info field. Valid variants are Basic and Probe Request.
+     *
+     * @param id AP MLD ID
+     */
+    void SetApMldId(uint8_t id);
+
+    /**
+     * Get the AP MLD ID subfield of Common Info field (if present). Valid variants are Basic and
+     * Probe Request.
+     *
+     * @return the AP MLD ID
+     */
+    std::optional<uint8_t> GetApMldId() const;
+
     mutable ContainingFrame m_containingFrame; //!< reference to the mgt frame containing this MLE
 
     /**
@@ -421,6 +288,7 @@ class MultiLinkElement : public WifiInformationElement
          * @param perStaProfile the object to copy
          */
         PerStaProfileSubelement(const PerStaProfileSubelement& perStaProfile);
+
         /**
          * Copy assignment operator performing a deep copy of the object
          *
@@ -428,6 +296,7 @@ class MultiLinkElement : public WifiInformationElement
          * @return a reference to this object
          */
         PerStaProfileSubelement& operator=(const PerStaProfileSubelement& perStaProfile);
+
         /**
          * Use default move assignment operator
          *
@@ -478,6 +347,23 @@ class MultiLinkElement : public WifiInformationElement
          * @return the STA MAC Address subfield in the STA Info field, if present
          */
         Mac48Address GetStaMacAddress() const;
+
+        /**
+         * Set the BSS Parameters Change Count subfield in the STA Info field.
+         *
+         * @param count BSS Parameters Change Count
+         */
+        void SetBssParamsChgCnt(uint8_t count);
+
+        /// @return whether the BSS Parameters Change Count subfield in STA Info field is present
+        bool HasBssParamsChgCnt() const;
+
+        /**
+         * Get BSS Parameters Change Count subfield in the STA Info field.
+         *
+         * @return count value
+         */
+        uint8_t GetBssParamsChgCnt() const;
 
         /**
          * Include the given (Re)Association Request frame body in the STA Profile field
@@ -536,6 +422,33 @@ class MultiLinkElement : public WifiInformationElement
         MgtAssocResponseHeader& GetAssocResponse() const;
 
         /**
+         * Include the given Probe Response frame body in the STA Profile field
+         * of this Per-STA Profile subelement
+         *
+         * @param probeResp the given Probe Response frame body
+         */
+        void SetProbeResponse(const MgtProbeResponseHeader& probeResp);
+
+        /// @copydoc SetProbeResponse
+        void SetProbeResponse(MgtProbeResponseHeader&& probeResp);
+
+        /**
+         * Return true if a Probe Response frame body is included in the
+         * STA Profile field of this Per-STA Profile subelement
+         *
+         * @return true if a Probe Response frame body is included
+         */
+        bool HasProbeResponse() const;
+
+        /**
+         * Get the Probe Response frame body included in the STA Profile
+         * field of this Per-STA Profile subelement
+         *
+         * @return the Probe Response frame body
+         */
+        MgtProbeResponseHeader& GetProbeResponse() const;
+
+        /**
          * Get the size in bytes of the serialized STA Info Length subfield of
          * the STA Info field
          *
@@ -551,13 +464,25 @@ class MultiLinkElement : public WifiInformationElement
         void SerializeInformationField(Buffer::Iterator start) const override;
         uint16_t DeserializeInformationField(Buffer::Iterator start, uint16_t length) override;
 
-        Variant m_variant;            //!< Multi-Link element variant
-        uint16_t m_staControl;        //!< STA Control field
-        Mac48Address m_staMacAddress; //!< STA MAC address
+        /**
+         * Deserialize information of Per-STA Profile Subelement in Probe Request Multi-link
+         * Element.
+         *
+         * @param start an iterator which points to where the information should be written
+         * @param length the expected number of octets to read
+         * @return the number of octets read
+         */
+        uint16_t DeserProbeReqMlePerSta(ns3::Buffer::Iterator start, uint16_t length);
+
+        Variant m_variant;                        //!< Multi-Link element variant
+        uint16_t m_staControl;                    //!< STA Control field
+        Mac48Address m_staMacAddress;             //!< STA MAC address
+        std::optional<uint8_t> m_bssParamsChgCnt; //!< BSS Params Change Count (Basic MLE)
         std::variant<std::monostate,
                      std::unique_ptr<MgtAssocRequestHeader>,
                      std::unique_ptr<MgtReassocRequestHeader>,
-                     std::unique_ptr<MgtAssocResponseHeader>>
+                     std::unique_ptr<MgtAssocResponseHeader>,
+                     std::unique_ptr<MgtProbeResponseHeader>>
             m_staProfile; /**< STA Profile field, containing the frame body of a frame of the
                                same type as the frame containing the Multi-Link Element */
     };
@@ -597,6 +522,7 @@ class MultiLinkElement : public WifiInformationElement
 
     /// Typedef for structure holding a Common Info field
     using CommonInfo = std::variant<CommonInfoBasicMle,
+                                    CommonInfoProbeReqMle,
                                     // TODO Add other variants
                                     std::monostate /* UNSET variant*/>;
 
