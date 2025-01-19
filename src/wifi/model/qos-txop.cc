@@ -286,15 +286,17 @@ QosTxop::GetBaManager()
 }
 
 uint16_t
-QosTxop::GetBaBufferSize(Mac48Address address, uint8_t tid) const
+QosTxop::GetBaBufferSize(Mac48Address address, uint8_t tid, bool isGcr) const
 {
-    return m_baManager->GetRecipientBufferSize(address, tid);
+    return isGcr ? m_baManager->GetGcrBufferSize(address, tid)
+                 : m_baManager->GetRecipientBufferSize(address, tid);
 }
 
 uint16_t
-QosTxop::GetBaStartingSequence(Mac48Address address, uint8_t tid) const
+QosTxop::GetBaStartingSequence(Mac48Address address, uint8_t tid, bool isGcr) const
 {
-    return m_baManager->GetOriginatorStartingSequence(address, tid);
+    return isGcr ? m_baManager->GetGcrStartingSequence(address, tid)
+                 : m_baManager->GetOriginatorStartingSequence(address, tid);
 }
 
 std::pair<CtrlBAckRequestHeader, WifiMacHeader>
@@ -666,8 +668,9 @@ QosTxop::GotAddBaResponse(const MgtAddBaResponseHeader& respHdr, Mac48Address re
         // already assigned waiting to be retransmitted (or being transmitted on another link)
         // when the Add BA Response is received. In this case, the starting sequence number shall
         // be set equal to the sequence number of such packet.
-        uint16_t startingSeq = m_txMiddle->GetNextSeqNumberByTidAndAddress(tid, recipient);
-        auto peekedItem = m_queue->PeekByTidAndAddress(tid, recipient);
+        const auto queueRecipient = respHdr.GetGcrGroupAddress().value_or(recipient);
+        auto startingSeq = m_txMiddle->GetNextSeqNumberByTidAndAddress(tid, queueRecipient);
+        auto peekedItem = m_queue->PeekByTidAndAddress(tid, queueRecipient);
         if (peekedItem && peekedItem->HasSeqNoAssigned())
         {
             startingSeq = peekedItem->GetHeader().GetSequenceNumber();
@@ -677,7 +680,9 @@ QosTxop::GotAddBaResponse(const MgtAddBaResponseHeader& respHdr, Mac48Address re
     else
     {
         NS_LOG_DEBUG("discard ADDBA response" << recipient);
-        m_baManager->NotifyOriginatorAgreementRejected(recipient, tid);
+        m_baManager->NotifyOriginatorAgreementRejected(recipient,
+                                                       tid,
+                                                       respHdr.GetGcrGroupAddress());
     }
 }
 
@@ -686,14 +691,18 @@ QosTxop::GotDelBaFrame(const MgtDelBaHeader* delBaHdr, Mac48Address recipient)
 {
     NS_LOG_FUNCTION(this << delBaHdr << recipient);
     NS_LOG_DEBUG("received DELBA frame from=" << recipient);
-    m_baManager->DestroyOriginatorAgreement(recipient, delBaHdr->GetTid());
+    m_baManager->DestroyOriginatorAgreement(recipient,
+                                            delBaHdr->GetTid(),
+                                            delBaHdr->GetGcrGroupAddress());
 }
 
 void
-QosTxop::NotifyOriginatorAgreementNoReply(const Mac48Address& recipient, uint8_t tid)
+QosTxop::NotifyOriginatorAgreementNoReply(const Mac48Address& recipient,
+                                          uint8_t tid,
+                                          std::optional<Mac48Address> gcrGroupAddr)
 {
-    NS_LOG_FUNCTION(this << recipient << tid);
-    m_baManager->NotifyOriginatorAgreementNoReply(recipient, tid);
+    NS_LOG_FUNCTION(this << recipient << tid << gcrGroupAddr.has_value());
+    m_baManager->NotifyOriginatorAgreementNoReply(recipient, tid, gcrGroupAddr);
 }
 
 void
@@ -739,30 +748,37 @@ QosTxop::GetBlockAckInactivityTimeout() const
 }
 
 void
-QosTxop::AddBaResponseTimeout(Mac48Address recipient, uint8_t tid)
+QosTxop::AddBaResponseTimeout(Mac48Address recipient,
+                              uint8_t tid,
+                              std::optional<Mac48Address> gcrGroupAddr)
 {
-    NS_LOG_FUNCTION(this << recipient << +tid);
+    NS_LOG_FUNCTION(this << recipient << +tid << gcrGroupAddr.has_value());
     // If agreement is still pending, ADDBA response is not received
-    if (auto agreement = m_baManager->GetAgreementAsOriginator(recipient, tid);
-        agreement && agreement->get().IsPending())
+    auto agreement = m_baManager->GetAgreementAsOriginator(recipient, tid, gcrGroupAddr);
+    if (agreement && agreement->get().IsPending())
     {
-        NotifyOriginatorAgreementNoReply(recipient, tid);
-        Simulator::Schedule(m_failedAddBaTimeout, &QosTxop::ResetBa, this, recipient, tid);
+        NotifyOriginatorAgreementNoReply(recipient, tid, gcrGroupAddr);
+        Simulator::Schedule(m_failedAddBaTimeout,
+                            &QosTxop::ResetBa,
+                            this,
+                            recipient,
+                            tid,
+                            gcrGroupAddr);
     }
 }
 
 void
-QosTxop::ResetBa(Mac48Address recipient, uint8_t tid)
+QosTxop::ResetBa(Mac48Address recipient, uint8_t tid, std::optional<Mac48Address> gcrGroupAddr)
 {
-    NS_LOG_FUNCTION(this << recipient << +tid);
+    NS_LOG_FUNCTION(this << recipient << +tid << gcrGroupAddr.has_value());
     // This function is scheduled when waiting for an ADDBA response. However,
     // before this function is called, a DELBA request may arrive, which causes
     // the agreement to be deleted. Hence, check if an agreement exists before
     // notifying that the agreement has to be reset.
-    if (auto agreement = m_baManager->GetAgreementAsOriginator(recipient, tid);
-        agreement && !agreement->get().IsEstablished())
+    auto agreement = m_baManager->GetAgreementAsOriginator(recipient, tid, gcrGroupAddr);
+    if (agreement && !agreement->get().IsEstablished())
     {
-        m_baManager->NotifyOriginatorAgreementReset(recipient, tid);
+        m_baManager->NotifyOriginatorAgreementReset(recipient, tid, gcrGroupAddr);
     }
 }
 

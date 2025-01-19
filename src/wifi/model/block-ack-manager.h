@@ -74,23 +74,30 @@ class BlockAckManager : public Object
     /**
      * @param recipient MAC address of the recipient
      * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack agreement)
      *
      * @return a const reference to the block ack agreement with the given recipient, if it exists
      *
      * Check if we are the originator of an existing block ack agreement with the given recipient.
      */
-    OriginatorAgreementOptConstRef GetAgreementAsOriginator(const Mac48Address& recipient,
-                                                            uint8_t tid) const;
+    OriginatorAgreementOptConstRef GetAgreementAsOriginator(
+        const Mac48Address& recipient,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt) const;
+
     /**
      * @param originator MAC address of the originator
      * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack agreement)
      *
      * @return a const reference to the block ack agreement with the given originator, if it exists
      *
      * Check if we are the recipient of an existing block ack agreement with the given originator.
      */
-    RecipientAgreementOptConstRef GetAgreementAsRecipient(const Mac48Address& originator,
-                                                          uint8_t tid) const;
+    RecipientAgreementOptConstRef GetAgreementAsRecipient(
+        const Mac48Address& originator,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt) const;
 
     /**
      * @param reqHdr Relative Add block ack request (action frame).
@@ -104,11 +111,14 @@ class BlockAckManager : public Object
     /**
      * @param recipient Address of peer station involved in block ack mechanism.
      * @param tid traffic ID of transmitted packet.
+     * @param gcrGroupAddr the GCR Group Address (only if it a GCR Block Ack agreement)
      *
      * Invoked when a recipient reject a block ack agreement or when a DELBA frame
      * is Received/Transmitted.
      */
-    void DestroyOriginatorAgreement(const Mac48Address& recipient, uint8_t tid);
+    void DestroyOriginatorAgreement(const Mac48Address& recipient,
+                                    uint8_t tid,
+                                    std::optional<Mac48Address> gcrGroupAddr);
     /**
      * @param respHdr Relative Add block ack response (action frame).
      * @param recipient Address of peer station involved in block ack mechanism.
@@ -145,8 +155,11 @@ class BlockAckManager : public Object
      *
      * @param originator the originator MAC address
      * @param tid the TID associated with the Block Ack agreement
+     * @param gcrGroupAddr the GCR Group Address (only if it a GCR Block Ack agreement)
      */
-    void DestroyRecipientAgreement(const Mac48Address& originator, uint8_t tid);
+    void DestroyRecipientAgreement(const Mac48Address& originator,
+                                   uint8_t tid,
+                                   std::optional<Mac48Address> gcrGroupAddr);
 
     /**
      * @param mpdu MPDU to store.
@@ -211,12 +224,15 @@ class BlockAckManager : public Object
      * @param originator MAC address of the sender of the Block Ack Request
      * @param tid Traffic ID
      * @param startingSeq the starting sequence number in the Block Ack Request
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack Request frame)
      *
      * Perform required actions upon receiving a Block Ack Request frame.
      */
     void NotifyGotBlockAckRequest(const Mac48Address& originator,
                                   uint8_t tid,
-                                  uint16_t startingSeq);
+                                  uint16_t startingSeq,
+                                  std::optional<Mac48Address> gcrGroupAddr = std::nullopt);
+
     /**
      * @param mpdu the received MPDU
      *
@@ -236,29 +252,38 @@ class BlockAckManager : public Object
     /**
      * @param recipient Address of peer station involved in block ack mechanism.
      * @param tid Traffic ID of transmitted packet.
+     * @param gcrGroupAddr the GCR Group Address (only if it a GCR Block Ack agreement)
      *
      * Marks an originator agreement as rejected. This happens if <i>recipient</i> station reject
      * block ack setup by an ADDBA Response frame with a failure status code. For now we assume
      * that every QoS station accepts a block ack setup.
      */
-    void NotifyOriginatorAgreementRejected(const Mac48Address& recipient, uint8_t tid);
+    void NotifyOriginatorAgreementRejected(const Mac48Address& recipient,
+                                           uint8_t tid,
+                                           std::optional<Mac48Address> gcrGroupAddr);
     /**
      * @param recipient Address of peer station involved in block ack mechanism.
      * @param tid Traffic ID of transmitted packet.
+     * @param gcrGroupAddr the GCR Group Address (only if it a GCR Block Ack agreement)
      *
      * Marks an originator agreement after not receiving response to ADDBA request. During this
      * state any packets in queue will be transmitted using normal MPDU. This also unblocks
      * recipient address.
      */
-    void NotifyOriginatorAgreementNoReply(const Mac48Address& recipient, uint8_t tid);
+    void NotifyOriginatorAgreementNoReply(const Mac48Address& recipient,
+                                          uint8_t tid,
+                                          std::optional<Mac48Address> gcrGroupAddr);
     /**
      * @param recipient Address of peer station involved in block ack mechanism.
      * @param tid Traffic ID of transmitted packet.
+     * @param gcrGroupAddr the GCR Group Address (only if it a GCR Block Ack agreement)
      *
      * Set Originator BA agreement to a transitory state to reset it after not receiving response
      * to ADDBA request.
      */
-    void NotifyOriginatorAgreementReset(const Mac48Address& recipient, uint8_t tid);
+    void NotifyOriginatorAgreementReset(const Mac48Address& recipient,
+                                        uint8_t tid,
+                                        std::optional<Mac48Address> gcrGroupAddr);
     /**
      * @param nPackets Minimum number of packets for use of block ack.
      *
@@ -277,7 +302,8 @@ class BlockAckManager : public Object
      * Set block ack inactivity callback
      * @param callback the block ack inactivity callback function
      */
-    void SetBlockAckInactivityCallback(Callback<void, Mac48Address, uint8_t, bool> callback);
+    void SetBlockAckInactivityCallback(
+        Callback<void, Mac48Address, uint8_t, bool, std::optional<Mac48Address>> callback);
     /**
      * Set block destination callback
      * @param callback the block destination callback
@@ -418,34 +444,114 @@ class BlockAckManager : public Object
      */
     void RemoveFromSendBarIfDataQueuedList(const Mac48Address& recipient, uint8_t tid);
 
+    /**
+     * This function returns the minimum buffer size from ADDBA Response frames sent by all members
+     * of a group address <i>groupAddress</i> for a given TID <i>tid</i>.
+     *
+     * @param groupAddress the group address
+     * @param tid the traffic ID.
+     *
+     * @return the GCR buffer size.
+     */
+    uint16_t GetGcrBufferSize(const Mac48Address& groupAddress, uint8_t tid) const;
+
+    /**
+     * This function returns the starting sequence number of the transmit window for a given GCR
+     * Block Ack agreement established with all members of a group address <i>groupAddress</i> for a
+     * given TID <i>tid</i>.
+     *
+     * @param groupAddress the group address
+     * @param tid Traffic ID
+     *
+     * @returns the starting sequence number of the transmit window (WinStartO)
+     */
+    uint16_t GetGcrStartingSequence(const Mac48Address& groupAddress, uint8_t tid) const;
+
   protected:
     void DoDispose() override;
 
   private:
     /**
-     * Inactivity timeout function
+     * Inactivity timeout function for a Block Ack agreement
      * @param recipient the recipient MAC address
      * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it a GCR Block Ack agreement)
      */
-    void InactivityTimeout(const Mac48Address& recipient, uint8_t tid);
+    void InactivityTimeout(const Mac48Address& recipient,
+                           uint8_t tid,
+                           std::optional<Mac48Address> gcrGroupAddr);
 
     /**
      * typedef for a list of WifiMpdu.
      */
-    typedef std::list<Ptr<WifiMpdu>> PacketQueue;
+    using PacketQueue = std::list<Ptr<WifiMpdu>>;
     /**
      * typedef for an iterator for PacketQueue.
      */
-    typedef std::list<Ptr<WifiMpdu>>::iterator PacketQueueI;
+    using PacketQueueI = std::list<Ptr<WifiMpdu>>::iterator;
 
     /// AgreementKey-indexed map of originator block ack agreements
     using OriginatorAgreements =
-        std::map<AgreementKey, std::pair<OriginatorBlockAckAgreement, PacketQueue>>;
-    /// typedef for an iterator for Agreements
+        std::multimap<AgreementKey, std::pair<OriginatorBlockAckAgreement, PacketQueue>>;
+    /// An iterator for originator block ack agreements
     using OriginatorAgreementsI = OriginatorAgreements::iterator;
+    /// A const iterator for originator block ack agreements
+    using OriginatorAgreementsCI = OriginatorAgreements::const_iterator;
 
     /// AgreementKey-indexed map of recipient block ack agreements
-    using RecipientAgreements = std::map<AgreementKey, RecipientBlockAckAgreement>;
+    using RecipientAgreements = std::multimap<AgreementKey, RecipientBlockAckAgreement>;
+    /// An iterator for recipient block ack agreements
+    using RecipientAgreementsI = RecipientAgreements::iterator;
+    /// A const iterator for recipient block ack agreements
+    using RecipientAgreementsCI = RecipientAgreements::const_iterator;
+
+    /**
+     * @param recipient MAC address of the recipient
+     * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack agreement)
+     *
+     * @return an iterator to the block ack agreement
+     */
+    OriginatorAgreementsI GetOriginatorBaAgreement(
+        const Mac48Address& recipient,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt);
+
+    /**
+     * @param recipient MAC address of the recipient
+     * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack agreement)
+     *
+     * @return a const iterator to the block ack agreement
+     */
+    OriginatorAgreementsCI GetOriginatorBaAgreement(
+        const Mac48Address& recipient,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt) const;
+
+    /**
+     * @param originator MAC address of the originator
+     * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack agreement)
+     *
+     * @return an iterator to the block ack agreement
+     */
+    RecipientAgreementsI GetRecipientBaAgreement(
+        const Mac48Address& originator,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt);
+
+    /**
+     * @param originator MAC address of the originator
+     * @param tid Traffic ID
+     * @param gcrGroupAddr the GCR Group Address (only if it is a GCR Block Ack agreement)
+     *
+     * @return a const iterator to the block ack agreement
+     */
+    RecipientAgreementsCI GetRecipientBaAgreement(
+        const Mac48Address& originator,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt) const;
 
     /**
      * Handle the given in flight MPDU based on its given status. If the status is
@@ -469,6 +575,17 @@ class BlockAckManager : public Object
                                     const Time& now);
 
     /**
+     * Handle discarded MPDU by making the transmit window advance beyond the discarded frame.
+     * This also involves (i) the removal of frames that consequently become old from the
+     * retransmit queue and from the queue of the block ack agreement, and (ii) the
+     * scheduling of a BlockAckRequest.
+     *
+     * @param mpdu the discarded MPDU
+     * @param iter an iterator to the corresponding agreement
+     */
+    void HandleDiscardedMpdu(Ptr<const WifiMpdu> mpdu, OriginatorAgreementsI iter);
+
+    /**
      * This data structure contains, for each originator block ack agreement (recipient, TID),
      * a set of packets for which an ack by block ack is requested.
      * Every packet or fragment indicated as correctly received in BlockAck frame is
@@ -482,7 +599,7 @@ class BlockAckManager : public Object
 
     uint8_t m_blockAckThreshold; ///< block ack threshold
     Ptr<WifiMacQueue> m_queue;   ///< queue
-    Callback<void, Mac48Address, uint8_t, bool>
+    Callback<void, Mac48Address, uint8_t, bool, std::optional<Mac48Address>>
         m_blockAckInactivityTimeout;                      ///< BlockAck inactivity timeout callback
     Callback<void, Mac48Address, uint8_t> m_blockPackets; ///< block packets callback
     Callback<void, Mac48Address, uint8_t> m_unblockPackets; ///< unblock packets callback
