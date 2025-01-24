@@ -73,6 +73,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC" OR "${CMAKE_CXX_SIMULATE_ID}"
                                                 MATCHES "MSVC"
 )
   set(MSVC True)
+  set(NS3_INT64X64 "CAIRO" CACHE STRING "Int64x64 implementation" FORCE)
 else()
   set(MSVC False)
 endif()
@@ -80,6 +81,9 @@ endif()
 if(${MSVC} OR ${XCODE})
   # Prevent multi-config generators from placing output files into per
   # configuration directory
+  if(NOT (DEFINED CMAKE_CONFIGURATION_TYPES))
+    set(CMAKE_CONFIGURATION_TYPES DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+  endif()
   foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}
