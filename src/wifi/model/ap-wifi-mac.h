@@ -39,6 +39,7 @@ class CfParameterSet;
 class UniformRandomVariable;
 class MgtEmlOmn;
 class ApEmlsrManager;
+class GcrManager;
 
 /// variant holding a  reference to a (Re)Association Request
 using AssocReqRefVariant = std::variant<std::reference_wrapper<MgtAssocRequestHeader>,
@@ -84,6 +85,18 @@ class ApWifiMac : public WifiMac
      * @return the AP EMLSR Manager
      */
     Ptr<ApEmlsrManager> GetApEmlsrManager() const;
+
+    /**
+     * Set the GCR Manager.
+     *
+     * @param gcrManager the GCR Manager
+     */
+    void SetGcrManager(Ptr<GcrManager> gcrManager);
+
+    /**
+     * @return the GCR Manager
+     */
+    Ptr<GcrManager> GetGcrManager() const;
 
     /**
      * @param interval the interval between two beacon transmissions.
@@ -163,6 +176,26 @@ class ApWifiMac : public WifiMac
      * @return the maximum among the values of the Queue Size subfields
      */
     uint8_t GetMaxBufferStatus(Mac48Address address) const;
+
+    /**
+     * Return whether GCR is used to transmit a packet.
+     *
+     * @param hdr the header of the packet to transmit
+     * @return true if a GCR manager is set and the packet is a groupcast QoS data, false otherwise
+     */
+    bool UseGcr(const WifiMacHeader& hdr) const;
+
+    /**
+     * Check if a GCR Block Ack agreement has been successfully established with all members of
+     * its group.
+     *
+     * @param groupAddress the GCR group address.
+     * @param tid the traffic ID.
+     * @return true if a GCR Block Ack agreement has been successfully established with all members
+     * of its group, false otherwise.
+     */
+    bool IsGcrBaAgreementEstablishedWithAllMembers(const Mac48Address& groupAddress,
+                                                   uint8_t tid) const;
 
     /// ACI-indexed map of access parameters of type unsigned integer (CWmin, CWmax and AIFSN)
     using UintAccessParamsMap = std::map<AcIndex, std::vector<uint64_t>>;
@@ -607,6 +640,7 @@ class ApWifiMac : public WifiMac
     /// transition timeout events running for EMLSR clients
     std::map<Mac48Address, EventId> m_transitionTimeoutEvents;
     Ptr<ApEmlsrManager> m_apEmlsrManager; ///< AP EMLSR Manager
+    Ptr<GcrManager> m_gcrManager;         //!< GCR Manager
 
     UintAccessParamsMap m_cwMinsForSta;     //!< Per-AC CW min values to advertise to stations
     UintAccessParamsMap m_cwMaxsForSta;     //!< Per-AC CW max values to advertise to stations

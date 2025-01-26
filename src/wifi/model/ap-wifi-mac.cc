@@ -12,6 +12,7 @@
 
 #include "amsdu-subframe-header.h"
 #include "channel-access-manager.h"
+#include "gcr-manager.h"
 #include "mac-rx-middle.h"
 #include "mac-tx-middle.h"
 #include "mgt-action-headers.h"
@@ -168,6 +169,13 @@ ApWifiMac::GetTypeId()
                 MakeAttributeContainerAccessor<TimeAccessParamsPairValue, ';'>(
                     &ApWifiMac::m_txopLimitsForSta),
                 GetTimeAccessParamsChecker())
+            .AddAttribute("GcrManager",
+                          "The GCR manager object.",
+                          TypeId::ATTR_GET |
+                              TypeId::ATTR_CONSTRUCT, // prevent setting after construction
+                          PointerValue(),
+                          MakePointerAccessor(&ApWifiMac::GetGcrManager, &ApWifiMac::SetGcrManager),
+                          MakePointerChecker<GcrManager>())
             .AddTraceSource("AssociatedSta",
                             "A station associated with this access point.",
                             MakeTraceSourceAccessor(&ApWifiMac::m_assocLogger),
@@ -228,6 +236,11 @@ ApWifiMac::DoDispose()
         m_apEmlsrManager->Dispose();
     }
     m_apEmlsrManager = nullptr;
+    if (m_gcrManager)
+    {
+        m_gcrManager->Dispose();
+    }
+    m_gcrManager = nullptr;
     WifiMac::DoDispose();
 }
 
@@ -261,6 +274,59 @@ Ptr<ApEmlsrManager>
 ApWifiMac::GetApEmlsrManager() const
 {
     return m_apEmlsrManager;
+}
+
+void
+ApWifiMac::SetGcrManager(Ptr<GcrManager> gcrManager)
+{
+    NS_LOG_FUNCTION(this << gcrManager);
+    m_gcrManager = gcrManager;
+    m_gcrManager->SetWifiMac(this);
+}
+
+Ptr<GcrManager>
+ApWifiMac::GetGcrManager() const
+{
+    return m_gcrManager;
+}
+
+bool
+ApWifiMac::UseGcr(const WifiMacHeader& hdr) const
+{
+    if (!hdr.IsQosData())
+    {
+        return false;
+    }
+
+    if (!IsGroupcast(hdr.GetAddr1()))
+    {
+        return false;
+    }
+
+    if (!m_gcrManager)
+    {
+        return false;
+    }
+
+    if (m_gcrManager->GetRetransmissionPolicy() ==
+        GroupAddressRetransmissionPolicy::NO_ACK_NO_RETRY)
+    {
+        return false;
+    }
+
+    /*
+     * 802.11-2020 11.21.16.3.4 (GCR operation):
+     * An AP or mesh STA shall transmit a frame belonging to a group address
+     * via the GCR service if any associated STA or peer mesh STA has a GCR
+     * agreement for the group address and, otherwise, does not transmit the
+     * frame via the GCR service.
+     */
+    if (m_gcrManager->GetMemberStasForGroupAddress(hdr.GetAddr1()).empty())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void
@@ -1385,6 +1451,15 @@ ApWifiMac::SetAid(MgtAssocResponseHeader& assoc, const LinkIdStaAddrMap& linkIdS
                             "AID " << it->first << " already assigned to " << staAddr
                                    << ", could not assign " << aid);
         }
+
+        if (auto extendedCapabilities =
+                GetWifiRemoteStationManager(linkId)->GetStationExtendedCapabilities(staAddr);
+            m_gcrManager)
+        {
+            const auto isGcrCapable =
+                extendedCapabilities && extendedCapabilities->m_robustAvStreaming;
+            m_gcrManager->NotifyStaAssociated(staAddr, isGcrCapable);
+        }
     }
 
     // set the AID in all the Association Responses. NOTE that the Association
@@ -2033,6 +2108,10 @@ ApWifiMac::Receive(Ptr<const WifiMpdu> mpdu, uint8_t linkId)
                         UpdateShortSlotTimeEnabled(linkId);
                         UpdateShortPreambleEnabled(linkId);
                         StaSwitchingToActiveModeOrDeassociated(from, linkId);
+                        if (m_gcrManager)
+                        {
+                            m_gcrManager->NotifyStaDeassociated(from);
+                        }
                         break;
                     }
                 }
@@ -2568,6 +2647,11 @@ ApWifiMac::DoInitialize()
         UpdateShortPreambleEnabled(linkId);
     }
 
+    if (m_gcrManager)
+    {
+        m_gcrManager->Initialize();
+    }
+
     NS_ABORT_IF(!TraceConnectWithoutContext("AckedMpdu", MakeCallback(&ApWifiMac::TxOk, this)));
     NS_ABORT_IF(
         !TraceConnectWithoutContext("DroppedMpdu", MakeCallback(&ApWifiMac::TxFailed, this)));
@@ -2659,6 +2743,17 @@ ApWifiMac::GetMaxBufferStatus(Mac48Address address) const
         return maxSize;
     }
     return 255;
+}
+
+bool
+ApWifiMac::IsGcrBaAgreementEstablishedWithAllMembers(const Mac48Address& groupAddress,
+                                                     uint8_t tid) const
+{
+    NS_ASSERT(m_gcrManager);
+    return GetQosTxop(tid)->GetBaManager()->IsGcrAgreementEstablished(
+        groupAddress,
+        tid,
+        m_gcrManager->GetMemberStasForGroupAddress(groupAddress));
 }
 
 } // namespace ns3

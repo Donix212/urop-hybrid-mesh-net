@@ -189,6 +189,7 @@ class HtFrameExchangeManager : public QosFrameExchangeManager
     void CtsTimeout(Ptr<WifiMpdu> rts, const WifiTxVector& txVector) override;
     void TransmissionSucceeded() override;
     void ProtectionCompleted() override;
+    void NotifyLastGcrUrTx(Ptr<const WifiMpdu> mpdu) override;
 
     /**
      * Process a received management action frame that relates to Block Ack agreement.
@@ -282,6 +283,15 @@ class HtFrameExchangeManager : public QosFrameExchangeManager
     virtual bool SendDataFrame(Ptr<WifiMpdu> peekedItem, Time availableTime, bool initialFrame);
 
     /**
+     * Retrieve the starting sequence number for a BA agreement to be established.
+     *
+     * @param header the MAC header of the next data packet selected for transmission once the BA
+     * agreement is established. \return the starting sequence number for a BA agreement to be
+     * established
+     */
+    uint16_t GetBaAgreementStartingSequenceNumber(const WifiMacHeader& header);
+
+    /**
      * A Block Ack agreement needs to be established with the given recipient for the
      * given TID if it does not already exist (or exists and is in state RESET) and:
      *
@@ -294,6 +304,21 @@ class HtFrameExchangeManager : public QosFrameExchangeManager
      * @return true if a Block Ack agreement needs to be established, false otherwise.
      */
     virtual bool NeedSetupBlockAck(Mac48Address recipient, uint8_t tid);
+
+    /**
+     * A Block Ack agreement needs to be established prior to the transmission of a groupcast data
+     * packet using the GCR service if it does not already exist (or exists and is in state RESET)
+     * for all member STAs and:
+     *
+     * - the number of packets in the groupcast queue reaches the BlockAckThreshold value OR
+     * - MPDU aggregation is enabled and there is more than one groupcast packet in the queue OR
+     * - the station is a VHT station
+     *
+     * @param header the MAC header of the next groupcast data packet selected for transmission.
+     * @return the recipient of the ADDBA frame if a Block Ack agreement needs to be established,
+     * std::nullopt otherwise.
+     */
+    virtual std::optional<Mac48Address> NeedSetupGcrBlockAck(const WifiMacHeader& header);
 
     /**
      * Sends an ADDBA Request to establish a block ack agreement with STA
@@ -348,6 +373,22 @@ class HtFrameExchangeManager : public QosFrameExchangeManager
      */
     virtual void MissedBlockAck(Ptr<WifiPsdu> psdu, const WifiTxVector& txVector);
 
+    /**
+     * Perform required actions to ensure the receiver window is flushed when a groupcast A-MPDU is
+     * received via the GCR service. If there are pending groupcast MPDUs from that recipient and
+     * that traffic ID, these MPDUs are forwarded up, by assuming an implicit BAR from the
+     * originator.
+     *
+     * @param groupAddress the destination group address of the MPDUs
+     * @param originator MAC address of the sender of the groupcast MPDUs
+     * @param tid Traffic ID
+     * @param seq the starting sequence number of the recipient window
+     */
+    void FlushGroupcastMpdus(const Mac48Address& groupAddress,
+                             const Mac48Address& originator,
+                             uint8_t tid,
+                             uint16_t seq);
+
     /// agreement key typedef (MAC address and TID)
     typedef std::pair<Mac48Address, uint8_t> AgreementKey;
 
@@ -366,6 +407,9 @@ class HtFrameExchangeManager : public QosFrameExchangeManager
 
     Ptr<WifiPsdu> m_psdu;        //!< the A-MPDU being transmitted
     WifiTxParameters m_txParams; //!< the TX parameters for the current frame
+
+    EventId m_flushGroupcastMpdusEvent; //!< the event to flush pending groupcast MPDUs from
+                                        //!< previously received A-MPDU
 };
 
 } // namespace ns3

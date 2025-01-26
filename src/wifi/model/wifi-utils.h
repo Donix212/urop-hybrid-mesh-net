@@ -26,6 +26,7 @@ namespace ns3
 class Mac48Address;
 class WifiMacHeader;
 class Packet;
+class WifiMac;
 
 /**
  * Wifi direction. Values are those defined for the TID-to-Link Mapping Control Direction
@@ -238,6 +239,27 @@ bool TidToLinkMappingValidForNegType1(const WifiTidLinkMapping& dlLinkMapping,
  * @return true if the MAC address is a group address that is not a broadcast address
  */
 bool IsGroupcast(const Mac48Address& adr);
+
+/**
+ * Return whether a given packet is transmitted using the GCR service.
+ *
+ * @param mac a pointer to the wifi MAC
+ * @param hdr the MAC header of the packet to check
+ * @return true if the packet is transmitted using the GCR service, false otherwise
+ */
+bool IsGcr(Ptr<WifiMac> mac, const WifiMacHeader& hdr);
+
+/**
+ * Get the MAC address of the individually addressed recipient to use for a given packet.
+ * If this is a groupcast packet to be transmitted with the GCR service, the GCR manager is
+ * requested to return which individually addressed recipient to use. Otherwise, it corresponds to
+ * the address1 of the MAC header.
+ *
+ * @param mac a pointer to the wifi MAC
+ * @param hdr the MAC header of the packet to check
+ * @return the MAC address of the individually addressed recipient to use
+ */
+Mac48Address GetIndividuallyAddressedRecipient(Ptr<WifiMac> mac, const WifiMacHeader& hdr);
 
 /// Size of the space of sequence numbers
 static constexpr uint16_t SEQNO_SPACE_SIZE = 4096;

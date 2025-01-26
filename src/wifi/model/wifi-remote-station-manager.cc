@@ -9,6 +9,7 @@
 #include "wifi-remote-station-manager.h"
 
 #include "ap-wifi-mac.h"
+#include "gcr-manager.h"
 #include "sta-wifi-mac.h"
 #include "wifi-mac-header.h"
 #include "wifi-mac-trailer.h"
@@ -604,21 +605,10 @@ WifiTxVector
 WifiRemoteStationManager::GetDataTxVector(const WifiMacHeader& header, MHz_u allowedWidth)
 {
     NS_LOG_FUNCTION(this << header << allowedWidth);
-    Mac48Address address = header.GetAddr1();
+    const auto address = header.GetAddr1();
     if (!header.IsMgt() && address.IsGroup())
     {
-        WifiMode mode = GetNonUnicastMode();
-        WifiTxVector v;
-        v.SetMode(mode);
-        v.SetPreambleType(
-            GetPreambleForTransmission(mode.GetModulationClass(), GetShortPreambleEnabled()));
-        v.SetTxPowerLevel(m_defaultTxPowerLevel);
-        v.SetChannelWidth(m_wifiPhy->GetTxBandwidth(mode, allowedWidth));
-        v.SetGuardInterval(GetGuardIntervalForMode(mode, m_wifiPhy->GetDevice()));
-        v.SetNTx(GetNumberOfAntennas());
-        v.SetNss(1);
-        v.SetNess(0);
-        return v;
+        return GetGroupcastTxVector(header, allowedWidth);
     }
     WifiTxVector txVector;
     if (header.IsMgt())
@@ -757,7 +747,9 @@ WifiRemoteStationManager::GetRtsTxVector(Mac48Address address, MHz_u allowedWidt
 WifiTxVector
 WifiRemoteStationManager::GetCtsTxVector(Mac48Address to, WifiMode rtsTxMode) const
 {
-    NS_ASSERT(!to.IsGroup());
+    auto apMac = DynamicCast<ApWifiMac>(m_wifiMac);
+    NS_ASSERT(!to.IsGroup() ||
+              (m_wifiMac && (m_wifiMac->GetTypeOfStation() == AP) && apMac->GetGcrManager()));
     WifiMode ctsMode = GetControlAnswerMode(rtsTxMode);
     WifiTxVector v;
     v.SetMode(ctsMode);
@@ -979,11 +971,12 @@ void
 WifiRemoteStationManager::ReportRtsFailed(const WifiMacHeader& header)
 {
     NS_LOG_FUNCTION(this << header);
-    NS_ASSERT(!header.GetAddr1().IsGroup());
+    const auto recipient = GetIndividuallyAddressedRecipient(m_wifiMac, header);
+    NS_ASSERT(!recipient.IsGroup());
     AcIndex ac = QosUtilsMapTidToAc((header.IsQosData()) ? header.GetQosTid() : 0);
     m_ssrc[ac]++;
-    m_macTxRtsFailed(header.GetAddr1());
-    DoReportRtsFailed(Lookup(header.GetAddr1()));
+    m_macTxRtsFailed(recipient);
+    DoReportRtsFailed(Lookup(recipient));
 }
 
 void
@@ -1013,8 +1006,9 @@ WifiRemoteStationManager::ReportRtsOk(const WifiMacHeader& header,
                                       double rtsSnr)
 {
     NS_LOG_FUNCTION(this << header << ctsSnr << ctsMode << rtsSnr);
-    NS_ASSERT(!header.GetAddr1().IsGroup());
-    WifiRemoteStation* station = Lookup(header.GetAddr1());
+    const auto recipient = GetIndividuallyAddressedRecipient(m_wifiMac, header);
+    NS_ASSERT(!recipient.IsGroup());
+    WifiRemoteStation* station = Lookup(recipient);
     AcIndex ac = QosUtilsMapTidToAc((header.IsQosData()) ? header.GetQosTid() : 0);
     station->m_state->m_info.NotifyTxSuccess(m_ssrc[ac]);
     m_ssrc[ac] = 0;
@@ -1131,7 +1125,7 @@ WifiRemoteStationManager::GetMpdusToDropOnTxFailure(Ptr<WifiPsdu> psdu)
 {
     NS_LOG_FUNCTION(this << *psdu);
 
-    auto* station = Lookup(psdu->GetHeader(0).GetAddr1());
+    auto* station = Lookup(GetIndividuallyAddressedRecipient(m_wifiMac, psdu->GetHeader(0)));
 
     DoIncrementRetryCountOnTxFailure(station, psdu);
     return DoGetMpdusToDropOnTxFailure(station, psdu);
@@ -1188,11 +1182,23 @@ WifiRemoteStationManager::NeedRts(const WifiMacHeader& header, const WifiTxParam
 {
     NS_LOG_FUNCTION(this << header << &txParams);
     auto address = header.GetAddr1();
-    const auto modulationClass = txParams.m_txVector.GetModulationClass();
-    if (address.IsGroup())
+    const auto isGcr = IsGcr(m_wifiMac, header);
+    if (!isGcr && address.IsGroup())
     {
         return false;
     }
+    if (isGcr)
+    {
+        EnumValue<GroupcastProtectionMode> enumValue;
+        auto apMac = DynamicCast<ApWifiMac>(m_wifiMac);
+        apMac->GetGcrManager()->GetAttribute("GcrProtectionMode", enumValue);
+        if (enumValue.Get() != GroupcastProtectionMode::RTS_CTS)
+        {
+            return false;
+        }
+        address = apMac->GetGcrManager()->GetIndividuallyAddressedRecipient(address);
+    }
+    const auto modulationClass = txParams.m_txVector.GetModulationClass();
     if (m_erpProtectionMode == RTS_CTS &&
         ((modulationClass == WIFI_MOD_CLASS_ERP_OFDM) || (modulationClass == WIFI_MOD_CLASS_HT) ||
          (modulationClass == WIFI_MOD_CLASS_VHT) || (modulationClass == WIFI_MOD_CLASS_HE) ||
@@ -1219,9 +1225,9 @@ WifiRemoteStationManager::NeedRts(const WifiMacHeader& header, const WifiTxParam
 }
 
 bool
-WifiRemoteStationManager::NeedCtsToSelf(const WifiTxVector& txVector)
+WifiRemoteStationManager::NeedCtsToSelf(const WifiTxVector& txVector, const WifiMacHeader& header)
 {
-    NS_LOG_FUNCTION(this << txVector);
+    NS_LOG_FUNCTION(this << txVector << header);
     if (m_useNonErpProtection && m_erpProtectionMode == CTS_TO_SELF &&
         ((txVector.GetModulationClass() == WIFI_MOD_CLASS_ERP_OFDM) ||
          (txVector.GetModulationClass() == WIFI_MOD_CLASS_HT) ||
@@ -1241,6 +1247,16 @@ WifiRemoteStationManager::NeedCtsToSelf(const WifiTxVector& txVector)
         NS_LOG_DEBUG(
             "WifiRemoteStationManager::NeedCtsToSelf returning true to protect non-HT stations");
         return true;
+    }
+    else if (IsGcr(m_wifiMac, header))
+    {
+        EnumValue<GroupcastProtectionMode> enumValue;
+        auto apMac = DynamicCast<ApWifiMac>(m_wifiMac);
+        apMac->GetGcrManager()->GetAttribute("GcrProtectionMode", enumValue);
+        if (enumValue.Get() == GroupcastProtectionMode::CTS_TO_SELF)
+        {
+            return true;
+        }
     }
     // FIXME: commented out for now
     /*else if (!m_useNonErpProtection)
@@ -1943,6 +1959,117 @@ WifiRemoteStationManager::GetNonUnicastMode() const
     {
         return m_nonUnicastMode;
     }
+}
+
+WifiTxVector
+WifiRemoteStationManager::GetGroupcastTxVector(const WifiMacHeader& header, MHz_u allowedWidth)
+{
+    const auto& to = header.GetAddr1();
+    NS_ASSERT(to.IsGroup());
+
+    WifiTxVector groupcastTxVector{};
+    const auto mode = GetNonUnicastMode();
+    groupcastTxVector.SetMode(mode);
+    groupcastTxVector.SetPreambleType(
+        GetPreambleForTransmission(mode.GetModulationClass(), GetShortPreambleEnabled()));
+    groupcastTxVector.SetTxPowerLevel(m_defaultTxPowerLevel);
+    groupcastTxVector.SetChannelWidth(m_wifiPhy->GetTxBandwidth(mode, allowedWidth));
+    groupcastTxVector.SetNTx(GetNumberOfAntennas());
+
+    if (to.IsBroadcast())
+    {
+        return groupcastTxVector;
+    }
+
+    auto apMac = DynamicCast<ApWifiMac>(m_wifiMac);
+    if (!apMac)
+    {
+        return groupcastTxVector;
+    }
+
+    auto gcrManager = apMac->GetGcrManager();
+    if (!gcrManager)
+    {
+        return groupcastTxVector;
+    }
+
+    const auto& groupStas = gcrManager->GetMemberStasForGroupAddress(to);
+    if (groupStas.empty())
+    {
+        return groupcastTxVector;
+    }
+
+    if (!gcrManager->UseConcealment(header))
+    {
+        return groupcastTxVector;
+    }
+
+    // If we are here, that means the mode will be used for the transmission of a groupcast frame
+    // using the GCR service. We should loop over each member STA that is going to receive the
+    // groupcast frame and select the highest possible mode over all STAs.
+    std::optional<WifiMode> groupcastMode;
+    auto maxWidth = allowedWidth;
+    auto maxNss = m_wifiPhy->GetMaxSupportedTxSpatialStreams();
+    std::map<WifiModulationClass, Time> minGisPerMc{/* non-HT OFDM is always 800 ns */
+                                                    {WIFI_MOD_CLASS_HT, NanoSeconds(400)},
+                                                    {WIFI_MOD_CLASS_HE, NanoSeconds(800)}};
+    const std::map<WifiModulationClass, WifiModulationClass> giRefModClass{
+        /* HT/VHT: short or long GI */
+        {WIFI_MOD_CLASS_HT, WIFI_MOD_CLASS_HT},
+        {WIFI_MOD_CLASS_VHT, WIFI_MOD_CLASS_HT},
+        /* HE/EHT: 3 possible GIs */
+        {WIFI_MOD_CLASS_HE, WIFI_MOD_CLASS_HE},
+        {WIFI_MOD_CLASS_EHT, WIFI_MOD_CLASS_HE}};
+    for (const auto& staAddress : groupStas)
+    {
+        // Get the equivalent TXVECTOR if the frame would be a unicast frame to that STA in order to
+        // get what rate would be selected for that STA.
+        WifiMacHeader hdr(WIFI_MAC_QOSDATA);
+        hdr.SetAddr1(staAddress);
+        const auto unicastTxVector = GetDataTxVector(hdr, allowedWidth);
+
+        // update the groupcast mode if:
+        //   - this is the first mode to inspect;
+        //   - this mode has a lower modulation class than the currently selected groupcast mode;
+        //   - when the modulation class is similar, this mode has a lower MCS than the currently
+        //   selected groupcast mode.
+        if (!groupcastMode.has_value() ||
+            (unicastTxVector.GetModulationClass() < groupcastMode->GetModulationClass()) ||
+            ((unicastTxVector.GetModulationClass() == groupcastMode->GetModulationClass()) &&
+             (unicastTxVector.GetMode().GetMcsValue() < groupcastMode->GetMcsValue())))
+        {
+            groupcastMode = unicastTxVector.GetMode();
+        }
+        maxWidth = std::min(unicastTxVector.GetChannelWidth(), maxWidth);
+        maxNss = std::min(unicastTxVector.GetNss(), maxNss);
+        auto mc = unicastTxVector.GetModulationClass();
+        if (const auto it = giRefModClass.find(mc); it != giRefModClass.cend())
+        {
+            mc = it->second;
+        }
+        if (auto it = minGisPerMc.find(mc); it != minGisPerMc.end())
+        {
+            it->second = std::max(unicastTxVector.GetGuardInterval(), it->second);
+        }
+    }
+    NS_ASSERT(groupcastMode.has_value());
+
+    groupcastTxVector.SetMode(*groupcastMode);
+    groupcastTxVector.SetPreambleType(
+        GetPreambleForTransmission(groupcastMode->GetModulationClass(), GetShortPreambleEnabled()));
+    groupcastTxVector.SetChannelWidth(maxWidth);
+    groupcastTxVector.SetNss(maxNss);
+    auto mc = groupcastMode->GetModulationClass();
+    if (const auto it = giRefModClass.find(mc); it != giRefModClass.cend())
+    {
+        mc = it->second;
+    }
+    if (const auto it = minGisPerMc.find(mc); it != minGisPerMc.cend())
+    {
+        groupcastTxVector.SetGuardInterval(it->second);
+    }
+
+    return groupcastTxVector;
 }
 
 bool

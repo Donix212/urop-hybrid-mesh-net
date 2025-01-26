@@ -9,6 +9,7 @@
 #include "frame-exchange-manager.h"
 
 #include "ap-wifi-mac.h"
+#include "gcr-manager.h"
 #include "snr-tag.h"
 #include "sta-wifi-mac.h"
 #include "wifi-mac-queue.h"
@@ -523,8 +524,34 @@ FrameExchangeManager::SendMpdu()
 
     if (m_txParams.m_acknowledgment->method == WifiAcknowledgment::NONE)
     {
-        if (!m_mpdu->GetHeader().IsQosData() ||
-            m_mpdu->GetHeader().GetQosAckPolicy() == WifiMacHeader::NO_ACK)
+        if (m_mac->GetTypeOfStation() == AP && m_apMac->UseGcr(m_mpdu->GetHeader()))
+        {
+            if (m_apMac->GetGcrManager()->KeepGroupcastQueued(m_mpdu))
+            {
+                // keep the groupcast frame in the queue for future retransmission
+                Simulator::Schedule(txDuration + m_phy->GetSifs(), [=, this, mpdu = m_mpdu]() {
+                    NS_LOG_DEBUG("Prepare groupcast MPDU for retry");
+                    mpdu->ResetInFlight(m_linkId);
+                    // restore addr1 to the group address instead of the concealment address
+                    if (m_apMac->GetGcrManager()->UseConcealment(mpdu->GetHeader()))
+                    {
+                        mpdu->GetHeader().SetAddr1(mpdu->begin()->second.GetDestinationAddr());
+                    }
+                    mpdu->GetHeader().SetRetry();
+                });
+            }
+            else
+            {
+                if (m_apMac->GetGcrManager()->GetRetransmissionPolicy() ==
+                    GroupAddressRetransmissionPolicy::GCR_UNSOLICITED_RETRY)
+                {
+                    NotifyLastGcrUrTx(m_mpdu);
+                }
+                DequeueMpdu(m_mpdu);
+            }
+        }
+        else if (!m_mpdu->GetHeader().IsQosData() ||
+                 m_mpdu->GetHeader().GetQosAckPolicy() == WifiMacHeader::NO_ACK)
         {
             // No acknowledgment, hence dequeue the MPDU if it is stored in a queue
             DequeueMpdu(m_mpdu);
@@ -761,7 +788,9 @@ FrameExchangeManager::SendRts(const WifiTxParameters& txParams)
     NS_LOG_FUNCTION(this << &txParams);
 
     NS_ASSERT(txParams.GetPsduInfoMap().size() == 1);
-    Mac48Address receiver = txParams.GetPsduInfoMap().begin()->first;
+
+    const auto& hdr = txParams.GetPsduInfoMap().begin()->second.header;
+    const auto receiver = GetIndividuallyAddressedRecipient(m_mac, hdr);
 
     WifiMacHeader rts;
     rts.SetType(WIFI_MAC_CTL_RTS);
@@ -1360,7 +1389,7 @@ FrameExchangeManager::ReceiveMpdu(Ptr<const WifiMpdu> mpdu,
             NS_ABORT_MSG_IF(inAmpdu, "Received CTS as part of an A-MPDU");
             NS_ASSERT(hdr.GetAddr1() == m_self);
 
-            Mac48Address sender = m_mpdu->GetHeader().GetAddr1();
+            const auto sender = GetIndividuallyAddressedRecipient(m_mac, m_mpdu->GetHeader());
             NS_LOG_DEBUG("Received CTS from=" << sender);
 
             SnrTag tag;
@@ -1496,6 +1525,12 @@ FrameExchangeManager::EndReceiveAmpdu(Ptr<const WifiPsdu> psdu,
                                       const std::vector<bool>& perMpduStatus)
 {
     NS_ASSERT_MSG(false, "A non-QoS station should not receive an A-MPDU");
+}
+
+void
+FrameExchangeManager::NotifyLastGcrUrTx(Ptr<const WifiMpdu> mpdu)
+{
+    NS_ASSERT_MSG(false, "A non-QoS station should not use GCR-UR");
 }
 
 } // namespace ns3

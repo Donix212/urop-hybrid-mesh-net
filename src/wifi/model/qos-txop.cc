@@ -11,8 +11,10 @@
 
 #include "qos-txop.h"
 
+#include "ap-wifi-mac.h"
 #include "channel-access-manager.h"
 #include "ctrl-headers.h"
+#include "gcr-manager.h"
 #include "mac-tx-middle.h"
 #include "mgt-action-headers.h"
 #include "mpdu-aggregator.h"
@@ -388,7 +390,10 @@ QosTxop::PeekNextMpdu(uint8_t linkId, uint8_t tid, Mac48Address recipient, Ptr<c
         {
             return m_queue->PeekFirstAvailable(linkId, mpdu);
         }
-        WifiContainerQueueId queueId(WIFI_QOSDATA_QUEUE, WIFI_UNICAST, recipient, tid);
+        WifiContainerQueueId queueId(WIFI_QOSDATA_QUEUE,
+                                     recipient.IsGroup() ? WIFI_GROUPCAST : WIFI_UNICAST,
+                                     recipient,
+                                     tid);
         if (auto mask = m_mac->GetMacQueueScheduler()->GetQueueLinkMask(m_ac, queueId, linkId);
             mask && mask->none())
         {
@@ -433,13 +438,25 @@ QosTxop::PeekNextMpdu(uint8_t linkId, uint8_t tid, Mac48Address recipient, Ptr<c
                 break;
             }
 
-            // if no BA agreement, we cannot have multiple MPDUs in-flight
-            if (item->GetHeader().IsQosData() &&
-                !m_mac->GetBaAgreementEstablishedAsOriginator(item->GetHeader().GetAddr1(),
-                                                              item->GetHeader().GetQosTid()))
+            if (item->GetHeader().IsQosData())
             {
-                NS_LOG_DEBUG("No BA agreement and an MPDU is already in-flight");
-                return nullptr;
+                auto apMac = DynamicCast<ApWifiMac>(m_mac);
+                const auto isGcr = IsGcr(m_mac, item->GetHeader());
+                const auto agreementEstablished =
+                    isGcr
+                        ? apMac->IsGcrBaAgreementEstablishedWithAllMembers(
+                              item->GetHeader().GetAddr1(),
+                              item->GetHeader().GetQosTid())
+                        : m_mac
+                              ->GetBaAgreementEstablishedAsOriginator(item->GetHeader().GetAddr1(),
+                                                                      item->GetHeader().GetQosTid())
+                              .has_value();
+                // if no BA agreement, we cannot have multiple MPDUs in-flight
+                if (!agreementEstablished)
+                {
+                    NS_LOG_DEBUG("No BA agreement and an MPDU is already in-flight");
+                    return nullptr;
+                }
             }
 
             NS_LOG_DEBUG("Skipping in flight MPDU: " << *item);
@@ -464,21 +481,24 @@ QosTxop::PeekNextMpdu(uint8_t linkId, uint8_t tid, Mac48Address recipient, Ptr<c
         return nullptr;
     }
 
-    WifiMacHeader& hdr = item->GetHeader();
+    auto& hdr = item->GetHeader();
 
     // peek the next sequence number and check if it is within the transmit window
     // in case of QoS data frame
-    uint16_t sequence = item->HasSeqNoAssigned() ? hdr.GetSequenceNumber()
-                                                 : m_txMiddle->PeekNextSequenceNumberFor(&hdr);
+    const auto sequence = item->HasSeqNoAssigned() ? hdr.GetSequenceNumber()
+                                                   : m_txMiddle->PeekNextSequenceNumberFor(&hdr);
     if (hdr.IsQosData())
     {
-        Mac48Address recipient = hdr.GetAddr1();
-        uint8_t tid = hdr.GetQosTid();
-
-        if (m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid) &&
-            !IsInWindow(sequence,
-                        GetBaStartingSequence(recipient, tid),
-                        GetBaBufferSize(recipient, tid)))
+        const auto recipient = hdr.GetAddr1();
+        const auto tid = hdr.GetQosTid();
+        const auto isGcr = IsGcr(m_mac, hdr);
+        const auto bufferSize = GetBaBufferSize(recipient, tid, isGcr);
+        const auto startSeq = GetBaStartingSequence(recipient, tid, isGcr);
+        auto apMac = DynamicCast<ApWifiMac>(m_mac);
+        const auto agreementEstablished =
+            isGcr ? apMac->IsGcrBaAgreementEstablishedWithAllMembers(recipient, tid)
+                  : m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid).has_value();
+        if (agreementEstablished && !IsInWindow(sequence, startSeq, bufferSize))
         {
             NS_LOG_DEBUG("Packet beyond the end of the current transmit window");
             return nullptr;
@@ -537,10 +557,14 @@ QosTxop::GetNextMpdu(uint8_t linkId,
                       GetBaBufferSize(peekedItem->GetOriginal()->GetHeader().GetAddr1(), tid)));
 
         // try A-MSDU aggregation if the MPDU does not contain an A-MSDU and does not already
-        // have a sequence number assigned (may be a retransmission)
-        if (m_mac->GetHtConfiguration() && !recipient.IsBroadcast() &&
-            !peekedItem->GetHeader().IsQosAmsdu() && !peekedItem->HasSeqNoAssigned() &&
-            !peekedItem->IsFragment())
+        // have a sequence number assigned (may be a retransmission) unless it is a concealed GCR
+        // MPDU:
+        if (auto apMac = DynamicCast<ApWifiMac>(m_mac);
+            m_mac->GetHtConfiguration() && !recipient.IsBroadcast() &&
+            !peekedItem->GetHeader().IsQosAmsdu() && !peekedItem->IsFragment() &&
+            (!peekedItem->HasSeqNoAssigned() ||
+             (IsGcr(m_mac, peekedItem->GetHeader()) &&
+              (apMac->GetGcrManager()->UseConcealment(peekedItem->GetHeader())))))
         {
             auto htFem = StaticCast<HtFrameExchangeManager>(qosFem);
             mpdu = htFem->GetMsduAggregator()->GetNextAmsdu(peekedItem, txParams, availableTime);

@@ -522,6 +522,23 @@ BlockAckManager::NotifyGotAck(uint8_t linkId, Ptr<const WifiMpdu> mpdu)
 }
 
 void
+BlockAckManager::NotifyLastGcrUrTx(Ptr<const WifiMpdu> mpdu,
+                                   const GcrManager::GcrMembers& recipients)
+{
+    NS_LOG_FUNCTION(this << *mpdu << recipients.size());
+    NS_ASSERT(mpdu->GetHeader().IsQosData());
+    const auto tid = mpdu->GetHeader().GetQosTid();
+    const auto gcrGroupAddr = mpdu->GetHeader().GetAddr1();
+    for (const auto& recipient : recipients)
+    {
+        auto it = GetOriginatorBaAgreement(recipient, tid, gcrGroupAddr);
+        NS_ASSERT(it != m_originatorAgreements.end());
+        NS_ASSERT(it->second.first.IsEstablished());
+        it->second.first.NotifyAckedMpdu(mpdu);
+    }
+}
+
+void
 BlockAckManager::NotifyMissedAck(uint8_t linkId, Ptr<WifiMpdu> mpdu)
 {
     NS_LOG_FUNCTION(this << linkId << *mpdu);
@@ -796,7 +813,8 @@ BlockAckManager::NotifyGotMpdu(Ptr<const WifiMpdu> mpdu)
     std::optional<Mac48Address> groupAddress;
     if (const auto addr1 = mpdu->GetOriginal()->GetHeader().GetAddr1(); addr1.IsGroup())
     {
-        groupAddress = mpdu->begin()->second.GetDestinationAddr();
+        groupAddress =
+            mpdu->GetHeader().IsQosAmsdu() ? mpdu->begin()->second.GetDestinationAddr() : addr1;
     }
     if (auto it = GetRecipientBaAgreement(originator, tid, groupAddress);
         it != m_recipientAgreements.end())
@@ -1076,6 +1094,23 @@ BlockAckManager::GetGcrBufferSize(const Mac48Address& groupAddress, uint8_t tid)
         }
     }
     return gcrBufferSize;
+}
+
+bool
+BlockAckManager::IsGcrAgreementEstablished(const Mac48Address& gcrGroupAddress,
+                                           uint8_t tid,
+                                           const GcrManager::GcrMembers& members) const
+{
+    NS_ASSERT(!members.empty());
+    for (const auto& member : members)
+    {
+        if (const auto agreement = GetAgreementAsOriginator(member, tid, gcrGroupAddress);
+            !agreement || !agreement->get().IsEstablished())
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 } // namespace ns3
