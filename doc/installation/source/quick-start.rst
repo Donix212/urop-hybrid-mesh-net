@@ -48,7 +48,7 @@ source archive download (via a web browser, ``wget``, or ``curl``).
   +--------------------+--------------------------------------+------------------------------+
   | **Configuration**  | ``python3``                          | >= 3.8                       |
   +--------------------+--------------------------------------+------------------------------+
-  | **Build system**   | ``cmake``,                           | >= 3.13                      |
+  | **Build system**   | ``cmake``,                           | >= 3.21                      |
   +                    +                                      +                              +
   |                    | and at least one of:                 | No minimum version           |
   |                    | ``make``, ``ninja``, or ``Xcode``    |                              |

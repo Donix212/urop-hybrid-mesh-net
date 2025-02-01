@@ -35,6 +35,8 @@ This file is a best-effort approach to solving this issue; we will do our best b
 
 ### Changes to build system
 
+* Raised minimum CMake version to 3.21.
+
 ### Changed behavior
 
 ## Changes from ns-3.42 to ns-3.43

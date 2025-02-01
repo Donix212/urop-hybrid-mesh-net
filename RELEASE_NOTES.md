@@ -21,9 +21,11 @@ requirements (Note: not all ns-3 features are available on all systems):
 
 - g++-10.1 or later, or LLVM/clang++-11 or later
 - Python 3.8 or later
-- CMake 3.13 or later
+- CMake 3.21 or later
 - (macOS only) Xcode 13.1.6 or later
 - (Windows only) Msys2/MinGW64 and Msys2/UCRT64 toolchains or WSL2
+
+The minimum version of CMake for this release has been raised to version 3.21.
 
 Python API requires [Cppyy](https://cppyy.readthedocs.io/en/latest/installation.html) and has only
 been tested on Linux. As of this release, the latest known version to work with ns-3 is cppyy==3.1.2.
