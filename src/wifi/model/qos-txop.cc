@@ -90,7 +90,7 @@ QosTxop::GetTypeId()
                             "ns3::QosTxop::TxopTracedCallback")
             .AddTraceSource("BaEstablished",
                             "A block ack agreement is established with the given recipient for "
-                            "the given TID.",
+                            "the given TID (and the given GCR group address, if any).",
                             MakeTraceSourceAccessor(&QosTxop::m_baEstablishedCallback),
                             "ns3::QosTxop::BaEstablishedCallback");
     return tid;
@@ -302,15 +302,17 @@ QosTxop::GetBaStartingSequence(Mac48Address address, uint8_t tid, bool isGcr) co
 }
 
 std::pair<CtrlBAckRequestHeader, WifiMacHeader>
-QosTxop::PrepareBlockAckRequest(Mac48Address recipient, uint8_t tid) const
+QosTxop::PrepareBlockAckRequest(Mac48Address recipient,
+                                uint8_t tid,
+                                std::optional<Mac48Address> gcrGroupAddr) const
 {
-    NS_LOG_FUNCTION(this << recipient << +tid);
+    NS_LOG_FUNCTION(this << recipient << +tid << gcrGroupAddr.has_value());
     NS_ASSERT(QosUtilsMapTidToAc(tid) == m_ac);
 
     auto recipientMld = m_mac->GetMldAddress(recipient);
 
-    CtrlBAckRequestHeader reqHdr =
-        m_baManager->GetBlockAckReqHeader(recipientMld.value_or(recipient), tid);
+    auto reqHdr =
+        m_baManager->GetBlockAckReqHeader(recipientMld.value_or(recipient), tid, gcrGroupAddr);
 
     WifiMacHeader hdr;
     hdr.SetType(WIFI_MAC_CTL_BACKREQ);
@@ -683,8 +685,11 @@ QosTxop::GotAddBaResponse(const MgtAddBaResponseHeader& respHdr, Mac48Address re
 
     if (respHdr.GetStatusCode().IsSuccess())
     {
-        NS_LOG_DEBUG("block ack agreement established with " << recipient << " tid " << +tid);
-        m_baEstablishedCallback(recipient, tid);
+        const auto gcrGroup = respHdr.GetGcrGroupAddress();
+        NS_LOG_DEBUG("block ack agreement established with "
+                     << recipient << " tid " << +tid << (gcrGroup ? " group " : "")
+                     << (gcrGroup ? gcrGroup->ConvertTo() : Address()));
+        m_baEstablishedCallback(recipient, tid, gcrGroup);
         // A (destination, TID) pair is "blocked" (i.e., no more packets are sent) when an
         // Add BA Request is sent to the destination. However, when the Add BA Request timer
         // expires, the (destination, TID) pair is "unblocked" and packets to the destination are
@@ -732,10 +737,26 @@ QosTxop::NotifyOriginatorAgreementNoReply(const Mac48Address& recipient,
 void
 QosTxop::CompleteMpduTx(Ptr<WifiMpdu> mpdu)
 {
+    NS_LOG_FUNCTION(this << *mpdu);
     NS_ASSERT(mpdu->GetHeader().IsQosData());
     // If there is an established BA agreement, store the packet in the queue of outstanding packets
-    if (m_mac->GetBaAgreementEstablishedAsOriginator(mpdu->GetHeader().GetAddr1(),
-                                                     mpdu->GetHeader().GetQosTid()))
+
+    if (auto apMac = DynamicCast<ApWifiMac>(m_mac);
+        IsGcr(m_mac, mpdu->GetHeader()) &&
+        (apMac->GetGcrManager()->GetRetransmissionPolicyFor(mpdu->GetHeader()) ==
+         GroupAddressRetransmissionPolicy::GCR_BLOCK_ACK))
+    {
+        NS_ASSERT(mpdu->IsQueued());
+        NS_ASSERT(m_queue->GetAc() == mpdu->GetQueueAc());
+        const auto recipient = mpdu->begin()->second.GetDestinationAddr();
+        m_baManager->StoreGcrPacket(
+            m_queue->GetOriginal(mpdu),
+            apMac->GetGcrManager()->GetMemberStasForGroupAddress(recipient));
+        return;
+    }
+
+    if (const auto recipient = mpdu->GetHeader().GetAddr1();
+        m_mac->GetBaAgreementEstablishedAsOriginator(recipient, mpdu->GetHeader().GetQosTid()))
     {
         NS_ASSERT(mpdu->IsQueued());
         NS_ASSERT(m_queue->GetAc() == mpdu->GetQueueAc());

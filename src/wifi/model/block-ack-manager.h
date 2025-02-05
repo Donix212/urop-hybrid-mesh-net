@@ -166,9 +166,19 @@ class BlockAckManager : public Object
      * @param mpdu MPDU to store.
      *
      * Stores <i>mpdu</i> for a possible future retransmission. Retransmission occurs
-     * if the packet, in a BlockAck frame, is indicated by recipient as not received.
+     * if the packet, in a Block Ack frame, is indicated by recipient as not received.
      */
     void StorePacket(Ptr<WifiMpdu> mpdu);
+
+    /**
+     * @param mpdu groupcast MPDU to store.
+     * @param members intended recipients for the groupcast MPDU.
+     *
+     * Stores <i>mpdu</i> for a possible future retransmission. Retransmission occurs
+     * if the packet, in a GCR Block Ack frame, is indicated by recipient as not received.
+     */
+    void StoreGcrPacket(Ptr<WifiMpdu> mpdu, const GcrManager::GcrMembers& members);
+
     /**
      * Invoked upon receipt of an Ack frame on the given link after the transmission of a
      * QoS data frame sent under an established block ack agreement. Remove the acknowledged
@@ -199,8 +209,8 @@ class BlockAckManager : public Object
      * @return a pair of values indicating the number of successfully received MPDUs
      *         and the number of failed MPDUs
      *
-     * Invoked upon receipt of a BlockAck frame on the given link. Typically, this function
-     * is called by ns3::QosTxop object. Performs a check on which MPDUs, previously sent
+     * Invoked upon receipt of a Block Ack frame on the given link. Typically, this function
+     * is called by the frame exchange manager. Performs a check on which MPDUs, previously sent
      * with Ack Policy set to Block Ack, were correctly received by the recipient.
      * An acknowledged MPDU is removed from the buffer, retransmitted otherwise.
      * Note that <i>tids</i> is only used if <i>blockAck</i> is a Multi-STA Block Ack
@@ -211,6 +221,28 @@ class BlockAckManager : public Object
                                                     const Mac48Address& recipient,
                                                     const std::set<uint8_t>& tids,
                                                     size_t index = 0);
+
+    /**
+     * @param linkId the ID of the given link
+     * @param blockAck The received BlockAck frame.
+     * @param recipient Sender of BlockAck frame.
+     * @param members the list of member STAs for that GCR group
+     * @return a pair of values indicating the number of successfully received MPDUs
+     *         and the number of failed MPDUs if GCR Block Ack frames for all member STAs
+     *         have been received.
+     *
+     * Invoked upon receipt of a GCR Block Ack frame on the given link. Typically, this function
+     * is called by the frame exchange manager. Stores the received Block Ack response for each
+     * GCR member STA. Once all responses have been received, it performs a check on which MPDUs,
+     * previously sent with Ack Policy set to Block Ack, were correctly received by the recipient.
+     * An acknowledged MPDU is removed from the buffer, retransmitted otherwise.
+     */
+    std::optional<std::pair<uint16_t, uint16_t>> NotifyGotGcrBlockAck(
+        uint8_t linkId,
+        const CtrlBAckResponseHeader& blockAck,
+        const Mac48Address& recipient,
+        const GcrManager::GcrMembers& members);
+
     /**
      * @param linkId the ID of the given link
      * @param recipient Sender of the expected BlockAck frame.
@@ -327,6 +359,22 @@ class BlockAckManager : public Object
      * @returns true if BAR retransmission needed
      */
     bool NeedBarRetransmission(uint8_t tid, const Mac48Address& recipient);
+
+    /**
+     * This function returns true if a GCR block ack agreement is established with the given
+     * recipient, for the given TID, for the given GCR group address and there is at least an
+     * outstanding MPDU for such agreement whose lifetime is not expired.
+     *
+     * @param gcrGroupAddress the GCR group address
+     * @param tid Traffic ID
+     * @param recipient MAC address of the recipient
+     *
+     * @returns true if BAR retransmission needed
+     */
+    bool NeedGcrBarRetransmission(const Mac48Address& gcrGroupAddress,
+                                  const Mac48Address& recipient,
+                                  uint8_t tid) const;
+
     /**
      * This function returns the buffer size negotiated with the recipient.
      *
@@ -402,12 +450,17 @@ class BlockAckManager : public Object
     /**
      * @param recipient the recipient
      * @param tid the TID
+     * @param gcrGroupAddr the GCR Group Address (only if the Block Ack Request is being used for
+     * the GCR service)
      * @return the BlockAckRequest header for the established BA agreement
      *
      * Get the BlockAckRequest header for the established BA agreement
      * (<i>recipient</i>,<i>tid</i>).
      */
-    CtrlBAckRequestHeader GetBlockAckReqHeader(const Mac48Address& recipient, uint8_t tid) const;
+    CtrlBAckRequestHeader GetBlockAckReqHeader(
+        const Mac48Address& recipient,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt) const;
 
     /**
      * @param reqHdr the BlockAckRequest header
@@ -505,6 +558,17 @@ class BlockAckManager : public Object
     void InactivityTimeout(const Mac48Address& recipient,
                            uint8_t tid,
                            std::optional<Mac48Address> gcrGroupAddr);
+
+    /**
+     * @param mpdu MPDU to store.
+     * @param recipient intended recipient for the stored MPDU.
+     * @param gcrGroupAddr the GCR Group Address (only if MPDU is transmitted using the GCR service)
+     *
+     * Stores <i>mpdu</i> for a possible future retransmission.
+     */
+    void DoStorePacket(Ptr<WifiMpdu> mpdu,
+                       const Mac48Address& recipient,
+                       std::optional<Mac48Address> gcrGroupAddr = std::nullopt);
 
     /**
      * typedef for a list of WifiMpdu.
@@ -621,6 +685,11 @@ class BlockAckManager : public Object
 
     std::list<AgreementKey> m_sendBarIfDataQueued; ///< list of BA agreements for which a BAR shall
                                                    ///< only be sent if data is queued
+
+    /// List of received GCR BlockAck frames indexed by originator
+    using GcrBlockAcks = std::map<Mac48Address, CtrlBAckResponseHeader>;
+    std::map<Mac48Address /* GCR group address */, GcrBlockAcks>
+        m_gcrBlockAcks; ///< received GCR Block ACKs
 
     uint8_t m_blockAckThreshold; ///< block ack threshold
     Ptr<WifiMacQueue> m_queue;   ///< queue

@@ -112,6 +112,8 @@ class QosTxop : public Txop
     /**
      * @param recipient Address of recipient.
      * @param tid traffic ID.
+     * @param gcrGroupAddr the GCR Group Address (only if the Block Ack Request is being used for
+     * the GCR service).
      * @return the BlockAckRequest header and the MAC header for the BlockAckReq
      *
      * Prepare a BlockAckRequest to be sent to <i>recipient</i> for Traffic ID
@@ -119,8 +121,10 @@ class QosTxop : public Txop
      * corresponding to the given TID. A block ack agreement with the given recipient
      * for the given TID must have been established by such QosTxop.
      */
-    std::pair<CtrlBAckRequestHeader, WifiMacHeader> PrepareBlockAckRequest(Mac48Address recipient,
-                                                                           uint8_t tid) const;
+    std::pair<CtrlBAckRequestHeader, WifiMacHeader> PrepareBlockAckRequest(
+        Mac48Address recipient,
+        uint8_t tid,
+        std::optional<Mac48Address> gcrGroupAddr = std::nullopt) const;
 
     /* Event handlers */
     /**
@@ -473,11 +477,15 @@ class QosTxop : public Txop
      *
      * @param recipient the MAC address of the recipient
      * @param tid the TID for which block ack agreement is established
+     * @param gcrGroup the GCR group address (if any)
      */
-    typedef void (*BaEstablishedCallback)(Mac48Address recipient, uint8_t tid);
+    typedef void (*BaEstablishedCallback)(Mac48Address recipient,
+                                          uint8_t tid,
+                                          std::optional<Mac48Address> gcrGroup);
 
     /// TracedCallback for block ack agreement established events typedef
-    using BaEstablishedTracedCallback = TracedCallback<Mac48Address, uint8_t>;
+    using BaEstablishedTracedCallback =
+        TracedCallback<Mac48Address, uint8_t, std::optional<Mac48Address>>;
 
     BaEstablishedTracedCallback
         m_baEstablishedCallback; //!< traced callback for block ack agreement established events
