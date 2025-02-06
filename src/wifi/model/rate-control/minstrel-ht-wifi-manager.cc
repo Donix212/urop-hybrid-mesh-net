@@ -1918,7 +1918,15 @@ MinstrelHtWifiManager::PrintTable(MinstrelHtWifiRemoteStation* station)
     if (!station->m_statsFile.is_open())
     {
         std::ostringstream tmp;
-        tmp << "minstrel-ht-stats-" << station->m_state->m_address << ".txt";
+
+        tmp << GetMac()->GetAddress();
+        std::string localAddress = tmp.str().substr(tmp.str().length() - 5);
+        tmp.str("");
+        tmp << station->m_state->m_address;
+        std::string remoteAddress = tmp.str().substr(tmp.str().length() - 5);
+        tmp.str("");
+
+        tmp << "minstrel-ht-stats-" << localAddress << "-" << remoteAddress << ".txt";
         station->m_statsFile.open(tmp.str(), std::ios::out);
     }
 
