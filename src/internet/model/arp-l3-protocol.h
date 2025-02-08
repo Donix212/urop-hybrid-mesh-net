@@ -11,6 +11,7 @@
 #include "ipv4-header.h"
 
 #include "ns3/address.h"
+#include "ns3/iana-ieee802-numbers.h"
 #include "ns3/net-device.h"
 #include "ns3/ptr.h"
 #include "ns3/random-variable-stream.h"
@@ -49,7 +50,8 @@ class ArpL3Protocol : public Object
      * @return the object TypeId
      */
     static TypeId GetTypeId();
-    static const uint16_t PROT_NUMBER; //!< ARP protocol number (0x0806)
+    static constexpr uint16_t PROT_NUMBER =
+        iana::ieee802::ARP; //!< ARP protocol number (ns3::iana::ieee802::ARP)
 
     ArpL3Protocol();
     ~ArpL3Protocol() override;

@@ -14,6 +14,7 @@
 #include "ipv4.h"
 
 #include "ns3/deprecated.h"
+#include "ns3/iana-ieee802-numbers.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/net-device.h"
 #include "ns3/nstime.h"
@@ -77,7 +78,8 @@ class Ipv4L3Protocol : public Ipv4
      * @return the object TypeId
      */
     static TypeId GetTypeId();
-    static const uint16_t PROT_NUMBER; //!< Protocol number (0x0800)
+    static constexpr uint16_t PROT_NUMBER =
+        iana::ieee802::IPV4; //!< Protocol number (ns3::iana::ieee802::IPV4)
 
     Ipv4L3Protocol();
     ~Ipv4L3Protocol() override;

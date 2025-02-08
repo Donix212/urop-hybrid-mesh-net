@@ -9,6 +9,7 @@
 #include "ns3/abort.h"
 #include "ns3/assert.h"
 #include "ns3/header.h"
+#include "ns3/iana-ppp-numbers.h"
 #include "ns3/log.h"
 
 #include <iostream>
@@ -51,10 +52,10 @@ PppHeader::Print(std::ostream& os) const
 
     switch (m_protocol)
     {
-    case 0x0021: /* IPv4 */
+    case iana::ppp::IPV4:
         proto = "IP (0x0021)";
         break;
-    case 0x0057: /* IPv6 */
+    case iana::ppp::IPV6:
         proto = "IPv6 (0x0057)";
         break;
     default:
