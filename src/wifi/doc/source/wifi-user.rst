@@ -1174,6 +1174,168 @@ with which a TB PPDU can arrive with respect to the first TB PPDU in order to be
 decoded properly. TB PPDUs arriving after more than ``MaxTbPpduDelay`` since the
 first TB PPDU are discarded and considered as interference.
 
+Rate Control Algorithm configuration
+====================================
+
+All rate control algorithms in |ns3| are subclasses of the ``ns3::WifiRemoteStationManager``.
+The configuration of all rate control algorithms follow the same structure. To configure a
+constant rate (``ns3::ConstantRateWifiManager``) for all transmissions the user can use the
+following lines of code:
+
+.. sourcecode:: cpp
+
+  WifiHelper wifi;
+  wifi.SetStandard(wifiStandard);
+  wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager",
+                                "DataMode",
+                                StringValue(phyMode),
+                                "ControlMode",
+                                StringValue(phyMode));
+
+The user must be aware that the ``wifiStandard`` matches the selected ``phyMode``.
+In other words if the selected standard is HT (i.e., 802.11n), then
+the selected MCS should correspond to an HT rate.
+
+Since all rate control algorithms in |ns3| derive from the base class ``ns3::WifiRemoteStationManager``
+it is possible to configure the following attributes and trace sources for all rate control algorithms.
+
+Available attributes:
+
+* **RtsCtsThreshold** (default 4692480): If the size of the PSDU is bigger than this
+  value, an RTS/CTS handshake is used before sending the data frame.
+
+* **MaxSsrc** (default 7): The maximum number of retransmission attempts for any packet with size
+  less than or equal to ``RtsCtsThreshold``.
+
+* **MaxSlrc** (default 4): The maximum number of retransmission attempts for any packet with size
+  greater than ``RtsCtsThreshold``.
+
+* **FragmentationThreshold** (default 65535): If the size of the PSDU is bigger than this value,
+  it is fragmented such that the size of the fragments are equal or smaller. This value does not
+  take effect when A-MPDU is enabled.
+
+* **NonUnicastMode** (default null value): Wifi mode used for non-unicast transmissions.
+
+* **DefaultTxPowerLevel** (default 0): Default power level to be used for transmissions. If the
+  rate control algorithm implements TX power control this value will be overwritten.
+
+* **ErpProtectionMode** (default ``CTS_TO_SELF``): Protection mode used when non-ERP STAs are
+  connected to an ERP AP: ``RTS_CTS`` or ``CTS_TO_SELF``.
+
+* **HtProtectionMode** (default ``CTS_TO_SELF``): Protection mode used when non-HT STAs are
+  connected to a HT AP: ``RTS_CTS`` or ``CTS_TO_SELF``.
+
+Available trace sources:
+
+* **MacTxRtsFailed**: The transmission of a RTS by the MAC layer has failed.
+
+* **MacTxDataFailed**: The transmission of a data packet by the MAC layer has failed.
+
+* **MacTxFinalRtsFailed**: The transmission of a RTS has exceeded the maximum number
+  of attempts.
+
+* **MacTxFinalDataFailed**: The transmission of a data packet has exceeded the maximum
+  number of attempts.
+
+Users can configure other rate control algorithms aside from ``ns3::ConstantRateWifiManager``
+based on their needs. Some of the recommended rate control algorithms are ``ns3::MinstrelHtWifiManager``,
+``ns3::IdealWifiManager``, and ``ns3::ThompsonSamplingWifiManager``.
+
+MinstrelHt
+++++++++++
+
+The ``ns3::MinstrelHtWifiManager`` corresponds to the rate control algorithm used in the
+Linux kernel. This rate control algorithm may prove useful in scenarios where not all STAs are HT-capable
+since it is capable of falling back to legacy Minstrel rates. One key detail of MinstrelHt is that
+convergence
+might be slower for standards such as 802.11ax that offer more possible combinations of MCS,
+channel width, guard interval
+and number of spatial streams, due to having larger groups to explore. Besides the attributes and
+trace sources of the ``ns3::WifiRemoteStationManager``, users can configure additional attributes
+and trace sources depending on the rate control algorithm being used. In the case of MinstrelHt:
+
+Available attributes:
+
+* **UpdateStatistics** (default 50 ms): The interval between updating the statistics table.
+
+* **LegacyUpdateStatistics** (default 100 ms): The interval between updating the statistics table
+  (for legacy Minstrel).
+
+* **LookAroundRate** (default 10%): The percentage of time to try other rates (for legacy Minstrel).
+
+* **EWMA** (default 75): EWMA level. A smaller value will cause the statistics to age sooner and vice-versa.
+
+* **SampleColumn** (default 10): The number of columns used for sampling.
+
+* **PacketLength** (default 1200 bytes): The packet length used for calculating mode TxTime (bytes).
+
+* **UseLatestAmendmentOnly** (default true): Use only the latest amendment when it is supported by both peers.
+
+* **PrintStats** (default false): Control the printing of the statistics table. Enabling this attribute would
+  allow the user to print to a file the statistics displaying the maximum throughput rate (A), the next
+  highest throughput rate (B), and the rate with the highest probability of success (P).
+
+Available trace sources:
+
+* **Rate**: Provides traced value for rate changes (b/s).
+  Any time there is a new rate selected, this trace source will be called,
+  providing the previously used rate and the next rate to be used. It is important
+  for users to be aware of the fact that look-around rates selected during the
+  sampling period will not trigger this trace source.
+
+Ideal
++++++
+
+The ``ns3::IdealWifiManager`` provides a simple but effective rate control algorithm that offers performance
+comparable to that of (or better than) MinstrelHt or Thompson Sampling, but it is not a realistic rate control algorithm
+because it uses an out-of-band mechanism to provide feedback to the transmitter. Another drawback of
+using ``ns3::IdealWifiManager`` is the fact that it can choose rates too conservatively and
+possibly decrease latency at the cost of throughput. Users can configure the following attributes
+and trace sources:
+
+Available attribute:
+
+* **BerThreshold** (default 1e-6): The maximum Bit Error Rate
+  that is used to calculate the SNR threshold for each mode.
+
+Note that the BerThreshold has to be low enough to select a robust enough MCS
+(or mode) for a given SNR value, without being too restrictive on the target BER.
+Indeed we had noticed that the previous default value (i.e. 1e-5) led to the
+selection of HE MCS-11 which resulted in high PER.
+With this new default value (i.e. 1e-6), a HE STA moving away from a HE AP has
+smooth throughput decrease (whereas with 1e-5, better performance was seen further
+away, which is not "ideal").
+
+Available trace sources:
+
+* **Rate**: Provides traced value for rate changes (b/s).
+  Any time there is a new rate selected, this trace source will be called,
+  providing the previously used rate and the next rate to be used.
+
+Thompson Sampling (TS)
+++++++++++++++++++++++
+
+Thompson Sampling (TS) is a pure statistical approach to rate control. Therefore, it lacks
+any heuristics to deal with unexpected channels conditions. For example, when TS is used
+in a scenario that initially has bad channel conditions, it will produce unexpected behavior
+(no throughput and no simulation error). This is due to the lack of heuristics to quickly find a
+lower rate that can ensure the delivery of frames, leading to cross layer failures such as
+ARP timeouts.
+This can be circumvented by allowing the scenario to have a warm up period during which the channel conditions
+are better. Additionally, TS has the following attributes and trace sources:
+
+Available attribute:
+
+* **Decay** (default 1.0): Controls the speed (exponential) in which
+  statistics decay. Setting to a value of zero is a valid value for static
+  scenarios. A higher value will result in the statistics aging more rapidly.
+
+Available tracesource:
+
+* **Rate**: Provides traced value for rate changes (b/s).
+  Any time there is a new rate selected, this trace source will be triggered,
+  providing the previously used rate and the next rate to be used.
+
 Mobility configuration
 ======================
 

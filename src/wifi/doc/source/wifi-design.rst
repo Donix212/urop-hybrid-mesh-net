@@ -1343,6 +1343,24 @@ information provided by the remote station manager.
 Rate control algorithms
 #######################
 
+Rate control refers to the dynamic adjustment of transmission parameters (including the
+modulation and coding, which controls the transmission rate) in response to changing wireless
+channel conditions.  The |ns3| ``WifiRemoteStationManager`` is the base class for |ns3| rate
+control models, responsible
+for selecting physical layer parameters for the upcoming data, control, and management
+frame transmissions, and for storing information regarding capabilities of remote stations,
+such as whether a short guard interval is supported.
+
+In principle, rate control algorithms could dynamically adapt multiple transmission parameters -
+transmit power, RTS/CTS (Request To Send/Clear To Send) handshake, spatial diversity or multiple streams,
+dynamic channel bonding, etc.  However in the |ns3| implementations, the current RAAs only adapt
+the modulation and coding scheme (MCS), the guard interval duration, the channel width,
+and the number of spatial streams, for both data and selected control frames.
+
+.. figure:: figures/RAA-Architecture.*
+
+   *ns-3's implementation of RAAs*
+
 Multiple rate control algorithms are available in |ns3|.
 Some rate control algorithms are modeled after real algorithms used in real devices;
 others are found in literature.
@@ -1414,20 +1432,12 @@ By doing this, *A* is able to learn the SNR of the packet sent to *B*
 using an out-of-band mechanism (thus the name 'ideal').
 *A* then uses the SNR to select a transmission mode based
 on a set of SNR thresholds, which was built from a target BER and
-mode-specific SNR/BER curves.
-
-Available attribute:
-
-* BerThreshold (default 1e-6): The maximum Bit Error Rate
-  that is used to calculate the SNR threshold for each mode.
-
-Note that the BerThreshold has to be low enough to select a robust enough MCS
-(or mode) for a given SNR value, without being too restrictive on the target BER.
-Indeed we had noticed that the previous default value (i.e. 1e-5) led to the
-selection of HE MCS-11 which resulted in high PER.
-With this new default value (i.e. 1e-6), a HE STA moving away from a HE AP has
-smooth throughput decrease (whereas with 1e-5, better performance was seen further
-away, which is not "ideal").
+mode-specific SNR/BER curves. In other words, the ideal rate control
+algorithm is a measurement-based RAA that performs no filtering of
+past SNR history, only using the most immediate history. RTS frames
+will be sent using the highest rate within the (legacy) basic rate set;
+the use of High Throughput (HT) is not supported for RTS, although it
+is allowed in the standard.
 
 ThompsonSamplingWifiManager
 ###########################
@@ -1469,7 +1479,8 @@ MinstrelWifiManager
 ###################
 
 The minstrel rate control algorithm is a rate control algorithm originated from
-madwifi project. It is currently the default rate control algorithm of the Linux kernel.
+madwifi project, and became the default rate control for the Linux kernel, to later be
+merged with and replaced by Minstrel-HT.
 
 Minstrel keeps track of the probability of successfully sending a frame of each available rate.
 Minstrel then calculates the expected throughput by multiplying the probability with the rate.
@@ -1479,12 +1490,35 @@ rates (since lower rates are more likely to have higher probability).
 In minstrel, roughly 10 percent of transmissions are sent at the so-called lookaround rate.
 The goal of the lookaround rate is to force minstrel to try higher rate than the currently used rate.
 
-For a more detailed information about minstrel, see [linuxminstrel]_.
+For more detailed information about minstrel, see [linuxminstrel]_.
 
 MinstrelHtWifiManager
 #####################
 
-This is the extension of minstrel for 802.11n/ac/ax.
+This is the extension of minstrel for 802.11n/ac/ax, and the |ns3| implementation loosely
+corresponds to the Minstrel-HT algorithm in Linux. MinstrelHt is also a sampling-based approach that
+organizes possible combinations of rate control parameters into groups, and tracks the history of
+successful and failed receptions for each parameter combination in each group.
+
+MinstrelHt uses sampling and maintains statistics of its groups and rates within, to identify three
+rates in particular: 1. the maximum throughput rate, 2. the next highest throughput rate, and 3. the
+rate with the highest probability of success.  MinstrelHt uses these three rates in what is called
+a `retry chain`, corresponding to the initial and (possible) retransmissions of a frame.  The number
+of retransmissions for each of the three rates is bounded by a delay target of 6 ms, and the number
+of retransmissions allowed at each rate is determined by the number that can occur within the
+delay bound. If the rate for which these calculations are being done has a success probability
+lower than one, then it is only allowed to be retried once. Most frames are sent according to this
+retry chain, but MinstrelHt also uses a small number of frames to replace the maximum throughput
+rate with a randomly
+selected rate (to explore performance of additional groups and rates). Randomly selected rates are
+selected more-or-less in a round-robin fashion. Statistics on the probability of success for each
+MCS, and on the
+average Aggregated MAC Protocol Unit (A-MPDU) length, are aged out every 50 ms by an Exponentially
+Weighted Moving Average (EWMA). This algorithm has evolved in Linux due to concerns about convergence,
+including replacing the EWMA with a different low-pass filter but the |ns3| implementation has not been updated.
+
+For more detailed information on the |ns3| MinstrelHt implementation and the differences with the
+current Linux kernel, see [grunblatt]_, [leon]_.
 
 802.11ax OBSS PD spatial reuse
 ##############################

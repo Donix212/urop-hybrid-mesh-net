@@ -140,6 +140,8 @@ SOURCEFIGS = \
 	$(SRC)/internet/doc/figures/ns3-new-reno-vs-ns3-linux-reno.png \
 	$(SRC)/internet/doc/figures/ns3-bbr-vs-linux-bbr.png \
 	$(SRC)/wifi/doc/source/figures/WifiArchitecture.dia \
+	$(SRC)/wifi/doc/source/figures/RAA-Architecture.pdf \
+	$(SRC)/wifi/doc/source/figures/RAA-Architecture.png \
 	$(SRC)/wifi/doc/source/figures/PhyEntityHierarchy.dia \
 	$(SRC)/wifi/doc/source/figures/WifiPpduHierarchy.dia \
 	$(SRC)/wifi/doc/source/figures/FemHierarchy.dia \
