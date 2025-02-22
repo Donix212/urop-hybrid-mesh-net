@@ -11,8 +11,12 @@
 
 #include "default-emlsr-manager.h"
 
+#include <memory>
+
 namespace ns3
 {
+
+class WifiPhyListener;
 
 /**
  * @ingroup wifi
@@ -30,6 +34,14 @@ class AdvancedEmlsrManager : public DefaultEmlsrManager
 
     AdvancedEmlsrManager();
     ~AdvancedEmlsrManager() override;
+
+    /**
+     * This method is called by the PHY listener attached to the main PHY when a switch main PHY
+     * back timer is started to notify of events that may delay the channel access for the main
+     * PHY on the current link. If the expected channel access is beyond the end of the switch
+     * main PHY timer expiration plus a channel switch delay, the timer is stopped immediately.
+     */
+    void InterruptSwitchMainPhyBackTimerIfNeeded();
 
   protected:
     void DoDispose() override;
@@ -90,13 +102,21 @@ class AdvancedEmlsrManager : public DefaultEmlsrManager
      */
     void SwitchMainPhyIfTxopToBeGainedByAuxPhy(uint8_t linkId, AcIndex aci, const Time& delay);
 
+    /**
+     * This method is called when the switch main PHY back delay timer (which is started when the
+     * main PHY switches to the link of an aux PHY that does not switch and is not TX capable)
+     * expires and decides whether to delay the request to switch the main PHY back to the preferred
+     * link or to execute it immediately.
+     *
+     * @param linkId the ID of the link that the main PHY is leaving
+     */
+    void SwitchMainPhyBackDelayExpired(uint8_t linkId);
+
   private:
     void DoNotifyTxopEnd(uint8_t linkId) override;
     void DoNotifyIcfReceived(uint8_t linkId) override;
     void DoNotifyUlTxopStart(uint8_t linkId) override;
 
-    bool m_useNotifiedMacHdr;      //!< whether to use the information about the MAC header of
-                                   //!< the MPDU being received (if notified by the PHY)
     bool m_allowUlTxopInRx;        //!< whether a (main or aux) PHY is allowed to start an UL
                                    //!< TXOP if another PHY is receiving a PPDU
     bool m_interruptSwitching;     //!< whether a main PHY switching can be interrupted to start
@@ -114,6 +134,9 @@ class AdvancedEmlsrManager : public DefaultEmlsrManager
     EventId m_switchMainPhyBackEvent; //!< event scheduled in case of non-TX capable aux PHY when
                                       //!< medium is sensed busy during the PIFS interval
                                       //!< preceding/following the main PHY switch end
+    std::shared_ptr<WifiPhyListener>
+        m_phyListener; //!< PHY listener connected to the main PHY while operating on the link of
+                       //!< an aux PHY that is not TX capable
 };
 
 /**

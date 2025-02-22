@@ -334,6 +334,16 @@ class EmlsrManager : public Object
      */
     bool MediumSyncDelayNTxopsExceeded(uint8_t linkId);
 
+    /**
+     * Check whether a PPDU that may be an ICF is being received on the given link. If so, return
+     * true along with the time to wait to know more information about the PPDU being received.
+     * Otherwise, return false.
+     *
+     * @param linkId the ID of the given link
+     * @return a pair indicating whether a PPDU that may be an ICF is being received on the link
+     */
+    std::pair<bool, Time> CheckPossiblyReceivingIcf(uint8_t linkId) const;
+
   protected:
     void DoDispose() override;
 
@@ -488,20 +498,42 @@ class EmlsrManager : public Object
      */
     void CancelAllSleepEvents();
 
+    /**
+     * Get whether channel access is expected to be granted on the given link within the given
+     * delay to an Access Category that has traffic to send on the given link.
+     *
+     * @param linkId the ID of the given link
+     * @param delay the given delay
+     * @return whether channel access is expected to be granted on the given link within the given
+     *         delay
+     */
+    bool GetExpectedAccessWithinDelay(uint8_t linkId, const Time& delay) const;
+
+    /// Store information about a main PHY switch.
+    struct MainPhySwitchInfo
+    {
+        Time end;       //!< end of channel switching
+        uint8_t from{}; //!< ID of the link which the main PHY is/has been leaving
+        uint8_t to{};   //!< ID of the link which the main PHY is moving to
+    };
+
     Time m_emlsrPaddingDelay;    //!< EMLSR Padding delay
     Time m_emlsrTransitionDelay; //!< EMLSR Transition delay
     uint8_t m_mainPhyId; //!< ID of main PHY (position in the vector of PHYs held by WifiNetDevice)
     MHz_u m_auxPhyMaxWidth;                  //!< max channel width supported by aux PHYs
     WifiModulationClass m_auxPhyMaxModClass; //!< max modulation class supported by aux PHYs
     bool m_auxPhyTxCapable;                  //!< whether Aux PHYs are capable of transmitting PPDUs
-    bool m_auxPhyToSleep; //!< whether Aux PHYs should be put into sleep mode while the Main PHY
-                          //!< is carrying out a (DL or UL) TXOP
+    bool m_auxPhyToSleep;     //!< whether Aux PHYs should be put into sleep mode while the Main PHY
+                              //!< is carrying out a (DL or UL) TXOP
+    bool m_useNotifiedMacHdr; //!< whether to use the information about the MAC header of
+                              //!< the MPDU being received (if notified by the PHY)
     std::map<uint8_t, EventId> m_auxPhyToSleepEvents; //!< PHY ID-indexed map of events scheduled to
                                                       //!< put an Aux PHY to sleep
     std::map<uint8_t, Time> m_startSleep; //!< PHY ID-indexed map of last time sleep mode started
     std::map<uint8_t, EventId> m_ulMainPhySwitch; //!< link ID-indexed map of timers started when
                                                   //!< an aux PHY gains an UL TXOP and schedules
                                                   //!< a channel switch for the main PHY
+    MainPhySwitchInfo m_mainPhySwitchInfo;        //!< main PHY switch info
 
   private:
     /**

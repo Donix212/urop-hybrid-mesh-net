@@ -920,15 +920,25 @@ void
 EhtFrameExchangeManager::CtsAfterMuRtsTimeout(Ptr<WifiMpdu> muRts, const WifiTxVector& txVector)
 {
     NS_LOG_FUNCTION(this << *muRts << txVector);
-
-    const auto crossLinkCollision = IsCrossLinkCollision(m_sentRtsTo);
-
     SwitchToListeningOrUnblockLinks(m_sentRtsTo);
+    HeFrameExchangeManager::CtsAfterMuRtsTimeout(muRts, txVector);
+}
 
-    const auto apEmlsrManager = m_apMac->GetApEmlsrManager();
-    const auto updateFailedCw =
-        crossLinkCollision && apEmlsrManager ? apEmlsrManager->UpdateCwAfterFailedIcf() : true;
-    DoCtsAfterMuRtsTimeout(muRts, txVector, updateFailedCw);
+bool
+EhtFrameExchangeManager::GetUpdateCwOnCtsTimeout() const
+{
+    NS_LOG_FUNCTION(this);
+
+    if (m_apMac)
+    {
+        if (const auto apEmlsrManager = m_apMac->GetApEmlsrManager();
+            apEmlsrManager && IsCrossLinkCollision(m_sentRtsTo))
+        {
+            return apEmlsrManager->UpdateCwAfterFailedIcf();
+        }
+    }
+
+    return HeFrameExchangeManager::GetUpdateCwOnCtsTimeout();
 }
 
 void
@@ -971,12 +981,13 @@ EhtFrameExchangeManager::BlockAcksInTbPpduTimeout(WifiPsduMap* psduMap,
 }
 
 bool
-EhtFrameExchangeManager::IsCrossLinkCollision(const std::set<Mac48Address>& staMissedResponseFrom)
+EhtFrameExchangeManager::IsCrossLinkCollision(
+    const std::set<Mac48Address>& staMissedResponseFrom) const
 {
     NS_LOG_FUNCTION(this << staMissedResponseFrom.size());
 
     // check if all the clients that did not respond to the ICF are EMLSR clients that have sent
-    // (or are sending) a frame to the AP
+    // (or are sending) a frame to the AP on another link
     auto crossLinkCollision = true;
 
     // we blocked transmissions on the other EMLSR links for the EMLSR clients we sent the ICF to.
@@ -996,7 +1007,8 @@ EhtFrameExchangeManager::IsCrossLinkCollision(const std::set<Mac48Address>& staM
         std::set<uint8_t> linkIds; // all EMLSR links of EMLSR client
         for (uint8_t linkId = 0; linkId < m_apMac->GetNLinks(); linkId++)
         {
-            if (m_mac->GetWifiRemoteStationManager(linkId)->GetEmlsrEnabled(*mldAddress))
+            if (m_mac->GetWifiRemoteStationManager(linkId)->GetEmlsrEnabled(*mldAddress) &&
+                linkId != m_linkId)
             {
                 linkIds.insert(linkId);
             }
@@ -1654,7 +1666,7 @@ EhtFrameExchangeManager::TxopEnd(const std::optional<Mac48Address>& txopHolder)
 {
     NS_LOG_FUNCTION(this << txopHolder.has_value());
 
-    if (m_phy && m_phy->IsReceivingPhyHeader())
+    if (m_phy && m_phy->GetInfoIfRxingPhyHeader())
     {
         // we may get here because the PHY has not issued the PHY-RXSTART.indication before
         // the expiration of the timer started to detect new received frames, but the PHY is
