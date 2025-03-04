@@ -15,8 +15,10 @@
 #include "singleton.h"
 #include "system-path.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <iomanip>
 #include <list>
 #include <map>
 #include <vector>
@@ -130,7 +132,7 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
 {
   public:
     /** Constructor. */
-    TestRunnerImpl();
+    TestRunnerImpl() = default;
 
     /**
      * Add a new top-level TestSuite.
@@ -202,20 +204,17 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
     /**
      * Print the list of all requested test suites.
      *
-     * @param [in] begin Iterator to the first TestCase to print.
-     * @param [in] end Iterator to the end of the list.
+     * @param [in] testCaseList List of TestCase to print.
      * @param [in] printTestType Prepend the test type label if \c true.
      */
-    void PrintTestNameList(std::list<TestCase*>::const_iterator begin,
-                           std::list<TestCase*>::const_iterator end,
-                           bool printTestType) const;
+    void PrintTestNameList(const std::list<TestCase*>& testCaseList, bool printTestType) const;
     /** Print the list of test types. */
     void PrintTestTypeList() const;
     /**
      * Print the help text.
      * @param [in] programName The name of the invoking program.
      */
-    void PrintHelp(const char* programName) const;
+    void PrintHelp(const std::string& programName) const;
     /**
      * Generate the list of tests matching the constraints.
      *
@@ -231,15 +230,12 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
                                      TestSuite::Type testType,
                                      TestCase::Duration maximumTestDuration);
 
-    /** Container type for the test. */
-    typedef std::vector<TestSuite*> TestSuiteVector;
-
-    TestSuiteVector m_suites; //!< The list of tests.
-    std::string m_tempDir;    //!< The temporary directory.
-    bool m_verbose;           //!< Produce verbose output.
-    bool m_assertOnFailure;   //!< \c true if we should assert on failure.
-    bool m_continueOnFailure; //!< \c true if we should continue on failure.
-    bool m_updateData;        //!< \c true if we should update reference data.
+    std::list<TestSuite*> m_suites; //!< The list of tests.
+    std::string m_tempDir;          //!< The temporary directory.
+    bool m_verbose{false};          //!< Produce verbose output.
+    bool m_assertOnFailure{false};  //!< \c true if we should assert on failure.
+    bool m_continueOnFailure{true}; //!< \c true if we should continue on failure.
+    bool m_updateData{false};       //!< \c true if we should update reference data.
 };
 
 TestCaseFailure::TestCaseFailure(std::string _cond,
@@ -281,9 +277,9 @@ TestCase::~TestCase()
     NS_ASSERT(m_runner == nullptr);
     m_parent = nullptr;
     delete m_result;
-    for (auto i = m_children.begin(); i != m_children.end(); ++i)
+    for (auto test : m_children)
     {
-        delete *i;
+        delete test;
     }
     m_children.clear();
 }
@@ -326,7 +322,7 @@ TestCase::AddTestCase(TestCase* testCase, TestCase::Duration duration)
 
     testCase->m_duration = duration;
     testCase->m_parent = this;
-    m_children.push_back(testCase);
+    m_children.emplace_back(testCase);
 }
 
 bool
@@ -345,18 +341,24 @@ TestCase::Run(TestRunnerImpl* runner)
     Config::Reset();
     DoSetup();
     m_result->clock.Start();
-    for (auto i = m_children.begin(); i != m_children.end(); ++i)
+
+    bool testFailed = false;
+
+    for (auto test : m_children)
     {
         RngSeedManager::ResetNextStreamIndex();
-        TestCase* test = *i;
         test->Run(runner);
         if (IsFailed())
         {
-            goto out;
+            testFailed = true;
+            break;
         }
     }
-    DoRun();
-out:
+
+    if (!testFailed)
+    {
+        DoRun();
+    }
     m_result->clock.End();
     DoTeardown();
     Config::Reset();
@@ -436,22 +438,20 @@ TestCase::CreateTempDirFilename(std::string filename)
     {
         return CreateDataDirFilename(filename);
     }
-    else
-    {
-        std::list<std::string> names;
-        const TestCase* current = this;
-        while (current != nullptr)
-        {
-            names.push_front(current->m_name);
-            current = current->m_parent;
-        }
-        std::string tempDir = SystemPath::Append(m_runner->GetTempDir(),
-                                                 SystemPath::Join(names.begin(), names.end()));
-        tempDir = SystemPath::CreateValidSystemPath(tempDir);
 
-        SystemPath::MakeDirectories(tempDir);
-        return SystemPath::Append(tempDir, filename);
+    std::list<std::string> names;
+    const TestCase* current = this;
+    while (current != nullptr)
+    {
+        names.push_front(current->m_name);
+        current = current->m_parent;
     }
+    std::string tempDir =
+        SystemPath::Append(m_runner->GetTempDir(), SystemPath::Join(names.begin(), names.end()));
+    tempDir = SystemPath::CreateValidSystemPath(tempDir);
+
+    SystemPath::MakeDirectories(tempDir);
+    return SystemPath::Append(tempDir, filename);
 }
 
 bool
@@ -508,20 +508,11 @@ TestSuite::DoRun()
     NS_LOG_FUNCTION(this);
 }
 
-TestRunnerImpl::TestRunnerImpl()
-    : m_tempDir(""),
-      m_assertOnFailure(false),
-      m_continueOnFailure(true),
-      m_updateData(false)
-{
-    NS_LOG_FUNCTION(this);
-}
-
 void
 TestRunnerImpl::AddTestSuite(TestSuite* testSuite)
 {
     NS_LOG_FUNCTION(this << testSuite);
-    m_suites.push_back(testSuite);
+    m_suites.emplace_back(testSuite);
 }
 
 bool
@@ -565,13 +556,13 @@ TestRunnerImpl::IsTopLevelSourceDir(std::string path) const
     //
 
     std::list<std::string> files = SystemPath::ReadFiles(path);
-    for (auto i = files.begin(); i != files.end(); ++i)
+    for (const auto& file : files)
     {
-        if (*i == "VERSION")
+        if (file == "VERSION")
         {
             haveVersion = true;
         }
-        else if (*i == "LICENSE")
+        else if (file == "LICENSE")
         {
             haveLicense = true;
         }
@@ -608,21 +599,19 @@ std::string
 TestRunnerImpl::ReplaceXmlSpecialCharacters(std::string xml) const
 {
     NS_LOG_FUNCTION(this << xml);
-    typedef std::map<char, std::string> specials_map;
-    specials_map specials;
-    specials['<'] = "&lt;";
-    specials['>'] = "&gt;";
-    specials['&'] = "&amp;";
-    specials['"'] = "&#39;";
-    specials['\''] = "&quot;";
+
+    const std::map<char, std::string> specials{
+        {'<', "&lt;"},
+        {'>', "&gt;"},
+        {'&', "&amp;"},
+        {'"', "&#39;"},
+        {'\'', "&quot;"},
+    };
 
     std::string result;
-    std::size_t length = xml.length();
 
-    for (size_t i = 0; i < length; ++i)
+    for (auto character : xml)
     {
-        char character = xml[i];
-
         auto it = specials.find(character);
 
         if (it == specials.end())
@@ -681,7 +670,7 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
         return;
     }
     // Report times in seconds, from ms timer
-    const double MS_PER_SEC = 1000.;
+    constexpr double MS_PER_SEC = 1000.;
     double real = test->m_result->clock.GetElapsedReal() / MS_PER_SEC;
     double user = test->m_result->clock.GetElapsedUser() / MS_PER_SEC;
     double system = test->m_result->clock.GetElapsedSystem() / MS_PER_SEC;
@@ -698,9 +687,9 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
         *os << Indent(level + 1) << "<Result>" << statusString << "</Result>" << std::endl;
         *os << Indent(level + 1) << "<Time real=\"" << real << "\" user=\"" << user
             << "\" system=\"" << system << "\"/>" << std::endl;
-        for (uint32_t i = 0; i < test->m_result->failure.size(); i++)
+
+        for (const auto& failure : test->m_result->failure)
         {
-            TestCaseFailure failure = test->m_result->failure[i];
             *os << Indent(level + 2) << "<FailureDetails>" << std::endl
                 << Indent(level + 3) << "<Condition>" << ReplaceXmlSpecialCharacters(failure.cond)
                 << "</Condition>" << std::endl
@@ -715,9 +704,8 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
                 << Indent(level + 3) << "<Line>" << failure.line << "</Line>" << std::endl
                 << Indent(level + 2) << "</FailureDetails>" << std::endl;
         }
-        for (uint32_t i = 0; i < test->m_children.size(); i++)
+        for (auto child : test->m_children)
         {
-            TestCase* child = test->m_children[i];
             PrintReport(child, os, xml, level + 1);
         }
         *os << Indent(level) << "</Test>" << std::endl;
@@ -728,13 +716,13 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
             << std::endl;
         if (m_verbose)
         {
-            for (uint32_t i = 0; i < test->m_result->failure.size(); i++)
+            for (const auto& failure : test->m_result->failure)
             {
-                *os << Indent(level) << test->m_result->failure[i] << std::endl;
+                *os << Indent(level) << failure << std::endl;
             }
-            for (uint32_t i = 0; i < test->m_children.size(); i++)
+
+            for (auto child : test->m_children)
             {
-                TestCase* child = test->m_children[i];
                 PrintReport(child, os, xml, level + 1);
             }
         }
@@ -745,64 +733,71 @@ TestRunnerImpl::PrintReport(TestCase* test, std::ostream* os, bool xml, int leve
 }
 
 void
-TestRunnerImpl::PrintHelp(const char* program_name) const
+TestRunnerImpl::PrintHelp(const std::string& programName) const
 {
-    NS_LOG_FUNCTION(this << program_name);
-    std::cout
-        << "Usage: " << program_name << " [OPTIONS]" << std::endl
-        << std::endl
-        << "Options: " << std::endl
-        << "  --help                 : print these options" << std::endl
-        << "  --print-test-name-list : print the list of names of tests available" << std::endl
-        << "  --list                 : an alias for --print-test-name-list" << std::endl
-        << "  --print-test-types     : print the type of tests along with their names" << std::endl
-        << "  --print-test-type-list : print the list of types of tests available" << std::endl
-        << "  --print-temp-dir       : print name of temporary directory before running "
-        << std::endl
-        << "                           the tests" << std::endl
-        << "  --test-type=TYPE       : process only tests of type TYPE" << std::endl
-        << "  --test-name=NAME       : process only test whose name matches NAME" << std::endl
-        << "  --suite=NAME           : an alias (here for compatibility reasons only) " << std::endl
-        << "                           for --test-name=NAME" << std::endl
-        << "  --assert-on-failure    : when a test fails, crash immediately (useful" << std::endl
-        << "                           when running under a debugger" << std::endl
-        << "  --stop-on-failure      : when a test fails, stop immediately" << std::endl
-        << "  --fullness=FULLNESS    : choose the duration of tests to run: QUICK, " << std::endl
-        << "                           EXTENSIVE, or TAKES_FOREVER, where EXTENSIVE " << std::endl
-        << "                           includes QUICK and TAKES_FOREVER includes " << std::endl
-        << "                           QUICK and EXTENSIVE (only QUICK tests are " << std::endl
-        << "                           run by default)" << std::endl
-        << "  --verbose              : print details of test execution" << std::endl
-        << "  --xml                  : format test run output as xml" << std::endl
-        << "  --tempdir=DIR          : set temp dir for tests to store output files" << std::endl
-        << "  --datadir=DIR          : set data dir for tests to read reference files" << std::endl
-        << "  --out=FILE             : send test result to FILE instead of standard "
-        << "output" << std::endl
-        << "  --append=FILE          : append test result to FILE instead of standard "
-        << "output" << std::endl;
+    NS_LOG_FUNCTION(this << programName);
+    std::cout << "Usage: " << programName << " [OPTIONS]\n"
+              << "\n"
+              << "Options:\n"
+              << "  --help                 : print these options\n"
+              << "  --print-test-name-list : print the list of names of tests available\n"
+              << "  --list                 : an alias for --print-test-name-list\n"
+              << "  --print-test-types     : print the type of tests along with their names\n"
+              << "  --print-test-type-list : print the list of types of tests available\n"
+              << "  --print-temp-dir       : print name of temporary directory before running\n"
+              << "                           the tests\n"
+              << "  --test-type=TYPE       : process only tests of type TYPE\n"
+              << "  --test-name=NAME       : process only test whose name matches NAME\n"
+              << "  --suite=NAME           : an alias (here for compatibility reasons only)\n"
+              << "                           for --test-name=NAME\n"
+              << "  --assert-on-failure    : when a test fails, crash immediately (useful\n"
+              << "                           when running under a debugger\n"
+              << "  --stop-on-failure      : when a test fails, stop immediately\n"
+              << "  --fullness=FULLNESS    : choose the duration of tests to run: QUICK,\n"
+              << "                           EXTENSIVE, or TAKES_FOREVER, where EXTENSIVE\n"
+              << "                           includes QUICK and TAKES_FOREVER includes\n"
+              << "                           QUICK and EXTENSIVE (only QUICK tests are\n"
+              << "                           run by default)\n"
+              << "  --verbose              : print details of test execution\n"
+              << "  --xml                  : format test run output as xml\n"
+              << "  --tempdir=DIR          : set temp dir for tests to store output files\n"
+              << "  --datadir=DIR          : set data dir for tests to read reference files\n"
+              << "  --out=FILE             : send test result to FILE instead of standard output\n"
+              << "  --append=FILE          : append test result to FILE instead of standard output"
+              << std::endl;
 }
 
 void
-TestRunnerImpl::PrintTestNameList(std::list<TestCase*>::const_iterator begin,
-                                  std::list<TestCase*>::const_iterator end,
+TestRunnerImpl::PrintTestNameList(const std::list<TestCase*>& testCaseList,
                                   bool printTestType) const
 {
-    NS_LOG_FUNCTION(this << &begin << &end << printTestType);
-    std::map<TestSuite::Type, std::string> label;
+    NS_LOG_FUNCTION(this << &testCaseList << printTestType);
 
-    label[TestSuite::Type::ALL] = "all          ";
-    label[TestSuite::Type::UNIT] = "unit         ";
-    label[TestSuite::Type::SYSTEM] = "system       ";
-    label[TestSuite::Type::EXAMPLE] = "example      ";
-    label[TestSuite::Type::PERFORMANCE] = "performance  ";
+    const std::map<TestSuite::Type, std::string> labels{
+        {TestSuite::Type::ALL, "all"},
+        {TestSuite::Type::UNIT, "unit"},
+        {TestSuite::Type::SYSTEM, "system"},
+        {TestSuite::Type::EXAMPLE, "example"},
+        {TestSuite::Type::PERFORMANCE, "performance"},
+    };
 
-    for (auto i = begin; i != end; ++i)
+    // Determine the maximum width to left-align the labels above
+    auto maxLabel =
+        std::max_element(labels.begin(), labels.end(), [](const auto& l1, const auto& l2) {
+            return l1.second.length() < l2.second.length();
+        });
+
+    auto labelWidth = maxLabel->second.length();
+
+    // Print tests
+    for (auto testCase : testCaseList)
     {
-        auto test = dynamic_cast<TestSuite*>(*i);
-        NS_ASSERT(test != nullptr);
+        auto test = dynamic_cast<TestSuite*>(testCase);
+        NS_ASSERT(test);
         if (printTestType)
         {
-            std::cout << label[test->GetTestType()];
+            std::cout << std::setw(labelWidth) << std::left << labels.at(test->GetTestType())
+                      << "  ";
         }
         std::cout << test->GetName() << std::endl;
     }
@@ -812,16 +807,12 @@ void
 TestRunnerImpl::PrintTestTypeList() const
 {
     NS_LOG_FUNCTION(this);
-    std::cout << "  core:        Run all TestSuite-based tests (exclude examples)" << std::endl;
-    std::cout << "  example:     Examples (to see if example programs run successfully)"
-              << std::endl;
     std::cout
-        << "  performance: Performance Tests (check to see if the system is as fast as expected)"
-        << std::endl;
-    std::cout << "  system:      System Tests (spans modules to check integration of modules)"
-              << std::endl;
-    std::cout << "  unit:        Unit Tests (within modules to check basic functionality)"
-              << std::endl;
+        << "  core:         Run all TestSuite-based tests (exclude examples)\n"
+        << "  example:      Examples (to see if example programs run successfully)\n"
+        << "  performance:  Performance Tests (check to see if the system is as fast as expected)\n"
+        << "  system:       System Tests (spans modules to check integration of modules)\n"
+        << "  unit:         Unit Tests (within modules to check basic functionality)" << std::endl;
 }
 
 std::list<TestCase*>
@@ -830,10 +821,11 @@ TestRunnerImpl::FilterTests(std::string testName,
                             TestCase::Duration maximumTestDuration)
 {
     NS_LOG_FUNCTION(this << testName << testType);
+
     std::list<TestCase*> tests;
-    for (uint32_t i = 0; i < m_suites.size(); ++i)
+
+    for (auto test : m_suites)
     {
-        TestSuite* test = m_suites[i];
         if (testType != TestSuite::Type::ALL && test->GetTestType() != testType)
         {
             // skip test
@@ -869,7 +861,7 @@ TestRunnerImpl::FilterTests(std::string testName,
         }
 
         // Add this test suite.
-        tests.push_back(test);
+        tests.emplace_back(test);
     }
     return tests;
 }
@@ -889,15 +881,12 @@ TestRunnerImpl::Run(int argc, char* argv[])
     bool printTestNameList = false;
     bool printTestTypeAndName = false;
     TestCase::Duration maximumTestDuration = TestCase::Duration::QUICK;
-    char* progname = argv[0];
+    std::string progName = argv[0];
 
-    char** argi = argv;
-    ++argi;
+    std::vector<std::string> args(argv + 1, argv + argc);
 
-    while (*argi != nullptr)
+    for (const auto& arg : args)
     {
-        std::string arg = *argi;
-
         if (arg == "--assert-on-failure")
         {
             m_assertOnFailure = true;
@@ -975,17 +964,16 @@ TestRunnerImpl::Run(int argc, char* argv[])
             else
             {
                 // Wrong fullness option
-                PrintHelp(progname);
+                PrintHelp(progName);
                 return 3;
             }
         }
         else
         {
             // Print the help if arg == "--help" or arg is an un-recognized command-line argument
-            PrintHelp(progname);
+            PrintHelp(progName);
             return 0;
         }
-        argi++;
     }
     TestSuite::Type testType;
     if (testTypeString.empty() || testTypeString == "core")
@@ -1027,7 +1015,7 @@ TestRunnerImpl::Run(int argc, char* argv[])
     }
     if (printTestNameList)
     {
-        PrintTestNameList(tests.begin(), tests.end(), printTestTypeAndName);
+        PrintTestNameList(tests, printTestTypeAndName);
         return 0;
     }
     if (printTestTypeList)
@@ -1065,16 +1053,15 @@ TestRunnerImpl::Run(int argc, char* argv[])
         std::cerr << "Error:  no tests match the requested string" << std::endl;
         return 1;
     }
-    else if (tests.size() > 1)
+
+    if (tests.size() > 1)
     {
         std::cerr << "Error:  tests should be launched separately (one at a time)" << std::endl;
         return 1;
     }
 
-    for (auto i = tests.begin(); i != tests.end(); ++i)
+    for (auto test : tests)
     {
-        TestCase* test = *i;
-
 #ifdef ENABLE_DES_METRICS
         {
             /*
@@ -1087,13 +1074,12 @@ TestRunnerImpl::Run(int argc, char* argv[])
             std::string testname = test->GetName();
             std::string runner = "[" + SystemPath::Split(argv[0]).back() + "]";
 
-            std::vector<std::string> desargs;
-            desargs.push_back(testname);
-            desargs.push_back(runner);
-            for (int i = 1; i < argc; ++i)
-            {
-                desargs.push_back(argv[i]);
-            }
+            std::vector<std::string> desargs{
+                testname,
+                runner,
+            };
+
+            desargs.insert(desargs.end(), args.begin(), args.end());
 
             DesMetrics::Get()->Initialize(desargs, m_tempDir);
         }
