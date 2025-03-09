@@ -10,6 +10,8 @@
 #ifndef GLOBAL_ROUTE_MANAGER_H
 #define GLOBAL_ROUTE_MANAGER_H
 
+#include "ns3/ipv4-routing-helper.h"
+
 #include <cstdint>
 
 namespace ns3
@@ -59,6 +61,16 @@ class GlobalRouteManager
      * per-node forwarding tables
      */
     static void InitializeRoutes();
+
+    /**
+     *@brief prints the path from this node to the destination node at a particular time.
+     *
+     * @see Ipv4GlobalRoutingHelper::PrintRoute
+     */
+    static void PrintRoutingPath(Ipv4Address source,
+                                 Ipv4Address dest,
+                                 Ptr<OutputStreamWrapper> stream,
+                                 Time::Unit unit);
 };
 
 } // namespace ns3

@@ -54,4 +54,16 @@ GlobalRouteManager::AllocateRouterId()
     return routerId++;
 }
 
+void
+GlobalRouteManager::PrintRoutingPath(Ipv4Address source,
+                                     Ipv4Address dest,
+                                     Ptr<OutputStreamWrapper> stream,
+                                     Time::Unit unit)
+{
+    SimulationSingleton<GlobalRouteManagerImpl>::Get()->PrintRoutingPath(source,
+                                                                         dest,
+                                                                         stream,
+                                                                         unit);
+}
+
 } // namespace ns3

@@ -54,6 +54,30 @@ Ipv4GlobalRoutingHelper::PopulateRoutingTables()
 }
 
 void
+Ipv4GlobalRoutingHelper::PrintRoutingPathAt(Time printTime,
+                                            Ipv4Address source,
+                                            Ipv4Address dest,
+                                            Ptr<OutputStreamWrapper> stream,
+                                            Time::Unit unit)
+{
+    Simulator::Schedule(printTime,
+                        &Ipv4GlobalRoutingHelper::PrintRoute,
+                        source,
+                        dest,
+                        stream,
+                        unit);
+}
+
+void
+Ipv4GlobalRoutingHelper::PrintRoute(Ipv4Address source,
+                                    Ipv4Address dest,
+                                    Ptr<OutputStreamWrapper> stream,
+                                    Time::Unit unit)
+{
+    GlobalRouteManager::PrintRoutingPath(source, dest, stream, unit);
+}
+
+void
 Ipv4GlobalRoutingHelper::RecomputeRoutingTables()
 {
     GlobalRouteManager::DeleteGlobalRoutes();

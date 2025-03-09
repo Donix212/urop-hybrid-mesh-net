@@ -13,6 +13,7 @@
 #include "global-router-interface.h"
 
 #include "ns3/ipv4-address.h"
+#include "ns3/ipv4-routing-helper.h"
 #include "ns3/object.h"
 #include "ns3/ptr.h"
 
@@ -725,6 +726,24 @@ class GlobalRouteManagerImpl
      * @param root the root node to start calculations
      */
     void DebugSPFCalculate(Ipv4Address root);
+
+    /**
+     * @brief given iP it iterates through the node list to find the node associated with the ip
+     * @param source ip address whose node we want to find
+     * @returns the node pointer to the ip
+     */
+    Ptr<Node> GetNodeByIP(Ipv4Address source);
+
+    /**
+     *@brief prints the path from this node to the destination node at a particular time.
+     * @param source the source node
+     * @param dest the destination nodes ipv4 address
+     * @see Ipv4GlobalRoutingHelper::PrintRoute
+     */
+    void PrintRoutingPath(Ipv4Address source,
+                          Ipv4Address dest,
+                          Ptr<OutputStreamWrapper> stream,
+                          Time::Unit unit);
 
   private:
     SPFVertex* m_spfroot;           //!< the root node
