@@ -865,7 +865,8 @@ GlobalRouteManagerImpl::SPFNext(SPFVertex* v, CandidateQueue& candidate)
             else
             {
                 NS_ASSERT_MSG(0,
-                              "SPFNexthopCalculation never " << "return false, but it does now!");
+                              "SPFNexthopCalculation never "
+                                  << "return false, but it does now!");
             }
         }
         else if (w_lsa->GetStatus() == GlobalRoutingLSA::LSA_SPF_CANDIDATE)
@@ -943,8 +944,8 @@ GlobalRouteManagerImpl::SPFNext(SPFVertex* v, CandidateQueue& candidate)
                     candidate.Reorder();
                 }
             } // new lower cost path found
-        } // end W is already on the candidate list
-    } // end loop over the links in V's LSA
+        }     // end W is already on the candidate list
+    }         // end loop over the links in V's LSA
 }
 
 //
@@ -1794,7 +1795,7 @@ GlobalRouteManagerImpl::SPFIntraAddStub(GlobalRoutingLinkRecord* l, SPFVertex* v
             }
             return;
         } // if
-    } // for
+    }     // for
 }
 
 //
@@ -2261,7 +2262,7 @@ GlobalRouteManagerImpl::PrintRoutingPath(Ipv4Address source,
         NS_LOG_ERROR("No route found from source to destination");
         return;
     }
-    
+
     while (currentNode != destNode)
     {
         Ptr<Ipv4> ipv4currentnode = currentNode->GetObject<Ipv4>();
@@ -2269,7 +2270,7 @@ GlobalRouteManagerImpl::PrintRoutingPath(Ipv4Address source,
             DynamicCast<Ipv4GlobalRouting>(ipv4currentnode->GetRoutingProtocol());
         // NOLINTNEXTLINE
         Ptr<Ipv4Route> gateway = router->LookupGlobal(dest, 0);
-       
+
         Ipv4Address gatewayAddress = gateway->GetGateway();
         Ptr<Node> nextNode = GetNodeByIP(gatewayAddress);
         if (nextNode == currentNode)
@@ -2305,7 +2306,8 @@ GlobalRouteManagerImpl::PrintRoutingPath(Ipv4Address source,
         *os << gatewayAddress << " Node " << nextNode->GetId() << " ---> ";
         currentNode = nextNode;
     }
-    *os << " Destinaton Reached." << "\n";
+    *os << " Destination Reached."
+        << "\n";
 }
 
 } // namespace ns3
