@@ -108,8 +108,7 @@ UniformPlanarArrayTestCase::BuildNameString(Ptr<AntennaModel> element,
 {
     std::ostringstream oss;
     oss << "UPA=" << rows << "x" << cols << ", row spacing=" << rowSpace << "*lambda"
-        << ", col spacing=" << colSpace << "*lambda"
-        << ", bearing=" << RadiansToDegrees(alpha) << " deg"
+        << ", col spacing=" << colSpace << "*lambda, bearing=" << RadiansToDegrees(alpha) << " deg"
         << ", tilting=" << RadiansToDegrees(beta) << " deg"
         << ", element=" << element->GetInstanceTypeId().GetName() << ", direction=" << direction;
     return oss.str();
@@ -207,7 +206,9 @@ class UpdateOnChangeTestCase : public TestCase
      */
     UpdateOnChangeTestCase(Ptr<AntennaModel> element, std::string name)
         : TestCase(name),
-          m_element(element){};
+          m_element(element)
+    {
+    }
 
   private:
     /**
