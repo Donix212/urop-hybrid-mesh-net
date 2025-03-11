@@ -218,7 +218,8 @@ class AccessorHelper : public AttributeAccessor
      */
     virtual bool DoGet(const T* object, U* v) const = 0;
 
-}; // class AccessorHelper
+    // end of class AccessorHelper
+};
 
 /**
  * @ingroup attributeimpl
