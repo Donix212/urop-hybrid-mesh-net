@@ -881,7 +881,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
 
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
 
-    if (m_handleRsTimeoutEvent.IsRunning())
+    if (m_handleRsTimeoutEvent.IsPending())
     {
         m_handleRsTimeoutEvent.Cancel();
     }
@@ -1147,7 +1147,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     //                                             interface->GetLinkLocalAddress ().GetAddress (),
     //                                             src, macAddr, 1, m_rtrSolicitationInterval);
 
-    // if (m_addressRegistrationTimeoutEvent.IsRunning ())
+    // if (m_addressRegistrationTimeoutEvent.IsPending ())
     //   {
     //     return;
     //   }
@@ -1468,7 +1468,7 @@ SixLowPanNdProtocol::AddressRegistration()
     // << " m_retransmissionTime = " << m_retransmissionTime.As (Time::MS)
     // << std::endl;
 
-    if (m_addressRegistrationTimeoutEvent.IsRunning())
+    if (m_addressRegistrationTimeoutEvent.IsPending())
     {
         std::cout << "** FUUUUUCK" << std::endl;
     }
@@ -1492,7 +1492,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
                         << registrar << "  vs expected " << m_addrPendingReg.registrar);
 
-    // NS_ABORT_MSG_IF (m_addressRegistrationEvent.IsRunning (), "Address registration success but
+    // NS_ABORT_MSG_IF (m_addressRegistrationEvent.IsPending (), "Address registration success but
     // another AddressRegistration has been scheduled already - error."); NS_ABORT_MSG_IF
     // (!m_addrPendingReg.isValid, "AddressRegistrationSuccess, address pending registration is not
     // valid");
@@ -1522,7 +1522,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     }
 
     // *** \todo This have to go
-    if (m_addressRegistrationTimeoutEvent.IsRunning())
+    if (m_addressRegistrationTimeoutEvent.IsPending())
     {
         // std::cout << "WARNING - we are skipping something because
         // m_addressRegistrationTimeoutEvent is in progress - detais are:" << std::endl; std::cout
@@ -1677,7 +1677,7 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
     NS_LOG_FUNCTION(this);
 
     NS_ABORT_MSG_IF(
-        m_addressRegistrationEvent.IsRunning(),
+        m_addressRegistrationEvent.IsPending(),
         "Address Registration Timeout but another address registration is in progress.");
     NS_ABORT_MSG_IF(
         !m_addrPendingReg.isValid,
@@ -2230,7 +2230,7 @@ SixLowPanNdProtocol::SixLowPanRaEntry::MakeAbro()
 bool
 SixLowPanNdProtocol::IsAddressRegistrationInProgress() const
 {
-    return m_addressRegistrationEvent.IsRunning() || m_addressRegistrationTimeoutEvent.IsRunning();
+    return m_addressRegistrationEvent.IsPending() || m_addressRegistrationTimeoutEvent.IsPending();
 }
 
 } /* namespace ns3 */
