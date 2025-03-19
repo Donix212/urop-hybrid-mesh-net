@@ -344,7 +344,7 @@ class SixLowPanNetDevice : public NetDevice
     TracedCallback<Ptr<const Packet>, Ptr<SixLowPanNetDevice>, uint32_t> m_rxTrace;
 
     /**
-     * \brief Callback to trace RX (reception) packets.
+     * @brief Callback to trace RX (reception) packets.
      *
      * Data passed:
      * \li Packet received (including 6LoWPAN header)
