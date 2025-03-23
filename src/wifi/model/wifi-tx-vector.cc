@@ -282,6 +282,9 @@ WifiTxVector::SetMode(WifiMode mode, uint16_t staId)
 {
     NS_ABORT_MSG_IF(!IsMu(), "Not a MU transmission");
     NS_ABORT_MSG_IF(staId > 2048, "STA-ID should be correctly set for MU");
+    NS_ASSERT_MSG(m_muUserInfos.empty() || (mode.GetModulationClass() == GetModulationClass()),
+                  "Cannot add mode " << mode << " because the modulation class is "
+                                     << GetModulationClass());
     m_muUserInfos[staId].mcs = mode.GetMcsValue();
     m_modeInitialized = true;
 }
@@ -592,12 +595,6 @@ WifiTxVector::GetNumStasInRu(const HeRu::RuSpec& ru) const
                          [&ru](const auto& info) -> bool { return (ru == info.second.ru); });
 }
 
-bool
-WifiTxVector::IsAllocated(uint16_t staId) const
-{
-    return m_muUserInfos.contains(staId);
-}
-
 HeRu::RuSpec
 WifiTxVector::GetRu(uint16_t staId) const
 {
@@ -649,7 +646,12 @@ WifiTxVector::GetHeMuUserInfoMap()
 bool
 WifiTxVector::IsSigBCompression() const
 {
-    return IsDlMuMimo() && !IsDlOfdma();
+    // SIG-B compression is used in case of full-bandwidth MU-MIMO transmission (27.3.11.8.2
+    // HE-SIG-B content channels in IEEE802.11ax-2021) or if a single RU occupies the whole 160 MHz
+    // bandwidth (27.3.11.8.3 Common field in IEEE802.11ax-2021)
+    return (IsDlMuMimo() && !IsDlOfdma()) ||
+           ((m_muUserInfos.size() == 1) && (m_channelWidth >= MHz_u{160}) &&
+            (m_muUserInfos.cbegin()->second.ru.GetRuType() == HeRu::GetRuType(m_channelWidth)));
 }
 
 void
@@ -790,37 +792,46 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
     std::vector<HeRu::RuType> ruTypes{};
     ruTypes.resize(ruAllocations.size());
     const auto& orderedMap = GetUserInfoMapOrderedByRus(p20Index);
+    std::pair<std::size_t /* number of RUs in content channel 1 */,
+              std::size_t /* number of RUs in content channel 2 */>
+        ccSizes{0, 0};
     for (const auto& [ru, staIds] : orderedMap)
     {
+        if ((ru.GetRuType() == HeRu::RU_26_TONE) && (ru.GetIndex() == 19))
+        {
+            continue;
+        }
         const auto ruType = ru.GetRuType();
         const auto ruBw = HeRu::GetBandwidth(ruType);
-        const auto isPrimary80MHz = ru.GetPrimary80MHz();
         const auto rusPerSubchannel =
             HeRu::GetRusOfType(ruBw > MHz_u{20} ? ruBw : MHz_u{20}, ruType);
         auto ruIndex = ru.GetIndex();
         if ((m_channelWidth >= MHz_u{80}) && (ruIndex > 19))
         {
-            // take into account the center 26-tone RU in the primary 80 MHz
+            // take into account the center 26-tone RU in the low 80 MHz
             ruIndex--;
         }
-        if ((!isPrimary80MHz) && (ruIndex > 19))
+        const auto isPrimary80MHz = ru.GetPrimary80MHz();
+        const auto primary80IsLower80 = (p20Index < m_channelWidth / MHz_u{40});
+        const auto isLow80 =
+            (primary80IsLower80 && isPrimary80MHz) || (!primary80IsLower80 && !isPrimary80MHz);
+        if ((m_channelWidth > MHz_u{80}) && !isLow80 && (ruIndex > 19))
         {
-            // take into account the center 26-tone RU in the secondary 80 MHz
+            // take into account the center 26-tone RU in the high 80 MHz
             ruIndex--;
         }
-        if (!isPrimary80MHz && (ruType != HeRu::RU_2x996_TONE))
+        if ((m_channelWidth > MHz_u{80}) && !isLow80 && (ruType != HeRu::GetRuType(m_channelWidth)))
         {
-            NS_ASSERT(m_channelWidth > MHz_u{80});
-            // adjust RU index for the secondary 80 MHz: in that case index is restarting at 1,
+            // adjust RU index for the high 80 MHz: in that case index is restarting at 1,
             // hence we need to add an offset corresponding to the number of RUs of the same type in
-            // the primary 80 MHz
+            // the low 80 MHz
             ruIndex += HeRu::GetRusOfType(MHz_u{80}, ruType).size();
         }
         const auto numSubchannelsForRu = (ruBw < MHz_u{20}) ? 1 : Count20MHzSubchannels(ruBw);
         const auto index = (ruBw < MHz_u{20}) ? ((ruIndex - 1) / rusPerSubchannel.size())
                                               : ((ruIndex - 1) * numSubchannelsForRu);
         NS_ABORT_IF(index >= Count20MHzSubchannels(m_channelWidth));
-        auto ruAlloc = HeRu::GetEqualizedRuAllocation(ruType, false);
+        auto ruAlloc = HeRu::GetEqualizedRuAllocation(ruType, false, true);
         if (ruAllocations.at(index) != HeRu::EMPTY_242_TONE_RU)
         {
             if (ruType == ruTypes.at(index))
@@ -829,21 +840,40 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
             }
             if (ruType == HeRu::RU_26_TONE)
             {
-                ruAlloc = HeRu::GetEqualizedRuAllocation(ruTypes.at(index), true);
+                ruAlloc = HeRu::GetEqualizedRuAllocation(ruTypes.at(index), true, true);
             }
             else if (ruTypes.at(index) == HeRu::RU_26_TONE)
             {
-                ruAlloc = HeRu::GetEqualizedRuAllocation(ruType, true);
+                ruAlloc = HeRu::GetEqualizedRuAllocation(ruType, true, true);
             }
             else
             {
                 NS_ASSERT_MSG(false, "unsupported RU combination");
             }
         }
+        std::size_t ccIndex;
+        if (ruType >= HeRu::RU_484_TONE)
+        {
+            ccIndex = (ccSizes.first <= ccSizes.second) ? 0 : 1;
+        }
+        else
+        {
+            ccIndex = (index % 2 == 0) ? 0 : 1;
+        }
+        if (ccIndex == 0)
+        {
+            ccSizes.first += staIds.size();
+        }
+        else
+        {
+            ccSizes.second += staIds.size();
+        }
         for (std::size_t i = 0; i < numSubchannelsForRu; ++i)
         {
+            auto ruAllocNoUsers = HeRu::GetEqualizedRuAllocation(ruType, false, false);
             ruTypes.at(index + i) = ruType;
-            ruAllocations.at(index + i) = ruAlloc;
+            ruAllocations.at(index + i) =
+                (IsSigBCompression() || ((index + i) % 2) == ccIndex) ? ruAlloc : ruAllocNoUsers;
         }
     }
     return ruAllocations;

@@ -832,13 +832,6 @@ WifiPrimaryChannelsTest::SendDlMuPpdu(uint8_t bss,
         psduMap[staId] = Create<const WifiPsdu>(Create<Packet>(1000), hdr);
     }
     txVector.SetSigBMode(VhtPhy::GetVhtMcs5());
-    RuAllocation ruAllocations;
-    const auto numRuAllocs = Count20MHzSubchannels(txChannelWidth);
-    ruAllocations.resize(numRuAllocs);
-    auto IsOddNum = (nRus / numRuAllocs) % 2 == 1;
-    auto ruAlloc = HeRu::GetEqualizedRuAllocation(ruType, IsOddNum);
-    std::fill_n(ruAllocations.begin(), numRuAllocs, ruAlloc);
-    txVector.SetRuAllocation(ruAllocations, 0);
 
     apDev->GetPhy()->Send(psduMap, txVector);
 }
@@ -1367,13 +1360,10 @@ WifiPrimaryChannelsTestSuite::WifiPrimaryChannelsTestSuite()
     // Test cases for 20 MHz can be added, but are not that useful (there would be a single BSS)
     AddTestCase(new WifiPrimaryChannelsTest(MHz_u{40}, true), TestCase::Duration::QUICK);
     AddTestCase(new WifiPrimaryChannelsTest(MHz_u{40}, false), TestCase::Duration::QUICK);
-#if 0
-    // Tests disabled until issue #776 resolved
     AddTestCase(new WifiPrimaryChannelsTest(MHz_u{80}, true), TestCase::Duration::EXTENSIVE);
     AddTestCase(new WifiPrimaryChannelsTest(MHz_u{80}, false), TestCase::Duration::EXTENSIVE);
     AddTestCase(new WifiPrimaryChannelsTest(MHz_u{160}, true), TestCase::Duration::TAKES_FOREVER);
     AddTestCase(new WifiPrimaryChannelsTest(MHz_u{160}, false), TestCase::Duration::TAKES_FOREVER);
-#endif
     AddTestCase(new Wifi20MHzChannelIndicesTest(), TestCase::Duration::QUICK);
 }
 
