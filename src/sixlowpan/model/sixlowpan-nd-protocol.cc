@@ -48,6 +48,8 @@
 #include "ns3/string.h"
 #include "ns3/uinteger.h"
 
+#include <cmath>
+
 namespace ns3
 {
 
@@ -354,7 +356,7 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
 
             Time difference = Simulator::Now() - i->second->GetLastUpdateTime();
             double updatedValidTime =
-                i->second->GetValidTime().GetMinutes() - floor(difference.GetMinutes());
+                i->second->GetValidTime().GetMinutes() - std::floor(difference.GetMinutes());
 
             // we want to advertise only contexts with a remaining validity time greater than 1
             // minute.
@@ -422,7 +424,7 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
 
             Time difference = Simulator::Now() - i->second->GetLastUpdateTime();
             double updatedValidTime =
-                i->second->GetValidTime().GetMinutes() - floor(difference.GetMinutes());
+                i->second->GetValidTime().GetMinutes() - std::floor(difference.GetMinutes());
 
             // we want to advertise only contexts with a remaining validity time greater than 1
             // minute.
@@ -591,7 +593,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
             }
             break;
         default:
-            /* unknow option, quit */
+            /* unknown option, quit */
             next = false;
         }
         if (packet->GetSize() == 0)
@@ -721,7 +723,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
             hasEaro = true;
             break;
         default:
-            /* unknow option, quit */
+            /* unknown option, quit */
             next = false;
         }
         if (packet->GetSize() == 0)
@@ -771,7 +773,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     //
     //          break;
     //        default:
-    //          /* unknow option, quit */
+    //          /* unknown option, quit */
     //          next = false;
     //      }
     //    }
@@ -1017,7 +1019,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
      *
      * If I am a 6L[N,R] and I receive a RA, process it:
      *  - store all RA in m_pendingRas list ( std::list<SixLowPanPendingRa> m_pendingRas;)
-     *  - if it is already known (check the ra_Cach), if there's something different and/or update
+     *  - if it is already known (check the ra_Cache), if there's something different and/or update
      * the params
      *  - if it is not known, process it.
      */
@@ -1265,7 +1267,7 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
     NdiscCache::Entry* entry = cache->Lookup(dst);
     if (!entry)
     {
-        // do not try to perform a multicast nighbor discovery.
+        // do not try to perform a multicast neighbor discovery.
         return false;
     }
     return Icmpv6L4Protocol::Lookup(p, ipHeader, dst, device, cache, hardwareDestination);
@@ -1318,11 +1320,11 @@ SixLowPanNdProtocol::ScreeningRas(Ptr<SixLowPanRaEntry> ra)
         ra->GetAbroBorderRouterAddress()); // Check 6LBR address in the m_raCache if found
     if (it != m_raCache.end())
     {
-        if (ra->GetAbroVersion() < it->second->GetAbroVersion()) // Check New Version < Old Verion
+        if (ra->GetAbroVersion() < it->second->GetAbroVersion()) // Check New Version < Old Version
         {
             return true;
         }
-        if (ra->GetAbroVersion() == it->second->GetAbroVersion()) // Check New Version = Old Verion
+        if (ra->GetAbroVersion() == it->second->GetAbroVersion()) // Check New Version = Old Version
         {
             if (ra->GetPrefixes() == it->second->GetPrefixes() &&
                 ra->GetContexts() == it->second->GetContexts())
@@ -1505,8 +1507,6 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
 
     if (m_addrPendingReg.newRegistration)
     {
-        // std::cout << "********************this pecice of code runing
-        // here*********************************" << std::endl;
         for (auto& i : m_registeredAddresses)
         {
             if (i.registeredAddr == m_addrPendingReg.addressPendingRegistration &&
@@ -1525,7 +1525,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     if (m_addressRegistrationTimeoutEvent.IsPending())
     {
         // std::cout << "WARNING - we are skipping something because
-        // m_addressRegistrationTimeoutEvent is in progress - detais are:" << std::endl; std::cout
+        // m_addressRegistrationTimeoutEvent is in progress - details are:" << std::endl; std::cout
         // << "  m_addrPendingReg.newRegistration is " << m_addrPendingReg.newRegistration <<
         // std::endl; std::cout << "  m_addrPendingReg.addressPendingRegistration is " <<
         // m_addrPendingReg.addressPendingRegistration << std::endl; std::cout << "  registrar is "
@@ -1778,7 +1778,7 @@ SixLowPanNdProtocol::SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device)
 
     newRa->SetReachableTime(0); // unspecified by this router
 
-    uint64_t routerLifetime = ceil(m_routerLifeTime.GetMinutes());
+    uint64_t routerLifetime = std::ceil(m_routerLifeTime.GetMinutes());
     if (routerLifetime > 0xffff)
     {
         routerLifetime = 0xffff;
