@@ -101,8 +101,8 @@ class SixLowPanNdContext : public SimpleRefCount<SixLowPanNdContext>
     void SetValidTime(Time time);
 
     /**
-     * \brief Set the last update time.
-     * \param time tthe last update time
+     * @brief Set the last update time.
+     * @param time the last update time
      */
     void SetLastUpdateTime(Time time);
 
