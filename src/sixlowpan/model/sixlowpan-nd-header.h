@@ -148,7 +148,7 @@ class Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf : public Icmpv6Header
     void SetRegAddress(Ipv6Address registered);
 
     /**
-     * @brief Print informations.
+     * @brief Print information.
      * @param os output stream
      */
     void Print(std::ostream& os) const override;
@@ -348,7 +348,7 @@ class Icmpv6OptionSixLowPanExtendedAddressRegistration : public Icmpv6OptionHead
     void SetRovr(const std::vector<uint8_t>& rovr);
 
     /**
-     * @brief Print informations.
+     * @brief Print information.
      * @param os output stream
      */
     void Print(std::ostream& os) const override;
@@ -502,7 +502,7 @@ class Icmpv6OptionSixLowPanContext : public Icmpv6OptionHeader
     void SetContextPrefix(Ipv6Prefix prefix);
 
     /**
-     * @brief Print informations.
+     * @brief Print information.
      * @param os output stream
      */
     void Print(std::ostream& os) const override;
@@ -629,7 +629,7 @@ class Icmpv6OptionSixLowPanAuthoritativeBorderRouter : public Icmpv6OptionHeader
     void SetRouterAddress(Ipv6Address router);
 
     /**
-     * @brief Print informations.
+     * @brief Print information.
      * @param os output stream
      */
     void Print(std::ostream& os) const override;
