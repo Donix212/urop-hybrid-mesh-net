@@ -187,6 +187,9 @@ macro(write_configtable)
   string(APPEND out "Eigen3 support                : ")
   check_on_or_off("NS3_EIGEN" "ENABLE_EIGEN")
 
+  string(APPEND out "Crypto++ support              : ")
+  check_on_or_off("NS3_CRYPTOPP" "ENABLE_CRYPTOPP")
+
   string(APPEND out "Tap Bridge                    : ")
   check_on_or_off("ENABLE_TAP" "ENABLE_TAP")
 

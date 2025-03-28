@@ -183,6 +183,7 @@ def parse_args(argv):
         ),
         ("build-version", "embedding git changes as a build version during build"),
         ("clang-tidy", "clang-tidy static analysis"),
+        ("crypto", "the Crypto++ library support"),
         ("dpdk", "the fd-net-device DPDK features"),
         ("eigen", "Eigen3 library support"),
         ("examples", "the ns-3 examples"),
@@ -889,6 +890,7 @@ def configure_cmake(
     options = (
         ("ASSERT", "asserts"),
         ("CLANG_TIDY", "clang_tidy"),
+        ("CRYPTOPP", "crypto"),
         ("COVERAGE", "gcov"),
         ("DES_METRICS", "des_metrics"),
         ("DPDK", "dpdk"),
