@@ -803,9 +803,12 @@ Infrastructure association
 
 Association in infrastructure mode is a high-level MAC function performed by
 the Association Manager, which is implemented through a base class (``WifiAssocManager``)
-and a default subclass (``WifiDefaultAssocManager``). The interaction between
-the station MAC, the Association Manager base class and subclass is illustrated
-in Figure :ref:`fig-assoc-manager`.
+and a default subclass (``WifiDefaultAssocManager``), and controlled by the ``AssocType``
+attribute of the ``StaWifiMac`` class. This attribute controls whether the non-AP STA/MLD
+performs a legacy association or an ML setup with the AP device (the latter is only available for
+EHT devices associating with a multi-link AP; if this option is selected when this condition is not
+met, it falls back to legacy association automatically). The interaction between the station MAC,
+the Association Manager base class and subclass is illustrated in Figure :ref:`fig-assoc-manager`.
 
 .. _fig-assoc-manager:
 
@@ -1165,11 +1168,12 @@ MLD. Given that frame exchanges can occur on any of the EMLSR links, the link on
 Enabling/disabling EMLSR mode
 -----------------------------
 
-EMLSR mode can be enabled on the links (at least two) of a non-AP MLD that supports the EMLSR
+EMLSR mode can be enabled on the link(s) of a non-AP EHT device that supports the EMLSR
 operating mode and performs ML setup with an AP MLD that supports the EMLSR operating mode. The
-``EmlsrActivated`` attribute of the EHT configuration of an MLD determines whether the EMLSR
-operating mode is supported by the MLD. When the ``EmlsrActivated`` attribute is set to true for
-a non-AP MLD, the WifiMacHelper will install an EMLSR Manager by using the type and attribute
+``EmlsrActivated`` attribute of the EHT configuration of an EHT device determines whether the EMLSR
+operating mode is supported by the device. When the ``EmlsrActivated`` attribute is set to true for
+a non-AP EHT device and the ``ns3::StaWifiMac::AssocType`` attribute is set to ``ML_SETUP``, the
+WifiMacHelper will install an EMLSR Manager by using the type and attribute
 values configured through the ``SetEmlsrManager`` method.
 
 EMLSR mode on the links of a non-AP MLD can be enabled or disabled by using the ``EmlsrLinkSet``
@@ -1434,6 +1438,19 @@ and the new channel switch starts. This opportunity is exploited in two situatio
   a CTS timeout occurs while the main PHY is switching. If the aux PHYs do not switch link, the
   main PHY switch is interrupted and the main PHY returns to the preferred link; if the aux PHYs
   switch link, the main PHY switch is interrupted and the main PHY returns to the link it just left.
+
+AP EMLSR Manager
+----------------
+A manager which takes EMLSR specific decisions can also be installed on the AP MLD side. The base
+class is named ``ApEmlsrManager``, which is inherited by the ``DefaultApEmlsrManager`` and the
+``AdvancedApEmlsrManager``. One of the choices that the AP MLD has to take is how to behave in case
+the transmission of an ICF fails due to a cross link collision, i.e., an ICF that is addressed to
+EMLSR client(s) fails because the EMLSR client(s) are sending or have sent an ICF on another EMLSR
+link. By default, an ICF failure is treated just like any other failure: the contention window is
+updated and the failure is notified to the remote station manager. However, the advanced AP EMLSR
+manager provides two attributes, ``UpdateCwAfterFailedIcf`` and ``ReportFailedIcf``, that can be
+used, respectively, to control whether to update the contention window and report the failure to the
+remote station manager in case of ICF failure due to cross link collision.
 
 EMLSR traces
 ------------

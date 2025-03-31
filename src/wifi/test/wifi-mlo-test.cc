@@ -264,10 +264,12 @@ MldSwapLinksTest::DoRun()
     RunOne("Move all links to a new set of IDs", 2, {{0, 2}, {1, 3}}, {{2, 0}, {3, 1}});
 }
 
-AidAssignmentTest::AidAssignmentTest(const std::vector<std::set<uint8_t>>& linkIds)
+AidAssignmentTest::AidAssignmentTest(const std::vector<std::set<uint8_t>>& linkIds,
+                                     WifiAssocType assocType)
     : TestCase("Test the assignment of AIDs"),
       m_linkChannels({"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{2, 0, BAND_2_4GHZ, 0}"}),
       m_linkIds(linkIds),
+      m_assocType(assocType),
       m_expectedAid(1) // AID for first station
 {
 }
@@ -332,7 +334,9 @@ AidAssignmentTest::DoSetup()
                     "Ssid", // first non-AP STA/MLD only starts associating
                     SsidValue(Ssid(m_staDevices.GetN() == 0 ? "ns-3-ssid" : "default")),
                     "ActiveProbing",
-                    BooleanValue(false));
+                    BooleanValue(false),
+                    "AssocType",
+                    EnumValue(m_assocType));
 
         auto staNode = CreateObject<Node>();
         auto staDevice = wifi.Install(phyHelper, mac, staNode);
@@ -374,14 +378,16 @@ AidAssignmentTest::SetSsid(Ptr<StaWifiMac> staMac, Mac48Address /* apAddr */)
                        << linksStr.str());
 
     NS_TEST_EXPECT_MSG_EQ(aid, m_expectedAid, "Unexpected AID for STA " << staMac->GetAddress());
-    // For non-AP MLDs, check that the requested links have been setup (for non-AP STAs, link ID
-    // as seen by the non-AP STAs is always zero and could not match link ID as seen by the AP MLD)
-    if (m_linkIds.at(aid - 1).size() > 1)
-    {
-        NS_TEST_EXPECT_MSG_EQ((staMac->GetSetupLinkIds() == m_linkIds.at(aid - 1)),
-                              true,
-                              "Unexpected set of setup links " << linksStr.str());
-    }
+
+    // if ML setup is performed, check that the requested links have been setup; otherwise, link 0
+    // only is setup
+    const auto expectedLinks =
+        (m_assocType == WifiAssocType::ML_SETUP ? m_linkIds.at(aid - 1)
+                                                : std::set{SINGLE_LINK_OP_ID});
+
+    NS_TEST_EXPECT_MSG_EQ((staMac->GetSetupLinkIds() == expectedLinks),
+                          true,
+                          "Unexpected set of setup links " << linksStr.str());
 
     if (m_expectedAid < m_staDevices.GetN())
     {
@@ -423,6 +429,7 @@ MultiLinkOperationsTestBase::MultiLinkOperationsTestBase(const std::string& name
       m_staChannels(baseParams.staChannels),
       m_apChannels(baseParams.apChannels),
       m_fixedPhyBands(baseParams.fixedPhyBands),
+      m_assocType(baseParams.assocType),
       m_staMacs(nStations),
       m_nStations(nStations),
       m_lastAid(0),
@@ -680,7 +687,9 @@ MultiLinkOperationsTestBase::DoSetup()
                 "MaxMissedBeacons",
                 UintegerValue(1e6), // do not deassociate
                 "ActiveProbing",
-                BooleanValue(false));
+                BooleanValue(false),
+                "AssocType",
+                EnumValue(m_assocType));
 
     NetDeviceContainer staDevices = wifi.Install(staPhyHelper, mac, wifiStaNodes);
 
@@ -818,12 +827,14 @@ MultiLinkOperationsTestBase::SetSsid(uint16_t aid, Mac48Address /* addr */)
 MultiLinkSetupTest::MultiLinkSetupTest(const BaseParams& baseParams,
                                        WifiScanType scanType,
                                        const std::vector<uint8_t>& setupLinks,
+                                       const std::vector<uint8_t>& staSetupLinks,
                                        WifiTidToLinkMappingNegSupport apNegSupport,
                                        const std::string& dlTidToLinkMapping,
                                        const std::string& ulTidToLinkMapping,
                                        bool support160MHzOp)
     : MultiLinkOperationsTestBase("Check correctness of Multi-Link Setup", 1, baseParams),
       m_setupLinks(setupLinks),
+      m_staSetupLinks(staSetupLinks.empty() ? setupLinks : staSetupLinks),
       m_scanType(scanType),
       m_nProbeResp(0),
       m_apNegSupport(apNegSupport),
@@ -831,6 +842,9 @@ MultiLinkSetupTest::MultiLinkSetupTest(const BaseParams& baseParams,
       m_ulTidLinkMappingStr(ulTidToLinkMapping),
       m_support160MHzOp(support160MHzOp)
 {
+    NS_TEST_ASSERT_MSG_EQ(m_setupLinks.size(),
+                          m_staSetupLinks.size(),
+                          "Number of setup links must be the same for AP and non-AP device");
 }
 
 void
@@ -839,13 +853,11 @@ MultiLinkSetupTest::DoSetup()
     MultiLinkOperationsTestBase::DoSetup();
 
     m_staMacs[0]->SetAttribute("ActiveProbing", BooleanValue(m_scanType == WifiScanType::ACTIVE));
-    m_apMac->GetEhtConfiguration()->SetAttribute("TidToLinkMappingNegSupport",
-                                                 EnumValue(m_apNegSupport));
+    m_apMac->GetEhtConfiguration()->m_tidLinkMappingSupport = m_apNegSupport;
     // For non-AP MLD, it does not make sense to set the negotiation type to 0 (unless the AP MLD
     // also advertises 0) or 1 (the AP MLD is discarded if it advertises a support of 3)
     auto staEhtConfig = m_staMacs[0]->GetEhtConfiguration();
-    staEhtConfig->SetAttribute("TidToLinkMappingNegSupport",
-                               EnumValue(WifiTidToLinkMappingNegSupport::ANY_LINK_SET));
+    staEhtConfig->m_tidLinkMappingSupport = WifiTidToLinkMappingNegSupport::ANY_LINK_SET;
     staEhtConfig->SetAttribute("TidToLinkMappingDl", StringValue(m_dlTidLinkMappingStr));
     staEhtConfig->SetAttribute("TidToLinkMappingUl", StringValue(m_ulTidLinkMappingStr));
 
@@ -940,8 +952,7 @@ MultiLinkSetupTest::DoSetup()
     // are compatible
     for (auto staMac : m_staMacs)
     {
-        staMac->GetVhtConfiguration()->SetAttribute("Support160MHzOperation",
-                                                    BooleanValue(m_support160MHzOp));
+        staMac->GetVhtConfiguration()->m_160MHzSupported = m_support160MHzOp;
         uint8_t linkId = 0;
         for (const auto& str : m_staChannels)
         {
@@ -1209,11 +1220,18 @@ MultiLinkSetupTest::CheckAssocRequest(Ptr<WifiMpdu> mpdu, uint8_t linkId)
     mpdu->GetPacket()->PeekHeader(assoc);
     const auto& mle = assoc.Get<MultiLinkElement>();
 
-    if (m_apMac->GetNLinks() == 1 || m_staMacs[0]->GetNLinks() == 1)
+    if (m_apMac->GetNLinks() == 1)
     {
         NS_TEST_EXPECT_MSG_EQ(mle.has_value(),
                               false,
-                              "Multi-Link Element in Assoc Request frame from single link STA");
+                              "Multi-Link Element in Assoc Request frame to single link AP");
+    }
+    else if (m_staMacs[0]->GetAssocType() == WifiAssocType::LEGACY)
+    {
+        NS_TEST_EXPECT_MSG_EQ(
+            mle.has_value(),
+            false,
+            "Multi-Link Element in Assoc Request frame from non-AP using legacy association");
     }
     else
     {
@@ -1260,9 +1278,9 @@ MultiLinkSetupTest::CheckAssocRequest(Ptr<WifiMpdu> mpdu, uint8_t linkId)
     const auto& tlm = assoc.Get<TidToLinkMapping>();
 
     // A TID-to-Link Mapping IE is included in the Association Request if and only if the AP MLD
-    // and the non-AP MLD are performing ML setup (i.e., they both have multiple links) and the
-    // AP MLD advertises a non-null negotiation support type
-    if (m_apMac->GetNLinks() == 1 || m_staMacs[0]->GetNLinks() == 1 ||
+    // and the non-AP MLD are performing ML setup and the AP MLD advertises a non-null negotiation
+    // support type
+    if (m_apMac->GetNLinks() == 1 || m_staMacs[0]->GetAssocType() == WifiAssocType::LEGACY ||
         m_apNegSupport == WifiTidToLinkMappingNegSupport::NOT_SUPPORTED)
     {
         NS_TEST_EXPECT_MSG_EQ(tlm.empty(),
@@ -1340,12 +1358,20 @@ MultiLinkSetupTest::CheckAssocResponse(Ptr<WifiMpdu> mpdu, uint8_t linkId)
     mpdu->GetPacket()->PeekHeader(assoc);
     const auto& mle = assoc.Get<MultiLinkElement>();
 
-    if (m_apMac->GetNLinks() == 1 || m_staMacs[0]->GetNLinks() == 1)
+    if (m_apMac->GetNLinks() == 1)
+    {
+        NS_TEST_EXPECT_MSG_EQ(mle.has_value(),
+                              false,
+                              "Multi-Link Element in Assoc Response frame with single link AP");
+        return;
+    }
+
+    if (m_staMacs[0]->GetAssocType() == WifiAssocType::LEGACY)
     {
         NS_TEST_EXPECT_MSG_EQ(
             mle.has_value(),
             false,
-            "Multi-Link Element in Assoc Response frame with single link AP or single link STA");
+            "Multi-Link Element in Assoc Response frame with non-AP using legacy association");
         return;
     }
 
@@ -1399,10 +1425,12 @@ MultiLinkSetupTest::CheckMlSetup()
      */
     NS_TEST_EXPECT_MSG_EQ(m_staMacs[0]->IsAssociated(), true, "Expected the STA to be associated");
 
-    for (const auto linkId : m_setupLinks)
+    for (auto linkIdIter = m_setupLinks.cbegin(), staLinkIdIter = m_staSetupLinks.cbegin();
+         linkIdIter != m_setupLinks.cend();
+         ++linkIdIter, ++staLinkIdIter)
     {
-        auto staLinkId = (m_staMacs[0]->GetNLinks() > 1 ? linkId : SINGLE_LINK_OP_ID);
-        auto apLinkId = (m_apMac->GetNLinks() > 1 ? linkId : SINGLE_LINK_OP_ID);
+        auto staLinkId = *staLinkIdIter;
+        auto apLinkId = *linkIdIter;
 
         auto staAddr = m_staMacs[0]->GetFrameExchangeManager(staLinkId)->GetAddress();
         auto apAddr = m_apMac->GetFrameExchangeManager(apLinkId)->GetAddress();
@@ -1414,7 +1442,7 @@ MultiLinkSetupTest::CheckMlSetup()
         NS_TEST_EXPECT_MSG_EQ(m_staMacs[0]->GetFrameExchangeManager(staLinkId)->GetBssid(),
                               apAddr,
                               "Unexpected BSSID for STA link ID " << +staLinkId);
-        if (m_apMac->GetNLinks() > 1 && m_staMacs[0]->GetNLinks() > 1)
+        if (m_apMac->GetNLinks() > 1 && m_assocType == WifiAssocType::ML_SETUP)
         {
             NS_TEST_EXPECT_MSG_EQ((staRemoteMgr->GetMldAddress(apAddr) == m_apMac->GetAddress()),
                                   true,
@@ -1430,7 +1458,7 @@ MultiLinkSetupTest::CheckMlSetup()
                               true,
                               "Expecting STA " << staAddr << " to be associated on link "
                                                << +apLinkId);
-        if (m_apMac->GetNLinks() > 1 && m_staMacs[0]->GetNLinks() > 1)
+        if (m_apMac->GetNLinks() > 1 && m_assocType == WifiAssocType::ML_SETUP)
         {
             NS_TEST_EXPECT_MSG_EQ(
                 (apRemoteMgr->GetMldAddress(staAddr) == m_staMacs[0]->GetAddress()),
@@ -1519,8 +1547,9 @@ MultiLinkSetupTest::CheckMlSetup()
             }
         };
 
-    auto storedMapping = m_apMac->GetNLinks() > 1 && m_staMacs[0]->GetNLinks() > 1 &&
-                         m_apNegSupport > WifiTidToLinkMappingNegSupport::NOT_SUPPORTED;
+    auto storedMapping = (m_apMac->GetNLinks() > 1) &&
+                         (m_staMacs[0]->GetAssocType() == WifiAssocType::ML_SETUP) &&
+                         (m_apNegSupport > WifiTidToLinkMappingNegSupport::NOT_SUPPORTED);
     checkStoredMapping(m_apMac, m_staMacs[0], WifiDirection::DOWNLINK, storedMapping);
     checkStoredMapping(m_apMac, m_staMacs[0], WifiDirection::UPLINK, storedMapping);
     checkStoredMapping(m_staMacs[0], m_apMac, WifiDirection::DOWNLINK, storedMapping);
@@ -1530,35 +1559,35 @@ MultiLinkSetupTest::CheckMlSetup()
 void
 MultiLinkSetupTest::CheckDisabledLinks()
 {
-    if (m_apMac->GetNLinks() > 1)
+    const auto legacyAssoc = (m_assocType == WifiAssocType::LEGACY || m_apMac->GetNLinks() == 1);
+
+    if (legacyAssoc)
     {
-        WifiContainerQueueId queueId(WIFI_QOSDATA_QUEUE,
-                                     WIFI_UNICAST,
-                                     m_staMacs[0]->GetAddress(),
-                                     0);
-
-        for (uint8_t linkId = 0; linkId < m_apMac->GetNLinks(); ++linkId)
-        {
-            auto it = std::find(m_setupLinks.cbegin(), m_setupLinks.cend(), linkId);
-
-            // the queue on the AP should have a mask if and only if the link has been setup
-            auto mask = m_apMac->GetMacQueueScheduler()->GetQueueLinkMask(AC_BE, queueId, linkId);
-            NS_TEST_EXPECT_MSG_EQ(mask.has_value(),
-                                  (it != m_setupLinks.cend()),
-                                  "Unexpected presence/absence of mask on link " << +linkId);
-        }
+        NS_TEST_ASSERT_MSG_EQ(m_staSetupLinks.size(),
+                              1,
+                              "One link is expected to be setup with legacy association");
     }
 
-    if (m_staMacs[0]->GetNLinks() == 1)
+    for (uint8_t linkId = 0; linkId < m_apMac->GetNLinks(); ++linkId)
     {
-        // no link is disabled on a single link device
-        return;
+        auto it = std::find(m_setupLinks.cbegin(), m_setupLinks.cend(), linkId);
+        auto addr =
+            (legacyAssoc
+                 ? m_staMacs[0]->GetFrameExchangeManager(m_staSetupLinks.front())->GetAddress()
+                 : m_staMacs[0]->GetAddress());
+        WifiContainerQueueId queueId(WIFI_QOSDATA_QUEUE, WIFI_UNICAST, addr, 0);
+
+        // the queue on the AP should have a mask if and only if the link has been setup
+        auto mask = m_apMac->GetMacQueueScheduler()->GetQueueLinkMask(AC_BE, queueId, linkId);
+        NS_TEST_EXPECT_MSG_EQ(mask.has_value(),
+                              (it != m_setupLinks.cend()),
+                              "Unexpected presence/absence of mask on link " << +linkId);
     }
 
     for (const auto& linkId : m_staMacs[0]->GetLinkIds())
     {
-        auto it = std::find(m_setupLinks.begin(), m_setupLinks.end(), linkId);
-        if (it == m_setupLinks.end())
+        auto it = std::find(m_staSetupLinks.begin(), m_staSetupLinks.end(), linkId);
+        if (it == m_staSetupLinks.end())
         {
             // the link has not been setup
             NS_TEST_EXPECT_MSG_EQ(m_staMacs[0]->GetWifiPhy(linkId)->GetState()->IsStateOff(),
@@ -1677,7 +1706,7 @@ MultiLinkSetupTest::CheckQosData(Ptr<WifiMpdu> mpdu,
         }
     }
 
-    if (m_apMac->GetNLinks() > 1 && m_staMacs[0]->GetNLinks() > 1)
+    if (m_apMac->GetNLinks() > 1 && m_assocType == WifiAssocType::ML_SETUP)
     {
         NS_TEST_EXPECT_MSG_EQ(std::count(linkSet.cbegin(), linkSet.cend(), linkId),
                               1,
@@ -2714,7 +2743,8 @@ ReleaseSeqNoAfterCtsTimeoutTest::ReleaseSeqNoAfterCtsTimeoutTest()
           1,
           BaseParams{{"{36, 0, BAND_5GHZ, 0}", "{2, 0, BAND_2_4GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
                      {"{36, 0, BAND_5GHZ, 0}", "{2, 0, BAND_2_4GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
-                     {}}),
+                     {},
+                     WifiAssocType::ML_SETUP}),
       m_nQosDataFrames(0),
       m_errorModel(CreateObject<ListErrorModel>()),
       m_rtsCorrupted(false)
@@ -2831,7 +2861,8 @@ StartSeqNoUpdateAfterAddBaTimeoutTest::StartSeqNoUpdateAfterAddBaTimeoutTest()
           1,
           BaseParams{{"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
                      {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
-                     {}}),
+                     {},
+                     WifiAssocType::ML_SETUP}),
       m_nQosDataCount(0),
       m_staErrorModel(CreateObject<ListErrorModel>())
 {
@@ -2983,17 +3014,25 @@ StartSeqNoUpdateAfterAddBaTimeoutTest::DoRun()
 WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
     : TestSuite("wifi-mlo", Type::UNIT)
 {
-    using ParamsTuple = std::tuple<MultiLinkOperationsTestBase::BaseParams, // base config params
-                                   std::vector<uint8_t>,           // link ID of setup links
-                                   WifiTidToLinkMappingNegSupport, // AP negotiation support
-                                   std::string,                    // DL TID-to-Link Mapping
-                                   std::string>;                   // UL TID-to-Link Mapping
+    using ParamsTuple =
+        std::tuple<MultiLinkOperationsTestBase::BaseParams, // base config params
+                   std::vector<uint8_t>, // link ID (as seen by AP device) of setup links
+                   std::vector<uint8_t>, // link ID (as seen by non-AP device) of setup links
+                   WifiTidToLinkMappingNegSupport, // AP negotiation support
+                   std::string,                    // DL TID-to-Link Mapping
+                   std::string>;                   // UL TID-to-Link Mapping
 
     AddTestCase(new GetRnrLinkInfoTest(), TestCase::Duration::QUICK);
     AddTestCase(new MldSwapLinksTest(), TestCase::Duration::QUICK);
     AddTestCase(
         new AidAssignmentTest(
-            std::vector<std::set<uint8_t>>{{0, 1, 2}, {1, 2}, {0, 1}, {0, 2}, {0}, {1}, {2}}),
+            std::vector<std::set<uint8_t>>{{0, 1, 2}, {1, 2}, {0, 1}, {0, 2}, {0}, {1}, {2}},
+            WifiAssocType::ML_SETUP),
+        TestCase::Duration::QUICK);
+    AddTestCase(
+        new AidAssignmentTest(
+            std::vector<std::set<uint8_t>>{{0, 1, 2}, {1, 2}, {0, 1}, {0, 2}, {0}, {1}, {2}},
+            WifiAssocType::LEGACY),
         TestCase::Duration::QUICK);
 
     // check that the selection of channels in ML setup accounts for the inability of a
@@ -3003,9 +3042,11 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
             MultiLinkOperationsTestBase::BaseParams{
                 {"{42, 80, BAND_5GHZ, 2}", "{5, 40, BAND_2_4GHZ, 0}", "{7, 80, BAND_6GHZ, 0}"},
                 {"{3, 40, BAND_2_4GHZ, 0}", "{15, 160, BAND_6GHZ, 7}", "{50, 160, BAND_5GHZ, 2}"},
-                {}},
+                {},
+                WifiAssocType::ML_SETUP},
             WifiScanType::PASSIVE,
             {0, 1, 2},
+            {}, // IDs of setup links are the same for AP and non-AP devices
             WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
             "",
             "",
@@ -3014,6 +3055,7 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
 
     for (const auto& [baseParams,
                       setupLinks,
+                      staSetupLinks,
                       apNegSupport,
                       dlTidLinkMapping,
                       ulTidLinkMapping] :
@@ -3021,8 +3063,10 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           ParamsTuple(
               {{"{36, 0, BAND_5GHZ, 0}", "{2, 0, BAND_2_4GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
                {"{36, 0, BAND_5GHZ, 0}", "{2, 0, BAND_2_4GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
-               {}},
+               {},
+               WifiAssocType::ML_SETUP},
               {0, 1, 2},
+              {}, // IDs of setup links are the same for AP and non-AP devices
               WifiTidToLinkMappingNegSupport::NOT_SUPPORTED, // AP MLD does not support TID-to-Link
                                                              // Mapping negotiation
               "0,1,2,3  0,1,2;  4,5  0,1",                   // default mapping used instead
@@ -3031,8 +3075,10 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           // non-matching channels, matching PHY bands: setup all links
           ParamsTuple({{"{108, 0, BAND_5GHZ, 0}", "{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}"},
                        {"{36, 0, BAND_5GHZ, 0}", "{120, 0, BAND_5GHZ, 0}", "{5, 0, BAND_6GHZ, 0}"},
-                       {}},
+                       {},
+                       WifiAssocType::ML_SETUP},
                       {0, 1, 2},
+                      {}, // IDs of setup links are the same for AP and non-AP devices
                       WifiTidToLinkMappingNegSupport::SAME_LINK_SET, // AP MLD does not support
                                                                      // distinct link sets for TIDs
                       "0,1,2,3  0,1,2;  4,5  0,1",                   // default mapping used instead
@@ -3040,8 +3086,10 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           // non-AP MLD switches band on some links to setup 3 links
           ParamsTuple({{"{2, 0, BAND_2_4GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{36, 0, BAND_5GHZ, 0}"},
                        {"{36, 0, BAND_5GHZ, 0}", "{9, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-                       {}},
+                       {},
+                       WifiAssocType::ML_SETUP},
                       {0, 1, 2},
+                      {}, // IDs of setup links are the same for AP and non-AP devices
                       WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
                       "0,1,2,3  0;  4,5,6,7  1,2", // frames of two TIDs are generated
                       "0,2,3  1,2;  1,4,5,6,7  0"  // frames of two TIDs are generated
@@ -3051,8 +3099,10 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           ParamsTuple(
               {{"{2, 0, BAND_2_4GHZ, 0}", "{36, 0, BAND_5GHZ, 0}", "{8, 20, BAND_2_4GHZ, 0}"},
                {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-               {0}},
+               {0},
+               WifiAssocType::ML_SETUP},
               {0, 1},
+              {}, // IDs of setup links are the same for AP and non-AP devices
               WifiTidToLinkMappingNegSupport::SAME_LINK_SET, // AP MLD does not support distinct
                                                              // link sets for TIDs
               "0,1,2,3,4,5,6,7  0",
@@ -3063,8 +3113,10 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           ParamsTuple(
               {{"{2, 0, BAND_2_4GHZ, 0}", "{36, 0, BAND_5GHZ, 0}", "{8, 20, BAND_2_4GHZ, 0}"},
                {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-               {0, 1}},
+               {0, 1},
+               WifiAssocType::ML_SETUP},
               {0, 1},
+              {}, // IDs of setup links are the same for AP and non-AP devices
               WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
               "0,1,2,3  1",
               "0,1,2,3  1"),
@@ -3075,8 +3127,10 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           // hence 2 links are setup by switching channel (not band) on the third link
           ParamsTuple({{"{2, 0, BAND_2_4GHZ, 0}", "{36, 0, BAND_5GHZ, 0}", "{60, 0, BAND_5GHZ, 0}"},
                        {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-                       {0, 1, 2}},
+                       {0, 1, 2},
+                       WifiAssocType::ML_SETUP},
                       {0, 2},
+                      {}, // IDs of setup links are the same for AP and non-AP devices
                       WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
                       "",
                       ""),
@@ -3085,32 +3139,70 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
           // an AP operating on the same channel; hence one link only is setup
           ParamsTuple({{"{2, 0, BAND_2_4GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
                        {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-                       {0, 1}},
+                       {0, 1},
+                       WifiAssocType::ML_SETUP},
                       {2},
+                      {}, // IDs of setup links are the same for AP and non-AP devices
                       WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
                       "",
                       ""),
           // non-AP MLD has only two STAs and setups two links
           ParamsTuple({{"{2, 0, BAND_2_4GHZ, 0}", "{36, 0, BAND_5GHZ, 0}"},
                        {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-                       {}},
+                       {},
+                       WifiAssocType::ML_SETUP},
                       {1, 0},
+                      {}, // IDs of setup links are the same for AP and non-AP devices
                       WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
                       "0,1,2,3  1",
                       ""),
-          // single link non-AP STA associates with an AP affiliated with an AP MLD
-          ParamsTuple({{"{120, 0, BAND_5GHZ, 0}"},
-                       {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
-                       {}},
-                      {2}, // link ID of AP MLD only (non-AP STA is single link)
+          // AP MLD and non-AP MLD setup only one link using legacy association
+          ParamsTuple({{"{2, 0, BAND_2_4GHZ, 0}", "{36, 0, BAND_5GHZ, 0}", "{60, 0, BAND_5GHZ, 0}"},
+                       {"{120, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{36, 0, BAND_5GHZ, 0}"},
+                       {},
+                       WifiAssocType::LEGACY},
+                      {2},
+                      {1},
                       WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
                       "",
                       ""),
-          // a STA affiliated with a non-AP MLD associates with a single link AP
+          // single link non-AP STA performs legacy association with an AP affiliated with an AP MLD
+          ParamsTuple({{"{120, 0, BAND_5GHZ, 0}"},
+                       {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
+                       {},
+                       WifiAssocType::LEGACY},
+                      {2},
+                      {0}, // non-AP STA performs legacy association
+                      WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
+                      "",
+                      ""),
+          // single link non-AP STA performs ML setup with an AP affiliated with an AP MLD
+          ParamsTuple({{"{120, 0, BAND_5GHZ, 0}"},
+                       {"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
+                       {},
+                       WifiAssocType::ML_SETUP},
+                      {2},
+                      {2}, // IDs of setup links are the same for AP and non-AP devices
+                      WifiTidToLinkMappingNegSupport::ANY_LINK_SET,
+                      "",
+                      ""),
+          // a STA affiliated with a non-AP MLD performs legacy association with a single link AP
           ParamsTuple({{"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
                        {"{120, 0, BAND_5GHZ, 0}"},
-                       {}},
-                      {2}, // link ID of non-AP MLD only (AP is single link)
+                       {},
+                       WifiAssocType::LEGACY},
+                      {0}, // AP is single link
+                      {2},
+                      WifiTidToLinkMappingNegSupport::NOT_SUPPORTED,
+                      "0,1,2,3  0,1;  4,5,6,7  0,1", // ignored by single link AP
+                      ""),
+          // a STA affiliated with a non-AP MLD performs ML setup with a single link AP
+          ParamsTuple({{"{36, 0, BAND_5GHZ, 0}", "{1, 0, BAND_6GHZ, 0}", "{120, 0, BAND_5GHZ, 0}"},
+                       {"{120, 0, BAND_5GHZ, 0}"},
+                       {},
+                       WifiAssocType::ML_SETUP},
+                      {0}, // AP is single link
+                      {2}, // legacy association is performed anyway because AP is single link
                       WifiTidToLinkMappingNegSupport::NOT_SUPPORTED,
                       "0,1,2,3  0,1;  4,5,6,7  0,1", // ignored by single link AP
                       "")})
@@ -3118,6 +3210,7 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
         AddTestCase(new MultiLinkSetupTest(baseParams,
                                            WifiScanType::PASSIVE,
                                            setupLinks,
+                                           staSetupLinks,
                                            apNegSupport,
                                            dlTidLinkMapping,
                                            ulTidLinkMapping),
@@ -3125,6 +3218,7 @@ WifiMultiLinkOperationsTestSuite::WifiMultiLinkOperationsTestSuite()
         AddTestCase(new MultiLinkSetupTest(baseParams,
                                            WifiScanType::ACTIVE,
                                            setupLinks,
+                                           staSetupLinks,
                                            apNegSupport,
                                            dlTidLinkMapping,
                                            ulTidLinkMapping),

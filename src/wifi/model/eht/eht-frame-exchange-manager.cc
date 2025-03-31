@@ -111,7 +111,9 @@ EhtFrameExchangeManager::CreateAliasIfNeeded(Ptr<WifiMpdu> mpdu) const
     NS_LOG_FUNCTION(this << *mpdu);
 
     // alias needs only be created for non-broadcast QoS data frames exchanged between two MLDs
-    if (!mpdu->GetHeader().IsQosData() || m_mac->GetNLinks() == 1 ||
+    if (auto staMac = DynamicCast<StaWifiMac>(m_mac);
+        !mpdu->GetHeader().IsQosData() ||
+        (staMac ? (staMac->GetAssocType() == WifiAssocType::LEGACY) : (m_mac->GetNLinks() == 1)) ||
         mpdu->GetHeader().GetAddr1().IsGroup() ||
         !GetWifiRemoteStationManager()->GetMldAddress(mpdu->GetHeader().GetAddr1()))
     {
@@ -155,13 +157,9 @@ EhtFrameExchangeManager::UsingOtherEmlsrLink() const
     {
         return false;
     }
-    auto apAddress = GetWifiRemoteStationManager()->GetMldAddress(m_bssid);
-    NS_ASSERT_MSG(apAddress, "MLD address not found for BSSID " << m_bssid);
-    // when EMLSR links are blocked, all TIDs are blocked (we test TID 0 here)
-    WifiContainerQueueId queueId(WIFI_QOSDATA_QUEUE, WIFI_UNICAST, *apAddress, 0);
-    auto mask = m_staMac->GetMacQueueScheduler()->GetQueueLinkMask(AC_BE, queueId, m_linkId);
-    NS_ASSERT_MSG(mask, "No mask for AP " << *apAddress << " on link " << m_linkId);
-    return mask->test(static_cast<std::size_t>(WifiQueueBlockedReason::USING_OTHER_EMLSR_LINK));
+    return m_staMac->GetMacQueueScheduler()->GetAllQueuesBlockedOnLink(
+        m_linkId,
+        WifiQueueBlockedReason::USING_OTHER_EMLSR_LINK);
 }
 
 bool
@@ -941,6 +939,23 @@ EhtFrameExchangeManager::GetUpdateCwOnCtsTimeout() const
     return HeFrameExchangeManager::GetUpdateCwOnCtsTimeout();
 }
 
+bool
+EhtFrameExchangeManager::GetReportRtsFailed() const
+{
+    NS_LOG_FUNCTION(this);
+
+    if (m_apMac)
+    {
+        if (const auto apEmlsrManager = m_apMac->GetApEmlsrManager();
+            apEmlsrManager && IsCrossLinkCollision(m_sentRtsTo))
+        {
+            return apEmlsrManager->ReportFailedIcf();
+        }
+    }
+
+    return HeFrameExchangeManager::GetReportRtsFailed();
+}
+
 void
 EhtFrameExchangeManager::TbPpduTimeout(WifiPsduMap* psduMap, std::size_t nSolicitedStations)
 {
@@ -1050,18 +1065,20 @@ EhtFrameExchangeManager::IsCrossLinkCollision(
 
 void
 EhtFrameExchangeManager::SendCtsAfterRts(const WifiMacHeader& rtsHdr,
-                                         WifiMode rtsTxMode,
+                                         const WifiTxVector& rtsTxVector,
                                          double rtsSnr)
 {
-    NS_LOG_FUNCTION(this << rtsHdr << rtsTxMode << rtsSnr);
+    NS_LOG_FUNCTION(this << rtsHdr << rtsTxVector << rtsSnr);
 
-    if (m_apMac && GetWifiRemoteStationManager()->GetEmlsrEnabled(rtsHdr.GetAddr2()))
+    auto addr2 = rtsHdr.GetAddr2();
+
+    if (m_apMac && GetWifiRemoteStationManager()->GetEmlsrEnabled(addr2))
     {
         // we are going to send a CTS to an EMLSR client, transmissions to such EMLSR client
         // must be blocked on the other EMLSR links
 
-        auto mldAddress = GetWifiRemoteStationManager()->GetMldAddress(rtsHdr.GetAddr2());
-        NS_ASSERT_MSG(mldAddress, "MLD address not found for " << rtsHdr.GetAddr2());
+        auto mldAddress = GetWifiRemoteStationManager()->GetMldAddress(addr2);
+        NS_ASSERT_MSG(mldAddress, "MLD address not found for " << addr2);
 
         for (uint8_t linkId = 0; linkId < m_apMac->GetNLinks(); ++linkId)
         {
@@ -1089,7 +1106,7 @@ EhtFrameExchangeManager::SendCtsAfterRts(const WifiMacHeader& rtsHdr,
         }
     }
 
-    HeFrameExchangeManager::SendCtsAfterRts(rtsHdr, rtsTxMode, rtsSnr);
+    HeFrameExchangeManager::SendCtsAfterRts(rtsHdr, rtsTxVector, rtsSnr);
 }
 
 bool
@@ -1424,7 +1441,7 @@ EhtFrameExchangeManager::ReceiveMpdu(Ptr<const WifiMpdu> mpdu,
     NS_ASSERT(mpdu->GetHeader().GetAddr1().IsGroup() || mpdu->GetHeader().GetAddr1() == m_self);
 
     const auto& hdr = mpdu->GetHeader();
-    const auto sender = hdr.GetAddr2();
+    auto sender = hdr.GetAddr2();
 
     if (hdr.IsTrigger())
     {

@@ -871,13 +871,13 @@ FrameExchangeManager::DoSendCtsAfterRts(const WifiMacHeader& rtsHdr,
 
 void
 FrameExchangeManager::SendCtsAfterRts(const WifiMacHeader& rtsHdr,
-                                      WifiMode rtsTxMode,
+                                      const WifiTxVector& rtsTxVector,
                                       double rtsSnr)
 {
-    NS_LOG_FUNCTION(this << rtsHdr << rtsTxMode << rtsSnr);
+    NS_LOG_FUNCTION(this << rtsHdr << rtsTxVector << rtsSnr);
 
     WifiTxVector ctsTxVector =
-        GetWifiRemoteStationManager()->GetCtsTxVector(rtsHdr.GetAddr2(), rtsTxMode);
+        GetWifiRemoteStationManager()->GetCtsTxVector(rtsHdr.GetAddr2(), rtsTxVector.GetMode());
     DoSendCtsAfterRts(rtsHdr, ctsTxVector, rtsSnr);
 }
 
@@ -1089,44 +1089,62 @@ FrameExchangeManager::CtsTimeout(Ptr<WifiMpdu> rts, const WifiTxVector& txVector
 {
     NS_LOG_FUNCTION(this << *rts << txVector);
 
-    DoCtsTimeout(Create<WifiPsdu>(m_mpdu, true));
+    DoCtsTimeout(WifiPsduMap{{SU_STA_ID, Create<WifiPsdu>(m_mpdu, true)}});
     m_mpdu = nullptr;
 }
 
 void
-FrameExchangeManager::DoCtsTimeout(Ptr<WifiPsdu> psdu)
+FrameExchangeManager::DoCtsTimeout(const WifiPsduMap& psduMap)
 {
-    NS_LOG_FUNCTION(this << *psdu);
+    NS_LOG_FUNCTION(this << psduMap);
 
-    // GetUpdateCwOnCtsTimeout() needs to be called before resetting m_sentRtsTo
+    // these functions need to be called before resetting m_sentRtsTo
     const auto updateCw = GetUpdateCwOnCtsTimeout();
+    const auto reportRts = GetReportRtsFailed();
 
     m_sentRtsTo.clear();
-    for (const auto& mpdu : *PeekPointer(psdu))
+    for (const auto& [staId, psdu] : psduMap)
     {
-        if (mpdu->IsQueued())
+        for (const auto& mpdu : *PeekPointer(psdu))
         {
-            mpdu->ResetInFlight(m_linkId);
+            if (mpdu->IsQueued())
+            {
+                mpdu->ResetInFlight(m_linkId);
+            }
         }
-    }
 
-    GetWifiRemoteStationManager()->ReportRtsFailed(psdu->GetHeader(0));
-    if (auto droppedMpdu = DropMpduIfRetryLimitReached(psdu))
-    {
-        GetWifiRemoteStationManager()->ReportFinalRtsFailed(droppedMpdu->GetHeader());
-    }
+        if (const auto& hdr = psdu->GetHeader(0);
+            !GetIndividuallyAddressedRecipient(m_mac, hdr).IsGroup())
+        {
+            if (reportRts)
+            {
+                GetWifiRemoteStationManager()->ReportRtsFailed(hdr);
+            }
 
-    // Make the sequence numbers of the MPDUs available again if the MPDUs have never
-    // been transmitted, both in case the MPDUs have been discarded and in case the
-    // MPDUs have to be transmitted (because a new sequence number is assigned to
-    // MPDUs that have never been transmitted and are selected for transmission)
-    ReleaseSequenceNumbers(psdu);
+            if (auto droppedMpdu = DropMpduIfRetryLimitReached(psdu))
+            {
+                GetWifiRemoteStationManager()->ReportFinalRtsFailed(droppedMpdu->GetHeader());
+            }
+        }
+
+        // Make the sequence numbers of the MPDUs available again if the MPDUs have never
+        // been transmitted, both in case the MPDUs have been discarded and in case the
+        // MPDUs have to be transmitted (because a new sequence number is assigned to
+        // MPDUs that have never been transmitted and are selected for transmission)
+        ReleaseSequenceNumbers(psdu);
+    }
 
     TransmissionFailed(!updateCw);
 }
 
 bool
 FrameExchangeManager::GetUpdateCwOnCtsTimeout() const
+{
+    return true;
+}
+
+bool
+FrameExchangeManager::GetReportRtsFailed() const
 {
     return true;
 }
@@ -1386,7 +1404,7 @@ FrameExchangeManager::ReceiveMpdu(Ptr<const WifiMpdu> mpdu,
                                                      &FrameExchangeManager::SendCtsAfterRts,
                                                      this,
                                                      hdr,
-                                                     txVector.GetMode(),
+                                                     txVector,
                                                      rxSnr);
             }
             else
