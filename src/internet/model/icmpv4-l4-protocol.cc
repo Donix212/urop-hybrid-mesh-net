@@ -8,24 +8,24 @@
 
 #include "icmpv4-l4-protocol.h"
 
-#include "ipv4-interface.h"
-#include "ipv4-raw-socket-factory-impl.h"
 #include "ipv4-route.h"
-#include "ipv4-routing-protocol.h"
 #include "ipv4.h"
-#include "ipv6-interface.h"
-
+#include "ns3/ipv4-end-point.h"
+#include "ipv4-routing-protocol.h"
+#include "ipv4-interface.h"
+#include "icmpv4.h"
+#include "icmp-socket-factory-impl.h"
+#include "icmp-socket-impl.h"
 #include "ns3/assert.h"
 #include "ns3/boolean.h"
 #include "ns3/log.h"
 #include "ns3/node.h"
 #include "ns3/packet.h"
-
-namespace ns3
-{
+ #include "ns3/ipv6-header.h"
+#include "ns3/ipv6-interface.h"
+ namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("Icmpv4L4Protocol");
-
 NS_OBJECT_ENSURE_REGISTERED(Icmpv4L4Protocol);
 
 TypeId
@@ -39,7 +39,10 @@ Icmpv4L4Protocol::GetTypeId()
 }
 
 Icmpv4L4Protocol::Icmpv4L4Protocol()
-    : m_node(nullptr)
+  : m_node(nullptr),
+    m_downTarget(),
+    m_socketIndex(0),
+    m_endPoints(new Ipv4EndPointDemux())
 {
     NS_LOG_FUNCTION(this);
 }
@@ -48,6 +51,8 @@ Icmpv4L4Protocol::~Icmpv4L4Protocol()
 {
     NS_LOG_FUNCTION(this);
     NS_ASSERT(!m_node);
+   //FIXME - This can be removed let's see
+  delete m_endPoints;
 }
 
 void
@@ -62,28 +67,30 @@ Icmpv4L4Protocol::SetNode(Ptr<Node> node)
  * by setting the node in the ICMP stack and adding ICMP factory to
  * IPv4 stack connected to the node
  */
-void
-Icmpv4L4Protocol::NotifyNewAggregate()
-{
-    NS_LOG_FUNCTION(this);
-    if (!m_node)
-    {
-        Ptr<Node> node = this->GetObject<Node>();
-        if (node)
-        {
-            Ptr<Ipv4> ipv4 = this->GetObject<Ipv4>();
-            if (ipv4 && m_downTarget.IsNull())
-            {
-                this->SetNode(node);
-                ipv4->Insert(this);
-                Ptr<Ipv4RawSocketFactoryImpl> rawFactory = CreateObject<Ipv4RawSocketFactoryImpl>();
-                ipv4->AggregateObject(rawFactory);
-                this->SetDownTarget(MakeCallback(&Ipv4::Send, ipv4));
-            }
-        }
-    }
-    IpL4Protocol::NotifyNewAggregate();
-}
+
+ void
+ Icmpv4L4Protocol::NotifyNewAggregate()
+ {
+   NS_LOG_FUNCTION(this);
+   Ptr<Node> node = this->GetObject<Node>();
+   Ptr<Ipv4> ipv4 = this->GetObject<Ipv4>();
+   if (!m_node)
+   {
+     if (node && ipv4)
+     {
+       this->SetNode(node);
+       Ptr<IcmpSocketFactoryImpl> icmpFactory = CreateObject<IcmpSocketFactoryImpl>();
+       icmpFactory->SetIcmp(this);
+       node->AggregateObject(icmpFactory);
+       if (ipv4 && m_downTarget.IsNull())
+       {
+         ipv4->Insert(this);
+         this->SetDownTarget(MakeCallback(&Ipv4::Send, ipv4));
+       }
+     }
+   }
+   IpL4Protocol::NotifyNewAggregate();
+ }
 
 uint16_t
 Icmpv4L4Protocol::GetStaticProtocolNumber()
@@ -98,6 +105,61 @@ Icmpv4L4Protocol::GetProtocolNumber() const
     NS_LOG_FUNCTION(this);
     return PROT_NUMBER;
 }
+ 
+ Ptr<Socket>
+ Icmpv4L4Protocol::CreateSocket()
+ {
+   NS_LOG_FUNCTION(this);
+   Ptr<IcmpSocketImpl> socket = CreateObject<IcmpSocketImpl>();
+   socket->SetNode(m_node);
+   socket->SetIcmp(this);
+   m_sockets[m_socketIndex++] = socket;
+   return socket;
+ }
+ 
+//
+// Endpoint allocation and deallocation
+//
+Ipv4EndPoint*
+Icmpv4L4Protocol::Allocate()
+{
+  NS_LOG_FUNCTION(this);
+  return m_endPoints->Allocate();
+}
+
+Ipv4EndPoint*
+Icmpv4L4Protocol::Allocate(Ipv4Address address)
+{
+  NS_LOG_FUNCTION(this << address);
+  return m_endPoints->Allocate(address);
+}
+
+void
+Icmpv4L4Protocol::DeAllocate(Ipv4EndPoint* endPoint)
+{
+  NS_LOG_FUNCTION(this << endPoint);
+  m_endPoints->DeAllocate(endPoint);
+}
+
+bool
+Icmpv4L4Protocol::RemoveSocket(Ptr<IcmpSocketImpl> socket)
+{
+  NS_LOG_FUNCTION(this << socket);
+  for (auto it = m_sockets.begin(); it != m_sockets.end(); ++it)
+  {
+    if (it->second == socket)
+    {
+      m_sockets.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+ 
+
 
 void
 Icmpv4L4Protocol::SendMessage(Ptr<Packet> packet, Ipv4Address dest, uint8_t type, uint8_t code)
@@ -121,7 +183,7 @@ Icmpv4L4Protocol::SendMessage(Ptr<Packet> packet, Ipv4Address dest, uint8_t type
     }
     else
     {
-        NS_LOG_WARN("drop icmp message");
+     NS_LOG_WARN("Drop ICMP message, no route exists");
     }
 }
 
@@ -140,10 +202,10 @@ Icmpv4L4Protocol::SendMessage(Ptr<Packet> packet,
     icmp.SetCode(code);
     if (Node::ChecksumEnabled())
     {
+     //FIXME Flow is not reaching here. Fix it
         icmp.EnableChecksum();
     }
     packet->AddHeader(icmp);
-
     m_downTarget(packet, source, dest, PROT_NUMBER, route);
 }
 
@@ -163,13 +225,23 @@ Icmpv4L4Protocol::SendDestUnreachPort(Ipv4Header header, Ptr<const Packet> orgDa
     SendDestUnreach(header, orgData, Icmpv4DestinationUnreachable::ICMPV4_PORT_UNREACHABLE, 0);
 }
 
+IpL4Protocol::RxStatus
+ Icmpv4L4Protocol::Receive(Ptr<Packet> p,
+                          const Ipv6Header& header,
+                          Ptr<Ipv6Interface> incomingInterface)
+ {
+   NS_LOG_FUNCTION(this << p << header.GetSource() << header.GetDestination());
+   return RxStatus::RX_ENDPOINT_UNREACH;
+ }
+
+
 void
 Icmpv4L4Protocol::SendDestUnreach(Ipv4Header header,
                                   Ptr<const Packet> orgData,
                                   uint8_t code,
                                   uint16_t nextHopMtu)
 {
-    NS_LOG_FUNCTION(this << header << *orgData << (uint32_t)code << nextHopMtu);
+   NS_LOG_FUNCTION(this << header << *orgData << static_cast<uint32_t>(code) << nextHopMtu);
     Ptr<Packet> p = Create<Packet>();
     Icmpv4DestinationUnreachable unreach;
     unreach.SetNextHopMtu(nextHopMtu);
@@ -190,39 +262,37 @@ Icmpv4L4Protocol::SendTimeExceededTtl(Ipv4Header header, Ptr<const Packet> orgDa
     p->AddHeader(time);
     if (!isFragment)
     {
-        SendMessage(p,
-                    header.GetSource(),
+    SendMessage(p, header.GetDestination(), header.GetSource(),
                     Icmpv4Header::ICMPV4_TIME_EXCEEDED,
-                    Icmpv4TimeExceeded::ICMPV4_TIME_TO_LIVE);
+                 Icmpv4TimeExceeded::ICMPV4_TIME_TO_LIVE, nullptr);
     }
     else
     {
-        SendMessage(p,
-                    header.GetSource(),
+    SendMessage(p, header.GetDestination(), header.GetSource(),
                     Icmpv4Header::ICMPV4_TIME_EXCEEDED,
-                    Icmpv4TimeExceeded::ICMPV4_FRAGMENT_REASSEMBLY);
+                 Icmpv4TimeExceeded::ICMPV4_FRAGMENT_REASSEMBLY, nullptr);
     }
 }
 
 void
 Icmpv4L4Protocol::HandleEcho(Ptr<Packet> p,
-                             Icmpv4Header header,
+                              Icmpv4Header icmp,
                              Ipv4Address source,
                              Ipv4Address destination,
-                             uint8_t tos)
+                              uint8_t  tos )
 {
-    NS_LOG_FUNCTION(this << p << header << source << destination << tos);
-
+   NS_LOG_FUNCTION(this << p << icmp << source << destination);
     Ptr<Packet> reply = Create<Packet>();
     Icmpv4Echo echo;
     p->RemoveHeader(echo);
+   //NOTE - Just for testing. Will be removed later
+   std::cout<<"Node "<< m_node->GetId()<< " sending an echo reply...\n"<<std::endl;
     reply->AddHeader(echo);
-    SocketIpTosTag ipTosTag;
-    ipTosTag.SetTos(tos);
-    reply->ReplacePacketTag(ipTosTag);
+    // SocketIpTosTag ipTosTag;
+    // ipTosTag.SetTos(tos);
+    // reply->ReplacePacketTag(ipTosTag);
     SendMessage(reply, destination, source, Icmpv4Header::ICMPV4_ECHO_REPLY, 0, nullptr);
 }
-
 void
 Icmpv4L4Protocol::Forward(Ipv4Address source,
                           Icmpv4Header icmp,
@@ -231,7 +301,6 @@ Icmpv4L4Protocol::Forward(Ipv4Address source,
                           const uint8_t payload[8])
 {
     NS_LOG_FUNCTION(this << source << icmp << info << ipHeader << payload);
-
     Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4>();
     Ptr<IpL4Protocol> l4 = ipv4->GetProtocol(ipHeader.GetProtocol());
     if (l4)
@@ -254,7 +323,7 @@ Icmpv4L4Protocol::HandleDestUnreach(Ptr<Packet> p,
                                     Ipv4Address destination)
 {
     NS_LOG_FUNCTION(this << p << icmp << source << destination);
-
+   std::cout<<"Destination unreachable. Sending ICMP error...."<<std::endl;
     Icmpv4DestinationUnreachable unreach;
     p->PeekHeader(unreach);
     uint8_t payload[8];
@@ -270,13 +339,12 @@ Icmpv4L4Protocol::HandleTimeExceeded(Ptr<Packet> p,
                                      Ipv4Address destination)
 {
     NS_LOG_FUNCTION(this << p << icmp << source << destination);
-
     Icmpv4TimeExceeded time;
     p->PeekHeader(time);
     uint8_t payload[8];
     time.GetData(payload);
     Ipv4Header ipHeader = time.GetHeader();
-    // info field is zero for TimeExceeded on linux
+   std::cout<<"TTL zero. Sending ICMP error...."<<std::endl;
     Forward(source, icmp, 0, ipHeader, payload);
 }
 
@@ -286,12 +354,34 @@ Icmpv4L4Protocol::Receive(Ptr<Packet> p,
                           Ptr<Ipv4Interface> incomingInterface)
 {
     NS_LOG_FUNCTION(this << p << header << incomingInterface);
-
     Icmpv4Header icmp;
     p->RemoveHeader(icmp);
+   
+   
     switch (icmp.GetType())
     {
-    case Icmpv4Header::ICMPV4_ECHO: {
+     case Icmpv4Header::ICMPV4_ECHO:
+     {
+     std::cout<<"Node "<<m_node->GetId()<<" received an ICMP echo request" << std::endl;
+    Ipv4EndPointDemux::EndPoints endPoints =
+    m_endPoints->Lookup(header.GetDestination(), 49153,
+                        header.GetSource(), 49153,
+                        incomingInterface);
+  if (endPoints.empty())
+  {
+    NS_LOG_LOGIC("No matching ICMP endpoint found");
+    // Optionally, you might choose to drop the packet here:
+    // return IpL4Protocol::RX_ENDPOINT_UNREACH;
+  }
+  else
+  {
+    // Forward a copy of the packet up to each registered endpoint.
+    for (auto endPoint = endPoints.begin(); endPoint != endPoints.end(); ++endPoint)
+    {
+        (*endPoint)->ForwardUp(p->Copy(), header, 0, incomingInterface);
+    }
+  }
+
         Ipv4Address dst = header.GetDestination();
         // We could have received an Echo request to a broadcast-type address.
         if (dst.IsBroadcast())
@@ -318,6 +408,11 @@ Icmpv4L4Protocol::Receive(Ptr<Packet> p,
             }
         }
         HandleEcho(p, icmp, header.GetSource(), dst, header.GetTos());
+     break;
+   }
+   //NOTE - Just for testing purposes. Can be removed in the final push
+   case Icmpv4Header::ICMPV4_ECHO_REPLY:{
+    std::cout<<"Node "<< m_node->GetId()<< " received an ICMP Echo reply." <<std::endl;
         break;
     }
     case Icmpv4Header::ICMPV4_DEST_UNREACH:
@@ -333,24 +428,29 @@ Icmpv4L4Protocol::Receive(Ptr<Packet> p,
     return IpL4Protocol::RX_OK;
 }
 
-IpL4Protocol::RxStatus
-Icmpv4L4Protocol::Receive(Ptr<Packet> p,
-                          const Ipv6Header& header,
-                          Ptr<Ipv6Interface> incomingInterface)
-{
-    NS_LOG_FUNCTION(this << p << header.GetSource() << header.GetDestination()
-                         << incomingInterface);
-    return IpL4Protocol::RX_ENDPOINT_UNREACH;
-}
+
 
 void
 Icmpv4L4Protocol::DoDispose()
 {
     NS_LOG_FUNCTION(this);
+   for (auto i = m_sockets.begin(); i != m_sockets.end(); ++i)
+  {
+    i->second = nullptr;
+  }
+  m_sockets.clear();
+  
+  if (m_endPoints != nullptr)
+  {
+    delete m_endPoints;
+    m_endPoints = nullptr;
+  }
     m_node = nullptr;
     m_downTarget.Nullify();
+   m_sockets.clear();
     IpL4Protocol::DoDispose();
 }
+ 
 
 void
 Icmpv4L4Protocol::SetDownTarget(IpL4Protocol::DownTargetCallback callback)
@@ -378,5 +478,7 @@ Icmpv4L4Protocol::GetDownTarget6() const
     NS_LOG_FUNCTION(this);
     return IpL4Protocol::DownTargetCallback6();
 }
+ 
+ 
 
 } // namespace ns3
