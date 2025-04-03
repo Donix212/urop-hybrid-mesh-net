@@ -338,7 +338,7 @@ IpL4Protocol::RxStatus
    p->RemoveHeader(echo);
 
    uint32_t packetSize = p->GetSize();
-   std::cout<<"here"<<std::endl;
+   std::cout<<"Echo received. Sending an echo reply..."<<std::endl;
   if (packetSize > 0)
     {
       // Allocate a buffer to hold the packet data plus a null terminator.
@@ -365,6 +365,7 @@ IpL4Protocol::RxStatus
                                      Ipv4Address destination)
  {
    NS_LOG_FUNCTION(this << p << icmp << source << destination);
+   std::cout<<"Destination unreachable. Sending ICMP error...."<<std::endl;
    Icmpv4DestinationUnreachable unreach;
    p->PeekHeader(unreach);
    uint8_t payload[8];
@@ -385,7 +386,7 @@ IpL4Protocol::RxStatus
    uint8_t payload[8];
    time.GetData(payload);
    Ipv4Header ipHeader = time.GetHeader();
-   std::cout<<"Time limit exceeded. Please increase the TTL"<<std::endl;
+   std::cout<<"TTL zero. Sending ICMP error...."<<std::endl;
    Forward(source, icmp, 0, ipHeader, payload);
  }
  
