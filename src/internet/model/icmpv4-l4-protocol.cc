@@ -3,6 +3,7 @@
  #include "icmpv4-l4-protocol.h"
  #include "ipv4-route.h"
  #include "ipv4.h"
+ #include "ns3/ipv4-end-point.h"
  #include "ipv4-routing-protocol.h"
  #include "ipv4-interface.h"
  #include "icmpv4.h"
@@ -169,10 +170,32 @@ IpL4Protocol::RxStatus
    NS_LOG_FUNCTION(this << p << header << incomingInterface);
    Icmpv4Header icmp;
    p->RemoveHeader(icmp);
+   
+   
    switch (icmp.GetType())
    {
-   case Icmpv4Header::ICMPV4_ECHO:
-   {
+     case Icmpv4Header::ICMPV4_ECHO:
+     {
+     std::cout<<"Node "<<m_node->GetId()<<" received an ICMP echo request" << std::endl;
+    Ipv4EndPointDemux::EndPoints endPoints =
+    m_endPoints->Lookup(header.GetDestination(), 49153,
+                        header.GetSource(), 49153,
+                        incomingInterface);
+  if (endPoints.empty())
+  {
+    NS_LOG_LOGIC("No matching ICMP endpoint found");
+    // Optionally, you might choose to drop the packet here:
+    // return IpL4Protocol::RX_ENDPOINT_UNREACH;
+  }
+  else
+  {
+    // Forward a copy of the packet up to each registered endpoint.
+    for (auto endPoint = endPoints.begin(); endPoint != endPoints.end(); ++endPoint)
+    {
+        (*endPoint)->ForwardUp(p->Copy(), header, 0, incomingInterface);
+    }
+  }
+
      Ipv4Address dst = header.GetDestination();
      if (dst.IsBroadcast())
      {
@@ -199,6 +222,10 @@ IpL4Protocol::RxStatus
      }
      HandleEcho(p, icmp, header.GetSource(), dst, header.GetTos());
      break;
+   }
+   case Icmpv4Header::ICMPV4_ECHO_REPLY:{
+    std::cout<<"Node "<< m_node->GetId()<< " received an ICMP Echo reply." <<std::endl;
+    break;
    }
    case Icmpv4Header::ICMPV4_DEST_UNREACH:
      HandleDestUnreach(p, icmp, header.GetSource(), header.GetDestination());
@@ -232,10 +259,10 @@ IpL4Protocol::RxStatus
  }
  
  void
- Icmpv4L4Protocol::SendDestUnreachPort(Ipv4Header header, Ptr<const Packet> orgData)
+ Icmpv4L4Protocol::SendDestUnreachHost(Ipv4Header header, Ptr<const Packet> orgData)
  {
    NS_LOG_FUNCTION(this << header << *orgData);
-   SendDestUnreach(header, orgData, Icmpv4DestinationUnreachable::ICMPV4_PORT_UNREACHABLE, 0);
+   SendDestUnreach(header, orgData, Icmpv4DestinationUnreachable::ICMPV4_HOST_UNREACHABLE, 0);
  }
  
  void
@@ -337,21 +364,8 @@ IpL4Protocol::RxStatus
    Icmpv4Echo echo;
    p->RemoveHeader(echo);
 
-   uint32_t packetSize = p->GetSize();
-   std::cout<<"Echo received. Sending an echo reply..."<<std::endl;
-  if (packetSize > 0)
-    {
-      // Allocate a buffer to hold the packet data plus a null terminator.
-      uint8_t *buffer = new uint8_t[packetSize + 1];
-      p->CopyData(buffer, packetSize);
-      buffer[packetSize] = '\0'; // Ensure null termination
 
-      // Convert the buffer to a std::string and log it.
-      std::string receivedData(reinterpret_cast<char*>(buffer));
-      std::cout<<"Received packet data (" << packetSize << " bytes): " << receivedData<<std::endl;
-
-      delete[] buffer;
-    }
+   std::cout<<"Node "<< m_node->GetId()<< " sending an echo reply...\n"<<std::endl;
 
    reply->AddHeader(echo);
   

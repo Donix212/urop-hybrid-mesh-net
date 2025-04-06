@@ -83,7 +83,7 @@
                                   Ptr<const Packet> orgData,
                                   uint16_t nextHopMtu);
    void SendTimeExceededTtl(Ipv4Header header, Ptr<const Packet> orgData, bool isFragment);
-   void SendDestUnreachPort(Ipv4Header header, Ptr<const Packet> orgData);
+   void SendDestUnreachHost(Ipv4Header header, Ptr<const Packet> orgData);
  
    // Down target functions.
    void SetDownTarget(IpL4Protocol::DownTargetCallback cb) override;

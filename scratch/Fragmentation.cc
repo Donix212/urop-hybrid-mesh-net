@@ -25,25 +25,27 @@ ReceivePacket (Ptr<Socket> socket)
       buffer[packetSize] = '\0';
       std::string receivedData = std::string (reinterpret_cast<char*>(buffer));
       std::cout << "Node " << socket->GetNode ()->GetId () 
-                << " received a packet of size " << packetSize << " bytes from " 
-                << InetSocketAddress::ConvertFrom (from).GetIpv4() <<std::endl;
+                << " received a packet of " << packetSize << " bytes from " 
+                << InetSocketAddress::ConvertFrom (from).GetIpv4() 
+                << std::endl;
+
+    // std::cout<< "Data: \n" << receivedData << std::endl;
+    
       delete[] buffer;
     }
 }
 
 // Function to send a packet from the sending node.
 static void
-SendPacket (Ptr<Socket> socket, uint32_t packetSize, uint32_t ttl)
+SendPacket (Ptr<Socket> socket, uint32_t packetSize)
 {
-  socket->SetIpTtl(ttl);
   
-  std::cout<<std::endl<<"Sending ICMP packet with ttl "<<ttl<<std::endl;
   std::string hello = "hello";
   std::string content;
   uint32_t repeatCount = packetSize / hello.size();
   uint32_t remainder = packetSize % hello.size();
 
-  // Build the content by repeating "hello" as many times as needed.
+  // This creates the data in the packet. Data= "hello" repeated so many time so that the size is equal to packetSize
   for (uint32_t i = 0; i < repeatCount; i++)
     {
       content += hello;
@@ -53,13 +55,12 @@ SendPacket (Ptr<Socket> socket, uint32_t packetSize, uint32_t ttl)
       content += hello.substr (0, remainder);
     }
 
-  // Print the string being sent.
-  // std::cout << "Sending: " << content << std::endl;
+//   std::cout << "Node " << socket->GetNode()->GetId() << " sending: \n" << content << std::endl;
 
-  // Create a packet using the constructed string as the payload.
   Ptr<Packet> packet = Create<Packet> (reinterpret_cast<const uint8_t*> (content.c_str()), content.size());
   socket->Send (packet);
-  NS_LOG_UNCOND ("Node " << socket->GetNode ()->GetId () << " sent a packet of " << packetSize << " bytes");
+  NS_LOG_UNCOND ("Node " << socket->GetNode ()->GetId () 
+                 << " sent a packet of " << packetSize << " bytes\n");
 }
 
 int
@@ -72,7 +73,7 @@ main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (5);
 
-  // Create point-to-point links for the topology: A-R1, R1-R2, R2-R3, and R3-B.
+  // p2p links for topology A--R1--R2--R3--B
   NodeContainer n0n1 = NodeContainer (nodes.Get (0), nodes.Get (1));
   NodeContainer n1n2 = NodeContainer (nodes.Get (1), nodes.Get (2));
   NodeContainer n2n3 = NodeContainer (nodes.Get (2), nodes.Get (3));
@@ -81,18 +82,20 @@ main (int argc, char *argv[])
   PointToPointHelper p2p;
   p2p.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   p2p.SetChannelAttribute ("Delay", StringValue ("2ms"));
+  //I am setting the MTU to 700B and I am sending a packet of 5024B. Fragmentation will happen
+  p2p.SetDeviceAttribute ("Mtu", UintegerValue (700));  
 
-  // Install devices on each link.
+  // Install devices 
   NetDeviceContainer d0 = p2p.Install (n0n1);
   NetDeviceContainer d1 = p2p.Install (n1n2);
   NetDeviceContainer d2 = p2p.Install (n2n3);
   NetDeviceContainer d3 = p2p.Install (n3n4);
 
-  // Install the Internet stack on all nodes.
+  // Install the Internet stack 
   InternetStackHelper internet;
   internet.Install (nodes);
 
-  // Assign IP addresses to each link.
+  // Assign IP addresses 
   Ipv4AddressHelper ipv4;
   ipv4.SetBase ("10.1.1.0", "255.255.255.0");
   Ipv4InterfaceContainer i0 = ipv4.Assign (d0);
@@ -107,31 +110,21 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer i3 = ipv4.Assign (d3);
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-  // -----------------------------
-  // Set up the receiver on node B.
-  // -----------------------------
+
+  //Receiver
   Ptr<Socket> recvSocket = Socket::CreateSocket (nodes.Get (4), TypeId::LookupByName ("ns3::IcmpSocketFactory"));
   InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), 9);
   recvSocket->Bind (local);
   recvSocket->SetRecvCallback (MakeCallback (&ReceivePacket));
 
-  // ---------------------------
-  // Set up the sender on node A.
-  // ---------------------------
+  //Sender 
   Ptr<Socket> sendSocket = Socket::CreateSocket (nodes.Get (0), TypeId::LookupByName ("ns3::IcmpSocketFactory"));
-  
-  // Set the IP TTL to 1. This will cause the packet to expire at the first router.
-  sendSocket->SetIpTtl (3);
-  
-  // Connect to node B using its IP address on the last link (R3-B).
   InetSocketAddress remote = InetSocketAddress (i3.GetAddress (1), 9);
   sendSocket->Connect (remote);
 
   // Schedule the send event after 2 seconds.
-  Simulator::Schedule (Seconds (1.0), &SendPacket, sendSocket, 20,1);
-  Simulator::Schedule (Seconds (2.0), &SendPacket, sendSocket, 20,2);
-  Simulator::Schedule (Seconds (3.0), &SendPacket, sendSocket, 20,3);
-  Simulator::Schedule (Seconds (4.0), &SendPacket, sendSocket, 20,4);
+  Simulator::Schedule (Seconds (1.0), &SendPacket, sendSocket, 5024);
+
 
   // Run the simulation.
   Simulator::Stop (Seconds (10.0));
