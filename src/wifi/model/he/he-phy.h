@@ -179,7 +179,7 @@ class HePhy : public VhtPhy
      * @param ru the RU in which the HE TB PPDU is sent
      * @return the width of the non-OFDMA portion of an HE TB PPDU
      */
-    MHz_u GetNonOfdmaWidth(HeRu::RuSpec ru) const;
+    MHz_u GetNonOfdmaWidth(WifiRu::RuSpec ru) const;
 
     /**
      * @return the UID of the HE TB PPDU being received
@@ -448,7 +448,7 @@ class HePhy : public VhtPhy
         const std::vector<MHz_u>& centerFrequencies,
         MHz_u totalWidth,
         Hz_u subcarrierSpacing,
-        HeRu::SubcarrierRange subcarrierRange,
+        SubcarrierRange subcarrierRange,
         uint8_t bandIndex = 0);
 
   protected:

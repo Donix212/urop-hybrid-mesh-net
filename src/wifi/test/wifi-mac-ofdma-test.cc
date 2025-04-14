@@ -302,40 +302,41 @@ TestMultiUserScheduler::ComputeWifiTxVector()
     }
     NS_ABORT_MSG_IF(staList.size() != 4, "There must be 4 associated stations");
 
-    HeRu::RuType ruType;
+    RuType ruType;
     switch (static_cast<uint16_t>(bw))
     {
     case 20:
-        ruType = HeRu::RU_52_TONE;
+        ruType = RuType::RU_52_TONE;
         m_txVector.SetRuAllocation({112}, 0);
         break;
     case 40:
-        ruType = HeRu::RU_106_TONE;
+        ruType = RuType::RU_106_TONE;
         m_txVector.SetRuAllocation({96, 96}, 0);
         break;
     case 80:
-        ruType = HeRu::RU_242_TONE;
+        ruType = RuType::RU_242_TONE;
         m_txVector.SetRuAllocation({192, 192, 192, 192}, 0);
         break;
     case 160:
-        ruType = HeRu::RU_484_TONE;
+        ruType = RuType::RU_484_TONE;
         m_txVector.SetRuAllocation({200, 200, 200, 200, 200, 200, 200, 200}, 0);
         break;
     default:
         NS_ABORT_MSG("Unsupported channel width");
     }
 
-    bool primary80 = true;
-    std::size_t ruIndex = 1;
-
+    auto primary80{true};
+    std::size_t ruIndex{1};
     for (auto& sta : staList)
     {
-        if (bw == MHz_u{160} && ruIndex == 3)
+        auto index{ruIndex};
+        if ((bw == MHz_u{160}) && (ruIndex == 3))
         {
-            ruIndex = 1;
-            primary80 = false;
+            index = HeRu::GetIndexIn80MHzSegment(bw, ruType, ruIndex);
+            primary80 = HeRu::GetPrimary80MHzFlag(bw, ruType, ruIndex, 0);
         }
-        m_txVector.SetHeMuUserInfo(sta.first, {{ruType, ruIndex++, primary80}, 11, 1});
+        m_txVector.SetHeMuUserInfo(sta.first, {HeRu::RuSpec{ruType, index, primary80}, 11, 1});
+        ruIndex++;
     }
     m_txVector.SetSigBMode(VhtPhy::GetVhtMcs5());
 }

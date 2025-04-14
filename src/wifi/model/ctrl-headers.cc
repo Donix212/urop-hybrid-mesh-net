@@ -1413,33 +1413,36 @@ CtrlTriggerUserInfoField::HasRaRuForUnassociatedSta() const
 }
 
 void
-CtrlTriggerUserInfoField::SetRuAllocation(HeRu::RuSpec ru)
+CtrlTriggerUserInfoField::SetRuAllocation(WifiRu::RuSpec ru)
 {
-    NS_ABORT_MSG_IF(ru.GetIndex() == 0, "Valid indices start at 1");
+    NS_ASSERT_MSG(WifiRu::IsHe(ru), "EHT RUs not supported yet");
+    const auto ruIndex = WifiRu::GetIndex(ru);
+    const auto ruType = WifiRu::GetRuType(ru);
+    NS_ABORT_MSG_IF(ruIndex == 0, "Valid indices start at 1");
     NS_ABORT_MSG_IF(m_triggerType == TriggerFrameType::MU_RTS_TRIGGER,
                     "SetMuRtsRuAllocation() must be used for MU-RTS");
 
-    switch (ru.GetRuType())
+    switch (ruType)
     {
-    case HeRu::RU_26_TONE:
-        m_ruAllocation = ru.GetIndex() - 1;
+    case RuType::RU_26_TONE:
+        m_ruAllocation = ruIndex - 1;
         break;
-    case HeRu::RU_52_TONE:
-        m_ruAllocation = ru.GetIndex() + 36;
+    case RuType::RU_52_TONE:
+        m_ruAllocation = ruIndex + 36;
         break;
-    case HeRu::RU_106_TONE:
-        m_ruAllocation = ru.GetIndex() + 52;
+    case RuType::RU_106_TONE:
+        m_ruAllocation = ruIndex + 52;
         break;
-    case HeRu::RU_242_TONE:
-        m_ruAllocation = ru.GetIndex() + 60;
+    case RuType::RU_242_TONE:
+        m_ruAllocation = ruIndex + 60;
         break;
-    case HeRu::RU_484_TONE:
-        m_ruAllocation = ru.GetIndex() + 64;
+    case RuType::RU_484_TONE:
+        m_ruAllocation = ruIndex + 64;
         break;
-    case HeRu::RU_996_TONE:
+    case RuType::RU_996_TONE:
         m_ruAllocation = 67;
         break;
-    case HeRu::RU_2x996_TONE:
+    case RuType::RU_2x996_TONE:
         m_ruAllocation = 68;
         break;
     default:
@@ -1450,19 +1453,19 @@ CtrlTriggerUserInfoField::SetRuAllocation(HeRu::RuSpec ru)
     NS_ABORT_MSG_IF(m_ruAllocation > 68, "Reserved value.");
 
     m_ruAllocation <<= 1;
-    if (!ru.GetPrimary80MHz())
+    if (WifiRu::IsHe(ru) && !std::get<HeRu::RuSpec>(ru).GetPrimary80MHz())
     {
         m_ruAllocation++;
     }
 }
 
-HeRu::RuSpec
+WifiRu::RuSpec
 CtrlTriggerUserInfoField::GetRuAllocation() const
 {
     NS_ABORT_MSG_IF(m_triggerType == TriggerFrameType::MU_RTS_TRIGGER,
                     "GetMuRtsRuAllocation() must be used for MU-RTS");
 
-    HeRu::RuType ruType;
+    RuType ruType;
     std::size_t index;
 
     bool primary80MHz = ((m_ruAllocation & 0x01) == 0);
@@ -1471,37 +1474,37 @@ CtrlTriggerUserInfoField::GetRuAllocation() const
 
     if (val < 37)
     {
-        ruType = HeRu::RU_26_TONE;
+        ruType = RuType::RU_26_TONE;
         index = val + 1;
     }
     else if (val < 53)
     {
-        ruType = HeRu::RU_52_TONE;
+        ruType = RuType::RU_52_TONE;
         index = val - 36;
     }
     else if (val < 61)
     {
-        ruType = HeRu::RU_106_TONE;
+        ruType = RuType::RU_106_TONE;
         index = val - 52;
     }
     else if (val < 65)
     {
-        ruType = HeRu::RU_242_TONE;
+        ruType = RuType::RU_242_TONE;
         index = val - 60;
     }
     else if (val < 67)
     {
-        ruType = HeRu::RU_484_TONE;
+        ruType = RuType::RU_484_TONE;
         index = val - 64;
     }
     else if (val == 67)
     {
-        ruType = HeRu::RU_996_TONE;
+        ruType = RuType::RU_996_TONE;
         index = 1;
     }
     else if (val == 68)
     {
-        ruType = HeRu::RU_2x996_TONE;
+        ruType = RuType::RU_2x996_TONE;
         index = 1;
     }
     else
@@ -1509,7 +1512,7 @@ CtrlTriggerUserInfoField::GetRuAllocation() const
         NS_FATAL_ERROR("Reserved value.");
     }
 
-    return HeRu::RuSpec(ruType, index, primary80MHz);
+    return HeRu::RuSpec{ruType, index, primary80MHz};
 }
 
 void
@@ -2352,11 +2355,10 @@ CtrlTriggerHeader::IsValid() const
 
     // check that allocated RUs do not overlap
     // TODO This is not a problem in case of UL MU-MIMO
-    std::vector<HeRu::RuSpec> prevRus;
-
+    std::vector<WifiRu::RuSpec> prevRus;
     for (auto& ui : m_userInfoFields)
     {
-        if (HeRu::DoesOverlap(GetUlBandwidth(), ui.GetRuAllocation(), prevRus))
+        if (WifiRu::DoesOverlap(GetUlBandwidth(), ui.GetRuAllocation(), prevRus))
         {
             return false;
         }

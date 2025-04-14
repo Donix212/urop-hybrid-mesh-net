@@ -136,18 +136,18 @@ OfdmaTestHePhy::GetNonOfdmaBand(const WifiTxVector& txVector, uint16_t staId) co
     const auto channelWidth = txVector.GetChannelWidth();
     NS_ASSERT(channelWidth <= m_wifiPhy->GetChannelWidth());
 
-    HeRu::RuSpec ru = txVector.GetRu(staId);
+    auto ru = txVector.GetRu(staId);
     const auto nonOfdmaWidth = GetNonOfdmaWidth(ru);
 
     // Find the RU that encompasses the non-OFDMA part of the HE TB PPDU for the STA-ID
-    HeRu::RuSpec nonOfdmaRu =
-        HeRu::FindOverlappingRu(channelWidth, ru, HeRu::GetRuType(nonOfdmaWidth));
+    auto nonOfdmaRu = WifiRu::FindOverlappingRu(channelWidth, ru, WifiRu::GetRuType(nonOfdmaWidth));
 
-    HeRu::SubcarrierGroup groupPreamble = HeRu::GetSubcarrierGroup(
+    const auto groupPreamble = HeRu::GetSubcarrierGroup(
         channelWidth,
-        nonOfdmaRu.GetRuType(),
-        nonOfdmaRu.GetPhyIndex(channelWidth,
-                               m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20})));
+        WifiRu::GetRuType(nonOfdmaRu),
+        WifiRu::GetPhyIndex(nonOfdmaRu,
+                            channelWidth,
+                            m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20})));
     const auto indices = ConvertHeRuSubcarriers(
         channelWidth,
         GetGuardBandwidth(m_wifiPhy->GetChannelWidth()),
@@ -535,27 +535,27 @@ TestDlOfdmaPhyTransmission::SendMuPpdu(uint16_t rxStaId1, uint16_t rxStaId2)
                           m_channelWidth,
                           false,
                           false};
-    HeRu::RuType ruType = HeRu::RU_106_TONE;
+    RuType ruType = RuType::RU_106_TONE;
     if (m_channelWidth == MHz_u{20})
     {
-        ruType = HeRu::RU_106_TONE;
+        ruType = RuType::RU_106_TONE;
         txVector.SetRuAllocation({96}, 0);
     }
     else if (m_channelWidth == MHz_u{40})
     {
-        ruType = HeRu::RU_242_TONE;
+        ruType = RuType::RU_242_TONE;
         txVector.SetRuAllocation({192, 192}, 0);
     }
     else if (m_channelWidth == MHz_u{80})
     {
-        ruType = HeRu::RU_484_TONE;
+        ruType = RuType::RU_484_TONE;
         const uint16_t ruAllocUser = 200;
         const uint16_t ruAllocNoUser = 114;
         txVector.SetRuAllocation({ruAllocUser, ruAllocNoUser, ruAllocNoUser, ruAllocUser}, 0);
     }
     else if (m_channelWidth == MHz_u{160})
     {
-        ruType = HeRu::RU_996_TONE;
+        ruType = RuType::RU_996_TONE;
         const uint16_t ruAllocUser = 208;
         const uint16_t ruAllocNoUser = 115;
         txVector.SetRuAllocation({ruAllocUser,
@@ -1426,20 +1426,19 @@ TestDlOfdmaPhyPuncturing::SendMuPpdu(uint16_t rxStaId1,
                           false,
                           false};
 
-    HeRu::RuType ruType =
-        puncturedSubchannels.empty()
-            ? HeRu::RU_484_TONE
-            : (puncturedSubchannels.at(1) ? HeRu::RU_242_TONE : HeRu::RU_484_TONE);
+    RuType ruType = puncturedSubchannels.empty()
+                        ? RuType::RU_484_TONE
+                        : (puncturedSubchannels.at(1) ? RuType::RU_242_TONE : RuType::RU_484_TONE);
     HeRu::RuSpec ru1(ruType, 1, true);
     txVector.SetRu(ru1, rxStaId1);
     txVector.SetMode(HePhy::GetHeMcs7(), rxStaId1);
     txVector.SetNss(1, rxStaId1);
 
     ruType = puncturedSubchannels.empty()
-                 ? HeRu::RU_484_TONE
-                 : (puncturedSubchannels.at(1) ? HeRu::RU_484_TONE : HeRu::RU_242_TONE);
+                 ? RuType::RU_484_TONE
+                 : (puncturedSubchannels.at(1) ? RuType::RU_484_TONE : RuType::RU_242_TONE);
     HeRu::RuSpec ru2(ruType,
-                     ruType == HeRu::RU_484_TONE ? 2 : (puncturedSubchannels.at(3) ? 3 : 4),
+                     ruType == RuType::RU_484_TONE ? 2 : (puncturedSubchannels.at(3) ? 3 : 4),
                      true);
     txVector.SetRu(ru2, rxStaId2);
     txVector.SetMode(HePhy::GetHeMcs9(), rxStaId2);
@@ -2123,13 +2122,13 @@ TestUlOfdmaPpduUid::SendMuPpdu()
                           false};
 
     uint16_t rxStaId1 = 1;
-    HeRu::RuSpec ru1(HeRu::RU_106_TONE, 1, true);
+    HeRu::RuSpec ru1(RuType::RU_106_TONE, 1, true);
     txVector.SetRu(ru1, rxStaId1);
     txVector.SetMode(HePhy::GetHeMcs7(), rxStaId1);
     txVector.SetNss(1, rxStaId1);
 
     uint16_t rxStaId2 = 2;
-    HeRu::RuSpec ru2(HeRu::RU_106_TONE, 2, true);
+    HeRu::RuSpec ru2(RuType::RU_106_TONE, 2, true);
     txVector.SetRu(ru2, rxStaId2);
     txVector.SetMode(HePhy::GetHeMcs9(), rxStaId2);
     txVector.SetNss(1, rxStaId2);
@@ -2177,7 +2176,7 @@ TestUlOfdmaPpduUid::SendTbPpdu()
     WifiTxVector trigVector{txVector2};
 
     uint16_t rxStaId1 = 1;
-    HeRu::RuSpec ru1(HeRu::RU_106_TONE, 1, false);
+    HeRu::RuSpec ru1(RuType::RU_106_TONE, 1, false);
     txVector1.SetRu(ru1, rxStaId1);
     txVector1.SetMode(HePhy::GetHeMcs7(), rxStaId1);
     txVector1.SetNss(1, rxStaId1);
@@ -2195,7 +2194,7 @@ TestUlOfdmaPpduUid::SendTbPpdu()
     psdus1.insert(std::make_pair(rxStaId1, psdu1));
 
     uint16_t rxStaId2 = 2;
-    HeRu::RuSpec ru2(HeRu::RU_106_TONE, 2, false);
+    HeRu::RuSpec ru2(RuType::RU_106_TONE, 2, false);
     txVector2.SetRu(ru2, rxStaId2);
     txVector2.SetMode(HePhy::GetHeMcs9(), rxStaId2);
     txVector2.SetNss(1, rxStaId2);
@@ -2469,7 +2468,7 @@ TestMultipleHeTbPreambles::RxHeTbPpdu(uint64_t uid,
                           false,
                           false};
 
-    HeRu::RuSpec ru(HeRu::RU_106_TONE, staId, false);
+    HeRu::RuSpec ru(RuType::RU_106_TONE, staId, false);
     txVector.SetRu(ru, staId);
     txVector.SetMode(HePhy::GetHeMcs7(), staId);
     txVector.SetNss(1, staId);
@@ -2500,8 +2499,8 @@ TestMultipleHeTbPreambles::RxHeTbPpdu(uint64_t uid,
     const auto nonOfdmaDuration = m_phy->GetHePhy()->CalculateNonHeDurationForHeTb(txVector);
     const auto centerFrequency =
         m_phy->GetHePhy()->GetCenterFrequenciesForNonHePart(ppdu, staId).front();
-    MHz_u ruWidth = HeRu::GetBandwidth(txVector.GetRu(staId).GetRuType());
-    MHz_u channelWidth = ruWidth < MHz_u{20} ? MHz_u{20} : ruWidth;
+    auto ruWidth = WifiRu::GetBandwidth(WifiRu::GetRuType(txVector.GetRu(staId)));
+    auto channelWidth = ruWidth < MHz_u{20} ? MHz_u{20} : ruWidth;
     Ptr<SpectrumValue> rxPsd = WifiSpectrumValueHelper::CreateHeOfdmTxPowerSpectralDensity(
         centerFrequency,
         channelWidth,
@@ -3354,33 +3353,34 @@ TestUlOfdmaPhyTransmission::GetTxVectorForHeTbPpdu(uint16_t txStaId,
                           false,
                           bssColor};
 
-    auto ruType = HeRu::RU_106_TONE;
+    auto ruType = RuType::RU_106_TONE;
     if (m_channelWidth == MHz_u{20})
     {
-        ruType = HeRu::RU_106_TONE;
+        ruType = RuType::RU_106_TONE;
     }
     else if (m_channelWidth == MHz_u{40})
     {
-        ruType = HeRu::RU_242_TONE;
+        ruType = RuType::RU_242_TONE;
     }
     else if (m_channelWidth == MHz_u{80})
     {
-        ruType = HeRu::RU_484_TONE;
+        ruType = RuType::RU_484_TONE;
     }
     else if (m_channelWidth == MHz_u{160})
     {
-        ruType = HeRu::RU_996_TONE;
+        ruType = RuType::RU_996_TONE;
     }
     else
     {
         NS_ASSERT_MSG(false, "Unsupported channel width");
     }
 
-    auto primary80MHz = true;
+    auto primary80MHz{true};
     if (m_channelWidth == MHz_u{160} && index == 2)
     {
-        primary80MHz = false;
-        index = 1;
+        primary80MHz = HeRu::GetPrimary80MHzFlag(m_channelWidth, ruType, index, 0);
+        ;
+        index = HeRu::GetIndexIn80MHzSegment(m_channelWidth, ruType, index);
     }
     HeRu::RuSpec ru(ruType, index, primary80MHz);
     txVector.SetRu(ru, txStaId);
@@ -3411,22 +3411,22 @@ TestUlOfdmaPhyTransmission::SetTrigVector(uint8_t bssColor, TrigVectorInfo error
                           false,
                           bssColor);
 
-    HeRu::RuType ruType = HeRu::RU_106_TONE;
+    RuType ruType = RuType::RU_106_TONE;
     if (channelWidth == MHz_u{20})
     {
-        ruType = HeRu::RU_106_TONE;
+        ruType = RuType::RU_106_TONE;
     }
     else if (channelWidth == MHz_u{40})
     {
-        ruType = HeRu::RU_242_TONE;
+        ruType = RuType::RU_242_TONE;
     }
     else if (channelWidth == MHz_u{80})
     {
-        ruType = HeRu::RU_484_TONE;
+        ruType = RuType::RU_484_TONE;
     }
     else if (channelWidth == MHz_u{160})
     {
-        ruType = HeRu::RU_996_TONE;
+        ruType = RuType::RU_996_TONE;
     }
     else
     {
@@ -4968,7 +4968,7 @@ TestPhyPaddingExclusion::SendHeTbPpdu(uint16_t txStaId,
                           false,
                           true};
 
-    HeRu::RuSpec ru(HeRu::RU_106_TONE, index, false);
+    HeRu::RuSpec ru(RuType::RU_106_TONE, index, false);
     txVector.SetRu(ru, txStaId);
     txVector.SetMode(HePhy::GetHeMcs7(), txStaId);
     txVector.SetNss(1, txStaId);
@@ -5266,10 +5266,10 @@ TestPhyPaddingExclusion::SetTrigVector(Time ppduDuration)
                             false,
                             false,
                             true};
-    trigVector.SetRu(HeRu::RuSpec(HeRu::RU_106_TONE, 1, false), 1);
+    trigVector.SetRu(HeRu::RuSpec(RuType::RU_106_TONE, 1, false), 1);
     trigVector.SetMode(HePhy::GetHeMcs7(), 1);
     trigVector.SetNss(1, 1);
-    trigVector.SetRu(HeRu::RuSpec(HeRu::RU_106_TONE, 2, false), 2);
+    trigVector.SetRu(HeRu::RuSpec(RuType::RU_106_TONE, 2, false), 2);
     trigVector.SetMode(HePhy::GetHeMcs7(), 2);
     trigVector.SetNss(1, 2);
     uint16_t length;
@@ -5529,14 +5529,14 @@ TestUlOfdmaPowerControl::SendMuBar(std::vector<uint16_t> staIds)
     muBar.SetApTxPower(static_cast<int8_t>(m_txPowerAp));
     muBar.SetUlSpatialReuse(60500);
 
-    HeRu::RuType ru = (staIds.size() == 1) ? HeRu::RU_242_TONE : HeRu::RU_106_TONE;
+    RuType ru = (staIds.size() == 1) ? RuType::RU_242_TONE : RuType::RU_106_TONE;
     std::size_t index = 1;
     int8_t ulTargetRssi = -40; // will be overwritten
     for (const auto& staId : staIds)
     {
         CtrlTriggerUserInfoField& ui = muBar.AddUserInfoField();
         ui.SetAid12(staId);
-        ui.SetRuAllocation({ru, index, true});
+        ui.SetRuAllocation(HeRu::RuSpec{ru, index, true});
         ui.SetUlFecCodingType(true);
         ui.SetUlMcs(7);
         ui.SetUlDcm(false);
