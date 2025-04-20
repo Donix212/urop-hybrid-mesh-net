@@ -85,6 +85,7 @@ The wimax module was removed and moved to the ns-3 App Store.
 * (wifi) Added a new attribute `Per20CcaSensitivityThreshold` to `EhtConfiguration` for tuning the Per 20MHz CCA threshold when 802.11be is used.
 * (wifi) Added a new `MaxRadioBw` attribute to `WifiPhy` to configure the maximum width supported by the radio.
 * (wifi) Added a new attribute (`KeepMainPhyAfterDlTxop`) to the `AdvancedEmlsrManager` to control whether, after the end of a DL TXOP carried out on an aux PHY link, the main PHY shall stay on that link (for a switch main PHY back delay) in the attempt to gain an UL TXOP. This attribute is applicable to the case in which aux PHYs are not TX capable and do not switch link.
+* Added **TCP D-SACK** option (RFC 2883). Can be configured through the Attribute `TcpSocketBase::DSack` (default: true)
 
 ### Changes to existing API
 
