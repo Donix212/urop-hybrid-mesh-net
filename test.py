@@ -1994,12 +1994,13 @@ def run_tests():
                 status = "CRASH"
                 status_print = colors.PINK + status + colors.NORMAL
 
-        if 'NS_COMMANDLINE_INTROSPECTION' in os.environ:
-            print("[%d/%d]" % (i, total_tests), end=" ")
-            if args.duration or args.constrain == "performance":
-                print("%s (%.3f): %s %s" % (status_print, job.elapsed_time, kind, job.display_name))
-            else:
-                print("Wrote example usage for %s" % job.display_name)
+        print("[%d/%d]" % (i, total_tests), end=" ")
+        if args.duration or args.constrain == "performance":
+            print("%s (%.3f): %s %s" % (status_print, job.elapsed_time, kind, job.display_name))
+        elif 'NS_COMMANDLINE_INTROSPECTION' in os.environ and status == "PASS":
+            print("Wrote example usage for %s" % job.display_name)
+        else:
+            print("%s: %s %s" % (status_print, kind, job.display_name))
 
         if job.is_example or job.is_pyexample:
             #
