@@ -1996,18 +1996,16 @@ def run_tests():
 
         print("[%d/%d]" % (i, total_tests), end=" ")
         if "NS_COMMANDLINE_INTROSPECTION" in os.environ:
-            if status == "PASS":
-                print("%s: Wrote example usage for %s %s" % (status_print, kind, job.display_name))
-            else:
-                print(
-                    "%s: Failed to write example usage for %s %s"
-                    % (status_print, kind, job.display_name)
-                )
+            msg = " Wrote example usage for "
         else:
-            if args.duration or args.constrain == "performance":
-                print("%s (%.3f): %s %s" % (status_print, job.elapsed_time, kind, job.display_name))
-            else:
-                print("%s: %s %s" % (status_print, kind, job.display_name))
+            msg = " "
+
+        if args.duration or args.constrain == "performance":
+            print(
+                "%s (%.3f):%s%s %s" % (status_print, job.elapsed_time, msg, kind, job.display_name)
+            )
+        else:
+            print("%s:%s%s %s" % (status_print, msg, kind, job.display_name))
 
         if job.is_example or job.is_pyexample:
             #
