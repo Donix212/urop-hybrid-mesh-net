@@ -1995,14 +1995,14 @@ def run_tests():
                 status_print = colors.PINK + status + colors.NORMAL
 
         print("[%d/%d] %s" % (i, total_tests, status_print), end="")
-
         print(
-            (" (%.3f)" % (job.elapsed_time))
-            if args.duration or args.constrain == "performance"
-            else "",
+            (
+                (" (%.3f)" % (job.elapsed_time))
+                if args.duration or args.constrain == "performance"
+                else ""
+            ),
             end="",
         )
-
         print(
             ":%s"
             % (
