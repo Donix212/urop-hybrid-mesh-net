@@ -1995,22 +1995,16 @@ def run_tests():
                 status_print = colors.PINK + status + colors.NORMAL
 
         print("[%d/%d] %s" % (i, total_tests, status_print), end="")
-        print(
-            (
-                (" (%.3f)" % (job.elapsed_time))
-                if args.duration or args.constrain == "performance"
-                else ""
-            ),
-            end="",
-        )
-        print(
-            ":%s"
-            % (
-                " Wrote example usage for " if "NS_COMMANDLINE_INTROSPECTION" in os.environ else " "
-            ),
-            end="",
-        )
-        print("%s %s" % (kind, job.display_name))
+
+        if args.duration or args.constrain == "performance":
+            print(" (%.3f)" % job.elapsed_time, end="")
+
+        print(":", end="")
+
+        if "NS_COMMANDLINE_INTROSPECTION" in os.environ:
+            print(" Wrote example usage for", end="")
+
+        print(" %s %s" % (kind, job.display_name))
 
         if job.is_example or job.is_pyexample:
             #
