@@ -33,6 +33,7 @@ class WifiPhy;
 class PhyListener;
 class Txop;
 class FrameExchangeManager;
+class WifiTxVector;
 enum AcIndex : uint8_t; // opaque enum declaration
 
 /**
@@ -236,8 +237,10 @@ class ChannelAccessManager : public Object
     /**
      * Notify the Txop that a packet reception was just
      * completed unsuccessfuly.
+     *
+     * @param txVector the TXVECTOR used for transmission
      */
-    void NotifyRxEndErrorNow();
+    void NotifyRxEndErrorNow(const WifiTxVector& txVector);
     /**
      * @param duration expected duration of transmission
      *
@@ -480,9 +483,12 @@ class ChannelAccessManager : public Object
     std::map<WifiChannelListType, Timespan>
         m_lastIdle;               //!< the last idle start and end time for each channel type
     Time m_lastSwitchingEnd;      //!< the last switching end time
-    bool m_sleeping;              //!< flag whether it is in sleeping state
-    bool m_off;                   //!< flag whether it is in off state
+    Time m_lastSleepEnd;          //!< the last sleep end time
+    Time m_lastOffEnd;            //!< the last off end time
     Time m_eifsNoDifs;            //!< EIFS no DIFS time
+    Timespan m_lastNoPhy;         //!< the last start and end time no PHY was operating on the link
+    mutable Time m_cachedSifs;    //!< cached value for SIFS, to be only used without a PHY
+    mutable Time m_cachedSlot;    //!< cached value for slot, to be only used without a PHY
     EventId m_accessTimeout;      //!< the access timeout ID
     bool m_generateBackoffOnNoTx; //!< whether the backoff should be invoked when the AC gains the
                                   //!< right to start a TXOP but it does not transmit any frame
@@ -490,6 +496,8 @@ class ChannelAccessManager : public Object
                                   //!< provided that the queue is not actually empty
     bool m_proactiveBackoff; //!< whether a new backoff value is generated when a CCA busy period
                              //!< starts and the backoff counter is zero
+    Time m_resetBackoffThreshold; //!< if no PHY operates on a link for a period greater than this
+                                  //!< threshold, the backoff on that link is reset
 
     /// Information associated with each PHY that is going to operate on another EMLSR link
     struct EmlsrLinkSwitchInfo
@@ -511,6 +519,11 @@ class ChannelAccessManager : public Object
     uint8_t m_nSlotsLeft;                  //!< fire the NSlotsLeftAlert trace source when the
                                            //!< backoff counter with the minimum value among all
                                            //!< ACs reaches this value
+    Time m_nSlotsLeftMinDelay; //!< the minimum gap between the end of a medium busy event and
+                               //!< the time the NSlotsLeftAlert trace source can be fired
+
+    /// default value for the NSlotsLeftMinDelay attribute, corresponds to a PIFS in 5GHz/6GHz bands
+    static const Time DEFAULT_N_SLOTS_LEFT_MIN_DELAY;
 
     /**
      * TracedCallback signature for NSlotsLeft alerts.
