@@ -2410,7 +2410,7 @@ EmpiricalTestCase::DoRun()
     // Check that only the correct values are returned
     for (uint32_t i = 0; i < N_MEASUREMENTS; ++i)
     {
-        double value = x->GetValue();
+        double value [[maybe_unused]] = x->GetValue();
         NS_TEST_EXPECT_MSG_EQ((value == 5) || (value == 10),
                               true,
                               "Incorrect value returned, expected only 5 or 10.");
@@ -3025,7 +3025,7 @@ LaplacianTestCase::DoRun()
     const auto upperBound = mu + bound;
     for (uint32_t i = 0; i < N_MEASUREMENTS; ++i)
     {
-        const auto value = x2->GetValue();
+        const auto value [[maybe_unused]] = x2->GetValue();
         NS_TEST_EXPECT_MSG_EQ((value >= lowerBound) || (value <= upperBound),
                               true,
                               "Value not in expected boundaries.");
