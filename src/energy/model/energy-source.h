@@ -181,6 +181,14 @@ public:
   void ConnectEnergyHarvester (Ptr<EnergyHarvester> energyHarvesterPtr);
 
 
+  /**
+   * This function loops through all associated harvesters, and compute
+   * the total amount of power harvested in the period.
+   *
+   * The harvesters are not accessible in child classes because they are private.
+   */
+  double CalculateHarvestedPower(void);
+
 private:
   /**
    * All child's implementation must call BreakDeviceEnergyModelRefCycle to
