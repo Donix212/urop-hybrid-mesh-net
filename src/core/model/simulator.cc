@@ -168,7 +168,15 @@ Simulator::Run()
 {
     NS_LOG_FUNCTION_NOARGS();
     Time::ClearMarkedTimes();
-    GetImpl()->Run();
+    try
+    {
+        GetImpl()->Run();
+    }
+    catch (const std::runtime_error& e)
+    {
+        std::cerr << e.what() << '\n';
+        std::terminate();
+    }
 }
 
 void
