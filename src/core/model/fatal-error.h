@@ -26,12 +26,12 @@
  * This macro is defined only if the stacktrace library is linked.
  */
 
-#define PRINT_STACKTRACE std::cerr << std::stacktrace::current() << std::endl
+#define NS_GET_STACKTRACE std::stacktrace::current()
 #else
 /**
  * @brief Macro does nothing if stacktrace library is not available.
  */
-#define PRINT_STACKTRACE
+#define NS_GET_STACKTRACE ""
 #endif
 
 /**
@@ -101,8 +101,7 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
         if (fatal)                                                                                 \
         {                                                                                          \
             std::cerr << ns3::NS_FATAL_MSG << std::endl;                                           \
-            PRINT_STACKTRACE;                                                                      \
-            std::terminate();                                                                      \
+            throw std::runtime_error(NS_GET_STACKTRACE);                                           \
         }                                                                                          \
     } while (false)
 
