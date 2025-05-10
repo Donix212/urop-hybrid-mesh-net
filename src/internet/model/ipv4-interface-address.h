@@ -148,12 +148,51 @@ class Ipv4InterfaceAddress
      * @brief Make the address secondary (used for multihoming)
      */
     void SetSecondary();
+
     /**
      * @brief Make the address primary
      */
     void SetPrimary();
 
+    /**
+     * @param address an address to compare type with
+     *
+     * @return true if the type of the address stored internally
+     * is compatible with the type of the input address, false otherwise.
+     */
+    static bool IsMatchingType(const Address& address);
+
+    /**
+     * Convert an instance of this class to a polymorphic Address instance.
+     *
+     * @return a new Address instance
+     */
+    operator Address() const;
+
+    /**
+     * @param address a polymorphic address
+     * @return a new Ipv4InterfaceAddress from the polymorphic address
+     *
+     * This function performs a type check and asserts if the
+     * type of the input address is not compatible with an
+     * Ipv4InterfaceAddress.
+     */
+    static Ipv4InterfaceAddress ConvertFrom(const Address& address);
+
+    /**
+     * @brief Convert to an Address type
+     * @return the Address corresponding to this object.
+     */
+    Address ConvertTo() const;
+
   private:
+    /**
+     * @brief Get the underlying address type (automatically assigned).
+     *
+     * @returns the address type
+     */
+    static uint8_t GetType();
+
     Ipv4Address m_local; //!< Interface address
     // Note:  m_peer may be added in future when necessary
     // Ipv4Address m_peer;   // Peer destination address (in Linux:  m_address)
