@@ -44,7 +44,21 @@ QosFrameExchangeManager::GetTypeId()
                           "of QoS data frames sent by non-AP stations",
                           BooleanValue(false),
                           MakeBooleanAccessor(&QosFrameExchangeManager::m_setQosQueueSize),
-                          MakeBooleanChecker());
+                          MakeBooleanChecker())
+            .AddAttribute("ProtectSingleExchange",
+                          "Whether the Duration/ID field in frames establishing protection only "
+                          "covers the immediate frame exchange instead of rest of the TXOP limit "
+                          "when the latter is non-zero",
+                          BooleanValue(false),
+                          MakeBooleanAccessor(&QosFrameExchangeManager::m_protectSingleExchange),
+                          MakeBooleanChecker())
+            .AddAttribute(
+                "SingleExchangeProtectionSurplus",
+                "Additional time to protect beyond end of the immediate frame exchange in case of "
+                "non-zero TXOP limit when a single frame exchange is protected",
+                TimeValue(Time(0)),
+                MakeTimeAccessor(&QosFrameExchangeManager::m_singleExchangeProtectionSurplus),
+                MakeTimeChecker());
     return tid;
 }
 
@@ -471,15 +485,18 @@ QosFrameExchangeManager::GetFrameDurationId(const WifiMacHeader& header,
 {
     NS_LOG_FUNCTION(this << header << size << &txParams << fragmentedPacket);
 
+    const auto singleDurationId =
+        FrameExchangeManager::GetFrameDurationId(header, size, txParams, fragmentedPacket);
+
     // TODO This will be removed once no Txop is installed on a QoS station
     if (!m_edca)
     {
-        return FrameExchangeManager::GetFrameDurationId(header, size, txParams, fragmentedPacket);
+        return singleDurationId;
     }
 
     if (m_edca->GetTxopLimit(m_linkId).IsZero())
     {
-        return FrameExchangeManager::GetFrameDurationId(header, size, txParams, fragmentedPacket);
+        return singleDurationId;
     }
 
     NS_ASSERT(txParams.m_acknowledgment &&
@@ -489,10 +506,17 @@ QosFrameExchangeManager::GetFrameDurationId(const WifiMacHeader& header,
     // is set to cover the remaining TXOP time (Sec. 9.2.5.2 of 802.11-2016).
     // The TXOP holder may exceed the TXOP limit in some situations (Sec. 10.22.2.8
     // of 802.11-2016)
-    return std::max(
-        m_edca->GetRemainingTxop(m_linkId) -
-            WifiPhy::CalculateTxDuration(size, txParams.m_txVector, m_phy->GetPhyBand()),
-        *txParams.m_acknowledgment->acknowledgmentTime);
+    auto duration =
+        std::max(m_edca->GetRemainingTxop(m_linkId) -
+                     WifiPhy::CalculateTxDuration(size, txParams.m_txVector, m_phy->GetPhyBand()),
+                 *txParams.m_acknowledgment->acknowledgmentTime);
+
+    if (m_protectSingleExchange)
+    {
+        duration = std::min(duration, singleDurationId + m_singleExchangeProtectionSurplus);
+    }
+
+    return duration;
 }
 
 Time
@@ -502,25 +526,35 @@ QosFrameExchangeManager::GetRtsDurationId(const WifiTxVector& rtsTxVector,
 {
     NS_LOG_FUNCTION(this << rtsTxVector << txDuration << response);
 
+    const auto singleDurationId =
+        FrameExchangeManager::GetRtsDurationId(rtsTxVector, txDuration, response);
+
     // TODO This will be removed once no Txop is installed on a QoS station
     if (!m_edca)
     {
-        return FrameExchangeManager::GetRtsDurationId(rtsTxVector, txDuration, response);
+        return singleDurationId;
     }
 
     if (m_edca->GetTxopLimit(m_linkId).IsZero())
     {
-        return FrameExchangeManager::GetRtsDurationId(rtsTxVector, txDuration, response);
+        return singleDurationId;
     }
 
     // under multiple protection settings, if the TXOP limit is not null, Duration/ID
     // is set to cover the remaining TXOP time (Sec. 9.2.5.2 of 802.11-2016).
     // The TXOP holder may exceed the TXOP limit in some situations (Sec. 10.22.2.8
     // of 802.11-2016)
-    return std::max(
-        m_edca->GetRemainingTxop(m_linkId) -
-            WifiPhy::CalculateTxDuration(GetRtsSize(), rtsTxVector, m_phy->GetPhyBand()),
-        Seconds(0));
+    auto duration =
+        std::max(m_edca->GetRemainingTxop(m_linkId) -
+                     WifiPhy::CalculateTxDuration(GetRtsSize(), rtsTxVector, m_phy->GetPhyBand()),
+                 Seconds(0));
+
+    if (m_protectSingleExchange)
+    {
+        duration = std::min(duration, singleDurationId + m_singleExchangeProtectionSurplus);
+    }
+
+    return duration;
 }
 
 Time
@@ -530,25 +564,35 @@ QosFrameExchangeManager::GetCtsToSelfDurationId(const WifiTxVector& ctsTxVector,
 {
     NS_LOG_FUNCTION(this << ctsTxVector << txDuration << response);
 
+    const auto singleDurationId =
+        FrameExchangeManager::GetCtsToSelfDurationId(ctsTxVector, txDuration, response);
+
     // TODO This will be removed once no Txop is installed on a QoS station
     if (!m_edca)
     {
-        return FrameExchangeManager::GetCtsToSelfDurationId(ctsTxVector, txDuration, response);
+        return singleDurationId;
     }
 
     if (m_edca->GetTxopLimit(m_linkId).IsZero())
     {
-        return FrameExchangeManager::GetCtsToSelfDurationId(ctsTxVector, txDuration, response);
+        return singleDurationId;
     }
 
     // under multiple protection settings, if the TXOP limit is not null, Duration/ID
     // is set to cover the remaining TXOP time (Sec. 9.2.5.2 of 802.11-2016).
     // The TXOP holder may exceed the TXOP limit in some situations (Sec. 10.22.2.8
     // of 802.11-2016)
-    return std::max(
-        m_edca->GetRemainingTxop(m_linkId) -
-            WifiPhy::CalculateTxDuration(GetCtsSize(), ctsTxVector, m_phy->GetPhyBand()),
-        Seconds(0));
+    auto duration =
+        std::max(m_edca->GetRemainingTxop(m_linkId) -
+                     WifiPhy::CalculateTxDuration(GetCtsSize(), ctsTxVector, m_phy->GetPhyBand()),
+                 Seconds(0));
+
+    if (m_protectSingleExchange)
+    {
+        duration = std::min(duration, singleDurationId + m_singleExchangeProtectionSurplus);
+    }
+
+    return duration;
 }
 
 void
