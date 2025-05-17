@@ -1264,12 +1264,9 @@ EhtFrameExchangeManager::NotifyChannelReleased(Ptr<Txop> txop)
         // Notify the UL TXOP end to the EMLSR Manager
         auto edca = DynamicCast<QosTxop>(txop);
         NS_ASSERT(edca);
-        auto txopStart = edca->GetTxopStartTime(m_linkId);
 
         NS_ASSERT(m_staMac->GetEmlsrManager());
-        m_staMac->GetEmlsrManager()->NotifyTxopEnd(m_linkId,
-                                                   (!txopStart || *txopStart == Simulator::Now()),
-                                                   m_ongoingTxopEnd.IsPending());
+        m_staMac->GetEmlsrManager()->NotifyTxopEnd(m_linkId, edca);
     }
 
     HeFrameExchangeManager::NotifyChannelReleased(txop);
@@ -1366,11 +1363,19 @@ EhtFrameExchangeManager::PostProcessFrame(Ptr<const WifiPsdu> psdu, const WifiTx
         }
     }
 
-    if (m_staMac && m_icfReceived)
+    if (m_staMac && m_dlTxopStart)
     {
+        // we just got involved in a DL TXOP. Check if we are still involved in the TXOP in a
+        // SIFS (we are expected to reply in a SIFS)
+        m_ongoingTxopEnd.Cancel();
+        NS_LOG_DEBUG("Expected TXOP end=" << (Simulator::Now() + m_phy->GetSifs()).As(Time::S));
+        m_ongoingTxopEnd = Simulator::Schedule(m_phy->GetSifs() + TimeStep(1),
+                                               &EhtFrameExchangeManager::TxopEnd,
+                                               this,
+                                               psdu->GetAddr2());
         // notify the EMLSR manager
-        m_staMac->GetEmlsrManager()->NotifyIcfReceived(m_linkId);
-        m_icfReceived = false;
+        m_staMac->GetEmlsrManager()->NotifyDlTxopStart(m_linkId);
+        m_dlTxopStart = false;
     }
 }
 
@@ -1507,23 +1512,18 @@ EhtFrameExchangeManager::ReceiveMpdu(Ptr<const WifiMpdu> mpdu,
                 return;
             }
 
-            auto emlsrManager = m_staMac->GetEmlsrManager();
-            NS_ASSERT(emlsrManager);
-
-            m_icfReceived = true;
-
-            // we just got involved in a DL TXOP. Check if we are still involved in the TXOP in a
-            // SIFS (we are expected to reply by sending a CTS frame)
-            m_ongoingTxopEnd.Cancel();
-            NS_LOG_DEBUG("Expected TXOP end=" << (Simulator::Now() + m_phy->GetSifs()).As(Time::S));
-            m_ongoingTxopEnd = Simulator::Schedule(m_phy->GetSifs() + NanoSeconds(1),
-                                                   &EhtFrameExchangeManager::TxopEnd,
-                                                   this,
-                                                   sender);
+            m_dlTxopStart = true;
         }
     }
+    else if (m_staMac && m_staMac->IsEmlsrLink(m_linkId) && !m_ongoingTxopEnd.IsPending() &&
+             m_phy->GetPhyId() == m_staMac->GetEmlsrManager()->GetMainPhyId() &&
+             (hdr.IsRts() || hdr.IsBlockAckReq() || (hdr.IsData() && hdr.GetAddr1() == m_self)))
+    {
+        // a frame that is starting a DL TXOP has been received by the main PHY
+        m_dlTxopStart = true;
+    }
 
-    if (!m_icfReceived && ShallDropReceivedMpdu(mpdu))
+    if (!m_dlTxopStart && ShallDropReceivedMpdu(mpdu))
     {
         NS_LOG_DEBUG("Drop received MPDU: " << *mpdu);
         return;
@@ -1556,7 +1556,16 @@ EhtFrameExchangeManager::EndReceiveAmpdu(Ptr<const WifiPsdu> psdu,
         this << *psdu << rxSignalInfo << txVector << perMpduStatus.size()
              << std::all_of(perMpduStatus.begin(), perMpduStatus.end(), [](bool v) { return v; }));
 
-    if (ShallDropReceivedMpdu(*psdu->begin()))
+    const auto& hdr = psdu->GetHeader(0);
+    if (m_staMac && m_staMac->IsEmlsrLink(m_linkId) && !m_ongoingTxopEnd.IsPending() &&
+        m_phy->GetPhyId() == m_staMac->GetEmlsrManager()->GetMainPhyId() &&
+        (hdr.IsData() && hdr.GetAddr1() == m_self))
+    {
+        // a frame that is starting a DL TXOP has been received by the main PHY
+        m_dlTxopStart = true;
+    }
+
+    if (!m_dlTxopStart && ShallDropReceivedMpdu(*psdu->begin()))
     {
         return;
     }
@@ -1573,6 +1582,25 @@ EhtFrameExchangeManager::ShallDropReceivedMpdu(Ptr<const WifiMpdu> mpdu) const
     if (!m_staMac || !m_staMac->IsEmlsrLink(m_linkId))
     {
         return false;
+    }
+
+    // discard any frame received after scheduling a CTS response. It has been observed that
+    // an ICF may be received by both the main PHY and an aux PHY (leading to scheduling a
+    // CTS response twice) if:
+    // - the main PHY switches to an aux PHY link and completes the switch during the preamble
+    //   detection period for a PPDU (that is not an ICF), hence main PHY connection is postponed
+    // - right afterwards, an ICF is transmitted on the aux PHY link (collision with the other
+    //   PPDU)
+    // - the main PHY starts receiving the ICF, and so does the aux PHY because the ICF signal
+    //   is stronger
+    // - at the end of the ICF reception, the aux PHY notifies the ICF to the FEM, which schedules
+    //   a CTS and connects the main PHY to the link; then, the main PHY notifies the ICF to the
+    //   FEM again
+    if (m_sendCtsEvent.IsPending())
+    {
+        NS_LOG_DEBUG("Dropping " << *mpdu << " received when CTS is scheduled for TX on link "
+                                 << +m_linkId);
+        return true;
     }
 
     const auto& hdr = mpdu->GetHeader();

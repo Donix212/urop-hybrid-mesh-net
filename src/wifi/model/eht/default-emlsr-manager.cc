@@ -201,7 +201,7 @@ DefaultEmlsrManager::DoGetDelayUntilAccessRequest(uint8_t linkId)
 }
 
 void
-DefaultEmlsrManager::DoNotifyIcfReceived(uint8_t linkId)
+DefaultEmlsrManager::DoNotifyDlTxopStart(uint8_t linkId)
 {
     NS_LOG_FUNCTION(this << linkId);
 }
@@ -213,9 +213,9 @@ DefaultEmlsrManager::DoNotifyUlTxopStart(uint8_t linkId)
 }
 
 void
-DefaultEmlsrManager::DoNotifyTxopEnd(uint8_t linkId)
+DefaultEmlsrManager::DoNotifyTxopEnd(uint8_t linkId, Ptr<QosTxop> edca)
 {
-    NS_LOG_FUNCTION(this << linkId);
+    NS_LOG_FUNCTION(this << linkId << edca);
 
     if (m_switchAuxPhy)
     {

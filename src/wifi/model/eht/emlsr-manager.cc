@@ -141,10 +141,9 @@ EmlsrManager::GetTypeId()
 }
 
 EmlsrManager::EmlsrManager()
-    : m_mainPhySwitchInfo{},
-      // The STA initializes dot11MSDTimerDuration to aPPDUMaxTime defined in Table 36-70
-      // (Sec. 35.3.16.8.1 of 802.11be D3.1)
-      m_mediumSyncDuration(MicroSeconds(DEFAULT_MSD_DURATION_USEC)),
+    // The STA initializes dot11MSDTimerDuration to aPPDUMaxTime defined in Table 36-70
+    // (Sec. 35.3.16.8.1 of 802.11be D3.1)
+    : m_mediumSyncDuration(MicroSeconds(DEFAULT_MSD_DURATION_USEC)),
       // The default value of dot11MSDOFDMEDthreshold is –72 dBm and the default value of
       // dot11MSDTXOPMax is 1, respectively (Sec. 35.3.16.8.1 of 802.11be D3.1)
       m_msdOfdmEdThreshold(DEFAULT_MSD_OFDM_ED_THRESH),
@@ -242,6 +241,12 @@ EmlsrManager::EmlsrLinkSwitchCallback(uint8_t linkId, Ptr<WifiPhy> phy, bool con
     }
 
     SetCcaEdThresholdOnLinkSwitch(phy, linkId);
+
+    if (phy->GetPhyId() == m_mainPhyId)
+    {
+        // main PHY has been connected to a link
+        m_mainPhySwitchInfo.disconnected = false;
+    }
 
     Simulator::ScheduleNow([=, this]() {
         // phy switched to operate on the link with ID equal to linkId
@@ -462,7 +467,7 @@ EmlsrManager::NotifyMgtFrameReceived(Ptr<const WifiMpdu> mpdu, uint8_t linkId)
 }
 
 void
-EmlsrManager::NotifyIcfReceived(uint8_t linkId)
+EmlsrManager::NotifyDlTxopStart(uint8_t linkId)
 {
     NS_LOG_FUNCTION(this << linkId);
 
@@ -533,7 +538,7 @@ EmlsrManager::NotifyIcfReceived(uint8_t linkId)
         SetSleepStateForAllAuxPhys(true);
     }
 
-    DoNotifyIcfReceived(linkId);
+    DoNotifyDlTxopStart(linkId);
 }
 
 std::pair<bool, Time>
@@ -585,7 +590,12 @@ EmlsrManager::CheckPossiblyReceivingIcf(uint8_t linkId) const
         return {false, Time{0}};
     }
 
-    if (auto macHdr = GetEhtFem(linkId)->GetReceivedMacHdr(); macHdr && m_useNotifiedMacHdr)
+    if (auto endPreamble = phy->GetTimeToPreambleDetectionEnd())
+    {
+        NS_LOG_DEBUG("Detecting a PPDU preamble, postpone by " << endPreamble->As(Time::US));
+        return {true, endPreamble.value()};
+    }
+    else if (auto macHdr = GetEhtFem(linkId)->GetReceivedMacHdr(); macHdr && m_useNotifiedMacHdr)
     {
         NS_LOG_DEBUG("Receiving the MAC payload of a PSDU and MAC header info can be used");
         NS_ASSERT(phy->GetState()->GetLastTime({WifiPhyState::RX}) == Simulator::Now());
@@ -616,9 +626,8 @@ EmlsrManager::CheckPossiblyReceivingIcf(uint8_t linkId) const
     {
         // we have not yet received the MAC header or we cannot use its info
 
-        auto ongoingRxInfo = GetEhtFem(linkId)->GetOngoingRxInfo();
-        // if a PHY is in RX state, it should have info about received MAC header.
-        // The exception is represented by this situation:
+        // even if a PHY is in RX state, it may not have info about received MAC header.
+        // This may happen, e.g., when:
         // - an aux PHY is disconnected from the MAC stack because the main PHY is
         //   operating on its link
         // - the main PHY notifies the MAC header info to the FEM and then leaves the
@@ -627,15 +636,9 @@ EmlsrManager::CheckPossiblyReceivingIcf(uint8_t linkId) const
         //   MAC header info to be discarded by the FEM
         // - the aux PHY is re-connected to the MAC stack and is still in RX state
         //   when the main PHY gets channel access on another link (and we get here)
-        if (!ongoingRxInfo.has_value())
-        {
-            NS_ASSERT_MSG(phy != GetStaMac()->GetDevice()->GetPhy(GetMainPhyId()),
-                          "Main PHY should have MAC header info when in RX state");
-            // we are in the situation described above; if the MPDU being received
-            // by the aux PHY is not addressed to the EMLSR client, we can ignore it
-        }
-        else if (const auto& txVector = ongoingRxInfo->get().txVector;
-                 txVector.GetModulationClass() < WIFI_MOD_CLASS_HT)
+        if (auto ongoingRxInfo = GetEhtFem(linkId)->GetOngoingRxInfo();
+            ongoingRxInfo.has_value() &&
+            ongoingRxInfo->get().txVector.GetModulationClass() < WIFI_MOD_CLASS_HT)
         {
             if (auto remTime = phy->GetTimeToMacHdrEnd(SU_STA_ID);
                 m_useNotifiedMacHdr && remTime.has_value() && remTime->IsStrictlyPositive())
@@ -755,9 +758,9 @@ EmlsrManager::NotifyProtectionCompleted(uint8_t linkId)
 }
 
 void
-EmlsrManager::NotifyTxopEnd(uint8_t linkId, bool ulTxopNotStarted, bool ongoingDlTxop)
+EmlsrManager::NotifyTxopEnd(uint8_t linkId, Ptr<QosTxop> edca)
 {
-    NS_LOG_FUNCTION(this << linkId << ulTxopNotStarted << ongoingDlTxop);
+    NS_LOG_FUNCTION(this << linkId << edca);
 
     if (!m_staMac->IsEmlsrLink(linkId))
     {
@@ -785,15 +788,19 @@ EmlsrManager::NotifyTxopEnd(uint8_t linkId, bool ulTxopNotStarted, bool ongoingD
     // this link of an ICF starting a DL TXOP. If the EMLSR Manager unblocked the other EMLSR
     // links, another TXOP could be started on another EMLSR link (possibly leading to a crash)
     // while the DL TXOP on this link is ongoing.
-    if (ongoingDlTxop)
+    if (GetEhtFem(linkId)->GetOngoingTxopEndEvent().IsPending())
     {
         NS_LOG_DEBUG("DL TXOP ongoing");
         return;
     }
-    if (ulTxopNotStarted)
+    if (edca)
     {
-        NS_LOG_DEBUG("TXOP did not even start");
-        return;
+        if (auto txopStart = edca->GetTxopStartTime(linkId);
+            !txopStart || *txopStart == Simulator::Now())
+        {
+            NS_LOG_DEBUG("UL TXOP did not even start");
+            return;
+        }
     }
 
     if (m_auxPhyToSleep)
@@ -802,7 +809,7 @@ EmlsrManager::NotifyTxopEnd(uint8_t linkId, bool ulTxopNotStarted, bool ongoingD
         SetSleepStateForAllAuxPhys(false);
     }
 
-    DoNotifyTxopEnd(linkId);
+    DoNotifyTxopEnd(linkId, edca);
 
     // unblock transmissions and resume medium access on other EMLSR links
     std::set<uint8_t> linkIds;
@@ -888,6 +895,12 @@ EmlsrManager::SwitchMainPhy(uint8_t linkId,
     traceInfo.toLinkId = linkId;
     m_mainPhySwitchTrace(traceInfo);
 
+    m_mainPhySwitchInfo.from = currMainPhyLinkId.value_or(m_mainPhySwitchInfo.from);
+    m_mainPhySwitchInfo.to = linkId;
+    m_mainPhySwitchInfo.start = Simulator::Now();
+    m_mainPhySwitchInfo.disconnected = true;
+    m_mainPhySwitchInfo.reason = traceInfo.GetName();
+
     const auto newMainPhyChannel = GetChannelForMainPhy(linkId);
 
     NS_LOG_DEBUG("Main PHY (" << mainPhy << ") is about to switch to " << newMainPhyChannel
@@ -957,10 +970,6 @@ EmlsrManager::SwitchMainPhy(uint8_t linkId,
             }
         });
     }
-
-    m_mainPhySwitchInfo.from = currMainPhyLinkId.value_or(m_mainPhySwitchInfo.from);
-    m_mainPhySwitchInfo.to = linkId;
-    m_mainPhySwitchInfo.end = Simulator::Now() + timeToSwitchEnd;
 
     NotifyMainPhySwitch(currMainPhyLinkId, linkId, auxPhy, timeToSwitchEnd);
 }
@@ -1120,28 +1129,6 @@ EmlsrManager::MediumSyncDelayNTxopsExceeded(uint8_t linkId)
 
     NS_ASSERT(timerIt != m_mediumSyncDelayStatus.cend() && timerIt->second.timer.IsPending());
     return timerIt->second.msdNTxopsLeft == 0;
-}
-
-bool
-EmlsrManager::GetExpectedAccessWithinDelay(uint8_t linkId, const Time& delay) const
-{
-    const auto deadline = Simulator::Now() + delay;
-    for (const auto& [acIndex, ac] : wifiAcList)
-    {
-        if (auto edca = m_staMac->GetQosTxop(acIndex); edca->HasFramesToTransmit(linkId))
-        {
-            const auto backoffEnd =
-                m_staMac->GetChannelAccessManager(linkId)->GetBackoffEndFor(edca);
-
-            if (backoffEnd <= deadline)
-            {
-                NS_LOG_DEBUG("Backoff end for " << acIndex << " on link " << +linkId << ": "
-                                                << backoffEnd.As(Time::US));
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 MgtEmlOmn

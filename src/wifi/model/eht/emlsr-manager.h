@@ -234,11 +234,11 @@ class EmlsrManager : public Object
     void NotifyMgtFrameReceived(Ptr<const WifiMpdu> mpdu, uint8_t linkId);
 
     /**
-     * Notify the reception of an initial Control frame on the given link.
+     * Notify the start of a DL TXOP on the given link.
      *
-     * @param linkId the ID of the link on which the initial Control frame was received
+     * @param linkId the ID of the given link
      */
-    void NotifyIcfReceived(uint8_t linkId);
+    void NotifyDlTxopStart(uint8_t linkId);
 
     /**
      * Notify the start of an UL TXOP on the given link
@@ -270,12 +270,10 @@ class EmlsrManager : public Object
      * Notify the end of a TXOP on the given link.
      *
      * @param linkId the ID of the given link
-     * @param ulTxopNotStarted whether this is a notification of the end of an UL TXOP that did
-     *                      not even start (no frame transmitted)
-     * @param ongoingDlTxop whether a DL TXOP is ongoing on the given link (if true, this is
-     *                      a notification of the end of an UL TXOP)
+     * @param edca the EDCAF that carried out the TXOP, in case of UL TXOP, or a null pointer,
+     *             in case of DL TXOP
      */
-    void NotifyTxopEnd(uint8_t linkId, bool ulTxopNotStarted = false, bool ongoingDlTxop = false);
+    void NotifyTxopEnd(uint8_t linkId, Ptr<QosTxop> edca = nullptr);
 
     /**
      * Notify that an STA affiliated with the EMLSR client is causing in-device interference
@@ -504,23 +502,15 @@ class EmlsrManager : public Object
      */
     void CancelAllSleepEvents();
 
-    /**
-     * Get whether channel access is expected to be granted on the given link within the given
-     * delay to an Access Category that has traffic to send on the given link.
-     *
-     * @param linkId the ID of the given link
-     * @param delay the given delay
-     * @return whether channel access is expected to be granted on the given link within the given
-     *         delay
-     */
-    bool GetExpectedAccessWithinDelay(uint8_t linkId, const Time& delay) const;
-
     /// Store information about a main PHY switch.
     struct MainPhySwitchInfo
     {
-        Time end;       //!< end of channel switching
-        uint8_t from{}; //!< ID of the link which the main PHY is/has been leaving
-        uint8_t to{};   //!< ID of the link which the main PHY is moving to
+        Time start;               //!< start of channel switching
+        bool disconnected{false}; //!< true if the main PHY is not connected to any link, i.e., it
+                                  //!< is switching or waiting to be connected to a link
+        uint8_t from{};           //!< ID of the link which the main PHY is/has been leaving
+        uint8_t to{};             //!< ID of the link which the main PHY is moving to
+        std::string reason;       //!< the reason for switching the main PHY
     };
 
     Time m_emlsrPaddingDelay;    //!< EMLSR Padding delay
@@ -590,7 +580,7 @@ class EmlsrManager : public Object
      *
      * @param linkId the ID of the link on which the initial Control frame was received
      */
-    virtual void DoNotifyIcfReceived(uint8_t linkId) = 0;
+    virtual void DoNotifyDlTxopStart(uint8_t linkId) = 0;
 
     /**
      * Notify the subclass of the start of an UL TXOP on the given link
@@ -611,8 +601,10 @@ class EmlsrManager : public Object
      * Notify the subclass of the end of a TXOP on the given link.
      *
      * @param linkId the ID of the given link
+     * @param edca the EDCAF that carried out the TXOP, in case of UL TXOP, or a null pointer,
+     *             in case of DL TXOP
      */
-    virtual void DoNotifyTxopEnd(uint8_t linkId) = 0;
+    virtual void DoNotifyTxopEnd(uint8_t linkId, Ptr<QosTxop> edca) = 0;
 
     /**
      * Notify the acknowledgment of the given MPDU.

@@ -1368,14 +1368,19 @@ auxiliary link. The following conditions must all hold in order to request the m
 to the auxiliary link:
 
 * the main PHY is not in TX state
-* the main PHY is not switching nor is it trying to get channel access on another auxiliary link
+* the main PHY is not switching (unless switching can be interrupted, see below) nor is it trying
+  to get channel access on another auxiliary link
 * no MediumSyncDelay timer is running on the auxiliary link or the maximum number of TXOP attempts
   has not yet been reached
-* the main PHY is expected to get channel access on the auxiliary link more quickly, i.e., ALL the
-  ACs with queued frames (that can be transmitted on the link on which the main PHY is currently
-  operating) and with priority higher than or equal to that of the AC for which Aux PHY gained TXOP
-  have their backoff counter greater than the maximum between the expected delay in gaining channel
-  access on the auxiliary and the channel switch delay (plus PIFS if we cannot use aux PHY CCA)
+* the main PHY is expected to get channel access on the auxiliary link more quickly. More precisely,
+  let AC X be the AC that is about to gain channel access on the aux PHY link, the main PHY is
+  requested to switch if we do not expect any AC, with priority higher than or equal to AC X and
+  with frames to send on the main PHY link, to gain channel access on the main PHY link before AC X
+  is able to start transmitting on the aux PHY link.
+
+Note that the last condition is not checked if the ``CheckAccessOnMainPhyLink`` attribute is set to
+false and AC X has a priority higher than or equal to the AC specified by the ``MinAcToSkipCheckAccess``
+attribute.
 
 If the main PHY switches to the auxiliary link, it cannot transmit as soon as it completes the
 channel switch, but it has to verify that the medium has been virtually and physically idle
@@ -1414,6 +1419,14 @@ a reason to postpone the switch. The switch back to the preferred link is postpo
 A similar check is applied to possibly postpone the switch back to the preferred link when the
 SwitchMainPhyBack timer expires.
 
+The Advanced EMLSR Manager provides the ``KeepMainPhyAfterDlTxop`` attribute to control the behavior
+of the main PHY at the end of a DL TXOP carried out on an aux PHY link, in case aux PHYs are not TX
+capable and do not switch link. If such attribute is set to false (default value), the main PHY
+immediately switches back to the preferred link. If such attribute is set to true, it is checked
+whether channel access on the aux PHY link is expected to be gained within a switch main PHY back
+delay plus a channel switch delay: if it is, the main PHY stays on the aux PHY link and a switch
+main PHY back timer is started; otherwise, the main PHY switches back to the preferred link.
+
 The Advanced EMLSR Manager also connects a callback to the ``NSlotsLeftAlert`` trace source of the
 Channel Access Manager, which sends notifications when at most a configurable number of slots remain
 until the backoff of an AC expires. It must be noted that this notification is only sent if channel
@@ -1450,10 +1463,12 @@ the expected delay until backoff end is also taken into account). If the main PH
 to the auxiliary link and the backoff on the auxiliary link counts down to zero while the main PHY is
 switching, a NAV and CCA check is performed as described above (by the aux PHY in the PIFS period
 preceding the main PHY channel switch end or by the main PHY in the PIFS period following the main PHY
-channel switch end). Similarly, a NAV and CCA check is performed (by the main PHY) if the remaining
-backoff time when the main PHY switch is completed is less than a PIFS. Otherwise, SwitchMainPhyBack
-timer is started having a duration of SwitchMainPhyBackDelay plus the remaining time until the backoff
-of the AC involved in the Channel Access Manager notification is expected to expire.
+channel switch end). If the remaining backoff time when the main PHY completes the switch to the aux
+PHY link is greater than or equal to a PIFS, no NAV and CCA check is scheduled, as the main PHY has
+enough time to perform CCA on the aux PHY link. If the remaining backoff time when the main PHY
+completes the switch to the aux PHY link is less than a PIFS, the UL TXOP starts as soon as the
+backoff counter reaches zero, if aux PHY CCA can be used, or a PIFS after the end of the main PHY
+switch (provided that the NAV and CCA check indicates medium idle), if main PHY CCA is requested.
 
 The Advanced EMLSR Manager has the ``InterruptSwitch`` attribute that can be set to true to
 interrupt a main PHY switch when it is determined that the main PHY shall switch to a different
@@ -1471,6 +1486,10 @@ and the new channel switch starts. This opportunity is exploited in some situati
 * If the main PHY is switching while an aux PHY is receiving an ICF, the switch can be interrupted
   so that the main PHY can start switching to the aux PHY link and be ready to operate on that link
   upon reception of the ICF.
+* If channel access is gained, or is about to be gained, on a link on which a non-TX capable aux PHY
+  is operating and the main PHY is switching, the main PHY switch can be interrupted and the main
+  PHY can start switching to the aux PHY link, provided that the main PHY was not switching to start
+  a (DL or UL) TXOP and the other conditions to request the main PHY to switch are satisfied.
 
 AP EMLSR Manager
 ----------------
@@ -1546,6 +1565,17 @@ EMLSR clients:
     false, the previous switch is interrupted and the main PHY starts switching to the previous
     link (in this case, the time elapsed since the CTS timeout occurred is zero). This holds true
     for both the case aux PHYs do not switch link and the case aux PHYs switch link.
+  * ``EmlsrSwitchMainPhyBackTrace``: main PHY is switching back to the preferred link after that it
+    did not manage to gain channel access on an aux PHY link before the expiration of the switch
+    main PHY back timer, whose duration is set to the value of the
+    ``ns3::AdvancedEmlsrManager::SwitchMainPhyBackDelay`` attribute. The main PHY can switch back
+    before the timer expiration in case it is determined that channel access is not expected to be
+    gained within the timer expiration plus a channel switch delay. This trace has three parameters:
+    the time elapsed since the switch main PHY back timer started, the reason for switching back
+    before the timer expiration (if that is the case) and a boolean value indicating whether
+    the main PHY is switching when it is requested to switch back. This trace is provided by the
+    ``AdvancedEmlsrManager`` and is only fired when aux PHYs are not TX capable and do not switch
+    link.
 
 Ack manager
 ###########

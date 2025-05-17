@@ -20,6 +20,7 @@ This file is a best-effort approach to solving this issue; we will do our best b
 * (wifi) Added a new `AssocType` attribute to `StaWifiMac` to configure the type of association performed by a device, provided that it is supported by the standard configured for the device. By using this attribute, it is possible for an EHT single-link device to perform ML setup with an AP MLD and for an EHT multi-link device to perform legacy association with an AP MLD.
 * (wifi) Added a new attribute `Per20CcaSensitivityThreshold` to `EhtConfiguration` for tuning the Per 20MHz CCA threshold when 802.11be is used.
 * (wifi) Added a new `MaxRadioBw` attribute to `WifiPhy` to configure the maximum width supported by the radio.
+* (wifi) Added a new attribute (`KeepMainPhyAfterDlTxop`) to the `AdvancedEmlsrManager` to control whether, after the end of a DL TXOP carried out on an aux PHY link, the main PHY shall stay on that link (for a switch main PHY back delay) in the attempt to gain an UL TXOP. This attribute is applicable to the case in which aux PHYs are not TX capable and do not switch link.
 
 ### Changes to existing API
 
@@ -32,6 +33,7 @@ This file is a best-effort approach to solving this issue; we will do our best b
 * (lr-wpan) - Update correct use of extended addresses in ``lr-wpan\examples\lr-wpan-data.cc``.
 * (wifi) Callbacks connected to the `WifiMac::IcfDropReason` trace source are now passed a `struct IcfDropInfo` object that has three fields indicating the reason for dropping the ICF, the ID of the link on which the ICF was dropped and the MAC address of the sender of the ICF.
 * (wifi) Obsoleted the `Support40MHzOperation` and `Support160MHzOperation` attributes from the HT/VHT configurations. These capabilities are now directly derived from the `ChannelSettings` attribute.
+* (wifi) The `EmlsrSwitchMainPhyBackTrace` has been extended to provide the time elapsed since the switch main PHY back timer started, the reason why the main PHY switches back before the expiration of the switch main PHY back timer and whether the main PHY is switching while it is requested to switch back.
 
 ### Changes to build system
 
