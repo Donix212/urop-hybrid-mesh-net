@@ -19,6 +19,7 @@ This file is a best-effort approach to solving this issue; we will do our best b
 * (network) Added a function to detect IPv4 APIPA addresses (169.254.0.0/16).
 * (wifi) Added a new `AssocType` attribute to `StaWifiMac` to configure the type of association performed by a device, provided that it is supported by the standard configured for the device. By using this attribute, it is possible for an EHT single-link device to perform ML setup with an AP MLD and for an EHT multi-link device to perform legacy association with an AP MLD.
 * (wifi) Added a new attribute `Per20CcaSensitivityThreshold` to `EhtConfiguration` for tuning the Per 20MHz CCA threshold when 802.11be is used.
+* (wifi) Added a new `MaxRadioBw` attribute to `WifiPhy` to configure the maximum width supported by the radio.
 
 ### Changes to existing API
 
@@ -30,6 +31,7 @@ This file is a best-effort approach to solving this issue; we will do our best b
 * (lr-wpan) - Renamed example ``lr-wpan\examples\lr-wpan-mlme.cc`` to ``lr-wpan\examples\lr-wpan-beacon-mode.cc``.
 * (lr-wpan) - Update correct use of extended addresses in ``lr-wpan\examples\lr-wpan-data.cc``.
 * (wifi) Callbacks connected to the `WifiMac::IcfDropReason` trace source are now passed a `struct IcfDropInfo` object that has three fields indicating the reason for dropping the ICF, the ID of the link on which the ICF was dropped and the MAC address of the sender of the ICF.
+* (wifi) Obsoleted the `Support40MHzOperation` and `Support160MHzOperation` attributes from the HT/VHT configurations. These capabilities are now directly derived from the `ChannelSettings` attribute.
 
 ### Changes to build system
 

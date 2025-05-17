@@ -2205,10 +2205,11 @@ WifiMac::GetHtCapabilities(uint8_t linkId) const
     HtCapabilities capabilities;
 
     auto phy = GetWifiPhy(linkId);
-    Ptr<HtConfiguration> htConfiguration = GetHtConfiguration();
+    auto htConfiguration = GetHtConfiguration();
     bool sgiSupported = htConfiguration->m_sgiSupported;
     capabilities.SetLdpc(htConfiguration->m_ldpcSupported);
-    capabilities.SetSupportedChannelWidth(htConfiguration->m_40MHzSupported ? 1 : 0);
+    const auto width = phy->GetChannelWidth();
+    capabilities.SetSupportedChannelWidth((width < MHz_u{40}) ? 0 : 1);
     capabilities.SetShortGuardInterval20(sgiSupported);
     capabilities.SetShortGuardInterval40(sgiSupported);
     // Set Maximum A-MSDU Length subfield
@@ -2237,9 +2238,7 @@ WifiMac::GetHtCapabilities(uint8_t linkId) const
         uint8_t nss = (mcs.GetMcsValue() / 8) + 1;
         NS_ASSERT(nss > 0 && nss < 5);
         uint64_t dataRate =
-            mcs.GetDataRate(htConfiguration->m_40MHzSupported ? MHz_u{40} : MHz_u{20},
-                            NanoSeconds(sgiSupported ? 400 : 800),
-                            nss);
+            mcs.GetDataRate(std::min(width, MHz_u{40}), NanoSeconds(sgiSupported ? 400 : 800), nss);
         if (dataRate > maxSupportedRate)
         {
             maxSupportedRate = dataRate;
@@ -2264,12 +2263,10 @@ WifiMac::GetVhtCapabilities(uint8_t linkId) const
     VhtCapabilities capabilities;
 
     auto phy = GetWifiPhy(linkId);
-    Ptr<HtConfiguration> htConfiguration = GetHtConfiguration();
-    NS_ABORT_MSG_IF(!htConfiguration->m_40MHzSupported,
-                    "VHT stations have to support 40 MHz operation");
-    Ptr<VhtConfiguration> vhtConfiguration = GetVhtConfiguration();
-    bool sgiSupported = htConfiguration->m_sgiSupported;
-    capabilities.SetSupportedChannelWidthSet(vhtConfiguration->m_160MHzSupported ? 1 : 0);
+    auto htConfiguration = GetHtConfiguration();
+    const auto sgiSupported = htConfiguration->m_sgiSupported;
+    const auto width = phy->GetChannelWidth();
+    capabilities.SetSupportedChannelWidthSet((width < MHz_u{160}) ? 0 : 1);
     // Set Maximum MPDU Length subfield
     uint16_t maxAmsduSize =
         std::max({m_voMaxAmsduSize, m_viMaxAmsduSize, m_beMaxAmsduSize, m_bkMaxAmsduSize});
@@ -2313,16 +2310,15 @@ WifiMac::GetVhtCapabilities(uint8_t linkId) const
         capabilities.SetTxMcsMap(maxMcs, nss);
     }
     uint64_t maxSupportedRateLGI = 0; // in bit/s
-    const auto maxWidth = vhtConfiguration->m_160MHzSupported ? MHz_u{160} : MHz_u{80};
     for (const auto& mcs : phy->GetMcsList(WIFI_MOD_CLASS_VHT))
     {
-        if (!mcs.IsAllowed(maxWidth, 1))
+        if (!mcs.IsAllowed(width, 1))
         {
             continue;
         }
-        if (mcs.GetDataRate(maxWidth) > maxSupportedRateLGI)
+        if (mcs.GetDataRate(width) > maxSupportedRateLGI)
         {
-            maxSupportedRateLGI = mcs.GetDataRate(maxWidth);
+            maxSupportedRateLGI = mcs.GetDataRate(width);
             NS_LOG_DEBUG("Updating maxSupportedRateLGI to " << maxSupportedRateLGI);
         }
     }
@@ -2343,24 +2339,32 @@ WifiMac::GetHeCapabilities(uint8_t linkId) const
     NS_ASSERT(GetHeSupported());
     HeCapabilities capabilities;
 
-    Ptr<WifiPhy> phy = GetLink(linkId).phy;
-    Ptr<HtConfiguration> htConfiguration = GetHtConfiguration();
-    Ptr<VhtConfiguration> vhtConfiguration = GetVhtConfiguration();
-    Ptr<HeConfiguration> heConfiguration = GetHeConfiguration();
+    auto phy = GetLink(linkId).phy;
+    auto htConfiguration = GetHtConfiguration();
+    auto heConfiguration = GetHeConfiguration();
     uint8_t channelWidthSet = 0;
-    if ((htConfiguration->m_40MHzSupported) && (phy->GetPhyBand() == WIFI_PHY_BAND_2_4GHZ))
+    const auto width = phy->GetChannelWidth();
+    if (const auto band = phy->GetPhyBand(); band == WIFI_PHY_BAND_2_4GHZ)
     {
-        channelWidthSet |= 0x01;
+        if (width >= MHz_u{40})
+        {
+            channelWidthSet |= 0x01;
+        }
     }
-    // we assume that HE stations support 80 MHz operations
-    if ((phy->GetPhyBand() == WIFI_PHY_BAND_5GHZ) || (phy->GetPhyBand() == WIFI_PHY_BAND_6GHZ))
+    else if (band == WIFI_PHY_BAND_5GHZ || band == WIFI_PHY_BAND_6GHZ)
     {
-        channelWidthSet |= 0x02;
-    }
-    if ((vhtConfiguration->m_160MHzSupported) &&
-        ((phy->GetPhyBand() == WIFI_PHY_BAND_5GHZ) || (phy->GetPhyBand() == WIFI_PHY_BAND_6GHZ)))
-    {
-        channelWidthSet |= 0x04;
+        if (width >= MHz_u{40})
+        {
+            channelWidthSet |= 0x02;
+        }
+        if (width >= MHz_u{160})
+        {
+            channelWidthSet |= 0x04;
+            if (phy->GetOperatingChannel().GetNSegments() > 1)
+            {
+                channelWidthSet |= 0x08;
+            }
+        }
     }
     capabilities.SetChannelWidthSet(channelWidthSet);
     capabilities.SetLdpcCodingInPayload(htConfiguration->m_ldpcSupported);
@@ -2465,15 +2469,16 @@ WifiMac::GetEhtCapabilities(uint8_t linkId) const
     capabilities.SetMaxAmpduLength(std::min(std::max(maxAmpduLength, 8388607U), 16777215U));
 
     // Set the PHY capabilities
-    const bool support4096Qam = phy->IsMcsSupported(WIFI_MOD_CLASS_EHT, 12);
+    const auto support4096Qam = phy->IsMcsSupported(WIFI_MOD_CLASS_EHT, 12);
     capabilities.m_phyCapabilities.supportTx1024And4096QamForRuSmallerThan242Tones =
         support4096Qam ? 1 : 0;
     capabilities.m_phyCapabilities.supportRx1024And4096QamForRuSmallerThan242Tones =
         support4096Qam ? 1 : 0;
 
-    const uint8_t maxTxNss = phy->GetMaxSupportedTxSpatialStreams();
-    const uint8_t maxRxNss = phy->GetMaxSupportedRxSpatialStreams();
-    if (auto htConfig = GetHtConfiguration(); !htConfig->m_40MHzSupported)
+    const auto maxTxNss = phy->GetMaxSupportedTxSpatialStreams();
+    const auto maxRxNss = phy->GetMaxSupportedRxSpatialStreams();
+    const auto width = phy->GetChannelWidth();
+    if (width == MHz_u{20})
     {
         for (auto maxMcs : {7, 9, 11, 13})
         {
@@ -2501,7 +2506,7 @@ WifiMac::GetEhtCapabilities(uint8_t linkId) const
                 phy->IsMcsSupported(WIFI_MOD_CLASS_EHT, maxMcs) ? maxTxNss : 0);
         }
     }
-    if (auto vhtConfig = GetVhtConfiguration(); vhtConfig->m_160MHzSupported)
+    if (width >= MHz_u{160})
     {
         for (auto maxMcs : {9, 11, 13})
         {
@@ -2583,6 +2588,93 @@ WifiMac::GetRobustAVStreamingSupported() const
     NS_ASSERT_MSG(!m_robustAVStreamingSupported || GetDevice()->GetHtConfiguration(),
                   "Robust AV Streaming requires STA to be HT-capable");
     return m_robustAVStreamingSupported;
+}
+
+void
+WifiMac::RecordCapabilities(const MgtFrameType& frame, const Mac48Address& from, uint8_t linkId)
+{
+    NS_LOG_FUNCTION(this << frame.index() << from << linkId);
+    auto remoteStationManager = GetWifiRemoteStationManager(linkId);
+    auto phy = GetWifiPhy(linkId);
+
+    // lambda processing Information Elements included in all frame types
+    auto recordFromIes = [&](auto&& frame) {
+        NS_ASSERT(frame.template Get<SupportedRates>());
+        const auto rates = AllSupportedRates{*frame.template Get<SupportedRates>(),
+                                             frame.template Get<ExtendedSupportedRatesIE>()};
+        for (const auto& mode : phy->GetModeList())
+        {
+            if (rates.IsSupportedRate(mode.GetDataRate(phy->GetChannelWidth())))
+            {
+                remoteStationManager->AddSupportedMode(from, mode);
+                if (rates.IsBasicRate(mode.GetDataRate(phy->GetChannelWidth())))
+                {
+                    remoteStationManager->AddBasicMode(mode);
+                }
+            }
+        }
+
+        // we do not return if HT is not supported because HE STAs operating in
+        // the 6 GHz band do not support VHT
+        if (GetHtSupported(linkId))
+        {
+            /* HT station */
+            if (const auto& htCapabilities = frame.template Get<HtCapabilities>())
+            {
+                remoteStationManager->AddStationHtCapabilities(from, *htCapabilities);
+            }
+            if (const auto& extendedCapabilities = frame.template Get<ExtendedCapabilities>())
+            {
+                remoteStationManager->AddStationExtendedCapabilities(from, *extendedCapabilities);
+            }
+        }
+
+        // we do not return if VHT is not supported because HE STAs operating in
+        // the 2.4 GHz or 6 GHz band do not support VHT
+        if (GetVhtSupported(linkId))
+        {
+            const auto& vhtCapabilities = frame.template Get<VhtCapabilities>();
+            // we will always fill in RxHighestSupportedLgiDataRate field at TX, so this can be used
+            // to check whether it supports VHT
+            if (vhtCapabilities.has_value() &&
+                vhtCapabilities->GetRxHighestSupportedLgiDataRate() > 0)
+            {
+                remoteStationManager->AddStationVhtCapabilities(from, *vhtCapabilities);
+            }
+        }
+
+        if (!GetHeSupported())
+        {
+            return;
+        }
+
+        const auto& heCapabilities = frame.template Get<HeCapabilities>();
+        if (heCapabilities.has_value() && heCapabilities->GetSupportedMcsAndNss() != 0)
+        {
+            remoteStationManager->AddStationHeCapabilities(from, *heCapabilities);
+        }
+
+        if (Is6GhzBand(linkId))
+        {
+            if (const auto& he6GhzCapabilities = frame.template Get<He6GhzBandCapabilities>())
+            {
+                remoteStationManager->AddStationHe6GhzCapabilities(from, *he6GhzCapabilities);
+            }
+        }
+
+        if (!GetEhtSupported())
+        {
+            return;
+        }
+
+        if (const auto& ehtCapabilities = frame.template Get<EhtCapabilities>())
+        {
+            remoteStationManager->AddStationEhtCapabilities(from, *ehtCapabilities);
+        }
+    };
+
+    // process Information Elements included in the current frame variant
+    std::visit(recordFromIes, frame);
 }
 
 } // namespace ns3

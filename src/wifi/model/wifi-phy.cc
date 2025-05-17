@@ -142,6 +142,15 @@ WifiPhy::GetTypeId()
                           MakeBooleanAccessor(&WifiPhy::SetFixedPhyBand, &WifiPhy::HasFixedPhyBand),
                           MakeBooleanChecker())
             .AddAttribute(
+                "MaxRadioBw",
+                "The maximum width supported by the radio. It is not possible to configure an "
+                "operating channel with a total width larger than this value. A value of 0 means "
+                "no restriction.",
+                TypeId::ATTR_GET | TypeId::ATTR_CONSTRUCT, // prevent setting after construction
+                DoubleValue(MHz_u{0}),
+                MakeDoubleAccessor(&WifiPhy::m_maxRadioBw),
+                MakeDoubleChecker<MHz_u>())
+            .AddAttribute(
                 "RxSensitivity",
                 "The energy of a received signal should be higher than "
                 "this threshold (dBm) for the PHY to detect the signal. "
@@ -1266,25 +1275,13 @@ WifiPhy::DoChannelSwitch()
     m_operatingChannel.SetPrimary20Index(std::get<3>(m_channelSettings.front()));
 
     // check that the channel width is supported
-    const auto chWidth = GetChannelWidth();
-
-    if (m_device)
+    if (const auto chWidth = GetChannelWidth();
+        (m_maxRadioBw != MHz_u{0}) && (chWidth > m_maxRadioBw))
     {
-        if (auto htConfig = m_device->GetHtConfiguration();
-            htConfig && !htConfig->m_40MHzSupported && chWidth > MHz_u{20})
-        {
-            NS_ABORT_MSG("Attempting to set a " << chWidth
-                                                << " MHz channel on"
-                                                   "a station only supporting 20 MHz operation");
-        }
-
-        if (auto vhtConfig = m_device->GetVhtConfiguration();
-            vhtConfig && !vhtConfig->m_160MHzSupported && chWidth > MHz_u{80})
-        {
-            NS_ABORT_MSG("Attempting to set a " << chWidth
-                                                << " MHz channel on"
-                                                   "a station supporting up to 80 MHz operation");
-        }
+        // throw an exception instead of using NS_ABORT_MSG for unit testing this code
+        throw std::runtime_error("Attempting to set a " + std::to_string(chWidth) +
+                                 " MHz channel on a station only supporting " +
+                                 std::to_string(m_maxRadioBw) + " MHz operation");
     }
 
     if (changingPhyBand)

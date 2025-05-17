@@ -650,7 +650,7 @@ void
 MultiLinkOperationsTestBase::DoSetup()
 {
     RngSeedManager::SetSeed(1);
-    RngSeedManager::SetRun(5);
+    RngSeedManager::SetRun(1);
     int64_t streamNumber = 30;
 
     NodeContainer wifiApNode;
@@ -952,7 +952,6 @@ MultiLinkSetupTest::DoSetup()
     // are compatible
     for (auto staMac : m_staMacs)
     {
-        staMac->GetVhtConfiguration()->m_160MHzSupported = m_support160MHzOp;
         uint8_t linkId = 0;
         for (const auto& str : m_staChannels)
         {
