@@ -65,6 +65,170 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
      *
      */
     static void PopulateRoutingTables();
+
+    /**
+     * @brief prints the routing path for a source and destination at a particular time.
+     * If the routing path does not exist, it prints that the path does not exist between
+     * the nodes in the ostream. This is a scheduler for the PrintRoute call.
+     *
+
+     * @param sourceNode the source node
+     * @param dest the IPv4 destination address
+     * @param printTime the time at which the routing path should be printed.
+     * @param stream the output stream object to use
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path at the specified time.
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ipv4Address dest,
+                             Time printTime,
+                             Ptr<OutputStreamWrapper> stream,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for a source and destination at a particular time.
+     * If the routing path does not exist, it prints that the path does not exist between
+     * the nodes in the ostream. This is a scheduler for the PrintRoute call.
+     *
+     * @param sourceNode the source node
+     * @param dest the IPv4 destination address
+     * @param printTime the time at which the routing path should be printed.
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path at the specified time.
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ipv4Address dest,
+                             Time printTime,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for a source and destination at a particular time.
+     * If the routing path does not exist, it prints that the path does not exist between
+     * the nodes in the ostream.this is a scheduler for the PrintRoute call.
+     *
+
+     * @param sourceNode the source node
+     * @param dest the destination node
+     * @param printTime the time at which the routing path should be printed.
+     * @param stream the output stream object to use
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path at the specified time.
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ptr<Node> dest,
+                             Time printTime,
+                             Ptr<OutputStreamWrapper> stream,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for a source and destination at a particular time.
+     * If the routing path does not exist, it prints that the path does not exist between
+     * the nodes in the ostream.this is a scheduler for the PrintRoute call.
+     *
+
+     * @param sourceNode the source node
+     * @param dest the destination node
+    * @param printTime the time at which the routing path should be printed.
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path at the specified time.
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ptr<Node> dest,
+                             Time printTime,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for the source and destination. If the routing path
+     * does not exist, it prints that the path does not exist between the nodes in the ostream.
+     * @param sourceNode the source node
+     * @param dest the IPv4 destination address
+     * @param stream the output stream object to use
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path.
+     */
+    static void PrintRoute(Ptr<Node> sourceNode,
+                           Ipv4Address dest,
+                           Ptr<OutputStreamWrapper> stream,
+                           bool nodeIdLookup = true,
+                           Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for the source and destination. If the routing path
+     * does not exist, it prints that the path does not exist between the nodes in the ostream.
+     * @param sourceNode the source node
+     * @param dest the IPv4 destination address
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path.
+     */
+    static void PrintRoute(Ptr<Node> sourceNode,
+                           Ipv4Address dest,
+                           bool nodeIdLookup = true,
+                           Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for the source and destination. If the routing path
+     * does not exist, it prints that the path does not exist between the nodes in the ostream.
+     * @param sourceNode The source node
+     * @param dest The destination node
+     * @param stream the output stream object to use
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path.
+     */
+    static void PrintRoute(Ptr<Node> sourceNode,
+                           Ptr<Node> dest,
+                           Ptr<OutputStreamWrapper> stream,
+                           bool nodeIdLookup = true,
+                           Time::Unit unit = Time::S);
+
+    /**
+     * @brief prints the routing path for the source and destination. If the routing path
+     * does not exist, it prints that the path does not exist between the nodes in the ostream.
+     * @param sourceNode The source node
+     * @param dest The destination node
+     * @param nodeIdLookup print the node id
+     * @param unit the time unit to be used in the report
+     *
+     * This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path.
+     */
+    static void PrintRoute(Ptr<Node> sourceNode,
+                           Ptr<Node> dest,
+                           bool nodeIdLookup = true,
+                           Time::Unit unit = Time::S);
+
     /**
      * @brief Remove all routes that were previously installed in a prior call
      * to either PopulateRoutingTables() or RecomputeRoutingTables(), and
