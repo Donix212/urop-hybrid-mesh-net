@@ -1129,7 +1129,13 @@ HeFrameExchangeManager::CalculateAcknowledgmentTime(WifiAcknowledgment* acknowle
         std::tie(dlMuTfMuBarAcknowledgment->ulLength, duration) =
             HePhy::ConvertHeTbPpduDurationToLSigLength(duration, txVector, m_phy->GetPhyBand());
 
-        uint32_t muBarSize = GetMuBarSize(dlMuTfMuBarAcknowledgment->barTypes);
+        const auto muBarVariant = (txVector.GetModulationClass() == WIFI_MOD_CLASS_HE)
+                                      ? TriggerFrameVariant::HE
+                                      : TriggerFrameVariant::EHT;
+        uint32_t muBarSize =
+            GetMuBarSize(muBarVariant,
+                         dlMuTfMuBarAcknowledgment->muBarTxVector.GetChannelWidth(),
+                         dlMuTfMuBarAcknowledgment->barTypes);
         if (dlMuTfMuBarAcknowledgment->muBarTxVector.GetModulationClass() >= WIFI_MOD_CLASS_VHT)
         {
             // MU-BAR TF will be sent as an S-MPDU
@@ -1235,10 +1241,14 @@ HeFrameExchangeManager::GetCtsTxVectorAfterMuRts(const CtrlTriggerHeader& trigge
     {
         bw = MHz_u{80};
     }
+    else if (ru == 68)
+    {
+        bw = MHz_u{160};
+    }
     else
     {
-        NS_ASSERT(ru == 68);
-        bw = MHz_u{160};
+        NS_ASSERT(ru == 69);
+        bw = MHz_u{320};
     }
 
     auto txVector = GetWifiRemoteStationManager()->GetCtsTxVector(m_bssid, GetCtsModeAfterMuRts());
@@ -1270,8 +1280,13 @@ HeFrameExchangeManager::GetTxDuration(uint32_t ppduPayloadSize,
         NS_ASSERT_MSG(!psduInfo->seqNumbers.empty(), "No sequence number for " << receiver);
         const auto tid = psduInfo->seqNumbers.cbegin()->first;
 
+        const auto muBarVariant = (txParams.m_txVector.GetModulationClass() == WIFI_MOD_CLASS_HE)
+                                      ? TriggerFrameVariant::HE
+                                      : TriggerFrameVariant::EHT;
         ppduPayloadSize = MpduAggregator::GetSizeIfAggregated(
-            GetMuBarSize({m_mac->GetBarTypeAsOriginator(receiver, tid)}),
+            GetMuBarSize(muBarVariant,
+                         txParams.m_txVector.GetChannelWidth(),
+                         {m_mac->GetBarTypeAsOriginator(receiver, tid)}),
             ppduPayloadSize);
     }
 

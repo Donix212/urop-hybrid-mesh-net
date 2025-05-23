@@ -484,6 +484,17 @@ WifiTxVector::IsValid(WifiPhyBand band) const
             }
         }
     }
+    else if (m_channelWidth > 160)
+    {
+        if ((GetModulationClass() < WIFI_MOD_CLASS_EHT) && !IsNonHtDuplicate())
+        {
+            return false;
+        }
+        if ((band == WIFI_PHY_BAND_2_4GHZ) || (band == WIFI_PHY_BAND_5GHZ))
+        {
+            return false;
+        }
+    }
     for (const auto& userInfo : m_muUserInfos)
     {
         if (GetNumStasInRu(userInfo.second.ru) > 8)
@@ -680,6 +691,7 @@ WifiTxVector::GetInactiveSubchannels() const
 void
 WifiTxVector::SetCenter26ToneRuIndication(Center26ToneRuIndication center26ToneRuIndication)
 {
+    NS_ASSERT(GetModulationClass() == WIFI_MOD_CLASS_HE);
     if (IsDlMu())
     {
         NS_ASSERT(center26ToneRuIndication == DeriveCenter26ToneRuIndication());
@@ -690,7 +702,7 @@ WifiTxVector::SetCenter26ToneRuIndication(Center26ToneRuIndication center26ToneR
 std::optional<Center26ToneRuIndication>
 WifiTxVector::GetCenter26ToneRuIndication() const
 {
-    if (!IsDlMu() || (m_channelWidth < MHz_u{80}))
+    if ((GetModulationClass() != WIFI_MOD_CLASS_HE) || !IsDlMu() || (m_channelWidth < MHz_u{80}))
     {
         return std::nullopt;
     }
@@ -790,7 +802,10 @@ WifiTxVector::GetUserInfoMapOrderedByRus(uint8_t p20Index) const
 RuAllocation
 WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
 {
-    RuAllocation ruAllocations(Count20MHzSubchannels(m_channelWidth), HeRu::EMPTY_242_TONE_RU);
+    const auto mc = GetModulationClass();
+    const auto emptyRu =
+        (mc == WIFI_MOD_CLASS_HE) ? EMPTY_242_TONE_HE_RU : UNASSIGNED_242_TONE_EHT_RU;
+    RuAllocation ruAllocations(Count20MHzSubchannels(m_channelWidth), emptyRu);
     std::vector<RuType> ruTypes{};
     ruTypes.resize(ruAllocations.size());
     const auto& orderedMap = GetUserInfoMapOrderedByRus(p20Index);
@@ -806,8 +821,6 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
             continue;
         }
         const auto ruBw = WifiRu::GetBandwidth(ruType);
-        NS_ASSERT_MSG(WifiRu::IsHe(ru), "EHT RUs should not be used yet");
-        const auto mc{WIFI_MOD_CLASS_HE};
         const auto rusPerSubchannel =
             WifiRu::GetRusOfType(ruBw > MHz_u{20} ? ruBw : MHz_u{20}, ruType, mc);
         if ((m_channelWidth >= MHz_u{80}) && (ruIndex > 19))
@@ -824,7 +837,7 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
                                               : ((ruIndex - 1) * numSubchannelsForRu);
         NS_ABORT_IF(index >= Count20MHzSubchannels(m_channelWidth));
         auto ruAlloc = WifiRu::GetEqualizedRuAllocation(ruType, false, true, mc);
-        if (ruAllocations.at(index) != HeRu::EMPTY_242_TONE_RU)
+        if (ruAllocations.at(index) != emptyRu)
         {
             if (ruType == ruTypes.at(index))
             {
@@ -862,7 +875,7 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
         }
         for (std::size_t i = 0; i < numSubchannelsForRu; ++i)
         {
-            auto ruAllocNoUsers = HeRu::GetEqualizedRuAllocation(ruType, false, false);
+            auto ruAllocNoUsers = WifiRu::GetEqualizedRuAllocation(ruType, false, false, mc);
             ruTypes.at(index + i) = ruType;
             ruAllocations.at(index + i) =
                 (IsSigBCompression() || ((index + i) % 2) == ccIndex) ? ruAlloc : ruAllocNoUsers;

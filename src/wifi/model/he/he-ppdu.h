@@ -189,6 +189,7 @@ class HePpdu : public OfdmPpdu
      * See section 27.3.10.8.3 of IEEE 802.11ax draft 4.0.
      *
      * @param channelWidth the channel width occupied by the PPDU
+     * @param mc the modulation class used for the transmission of the PPDU
      * @param ruAllocation 8 bit RU_ALLOCATION per 20 MHz
      * @param center26ToneRuIndication the center 26 tone RU indication
      * @param sigBCompression flag whether SIG-B compression is used by the PPDU
@@ -197,6 +198,7 @@ class HePpdu : public OfdmPpdu
      */
     static std::pair<std::size_t, std::size_t> GetNumRusPerHeSigBContentChannel(
         MHz_u channelWidth,
+        WifiModulationClass mc,
         const RuAllocation& ruAllocation,
         std::optional<Center26ToneRuIndication> center26ToneRuIndication,
         bool sigBCompression,
@@ -216,6 +218,7 @@ class HePpdu : public OfdmPpdu
     /**
      * Get variable length HE SIG-B field size
      * @param channelWidth the channel width occupied by the PPDU
+     * @param mc the modulation class used for the transmission of the PPDU
      * @param ruAllocation 8 bit RU_ALLOCATION per 20 MHz
      * @param center26ToneRuIndication the center 26 tone RU indication
      * @param sigBCompression flag whether SIG-B compression is used by the PPDU
@@ -224,6 +227,7 @@ class HePpdu : public OfdmPpdu
      */
     static uint32_t GetSigBFieldSize(
         MHz_u channelWidth,
+        WifiModulationClass mc,
         const RuAllocation& ruAllocation,
         std::optional<Center26ToneRuIndication> center26ToneRuIndication,
         bool sigBCompression,
@@ -248,6 +252,7 @@ class HePpdu : public OfdmPpdu
      * Reconstruct HeMuUserInfoMap from HE-SIG-B header.
      *
      * @param txVector the TXVECTOR to set its HeMuUserInfoMap
+     * @param mc the modulation class used for the transmission of the PPDU
      * @param ruAllocation the RU_ALLOCATION per 20 MHz
      * @param center26ToneRuIndication the center 26 tone RU indication
      * @param contentChannels the HE-SIG-B content channels
@@ -255,6 +260,7 @@ class HePpdu : public OfdmPpdu
      * @param numMuMimoUsers the number of MU-MIMO users addressed by the PPDU
      */
     void SetHeMuUserInfos(WifiTxVector& txVector,
+                          WifiModulationClass mc,
                           const RuAllocation& ruAllocation,
                           std::optional<Center26ToneRuIndication> center26ToneRuIndication,
                           const HeSigBContentChannels& contentChannels,
@@ -265,17 +271,15 @@ class HePpdu : public OfdmPpdu
      * Get the RU specification that has been assigned a given user.
      *
      * @param ruAllocIndex the index of the RU allocation
-     * @param ruSpecs RU specs deduced from the RU allocation
-     * @param ruType RU type of the user to be assigned
-     * @param ruIndex RU index of the user to be assigned
      * @param bw the total bandwidth used for the transmission
+     * @param ruType RU type of the user to be assigned
+     * @param phyIndex RU PHY index of the user to be assigned
      * @return the value used to encode the bandwidth field in HE-SIG-A
      */
     virtual WifiRu::RuSpec GetRuSpec(std::size_t ruAllocIndex,
-                                     const std::vector<WifiRu::RuSpec>& ruSpecs,
+                                     MHz_u bw,
                                      RuType ruType,
-                                     std::size_t ruIndex,
-                                     MHz_u bw) const;
+                                     std::size_t phyIndex) const;
 
     /**
      * Convert channel width expressed in MHz to bandwidth field encoding in HE-SIG-A.

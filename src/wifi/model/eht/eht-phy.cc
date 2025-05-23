@@ -53,6 +53,7 @@ const std::map<MHz_u, WifiChannelListType> ehtSecondaryChannels {
     {20, WIFI_CHANLIST_SECONDARY},
     {40, WIFI_CHANLIST_SECONDARY40},
     {80, WIFI_CHANLIST_SECONDARY80},
+    {160, WIFI_CHANLIST_SECONDARY160},
 };
 
 // clang-format on
@@ -86,6 +87,16 @@ EhtPhy::BuildModeList()
         NS_LOG_LOGIC("Add EhtMcs" << +index << " to list");
         m_modeList.emplace_back(CreateEhtMcs(index));
     }
+}
+
+uint16_t
+EhtPhy::GetUsableSubcarriers(MHz_u channelWidth)
+{
+    if (channelWidth == 320)
+    {
+        return 3920;
+    }
+    return HePhy::GetUsableSubcarriers(channelWidth);
 }
 
 WifiMode

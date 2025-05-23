@@ -99,7 +99,7 @@ WifiPhy::GetTypeId()
                                           EnumValue<WifiPhyBand>,
                                           UintegerValue>(
                     MakeUintegerChecker<uint8_t>(0, 233),
-                    MakeUintegerChecker<MHz_u>(0, 160),
+                    MakeUintegerChecker<MHz_u>(0, 320),
                     MakeEnumChecker(WifiPhyBand::WIFI_PHY_BAND_2_4GHZ,
                                     "BAND_2_4GHZ",
                                     WifiPhyBand::WIFI_PHY_BAND_5GHZ,
@@ -108,7 +108,7 @@ WifiPhy::GetTypeId()
                                     "BAND_6GHZ",
                                     WifiPhyBand::WIFI_PHY_BAND_UNSPECIFIED,
                                     "BAND_UNSPECIFIED"),
-                    MakeUintegerChecker<uint8_t>(0, 7))))
+                    MakeUintegerChecker<uint8_t>(0, 15))))
             .AddAttribute("Frequency",
                           "The center frequency (MHz) of the current operating channel.",
                           TypeId::ATTR_GET,
@@ -123,12 +123,13 @@ WifiPhy::GetTypeId()
                           MakeUintegerChecker<uint8_t>(0, 233))
             .AddAttribute(
                 "ChannelWidth",
-                "The width in MHz of the current operating channel (5, 10, 20, 22, 40, 80 or 160). "
-                "If 80+80MHz is used, this corresponds to the total channel width, hence 160 MHz.",
+                "The width in MHz of the current operating channel (5, 10, 20, 22, 40, 80, 160 or "
+                "320). If 80+80MHz is used, this corresponds to the total channel width, hence 160 "
+                "MHz.",
                 TypeId::ATTR_GET,
                 UintegerValue(0),
                 MakeUintegerAccessor(&WifiPhy::GetChannelWidth),
-                MakeUintegerChecker<MHz_u>(5, 160))
+                MakeUintegerChecker<MHz_u>(5, 320))
             .AddAttribute(
                 "Primary20MHzIndex",
                 "The index of the primary 20 MHz channel within the current operating channel "
@@ -870,8 +871,8 @@ WifiPhy::Configure80211a()
     AddPhyEntity(WIFI_MOD_CLASS_OFDM, Create<OfdmPhy>());
 
     // See Table 17-21 "OFDM PHY characteristics" of 802.11-2016
-    SetSifs(MicroSeconds(16));
-    SetSlot(MicroSeconds(9));
+    SetSifs(OFDM_SIFS_TIME_20MHZ);
+    SetSlot(OFDM_SLOT_TIME_20MHZ);
     SetPifs(GetSifs() + GetSlot());
     // See Table 10-5 "Determination of the EstimatedAckTxTime based on properties
     // of the PPDU causing the EIFS" of 802.11-2016
@@ -885,9 +886,8 @@ WifiPhy::Configure80211b()
     AddPhyEntity(WIFI_MOD_CLASS_HR_DSSS, phyEntity);
     AddPhyEntity(WIFI_MOD_CLASS_DSSS, phyEntity); // when plain DSSS modes are used
 
-    // See Table 16-4 "HR/DSSS PHY characteristics" of 802.11-2016
-    SetSifs(MicroSeconds(10));
-    SetSlot(MicroSeconds(20));
+    SetSifs(DSSS_SIFS_TIME);
+    SetSlot(DSSS_SLOT_TIME);
     SetPifs(GetSifs() + GetSlot());
     // See Table 10-5 "Determination of the EstimatedAckTxTime based on properties
     // of the PPDU causing the EIFS" of 802.11-2016
@@ -915,8 +915,8 @@ WifiPhy::Configure80211p()
         AddPhyEntity(WIFI_MOD_CLASS_OFDM, Create<OfdmPhy>(OFDM_PHY_10_MHZ));
 
         // See Table 17-21 "OFDM PHY characteristics" of 802.11-2016
-        SetSifs(MicroSeconds(32));
-        SetSlot(MicroSeconds(13));
+        SetSifs(OFDM_SIFS_TIME_10MHZ);
+        SetSlot(OFDM_SLOT_TIME_10MHZ);
         SetPifs(GetSifs() + GetSlot());
     }
     else if (GetChannelWidth() == MHz_u{5})
@@ -924,8 +924,8 @@ WifiPhy::Configure80211p()
         AddPhyEntity(WIFI_MOD_CLASS_OFDM, Create<OfdmPhy>(OFDM_PHY_5_MHZ));
 
         // See Table 17-21 "OFDM PHY characteristics" of 802.11-2016
-        SetSifs(MicroSeconds(64));
-        SetSlot(MicroSeconds(21));
+        SetSifs(OFDM_SIFS_TIME_5MHZ);
+        SetSlot(OFDM_SLOT_TIME_5MHZ);
         SetPifs(GetSifs() + GetSlot());
     }
     else
@@ -1565,6 +1565,7 @@ WifiPhy::CalculateTxDuration(uint32_t size,
                              WifiPhyBand band,
                              uint16_t staId)
 {
+    NS_ASSERT(txVector.IsValid(band));
     Time duration = CalculatePhyPreambleAndHeaderDuration(txVector) +
                     GetPayloadDuration(size, txVector, band, NORMAL_MPDU, staId);
     NS_ASSERT(duration.IsStrictlyPositive());
@@ -1584,6 +1585,7 @@ WifiPhy::CalculateTxDuration(const WifiConstPsduMap& psduMap,
                              const WifiTxVector& txVector,
                              WifiPhyBand band)
 {
+    NS_ASSERT(txVector.IsValid(band));
     return GetStaticPhyEntity(txVector.GetModulationClass())
         ->CalculateTxDuration(psduMap, txVector, band);
 }
@@ -2372,21 +2374,21 @@ WifiPhy::GetSubcarrierSpacing() const
     case WIFI_STANDARD_80211b:
     case WIFI_STANDARD_80211n:
     case WIFI_STANDARD_80211ac:
-        subcarrierSpacing = Hz_u{312500};
+        subcarrierSpacing = SUBCARRIER_FREQUENCY_SPACING;
         break;
     case WIFI_STANDARD_80211p:
         if (GetChannelWidth() == MHz_u{5})
         {
-            subcarrierSpacing = Hz_u{78125};
+            subcarrierSpacing = SUBCARRIER_FREQUENCY_SPACING / 4;
         }
         else
         {
-            subcarrierSpacing = Hz_u{156250};
+            subcarrierSpacing = SUBCARRIER_FREQUENCY_SPACING / 2;
         }
         break;
     case WIFI_STANDARD_80211ax:
     case WIFI_STANDARD_80211be:
-        subcarrierSpacing = Hz_u{78125};
+        subcarrierSpacing = SUBCARRIER_FREQUENCY_SPACING_HE;
         break;
     default:
         NS_FATAL_ERROR("Standard unknown: " << GetStandard());
