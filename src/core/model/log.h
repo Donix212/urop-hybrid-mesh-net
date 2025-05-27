@@ -326,13 +326,22 @@ class LogComponent
      *                  functions which help implement the logging facility.
      */
     LogComponent(const std::string& name, const std::string& file, const LogLevel mask = LOG_NONE);
+
     /**
      * Check if this LogComponent is enabled for \c level
      *
      * @param [in] level The level to check for.
      * @return \c true if we are enabled at \c level.
+     *
+     * @internal
+     * Definition located in header to allow inlining by compiler for performance, see
+     * https://gitlab.com/nsnam/ns-3-dev/-/merge_requests/2448#note_2527898962
      */
-    bool IsEnabled(const LogLevel level) const;
+    bool IsEnabled(const LogLevel level) const
+    {
+        return level & m_levels;
+    }
+
     /**
      * Check if all levels are disabled.
      *
