@@ -199,12 +199,11 @@ class ChannelAccessManager : public Object
      * Check whether channel access is expected to be granted within the given delay. If it is,
      * ACCESS_EXPECTED is returned. If channel access is not expected to be granted because no
      * AC has requested channel access, NOT_REQUESTED is returned. If no AC has frames to send,
-     * NOTHING_TO_TX is returned. If any of the times returned by DoGetAccessGrantStart() exceeds
-     * the given deadline, the reason corresponding to the earliest of such times is returned.
+     * NOTHING_TO_TX is returned. If any of the blocking conditions is present after the given
+     * deadline, the reason corresponding to the earliest of such conditions is returned.
      * Otherwise, it means that access cannot be granted in time due to the backoff slots to wait
      * and BACKOFF_END is returned.
      *
-     * @see DoGetAccessGrantStart
      * @param delay the given delay
      * @return ACCESS_EXPECTED or the reason why channel access is not expected to be gained in time
      */
@@ -448,20 +447,6 @@ class ChannelAccessManager : public Object
      * @return the time when the backoff procedure ended (or will end)
      */
     Time GetBackoffEndFor(Ptr<Txop> txop, Time accessGrantStart) const;
-
-    /**
-     * Return a map containing (Time, WifiExpectedAccessReason) pairs sorted in increasing order
-     * of times. For each of the events preventing channel access (e.g., medium busy, RX state,
-     * TX state, etc), a pair is present in the map indicating the latest known time for which
-     * channel access cannot be granted due to that event. Therefore, the returned map does not
-     * contain a pair for some WifiExpectedAccessReason enum values (ACCESS_EXPECTED, NOTHING_TO_TX,
-     * NOT_REQUESTED and BACKOFF_END).
-     *
-     * @param ignoreNav whether NAV should be ignored
-     * @return a map containing (Time, WifiExpectedAccessReason) pairs sorted in increasing order
-     *         of times
-     */
-    std::multimap<Time, WifiExpectedAccessReason> DoGetAccessGrantStart(bool ignoreNav) const;
 
     /**
      * This method determines whether the medium has been idle during a period (of
