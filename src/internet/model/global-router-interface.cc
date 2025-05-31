@@ -783,7 +783,7 @@ GlobalRouter::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
         // According to OSPF, the Link ID is the IP network number of
         // the attached network.
         //
-        plr->SetLinkId(addrLocal.CombineMask(maskLocal));
+        plr->SetLinkId(addrLocal.GetPrefix(maskLocal));
 
         //
         // and the Link Data is the network mask; converted to Ipv4Address
@@ -820,8 +820,8 @@ GlobalRouter::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
         //
         if (designatedRtr != "255.255.255.255")
         {
-            Ipv4Address networkHere = addrLocal.CombineMask(maskLocal);
-            Ipv4Address networkThere = designatedRtr.CombineMask(maskLocal);
+            Ipv4Address networkHere = addrLocal.GetPrefix(maskLocal);
+            Ipv4Address networkThere = designatedRtr.GetPrefix(maskLocal);
             NS_ABORT_MSG_UNLESS(
                 networkHere == networkThere,
                 "GlobalRouter::ProcessSingleBroadcastLink(): Network number confusion ("
@@ -933,8 +933,8 @@ GlobalRouter::ProcessBridgedBroadcastLink(Ptr<NetDevice> nd,
           //
           if (designatedRtrTemp != "255.255.255.255")
             {
-              Ipv4Address networkHere = addrLocal.CombineMask (maskLocal);
-              Ipv4Address networkThere = designatedRtrTemp.CombineMask (maskLocal);
+              Ipv4Address networkHere = addrLocal.GetPrefix (maskLocal);
+              Ipv4Address networkThere = designatedRtrTemp.GetPrefix (maskLocal);
               NS_ABORT_MSG_UNLESS (networkHere == networkThere,
                                    "GlobalRouter::ProcessSingleBroadcastLink(): Network number confusion (" <<
                                    addrLocal << "/" << maskLocal.GetPrefixLength () << ", " <<
@@ -966,7 +966,7 @@ GlobalRouter::ProcessBridgedBroadcastLink(Ptr<NetDevice> nd,
       // According to OSPF, the Link ID is the IP network number of
       // the attached network.
       //
-      plr->SetLinkId (addrLocal.CombineMask (maskLocal));
+      plr->SetLinkId (addrLocal.GetPrefix (maskLocal));
 
       //
       // and the Link Data is the network mask; converted to Ipv4Address

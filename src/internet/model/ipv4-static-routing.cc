@@ -604,7 +604,7 @@ Ipv4StaticRouting::NotifyInterfaceUp(uint32_t i)
             m_ipv4->GetAddress(i, j).GetMask() != Ipv4Mask::GetOnes())
         {
             AddNetworkRouteTo(
-                m_ipv4->GetAddress(i, j).GetLocal().CombineMask(m_ipv4->GetAddress(i, j).GetMask()),
+                m_ipv4->GetAddress(i, j).GetLocal().GetPrefix(m_ipv4->GetAddress(i, j).GetMask()),
                 m_ipv4->GetAddress(i, j).GetMask(),
                 i);
         }
@@ -639,7 +639,7 @@ Ipv4StaticRouting::NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress add
         return;
     }
 
-    Ipv4Address networkAddress = address.GetLocal().CombineMask(address.GetMask());
+    Ipv4Address networkAddress = address.GetLocal().GetPrefix(address.GetMask());
     Ipv4Mask networkMask = address.GetMask();
     if (address.GetLocal() != Ipv4Address() && address.GetMask() != Ipv4Mask())
     {
@@ -655,7 +655,7 @@ Ipv4StaticRouting::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress 
     {
         return;
     }
-    Ipv4Address networkAddress = address.GetLocal().CombineMask(address.GetMask());
+    Ipv4Address networkAddress = address.GetLocal().GetPrefix(address.GetMask());
     Ipv4Mask networkMask = address.GetMask();
     // Remove all static routes that are going through this interface
     // which reference this network

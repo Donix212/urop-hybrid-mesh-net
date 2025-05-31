@@ -203,6 +203,30 @@ Ipv4Address::Set(const char* address)
 }
 
 Ipv4Address
+Ipv4Address::GetPrefix(const uint8_t prefixLength) const
+{
+    NS_LOG_FUNCTION(this << prefixLength);
+    NS_ASSERT_MSG(prefixLength <= 32, "Prefix length exceeding 32 bits: " << +prefixLength);
+
+    // You can't shift a value to its max bit - it's the standard.
+    // Hence, we must avoid a shift by 32. Luckily enough, this is a simple case.
+    if (prefixLength == 0)
+    {
+        return GetZero();
+    }
+
+    uint32_t mask = 0xffffffff << (32 - prefixLength);
+    return Ipv4Address(Get() & mask);
+}
+
+Ipv4Address
+Ipv4Address::GetPrefix(const Ipv4Mask& mask) const
+{
+    NS_LOG_FUNCTION(this << mask);
+    return Ipv4Address(Get() & mask.Get());
+}
+
+Ipv4Address
 Ipv4Address::CombineMask(const Ipv4Mask& mask) const
 {
     NS_LOG_FUNCTION(this << mask);

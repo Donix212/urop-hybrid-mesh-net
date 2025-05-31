@@ -11,6 +11,7 @@
 
 #include "ns3/address.h"
 #include "ns3/attribute-helper.h"
+#include "ns3/deprecated.h"
 
 #include <ostream>
 #include <stdint.h>
@@ -121,6 +122,24 @@ class Ipv4Address
      */
     bool IsLinkLocal() const;
     /**
+     * Get the prefix portion of the IPv4 address.
+     * This corresponds to the network portion (A.K.A network address)
+     * of the IP address.
+     *
+     * @param prefixLength The number of bits forming the prefix
+     * @returns the network address
+     */
+    Ipv4Address GetPrefix(const uint8_t prefixLength) const;
+    /**
+     * Get the prefix portion of the IPv4 address.
+     * This corresponds to the network portion (A.K.A network address)
+     * of the IP address.
+     *
+     * @param mask The subnet mask used with this IP
+     * @returns the network address
+     */
+    Ipv4Address GetPrefix(const Ipv4Mask& mask) const;
+    /**
      * @brief Combine this address with a network mask
      *
      * This method returns an IPv4 address that is this address combined
@@ -130,7 +149,9 @@ class Ipv4Address
      * @param mask a network mask
      * @returns the address combined with the mask
      */
+    NS_DEPRECATED_3_46("Use Ipv4Address::GetPrefix instead")
     Ipv4Address CombineMask(const Ipv4Mask& mask) const;
+
     /**
      * @brief Generate subnet-directed broadcast address corresponding to mask
      *
@@ -242,7 +263,7 @@ class Ipv4Address
 /**
  * @ingroup address
  *
- * @brief a class to represent an Ipv4 address mask
+ * @brief a class to represent an IPv4 address mask
  *
  * The constructor takes arguments according to a few formats.
  * Ipv4Mask ("255.255.255.255"), Ipv4Mask ("/32"), and Ipv4Mask (0xffffffff)

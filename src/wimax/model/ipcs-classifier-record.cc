@@ -220,7 +220,7 @@ IpcsClassifierRecord::CheckMatchSrcAddr(Ipv4Address srcAddress) const
     {
         NS_LOG_INFO("src addr check match: pkt=" << srcAddress << " cls=" << (*iter).Address << "/"
                                                  << (*iter).Mask);
-        if (srcAddress.CombineMask((*iter).Mask) == (*iter).Address)
+        if (srcAddress.GetPrefix((*iter).Mask) == (*iter).Address)
         {
             return true;
         }
@@ -236,7 +236,7 @@ IpcsClassifierRecord::CheckMatchDstAddr(Ipv4Address dstAddress) const
     {
         NS_LOG_INFO("dst addr check match: pkt=" << dstAddress << " cls=" << (*iter).Address << "/"
                                                  << (*iter).Mask);
-        if (dstAddress.CombineMask((*iter).Mask) == (*iter).Address)
+        if (dstAddress.GetPrefix((*iter).Mask) == (*iter).Address)
         {
             return true;
         }

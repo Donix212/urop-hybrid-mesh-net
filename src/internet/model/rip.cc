@@ -321,7 +321,7 @@ Rip::NotifyInterfaceUp(uint32_t i)
     {
         Ipv4InterfaceAddress address = m_ipv4->GetAddress(i, j);
         Ipv4Mask networkMask = address.GetMask();
-        Ipv4Address networkAddress = address.GetLocal().CombineMask(networkMask);
+        Ipv4Address networkAddress = address.GetLocal().GetPrefix(networkMask);
 
         if (address.GetScope() == Ipv4InterfaceAddress::GLOBAL)
         {
@@ -436,7 +436,7 @@ Rip::NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress address)
         return;
     }
 
-    Ipv4Address networkAddress = address.GetLocal().CombineMask(address.GetMask());
+    Ipv4Address networkAddress = address.GetLocal().GetPrefix(address.GetMask());
     Ipv4Mask networkMask = address.GetMask();
 
     if (address.GetScope() == Ipv4InterfaceAddress::GLOBAL)
@@ -462,7 +462,7 @@ Rip::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress address)
         return;
     }
 
-    Ipv4Address networkAddress = address.GetLocal().CombineMask(address.GetMask());
+    Ipv4Address networkAddress = address.GetLocal().GetPrefix(address.GetMask());
     Ipv4Mask networkMask = address.GetMask();
 
     // Remove all routes that are going through this interface
@@ -975,9 +975,9 @@ Rip::HandleRequests(RipHeader requestHdr,
                     (rtIter->first->GetRouteStatus() == RipRoutingTableEntry::RIP_VALID))
                 {
                     Ipv4Address requestedAddress = iter->GetPrefix();
-                    requestedAddress.CombineMask(iter->GetSubnetMask());
+                    requestedAddress.GetPrefix(iter->GetSubnetMask());
                     Ipv4Address rtAddress = rtIter->first->GetDestNetwork();
-                    rtAddress.CombineMask(rtIter->first->GetDestNetworkMask());
+                    rtAddress.GetPrefix(rtIter->first->GetDestNetworkMask());
 
                     if (requestedAddress == rtAddress)
                     {
@@ -1041,7 +1041,7 @@ Rip::HandleResponses(RipHeader hdr,
     for (auto iter = rtes.begin(); iter != rtes.end(); iter++)
     {
         Ipv4Mask rtePrefixMask = iter->GetSubnetMask();
-        Ipv4Address rteAddr = iter->GetPrefix().CombineMask(rtePrefixMask);
+        Ipv4Address rteAddr = iter->GetPrefix().GetPrefix(rtePrefixMask);
 
         NS_LOG_LOGIC("Processing RTE " << *iter);
 
@@ -1208,7 +1208,7 @@ Rip::DoSendRouteUpdate(bool periodic)
                 for (uint32_t index = 0; index < m_ipv4->GetNAddresses(interface); index++)
                 {
                     Ipv4InterfaceAddress addr = m_ipv4->GetAddress(interface, index);
-                    if (addr.GetLocal().CombineMask(addr.GetMask()) ==
+                    if (addr.GetLocal().GetPrefix(addr.GetMask()) ==
                         rtIter->first->GetDestNetwork())
                     {
                         sameNetwork = true;

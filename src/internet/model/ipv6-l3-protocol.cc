@@ -266,8 +266,7 @@ Ipv6L3Protocol::GetInterfaceForPrefix(Ipv6Address address, Ipv6Prefix mask) cons
         uint32_t j = 0;
         for (j = 0; j < (*it)->GetNAddresses(); j++)
         {
-            if ((*it)->GetAddress(j).GetAddress().CombinePrefix(mask) ==
-                address.CombinePrefix(mask))
+            if ((*it)->GetAddress(j).GetAddress().GetPrefix(mask) == address.GetPrefix(mask))
             {
                 return index;
             }
@@ -424,7 +423,7 @@ Ipv6L3Protocol::AddAddress(uint32_t i, Ipv6InterfaceAddress address, bool addOnL
 
     if (addOnLinkRoute)
     {
-        Ipv6Address networkAddress = address.GetAddress().CombinePrefix(address.GetPrefix());
+        Ipv6Address networkAddress = address.GetAddress().GetPrefix(address.GetPrefix());
         Ipv6Prefix networkMask = address.GetPrefix();
         GetRoutingProtocol()->NotifyAddRoute(networkAddress,
                                              networkMask,

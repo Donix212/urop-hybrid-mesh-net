@@ -593,7 +593,7 @@ Ipv6AddressGeneratorImpl::IsNetworkAllocated(const Ipv6Address address, const Ip
     NS_LOG_FUNCTION(this << address << prefix);
 
     NS_ABORT_MSG_UNLESS(
-        address == address.CombinePrefix(prefix),
+        address == address.GetPrefix(prefix),
         "Ipv6AddressGeneratorImpl::IsNetworkAllocated(): network address and mask don't match "
             << address << " " << prefix);
 
@@ -604,7 +604,7 @@ Ipv6AddressGeneratorImpl::IsNetworkAllocated(const Ipv6Address address, const Ip
         Ipv6Address low = Ipv6Address((*i).addrLow);
         Ipv6Address high = Ipv6Address((*i).addrHigh);
 
-        if (address == low.CombinePrefix(prefix) || address == high.CombinePrefix(prefix))
+        if (address == low.GetPrefix(prefix) || address == high.GetPrefix(prefix))
         {
             NS_LOG_LOGIC(
                 "Ipv6AddressGeneratorImpl::IsNetworkAllocated(): Network already allocated: "

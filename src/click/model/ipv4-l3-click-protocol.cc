@@ -165,7 +165,7 @@ Ipv4L3ClickProtocol::GetInterfaceForPrefix(Ipv4Address address, Ipv4Mask mask) c
     {
         for (uint32_t j = 0; j < (*i)->GetNAddresses(); j++)
         {
-            if ((*i)->GetAddress(j).GetLocal().CombineMask(mask) == address.CombineMask(mask))
+            if ((*i)->GetAddress(j).GetLocal().GetPrefix(mask) == address.GetPrefix(mask))
             {
                 return interface;
             }
@@ -453,7 +453,7 @@ Ipv4L3ClickProtocol::SourceAddressSelection(uint32_t interfaceIdx, Ipv4Address d
     for (uint32_t i = 0; i < GetNAddresses(interfaceIdx); i++)
     {
         Ipv4InterfaceAddress test = GetAddress(interfaceIdx, i);
-        if (test.GetLocal().CombineMask(test.GetMask()) == dest.CombineMask(test.GetMask()))
+        if (test.GetLocal().GetPrefix(test.GetMask()) == dest.GetPrefix(test.GetMask()))
         {
             if (!test.IsSecondary())
             {
@@ -489,7 +489,7 @@ Ipv4L3ClickProtocol::SelectSourceAddress(Ptr<const NetDevice> device,
             {
                 continue;
             }
-            if (dst.CombineMask(iaddr.GetMask()) == iaddr.GetLocal().CombineMask(iaddr.GetMask()))
+            if (dst.GetPrefix(iaddr.GetMask()) == iaddr.GetLocal().GetPrefix(iaddr.GetMask()))
             {
                 return iaddr.GetLocal();
             }
@@ -848,8 +848,8 @@ Ipv4L3ClickProtocol::LocalDeliver(Ptr<const Packet> packet, const Ipv4Header& ip
             for (uint32_t i = 0; i < GetNAddresses(iif); i++)
             {
                 Ipv4InterfaceAddress addr = GetAddress(iif, i);
-                if (addr.GetLocal().CombineMask(addr.GetMask()) ==
-                        ip.GetDestination().CombineMask(addr.GetMask()) &&
+                if (addr.GetLocal().GetPrefix(addr.GetMask()) ==
+                        ip.GetDestination().GetPrefix(addr.GetMask()) &&
                     ip.GetDestination().IsSubnetDirectedBroadcast(addr.GetMask()))
                 {
                     subnetDirected = true;

@@ -301,11 +301,38 @@ class Ipv6Address
     bool HasPrefix(const Ipv6Prefix& prefix) const;
 
     /**
+     * Get the prefix portion of the IPv6 address.
+     *
+     * This usually corresponds to the first 64 bits of an IpV6 address.
+     * This includes the Global Routing Prefix (48 bits) and
+     * the Subnet ID (16 bits)
+     *
+     * @param prefixLength a IPv6 prefix length (default, 64 bits)
+     * @return an IPv6 address that is this address combined
+     * (bitwise AND) with a prefix, yielding an IPv6 network address.
+     */
+    Ipv6Address GetPrefix(const uint8_t prefixLength = 64) const;
+
+    /**
+     * Get the prefix portion of the IPv6 address.
+     *
+     * This usually corresponds to the first 64 bits of an IpV6 address.
+     * This includes the Global Routing Prefix (48 bits) and
+     * the Subnet ID (16 bits)
+     *
+     * @param prefix a IPv6 prefix
+     * @return an IPv6 address that is this address combined
+     * (bitwise AND) with a prefix, yielding an IPv6 network address.
+     */
+    Ipv6Address GetPrefix(const Ipv6Prefix& prefix) const;
+
+    /**
      * @brief Combine this address with a prefix.
      * @param prefix a IPv6 prefix
      * @return an IPv6 address that is this address combined
      * (bitwise AND) with a prefix, yielding an IPv6 network address.
      */
+    NS_DEPRECATED_3_46("Use Ipv4Address::GetPrefix instead")
     Ipv6Address CombinePrefix(const Ipv6Prefix& prefix) const;
 
     /**
@@ -439,6 +466,9 @@ class Ipv6Address
  * @brief Describes an IPv6 prefix. It is just a bitmask like Ipv4Mask.
  * @see Ipv6Address
  * @see attribute_Ipv6Prefix
+ *
+ * This class is not meant to store a network address, it is meant to store
+ * the prefix length.
  */
 class Ipv6Prefix
 {
@@ -546,10 +576,11 @@ class Ipv6Prefix
     uint8_t GetMinimumPrefixLength() const;
 
     /**
-     * @brief Print this address to the given output stream.
+     * @brief Print this prefix to the given output stream.
      *
-     * The print format is in the typical "2001:660:4701::1".
-     * @param os the output stream to which this Ipv6Address is printed
+     * The print format is the standard CIDR form, i.e., "/xx", where "xx" is the prefix length in
+     * bits.
+     * @param os the output stream to which this Ipv6Prefix is printed
      */
     void Print(std::ostream& os) const;
 

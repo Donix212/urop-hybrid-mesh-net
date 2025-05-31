@@ -125,7 +125,7 @@ DhcpServer::StartApplication()
 
     for (addrIndex = 0; addrIndex < ipv4->GetNAddresses(ifIndex); addrIndex++)
     {
-        if (ipv4->GetAddress(ifIndex, addrIndex).GetLocal().CombineMask(m_poolMask) ==
+        if (ipv4->GetAddress(ifIndex, addrIndex).GetLocal().GetPrefix(m_poolMask) ==
                 m_poolAddress &&
             ipv4->GetAddress(ifIndex, addrIndex).GetLocal().Get() >= m_minAddress.Get() &&
             ipv4->GetAddress(ifIndex, addrIndex).GetLocal().Get() <= m_maxAddress.Get())

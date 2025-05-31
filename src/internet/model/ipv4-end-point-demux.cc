@@ -261,14 +261,14 @@ Ipv4EndPointDemux::Lookup(Ipv4Address daddr,
             {
                 Ipv4InterfaceAddress addr = incomingInterface->GetAddress(i);
 
-                Ipv4Address addrNetpart = addr.GetLocal().CombineMask(addr.GetMask());
+                Ipv4Address addrNetpart = addr.GetLocal().GetPrefix(addr.GetMask());
                 if (endP->GetLocalAddress() == addrNetpart)
                 {
                     NS_LOG_LOGIC("Endpoint is SubnetDirectedAny "
                                  << endP->GetLocalAddress() << "/"
                                  << addr.GetMask().GetPrefixLength());
 
-                    Ipv4Address daddrNetPart = daddr.CombineMask(addr.GetMask());
+                    Ipv4Address daddrNetPart = daddr.GetPrefix(addr.GetMask());
                     if (addrNetpart == daddrNetPart)
                     {
                         localAddressIsSubnetAny = true;

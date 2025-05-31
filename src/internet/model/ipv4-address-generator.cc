@@ -468,7 +468,7 @@ Ipv4AddressGeneratorImpl::IsNetworkAllocated(const Ipv4Address address, const Ip
     NS_LOG_FUNCTION(this << address << mask);
 
     NS_ABORT_MSG_UNLESS(
-        address == address.CombineMask(mask),
+        address == address.GetPrefix(mask),
         "Ipv4AddressGeneratorImpl::IsNetworkAllocated(): network address and mask don't match "
             << address << " " << mask);
 
@@ -479,7 +479,7 @@ Ipv4AddressGeneratorImpl::IsNetworkAllocated(const Ipv4Address address, const Ip
         Ipv4Address low((*i).addrLow);
         Ipv4Address high((*i).addrHigh);
 
-        if (address == low.CombineMask(mask) || address == high.CombineMask(mask))
+        if (address == low.GetPrefix(mask) || address == high.GetPrefix(mask))
         {
             NS_LOG_LOGIC(
                 "Ipv4AddressGeneratorImpl::IsNetworkAllocated(): Network already allocated: "
