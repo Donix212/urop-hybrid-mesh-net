@@ -974,7 +974,7 @@ Ipv4L3Protocol::SendRealOut(Ptr<Ipv4Route> route, Ptr<Packet> packet, const Ipv4
         target = route->GetGateway();
         targetLabel = "gateway";
     }
-
+    
     if (outInterface->IsUp())
     {
         NS_LOG_LOGIC("Send to " << targetLabel << " " << target);
@@ -994,6 +994,13 @@ Ipv4L3Protocol::SendRealOut(Ptr<Ipv4Route> route, Ptr<Packet> packet, const Ipv4
             CallTxTrace(ipHeader, packet, this, interface);
             outInterface->Send(packet, ipHeader, target);
         }
+    }
+    else{
+    //FIXME - Add a test to prevent ICMP error loop.
+    Ptr<Icmpv4L4Protocol> icmp = GetIcmp();
+    icmp->SendDestUnreachPort(ipHeader, packet);
+
+
     }
 }
 
@@ -1044,13 +1051,15 @@ Ipv4L3Protocol::IpForward(Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ipv
     Ipv4Header ipHeader = header;
     Ptr<Packet> packet = p->Copy();
     int32_t interface = GetInterfaceForDevice(rtentry->GetOutputDevice());
+
+    //FIXME - Write a check to prevent ICMP error loop
     if (ipHeader.GetTtl() <= 1)
     {
         // Do not reply to multicast/broadcast IP address
         if (!ipHeader.GetDestination().IsBroadcast() && !ipHeader.GetDestination().IsMulticast())
         {
             Ptr<Icmpv4L4Protocol> icmp = GetIcmp();
-            icmp->SendTimeExceededTtl(ipHeader, packet, false);
+                icmp->SendTimeExceededTtl(ipHeader, packet, false);
         }
         NS_LOG_WARN("TTL exceeded.  Drop.");
         m_dropTrace(header, packet, DROP_TTL_EXPIRED, this, interface);

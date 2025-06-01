@@ -13,13 +13,17 @@
 #include "ip-l4-protocol.h"
 
 #include "ns3/ipv4-address.h"
-
-namespace ns3
-{
+ #include "ipv4-end-point-demux.h"
+ #include "ns3/socket.h"
+ #include <unordered_map>
+ namespace ns3 {
 
 class Node;
 class Ipv4Interface;
 class Ipv4Route;
+ class Ipv6Header;
+ class Ipv6Interface;
+ class IcmpSocketImpl;
 
 /**
  * @ingroup ipv4
@@ -64,6 +68,38 @@ class Icmpv4L4Protocol : public IpL4Protocol
      */
     int GetProtocolNumber() const override;
 
+
+   /**
+    * \brief Create and register an ICMP socket.
+    * \return A smart pointer to the newly created ICMP socket.
+    */
+   Ptr<Socket> CreateSocket();
+
+  // Endpoint allocation/deallocation functions.
+  /**
+   * @brief Allocate an IPv4 Endpoint.
+   * @return the allocated endpoint.
+   */
+  Ipv4EndPoint* Allocate();
+  /**
+   * @brief Allocate an IPv4 Endpoint bound to a given address.
+   * @param address the IPv4 address to use.
+   * @return the allocated endpoint.
+   */
+  Ipv4EndPoint* Allocate(Ipv4Address address);
+  /**
+   * @brief Remove an IPv4 Endpoint.
+   * @param endPoint the endpoint to remove.
+   */
+  void DeAllocate(Ipv4EndPoint* endPoint);
+  /**
+   * @brief Remove a socket from the internal container.
+   * @param socket the socket to remove.
+   * @return true if the socket was removed.
+   */
+  bool RemoveSocket(Ptr<IcmpSocketImpl> socket);
+ 
+  
     /**
      * @brief Receive method.
      * @param p the packet
@@ -117,64 +153,8 @@ class Icmpv4L4Protocol : public IpL4Protocol
     // From IpL4Protocol
     IpL4Protocol::DownTargetCallback GetDownTarget() const override;
     IpL4Protocol::DownTargetCallback6 GetDownTarget6() const override;
-
-  protected:
-    /*
-     * This function will notify other components connected to the node that a new stack member is
-     * now connected This will be used to notify Layer 3 protocol of layer 4 protocol stack to
-     * connect them together.
-     */
-    void NotifyNewAggregate() override;
-
-  private:
-    /**
-     * @brief Handles an incoming ICMP Echo packet
-     * @param p the packet
-     * @param header the IP header
-     * @param source the source address
-     * @param destination the destination address
-     * @param tos the type of service
-     */
-    void HandleEcho(Ptr<Packet> p,
-                    Icmpv4Header header,
-                    Ipv4Address source,
-                    Ipv4Address destination,
-                    uint8_t tos);
-    /**
-     * @brief Handles an incoming ICMP Destination Unreachable packet
-     * @param p the packet
-     * @param header the IP header
-     * @param source the source address
-     * @param destination the destination address
-     */
-    void HandleDestUnreach(Ptr<Packet> p,
-                           Icmpv4Header header,
-                           Ipv4Address source,
-                           Ipv4Address destination);
-    /**
-     * @brief Handles an incoming ICMP Time Exceeded packet
-     * @param p the packet
-     * @param icmp the ICMP header
-     * @param source the source address
-     * @param destination the destination address
-     */
-    void HandleTimeExceeded(Ptr<Packet> p,
-                            Icmpv4Header icmp,
-                            Ipv4Address source,
-                            Ipv4Address destination);
-    /**
-     * @brief Send an ICMP Destination Unreachable packet
-     *
-     * @param header the original IP header
-     * @param orgData the original packet
-     * @param code the ICMP code
-     * @param nextHopMtu the next hop MTU
-     */
-    void SendDestUnreach(Ipv4Header header,
-                         Ptr<const Packet> orgData,
-                         uint8_t code,
-                         uint16_t nextHopMtu);
-    /**
+    
+  /**
      * @brief Send a generic ICMP packet
      *
      * @param packet the packet
@@ -208,6 +188,64 @@ class Icmpv4L4Protocol : public IpL4Protocol
      * @param ipHeader the IP header carried by ICMP
      * @param payload payload chunk carried by ICMP
      */
+
+  protected:
+    /*
+     * This function will notify other components connected to the node that a new stack member is
+     * now connected This will be used to notify Layer 3 protocol of layer 4 protocol stack to
+     * connect them together.
+     */
+    void NotifyNewAggregate() override;
+
+  private:
+    /**
+     * @brief Handles an incoming ICMP Echo packet
+     * @param p the packet
+     * @param header the IP header
+     * @param source the source address
+     * @param destination the destination address
+     * @param tos the type of service
+     */
+    void HandleEcho(Ptr<Packet> p,
+                   Icmpv4Header icmp,
+                    Ipv4Address source,
+                    Ipv4Address destination,
+                    uint8_t tos);
+    /**
+     * @brief Handles an incoming ICMP Destination Unreachable packet
+     * @param p the packet
+     * @param header the IP header
+     * @param source the source address
+     * @param destination the destination address
+     */
+    void HandleDestUnreach(Ptr<Packet> p,
+                          Icmpv4Header icmp,
+                           Ipv4Address source,
+                           Ipv4Address destination);
+    /**
+     * @brief Handles an incoming ICMP Time Exceeded packet
+     * @param p the packet
+     * @param icmp the ICMP header
+     * @param source the source address
+     * @param destination the destination address
+     */
+    void HandleTimeExceeded(Ptr<Packet> p,
+                            Icmpv4Header icmp,
+                            Ipv4Address source,
+                            Ipv4Address destination);
+    /**
+     * @brief Send an ICMP Destination Unreachable packet
+     *
+     * @param header the original IP header
+     * @param orgData the original packet
+     * @param code the ICMP code
+     * @param nextHopMtu the next hop MTU
+     */
+    void SendDestUnreach(Ipv4Header header,
+                         Ptr<const Packet> orgData,
+                         uint8_t code,
+                         uint16_t nextHopMtu);
+    
     void Forward(Ipv4Address source,
                  Icmpv4Header icmp,
                  uint32_t info,
@@ -216,8 +254,13 @@ class Icmpv4L4Protocol : public IpL4Protocol
 
     void DoDispose() override;
 
-    Ptr<Node> m_node;                              //!< the node this protocol is associated with
-    IpL4Protocol::DownTargetCallback m_downTarget; //!< callback to Ipv4::Send
+   Ptr<Node> m_node;
+   IpL4Protocol::DownTargetCallback m_downTarget;
+   // Socket management.
+   std::unordered_map<uint64_t, Ptr<IcmpSocketImpl>> m_sockets;
+   uint64_t m_socketIndex{0};
+  // Endpoint demultiplexer.
+  Ipv4EndPointDemux* m_endPoints;
 };
 
 } // namespace ns3

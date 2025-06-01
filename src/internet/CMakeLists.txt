@@ -23,7 +23,6 @@ set(source_files
     model/global-route-manager-impl.cc
     model/global-route-manager.cc
     model/global-router-interface.cc
-    model/icmpv4-l4-protocol.cc
     model/icmpv4.cc
     model/icmpv6-header.cc
     model/icmpv6-l4-protocol.cc
@@ -126,9 +125,15 @@ set(source_files
     model/udp-socket-factory.cc
     model/udp-socket-impl.cc
     model/udp-socket.cc
-)
-
-set(header_files
+    # model/icmpv4-l4-prot.cc
+    model/icmpv4-l4-protocol.cc
+    model/icmp-socket-factory-impl.cc
+    model/icmp-socket-factory.cc
+    model/icmp-socket-impl.cc
+    model/icmp-socket.cc
+  ) 
+  
+    set(header_files
     helper/internet-stack-helper.h
     helper/internet-trace-helper.h
     helper/ipv4-address-helper.h
@@ -153,7 +158,6 @@ set(header_files
     model/global-route-manager-impl.h
     model/global-route-manager.h
     model/global-router-interface.h
-    model/icmpv4-l4-protocol.h
     model/icmpv4.h
     model/icmpv6-header.h
     model/icmpv6-l4-protocol.h
@@ -249,6 +253,12 @@ set(header_files
     model/udp-socket-factory.h
     model/udp-socket.h
     model/windowed-filter.h
+    # model/icmpv4-l4-prot.h
+    model/icmpv4-l4-protocol.h
+    model/icmp-socket-factory-impl.h
+    model/icmp-socket-factory.h
+    model/icmp-socket-impl.h
+    model/icmp-socket.h
 )
 
 set(private_header_files)
