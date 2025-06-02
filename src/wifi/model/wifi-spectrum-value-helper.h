@@ -11,6 +11,7 @@
 #ifndef WIFI_SPECTRUM_VALUE_HELPER_H
 #define WIFI_SPECTRUM_VALUE_HELPER_H
 
+#include "wifi-types.h" // WifiSpectrumBandInfo typedef
 #include "wifi-units.h"
 
 #include "ns3/spectrum-value.h"
@@ -217,7 +218,7 @@ class WifiSpectrumValueHelper
         MHz_u channelWidth,
         Watt_u txPower,
         MHz_u guardBandwidth,
-        const std::vector<WifiSpectrumBandIndices>& ru);
+        const WifiSpectrumBandInfo& ru);
 
     /**
      * Create a transmit power spectral density corresponding to OFDM
@@ -291,13 +292,11 @@ class WifiSpectrumValueHelper
      * Calculate the power of the specified band composed of uniformly-sized sub-bands.
      *
      * @param psd received Power Spectral Density in W/Hz
-     * @param segments a vector of pair of start and stop indexes that defines each segment of the
-     * band
+     * @param band the band
      *
      * @return band power
      */
-    static Watt_u GetBandPowerW(Ptr<SpectrumValue> psd,
-                                const std::vector<WifiSpectrumBandIndices>& segments);
+    static Watt_u GetBandPowerW(Ptr<SpectrumValue> psd, const WifiSpectrumBandInfo& band);
 };
 
 /**

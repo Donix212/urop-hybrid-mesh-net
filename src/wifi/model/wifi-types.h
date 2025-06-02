@@ -162,6 +162,79 @@ using BwTonesPair = std::pair<MHz_u, RuType>;
 /// map (bandwidth, number of tones) pairs to the group of subcarrier ranges
 using SubcarrierGroups = std::map<BwTonesPair, std::vector<SubcarrierGroup>>;
 
+/// WifiSpectrumBandInfo structure containing info about a spectrum band
+struct WifiSpectrumBandSegment
+{
+    Hz_u minFreq;        //!< start frequency for segment of the band
+    Hz_u maxFreq;        //!< stop frequency for segment of the band
+    uint32_t startIndex; //!< start index for segment of the band
+    uint32_t stopIndex;  //!< stop index for segment of the band
+};
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param os the stream
+ * @param segment the segment
+ * @returns a reference to the stream
+ */
+inline std::ostream&
+operator<<(std::ostream& os, const WifiSpectrumBandSegment& segment)
+{
+    os << " indices: [" << segment.startIndex << "-" << segment.stopIndex << "], frequencies : ["
+       << segment.minFreq << "hz-" << segment.maxFreq << "hz] ";
+    return os;
+}
+
+/// vector of spectrum band segments
+using WifiSpectrumBandInfo = std::vector<WifiSpectrumBandSegment>;
+
+/**
+ * @ingroup wifi
+ * Compare two bands.
+ *
+ * @param lhs the band on the left of operator<
+ * @param rhs the band on the right of operator<
+ * @return true if the start frequency of the first segment of left is lower than the
+ * start frequency of the first segment of right.
+ * If the start frequency of first segment is the same for left and right, it return
+ * true if the stop frequency of the second segment of left is lower than the stop
+ * frequency of the second segment of right.
+ * Otherwise, the function return false.
+ */
+inline bool
+operator<(const WifiSpectrumBandInfo& lhs, const WifiSpectrumBandInfo& rhs)
+{
+    const auto& lhs_front = lhs.front();
+    const auto& rhs_front = rhs.front();
+    if (lhs_front.minFreq == rhs_front.minFreq)
+    {
+        const auto& lhs_back = lhs.back();
+        const auto& rhs_back = rhs.back();
+        return lhs_back.maxFreq < rhs_back.maxFreq;
+    }
+    return lhs_front.minFreq < rhs_front.minFreq;
+}
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param os the stream
+ * @param band the band
+ * @returns a reference to the stream
+ */
+inline std::ostream&
+operator<<(std::ostream& os, const WifiSpectrumBandInfo& band)
+{
+    std::size_t segmentIndex = 0;
+    for (const auto& segment : band)
+    {
+        os << "segment:" << segmentIndex << segment;
+        ++segmentIndex;
+    }
+    return os;
+}
+
 } // namespace ns3
 
 #endif /* WIFI_TYPES_H */

@@ -1005,9 +1005,11 @@ HePhy::GetRuBandForTx(const WifiTxVector& txVector, uint16_t staId) const
     WifiSpectrumBandInfo ruBandForTx{};
     for (const auto& indicesPerSegment : indices)
     {
-        ruBandForTx.indices.emplace_back(indicesPerSegment);
-        ruBandForTx.frequencies.emplace_back(
-            m_wifiPhy->ConvertIndicesToFrequencies(indicesPerSegment));
+        auto frequencies = m_wifiPhy->ConvertIndicesToFrequencies(indicesPerSegment);
+        ruBandForTx.emplace_back(frequencies.first,
+                                 frequencies.second,
+                                 indicesPerSegment.first,
+                                 indicesPerSegment.second);
     }
     return ruBandForTx;
 }
@@ -1041,9 +1043,11 @@ HePhy::GetRuBandForRx(const WifiTxVector& txVector, uint16_t staId) const
     WifiSpectrumBandInfo ruBandForRx{};
     for (const auto& indicesPerSegment : indices)
     {
-        ruBandForRx.indices.emplace_back(indicesPerSegment);
-        ruBandForRx.frequencies.emplace_back(
-            m_wifiPhy->ConvertIndicesToFrequencies(indicesPerSegment));
+        auto frequencies = m_wifiPhy->ConvertIndicesToFrequencies(indicesPerSegment);
+        ruBandForRx.emplace_back(frequencies.first,
+                                 frequencies.second,
+                                 indicesPerSegment.first,
+                                 indicesPerSegment.second);
     }
     return ruBandForRx;
 }
@@ -1362,13 +1366,12 @@ HePhy::GetTxPowerSpectralDensity(Watt_u txPower,
         }
         else
         {
-            const auto band = GetRuBandForTx(txVector, GetStaId(ppdu)).indices;
             return WifiSpectrumValueHelper::CreateHeMuOfdmTxPowerSpectralDensity(
                 centerFrequencies,
                 channelWidth,
                 txPower,
                 GetGuardBandwidth(channelWidth),
-                band);
+                GetRuBandForTx(txVector, GetStaId(ppdu)));
         }
     }
     case WIFI_PPDU_TYPE_DL_MU: {

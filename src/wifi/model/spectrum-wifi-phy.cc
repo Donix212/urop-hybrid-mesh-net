@@ -194,10 +194,13 @@ SpectrumWifiPhy::GetRuBands(Ptr<WifiSpectrumPhyInterface> spectrumPhyInterface,
                         WifiSpectrumBandInfo band{};
                         for (const auto& indicesPerSegment : bandIndices)
                         {
-                            band.indices.emplace_back(indicesPerSegment);
-                            band.frequencies.emplace_back(
+                            auto frequencies =
                                 ConvertIndicesToFrequenciesForInterface(spectrumPhyInterface,
-                                                                        indicesPerSegment));
+                                                                        indicesPerSegment);
+                            band.emplace_back(frequencies.first,
+                                              frequencies.second,
+                                              indicesPerSegment.first,
+                                              indicesPerSegment.second);
                         }
                         WifiRu::RuSpec ru;
                         if (modClass == WIFI_MOD_CLASS_HE)
@@ -528,17 +531,13 @@ SpectrumWifiPhy::StartRx(Ptr<SpectrumSignalParameters> rxParams,
     MHz_u prevBw{0};
     for (const auto& band : bands)
     {
-        const auto bw =
-            std::accumulate(band.frequencies.cbegin(),
-                            band.frequencies.cend(),
-                            MHz_u{0},
-                            [](MHz_u sum, const auto& startStopFreqs) {
-                                return sum + HzToMHz(startStopFreqs.second - startStopFreqs.first);
-                            });
+        const auto bw = HzToMHz(
+            std::accumulate(band.cbegin(), band.cend(), Hz_u{0}, [](Hz_u sum, const auto& segment) {
+                return sum + segment.maxFreq - segment.minFreq;
+            }));
         NS_ASSERT(bw <= channelWidth);
         index = ((bw != prevBw) ? 0 : (index + 1));
-        auto rxPowerPerBand =
-            WifiSpectrumValueHelper::GetBandPowerW(receivedSignalPsd, band.indices);
+        auto rxPowerPerBand = WifiSpectrumValueHelper::GetBandPowerW(receivedSignalPsd, band);
         NS_LOG_DEBUG("Signal power received (watts) before antenna gain for "
                      << bw << " MHz channel band " << index << ": " << band);
         rxPowerPerBand *= rxGainRatio;
@@ -562,8 +561,7 @@ SpectrumWifiPhy::StartRx(Ptr<SpectrumSignalParameters> rxParams,
         NS_ASSERT(!ruBands.empty());
         for (const auto& [band, ru] : ruBands)
         {
-            auto rxPowerPerBand =
-                WifiSpectrumValueHelper::GetBandPowerW(receivedSignalPsd, band.indices);
+            auto rxPowerPerBand = WifiSpectrumValueHelper::GetBandPowerW(receivedSignalPsd, band);
             rxPowerPerBand *= rxGainRatio;
             rxPowers.insert({band, rxPowerPerBand});
         }
@@ -790,8 +788,7 @@ SpectrumWifiPhy::GetBandForInterface(Ptr<WifiSpectrumPhyInterface> spectrumPhyIn
             // step past DC
             startIndex += 1;
         }
-        bandInfo.indices.emplace_back(startIndex, stopIndex);
-        bandInfo.frequencies.emplace_back(frequencies);
+        bandInfo.emplace_back(frequencies.first, frequencies.second, startIndex, stopIndex);
         ++bandIndex;
     }
     return bandInfo;
