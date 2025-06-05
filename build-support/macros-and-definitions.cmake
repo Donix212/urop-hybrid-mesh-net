@@ -54,13 +54,12 @@ include(ns3-check-dependencies)
 
 # Set compiler options and get command to force unused function linkage (useful
 # for libraries)
-set(CXX_UNSUPPORTED_STANDARDS 98 11 14 17)
-set(CMAKE_CXX_STANDARD_MINIMUM 20)
+set(CXX_UNSUPPORTED_STANDARDS 98 11 14 17 20)
+set(CMAKE_CXX_STANDARD_MINIMUM 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Include CMake files used for compiler checks
-include(CheckIncludeFile) # Used to check a single C header at a time
 include(CheckIncludeFileCXX) # Used to check a single C++ header at a time
 include(CheckIncludeFiles) # Used to check multiple headers at once
 include(CheckFunctionExists)
@@ -265,7 +264,9 @@ macro(process_options)
     if("${CLANG_TIDY}" STREQUAL "CLANG_TIDY-NOTFOUND")
       message(FATAL_ERROR "Clang-tidy was not found")
     else()
-      set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
+      set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY}
+                               -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+      ) # --fix)
     endif()
   else()
     unset(CMAKE_CXX_CLANG_TIDY)
@@ -1074,20 +1075,18 @@ macro(process_options)
   # Process core-config If INT128 is not found, fallback to CAIRO
   if(${NS3_INT64X64} MATCHES "INT128")
     check_cxx_source_compiles(
-      "#include <stdint.h>
+      "#include <cstdint>
        int main()
          {
-            if ((uint128_t *) 0) return 0;
             if (sizeof (uint128_t)) return 0;
             return 1;
          }"
       HAVE_UINT128_T
     )
     check_cxx_source_compiles(
-      "#include <stdint.h>
+      "#include <cstdint>
        int main()
          {
-           if ((__uint128_t *) 0) return 0;
            if (sizeof (__uint128_t)) return 0;
            return 1;
         }"
@@ -1129,14 +1128,11 @@ macro(process_options)
 
   # Check for required headers and functions, set flags if they're found or warn
   # if they're not found
-  check_include_file("stdint.h" "HAVE_STDINT_H")
-  check_include_file("inttypes.h" "HAVE_INTTYPES_H")
-  check_include_file("sys/types.h" "HAVE_SYS_TYPES_H")
-  check_include_file("sys/stat.h" "HAVE_SYS_STAT_H")
-  check_include_file("dirent.h" "HAVE_DIRENT_H")
-  check_include_file("stdlib.h" "HAVE_STDLIB_H")
-  check_include_file("signal.h" "HAVE_SIGNAL_H")
-  check_include_file("netpacket/packet.h" "HAVE_PACKETH")
+  check_include_file_cxx("sys/types.h" "HAVE_SYS_TYPES_H")
+  check_include_file_cxx("sys/stat.h" "HAVE_SYS_STAT_H")
+  check_include_file_cxx("dirent.h" "HAVE_DIRENT_H")
+  check_include_file_cxx("signal.h" "HAVE_SIGNAL_H")
+  check_include_file_cxx("netpacket/packet.h" "HAVE_PACKETH")
   check_function_exists("getenv" "HAVE_GETENV")
 
   configure_file(
@@ -1177,6 +1173,15 @@ macro(process_options)
     set(ENABLE_TAP OFF)
     set(ENABLE_EMU OFF)
     set(ENABLE_FDNETDEV FALSE)
+    mark_as_advanced(
+      ENABLE_FDNETDEV ENABLE_DPDKDEVNET ENABLE_TAPNETDEV ENABLE_EMUNETDEV
+      ENABLE_NETMAP_EMU
+    )
+    set(ENABLE_FDNETDEV False CACHE INTERNAL "")
+    set(ENABLE_DPDKDEVNET False CACHE INTERNAL "")
+    set(ENABLE_TAPNETDEV False CACHE INTERNAL "")
+    set(ENABLE_EMUNETDEV False CACHE INTERNAL "")
+    set(ENABLE_NETMAP_EMU False CACHE INTERNAL "")
     list(REMOVE_ITEM libs_to_build fd-net-device)
     message(
       STATUS
@@ -1287,13 +1292,13 @@ macro(process_options)
         <limits>
         <list>
         <map>
-        <math.h>
+        <cmath>
         <ostream>
         <queue>
         <set>
         <sstream>
-        <stdint.h>
-        <stdlib.h>
+        <cstdint>
+        <cstdlib>
         <string>
         <tuple>
         <typeinfo>
