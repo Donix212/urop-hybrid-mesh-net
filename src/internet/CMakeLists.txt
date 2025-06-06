@@ -266,6 +266,7 @@ set(test_sources
     test/ipv4-address-helper-test-suite.cc
     test/ipv4-deduplication-test.cc
     test/ipv4-forwarding-test.cc
+    test/ipv4-raw-fragmentation-test.cc
     test/ipv4-fragmentation-test.cc
     test/ipv4-global-routing-test-suite.cc
     test/ipv4-header-test.cc

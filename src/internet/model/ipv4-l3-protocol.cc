@@ -559,7 +559,6 @@ Ipv4L3Protocol::Receive(Ptr<NetDevice> device,
                         NetDevice::PacketType packetType)
 {
     NS_LOG_FUNCTION(this << device << p << protocol << from << to << packetType);
-
     NS_LOG_LOGIC("Packet from " << from << " received on node " << m_node->GetId());
 
     int32_t interface = GetInterfaceForDevice(device);
@@ -629,13 +628,6 @@ Ipv4L3Protocol::Receive(Ptr<NetDevice> device,
                 }
             }
         }
-    }
-
-    for (auto i = m_sockets.begin(); i != m_sockets.end(); ++i)
-    {
-        NS_LOG_LOGIC("Forwarding to raw socket");
-        Ptr<Ipv4RawSocketImpl> socket = *i;
-        socket->ForwardUp(packet, ipHeader, ipv4Interface);
     }
 
     if (m_enableDpd && ipHeader.GetDestination().IsMulticast() && UpdateDuplicate(packet, ipHeader))
@@ -1094,6 +1086,14 @@ Ipv4L3Protocol::LocalDeliver(Ptr<const Packet> packet, const Ipv4Header& ip, uin
     }
 
     m_localDeliverTrace(ipHeader, p, iif);
+
+    Ptr<Ipv4Interface> ipv4Interface = GetInterface(iif);
+    for (auto i = m_sockets.begin(); i != m_sockets.end(); ++i)
+    {
+        NS_LOG_LOGIC("Forwarding to raw socket");
+        Ptr<Ipv4RawSocketImpl> socket = *i;
+        socket->ForwardUp(p, ipHeader, ipv4Interface);
+    }
 
     Ptr<IpL4Protocol> protocol = GetProtocol(ipHeader.GetProtocol(), iif);
     if (protocol)
