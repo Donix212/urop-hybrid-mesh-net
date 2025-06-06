@@ -1088,6 +1088,7 @@ Ipv4L3Protocol::LocalDeliver(Ptr<const Packet> packet, const Ipv4Header& ip, uin
     m_localDeliverTrace(ipHeader, p, iif);
 
     Ptr<Ipv4Interface> ipv4Interface = GetInterface(iif);
+
     for (auto& socket : m_sockets)
     {
         socket->ForwardUp(p, ipHeader, ipv4Interface);
