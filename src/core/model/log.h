@@ -334,7 +334,7 @@ class LogComponent
      * @return \c true if we are enabled at \c level.
      *
      * @internal
-     * Definition located in header to allow inlining by compiler for performance, see
+     * This function is defined in the header to enable inlining for better performance. See:
      * https://gitlab.com/nsnam/ns-3-dev/-/merge_requests/2448#note_2527898962
      */
     bool IsEnabled(const LogLevel level) const
