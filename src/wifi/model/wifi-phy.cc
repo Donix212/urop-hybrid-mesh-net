@@ -14,6 +14,7 @@
 #include "interference-helper.h"
 #include "preamble-detection-model.h"
 #include "wifi-net-device.h"
+#include "wifi-phy-state-helper.h"
 #include "wifi-ppdu.h"
 #include "wifi-psdu.h"
 #include "wifi-radio-energy-model.h"

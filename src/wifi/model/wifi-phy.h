@@ -12,10 +12,10 @@
 
 #include "phy-entity.h"
 #include "wifi-phy-operating-channel.h"
-#include "wifi-phy-state-helper.h"
 #include "wifi-standards.h"
 
 #include "ns3/error-model.h"
+#include "ns3/traced-callback.h"
 
 #include <limits>
 
@@ -45,6 +45,7 @@ class UniformRandomVariable;
 class InterferenceHelper;
 class ErrorRateModel;
 class WifiMacHeader;
+class WifiPhyListener;
 
 /**
  * @brief 802.11 PHY layer model

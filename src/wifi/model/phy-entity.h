@@ -13,6 +13,7 @@
 #define PHY_ENTITY_H
 
 #include "wifi-phy-band.h"
+#include "wifi-phy-state-helper.h"
 #include "wifi-ppdu.h"
 #include "wifi-tx-vector.h"
 #include "wifi-types.h"

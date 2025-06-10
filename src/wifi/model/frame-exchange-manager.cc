@@ -14,6 +14,7 @@
 #include "sta-wifi-mac.h"
 #include "wifi-mac-queue.h"
 #include "wifi-mac-trailer.h"
+#include "wifi-phy-state-helper.h"
 #include "wifi-utils.h"
 
 #include "ns3/abort.h"
