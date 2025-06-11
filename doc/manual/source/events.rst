@@ -370,6 +370,61 @@ by a scalar (numeric value)). Times can be written to/read from IO streams.
 In the case of writing it is easy to choose the output unit, different
 from the resolution unit.
 
+Here are examples of common usage:
+
+.. code-block:: c++
+
+  Time t1 = Seconds(1.5);        // 1.5 seconds
+  Time t2 = MicroSeconds(500);   // 500 microseconds
+  Time t3 = t1 + t2;             // arithmetic
+  Time t4 = t3 * 2;              // multiplication
+
+  if (t4 > Seconds(3.0)) {
+    std::cout << "t4 is greater than 3 seconds\n";
+  }
+
+  double ms = t4.GetMilliSeconds();  // convert to double in ms
+
+  std::cout << t4.As(Time::MS) << " ms\n"; // stream with specific unit
+
+When calling ``Time::SetResolution()``, there is a trade-off between
+the precision of time measurements and the maximum simulation time
+span that can be represented. Finer resolutions (like femtoseconds)
+allow for more precise timing but reduce the maximum representable
+duration.
+
+.. list-table::
+  :header-rows: 1
+  :widths: 25 25 50
+
+  * - Resolution Unit
+    - Smallest Step
+    - Approximate Max Time Span
+  * - Seconds
+    - 1 s
+    - ~292 years
+  * - Milliseconds
+    - 1 ms
+    - ~292 million hours
+  * - Microseconds
+    - 1 µs
+    - ~8515 years
+  * - Nanoseconds
+    - 1 ns
+    - ~292 years
+  * - Picoseconds
+    - 1 ps
+    - ~107 days
+  * - Femtoseconds
+    - 1 fs
+    - ~2.6 hours
+
+.. note::
+
+   Choosing a very fine resolution unit (such as ``ps`` or ``fs``)
+   limits the total simulation duration due to the 64-bit time
+   representation. Choose the coarsest resolution that meets the
+   accuracy needs of your simulation.
 
 Scheduler
 *********
