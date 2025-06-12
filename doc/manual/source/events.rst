@@ -379,7 +379,8 @@ Here are examples of common usage:
   Time t3 = t1 + t2;             // arithmetic
   Time t4 = t3 * 2;              // multiplication
 
-  if (t4 > Seconds(3.0)) {
+  if (t4 > Seconds(3.0)) 
+  {
     std::cout << "t4 is greater than 3 seconds\n";
   }
 
@@ -402,13 +403,13 @@ duration.
     - Approximate Max Time Span
   * - Seconds
     - 1 s
-    - ~292 years
+    - ~2.9 × 10¹¹ years
   * - Milliseconds
     - 1 ms
-    - ~292 million hours
+    - ~2.9 × 10⁸ years
   * - Microseconds
     - 1 µs
-    - ~8515 years
+    - ~2.9 × 10⁵ years
   * - Nanoseconds
     - 1 ns
     - ~292 years
