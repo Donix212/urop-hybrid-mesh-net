@@ -128,6 +128,27 @@ PointToPointTest::DoRun()
     Simulator::Destroy();
 }
 
+void
+TestLinkChangeCallbackRemove()
+{
+    Ptr<PointToPointNetDevice> dev = CreateObject<PointToPointNetDevice>();
+    bool called = false;
+
+    Callback<void> cb = MakeCallback([&called]() { called = true; });
+
+    CallbackId id = dev->AddLinkChangeCallback(cb);
+
+    dev->SetLinkUp(); // triggers callback
+    NS_ASSERT_MSG(called, "Callback should be called on link up");
+
+    called = false;
+    dev->RemoveLinkChangeCallback(id);
+    dev->SetLinkDown(); // optional, resets link
+    dev->SetLinkUp();   // should NOT trigger callback
+
+    NS_ASSERT_MSG(!called, "Callback should not be triggered after removal");
+}
+
 /**
  * @brief TestSuite for PointToPoint module
  */
@@ -147,3 +168,50 @@ PointToPointTestSuite::PointToPointTestSuite()
 }
 
 static PointToPointTestSuite g_pointToPointTestSuite; //!< The testsuite
+
+class LinkCallbackTestCase : public TestCase
+{
+  public:
+    LinkCallbackTestCase()
+        : TestCase("Test Add/RemoveLinkChangeCallback")
+    {
+    }
+
+    void DoRun() override
+    {
+        Ptr<PointToPointNetDevice> dev = CreateObject<PointToPointNetDevice>();
+        bool callbackInvoked = false;
+
+        Callback<void> cb = MakeCallback([&callbackInvoked]() { callbackInvoked = true; });
+
+        // Add callback
+        CallbackId id = dev->AddLinkChangeCallback(cb);
+
+        // Simulate link going up
+        dev->SetLinkUp();
+
+        NS_TEST_ASSERT_MSG_EQ(callbackInvoked, true, "Callback should have been invoked");
+
+        // Remove callback
+        callbackInvoked = false;
+        dev->RemoveLinkChangeCallback(id);
+
+        // Simulate again
+        dev->SetLinkDown();
+        dev->SetLinkUp();
+
+        NS_TEST_ASSERT_MSG_EQ(callbackInvoked,
+                              false,
+                              "Callback should NOT be invoked after removal");
+    }
+};
+
+static class LinkCallbackTestSuite : public TestSuite
+{
+  public:
+    LinkCallbackTestSuite()
+        : TestSuite("link-callback", UNIT)
+    {
+        AddTestCase(new LinkCallbackTestCase, TestCase::QUICK);
+    }
+} g_linkCallbackTestSuite;

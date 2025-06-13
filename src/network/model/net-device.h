@@ -146,13 +146,20 @@ class NetDevice : public Object
     typedef void (*LinkChangeTracedCallback)();
     /**
      * @param callback the callback to invoke
+     * @returns a CallbackId that can be used to remove the callback
      *
      * Add a callback invoked whenever the link
      * status changes to UP. This callback is typically used
      * by the IP/ARP layer to flush the ARP cache and by IPv6 stack
      * to flush NDISC cache whenever the link goes up.
      */
-    virtual void AddLinkChangeCallback(Callback<void> callback) = 0;
+    virtual CallbackId AddLinkChangeCallback(Callback<void> callback) = 0;
+    /**
+     * @param id the CallbackId returned by AddLinkChangeCallback
+     *
+     * Removes the link change callback corresponding to the provided CallbackId.
+     */
+    virtual void RemoveLinkChangeCallback(CallbackId id) = 0;
     /**
      * @return true if this interface supports a broadcast address,
      *         false otherwise.
