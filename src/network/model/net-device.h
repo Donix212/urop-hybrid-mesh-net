@@ -12,7 +12,6 @@
 #include "address.h"
 #include "packet.h"
 
-#include "ns3/callback-id.h"
 #include "ns3/callback.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ipv6-address.h"
