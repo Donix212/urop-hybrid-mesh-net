@@ -440,6 +440,18 @@ PointToPointNetDevice::AddLinkChangeCallback(Callback<void> callback)
     m_linkChangeCallbacks.ConnectWithoutContext(callback);
 }
 
+CallbackId
+PointToPointNetDevice::AddLinkChangeCallback(Callback<void> callback)
+{
+    return m_linkChangeCallbacks.Add(callback);
+}
+
+void
+PointToPointNetDevice::RemoveLinkChangeCallback(CallbackId id)
+{
+    m_linkChangeCallbacks.Remove(id);
+}
+
 //
 // This is a point-to-point device, so every transmission is a broadcast to
 // all of the devices on the network.

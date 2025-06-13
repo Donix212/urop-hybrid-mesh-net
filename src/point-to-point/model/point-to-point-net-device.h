@@ -187,6 +187,9 @@ class PointToPointNetDevice : public NetDevice
     void SetPromiscReceiveCallback(PromiscReceiveCallback cb) override;
     bool SupportsSendFrom() const override;
 
+    virtual CallbackId AddLinkChangeCallback(Callback<void> callback) override;
+    virtual void RemoveLinkChangeCallback(CallbackId id) override;
+
   protected:
     /**
      * @brief Handler for MPI receive event
@@ -417,7 +420,7 @@ class PointToPointNetDevice : public NetDevice
                                                          //   (promisc data)
     uint32_t m_ifIndex;                                  //!< Index of the interface
     bool m_linkUp;                                       //!< Identify if the link is up or not
-    TracedCallback<> m_linkChangeCallbacks;              //!< Callback for the link change event
+    TracedCallbackList<> m_linkChangeCallbacks;          //!< Callback for the link change event
 
     static const uint16_t DEFAULT_MTU = 1500; //!< Default MTU
 
