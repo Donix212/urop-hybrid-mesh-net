@@ -381,9 +381,9 @@ Here are examples of common usage:
     {
       std::cout << "t4 is greater than 3 seconds\n";
     }
-    
+  
     double ms = t4.GetMilliSeconds(); // convert to double in ms
-    
+  
     std::cout << t4.As(Time::MS) << " ms\n"; // stream with specific unit
 
 .. warning::
