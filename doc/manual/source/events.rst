@@ -374,11 +374,11 @@ Here are examples of common usage:
 
 .. code-block:: c++
 
-  Time t1 = Seconds(1.5);      // 1.5 seconds
+  Time t1 = MilliSeconds(1500); // 1.5 s = 1500 ms (avoids float rounding)
   Time t2 = MicroSeconds(500); // 500 microseconds
   Time t3 = t1 + t2;           // arithmetic
   Time t4 = t3 * 2;            // multiplication
-  if (t4 > Seconds(3.0))
+  if (t4 > Seconds(3))
   {
     std::cout << "t4 is greater than 3 seconds\n";
   }
@@ -386,7 +386,13 @@ Here are examples of common usage:
   double ms = t4.GetMilliSeconds(); // convert to double in ms
   
   std::cout << t4.As(Time::MS) << " ms\n"; // stream with specific unit
-  
+    
+.. warning::
+
+   Avoid constructing Time objects using floating-point values like ``Seconds(1.5)``.
+   Floating-point precision can cause subtle rounding errors. Use integer-based units
+   such as ``MilliSeconds(1500)`` or ``MicroSeconds(1500000)`` instead, where possible.
+
 When calling ``Time::SetResolution()``, there is a trade-off between
 the precision of time measurements and the maximum simulation time
 span that can be represented. Finer resolutions (like femtoseconds)
