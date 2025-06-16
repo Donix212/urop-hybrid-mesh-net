@@ -372,9 +372,9 @@ from the resolution unit.
 
 Here are examples of common usage:
 
-..code - block::c++
+..code - block:: c++
 
-    Time t1 = MilliSeconds(1500); // 1.5 s = 1500 ms (avoids float rounding)
+    Time t1 = MilliSeconds(1500);     // 1.5 s = 1500 ms (avoids float rounding)
     Time t2 = MicroSeconds(500);      // 500 microseconds
     Time t3 = t1 + t2;                // arithmetic
     Time t4 = t3 * 2;                 // multiplication
