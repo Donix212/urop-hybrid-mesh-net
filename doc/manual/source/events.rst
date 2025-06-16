@@ -347,6 +347,7 @@ The engine type can be changed after `Simulator::Destroy()` but before
 any additional calls to the Simulator API, for instance when executing
 multiple runs in a single |ns3| invocation.
 
+
 Time
 ****
 
@@ -381,9 +382,9 @@ Here are examples of common usage:
     {
       std::cout << "t4 is greater than 3 seconds\n";
     }
-  
+
     double ms = t4.GetMilliSeconds(); // convert to double in ms
-  
+
     std::cout << t4.As(Time::MS) << " ms\n"; // stream with specific unit
 
 .. warning::
