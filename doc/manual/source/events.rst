@@ -389,8 +389,8 @@ Here are examples of common usage:
 
 .. warning::
 
-   While floating-point constructors like ``Seconds(1.5)`` are generally safe 
-   and preserve sufficient precision (even with femtosecond resolution), 
+   While floating-point constructors like ``Seconds(1.5)`` are generally safe
+   and preserve sufficient precision (even with femtosecond resolution),
    users should still be aware that floating-point arithmetic can introduce
    subtle rounding errors in certain cases. When exact integer values are available
    or required, prefer constructors like ``MilliSeconds(1500)`` for full control over precision.
