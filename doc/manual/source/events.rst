@@ -378,6 +378,7 @@ Here are examples of common usage:
     Time t2 = MicroSeconds(500);      // 500 microseconds
     Time t3 = t1 + t2;                // arithmetic
     Time t4 = t3 * 2;                 // multiplication
+
     if (t4 > Seconds(3))
     {
       std::cout << "t4 is greater than 3 seconds\n";
@@ -385,7 +386,7 @@ Here are examples of common usage:
 
     double ms = t4.GetMilliSeconds(); // convert to double in ms
 
-    std::cout << t4.As(Time::MS) << " ms\n"; // stream with specific unit
+    std::cout << t4.As(Time::MS) << "\n"; // stream with specific unit
 
 .. warning::
 
