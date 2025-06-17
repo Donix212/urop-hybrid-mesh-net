@@ -158,7 +158,6 @@ void
 TrafficGeneratorNgmnFtpMulti::DoInitialize()
 {
     NS_LOG_FUNCTION(this);
-    // configure random number generators parameters
     m_readingTime = CreateObject<ExponentialRandomVariable>();
     m_readingTime->SetAttribute("Mean", DoubleValue(m_readingTimeMean));
     m_fileSize = CreateObject<LogNormalRandomVariable>();

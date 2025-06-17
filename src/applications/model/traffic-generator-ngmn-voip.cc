@@ -123,13 +123,12 @@ void
 TrafficGeneratorNgmnVoip::UpdateState()
 {
     NS_LOG_FUNCTION(this);
-    // check what is the next state
+    // check what the next state is
     if (m_state == VoipState::INACTIVE)
     {
         double randomValue = m_fromInactiveToActive->GetValue();
         // throw a coin and check if lower than the probability of transmission from inactive to
-        // active
-        //, switch to active state
+        // active, switch to active state
         if (randomValue < m_c)
         {
             // switch to active state
@@ -148,7 +147,7 @@ TrafficGeneratorNgmnVoip::UpdateState()
         }
     }
     // The model is assumed updated at the speech encoder frame rate R=1/T, where T
-    //  is the encoder frame duration (typically, 20ms)
+    // is the encoder frame duration (typically, 20ms)
     m_updateState = Simulator::Schedule(MilliSeconds(m_encoderFrameLength),
                                         &TrafficGeneratorNgmnVoip::UpdateState,
                                         this);
@@ -195,7 +194,6 @@ TrafficGeneratorNgmnVoip::DoDispose()
     NS_LOG_FUNCTION(this);
     m_fromActiveToInactive = nullptr;
     m_fromInactiveToActive = nullptr;
-    // chain up
     TrafficGenerator::DoDispose();
 }
 
@@ -209,7 +207,6 @@ TrafficGeneratorNgmnVoip::DoInitialize()
     m_fromInactiveToActive = CreateObject<UniformRandomVariable>();
     m_fromInactiveToActive->SetAttribute("Min", DoubleValue(0));
     m_fromInactiveToActive->SetAttribute("Max", DoubleValue(1));
-    // chain up
     TrafficGenerator::DoInitialize();
 }
 

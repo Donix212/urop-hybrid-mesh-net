@@ -14,9 +14,10 @@ namespace ns3
 
 class Address;
 class Socket;
+class TrafficGeneratorNgmnFtpTestCase;
 
 /**
- * File transfer application that allow sending multiple files in a row
+ * A multi-file transfer application that allows sending multiple files in a row
  * where each file is of a variable file size with a variable reading time.
  * Current implementation follows the FTP model explained in the Annex A of
  * White Paper by the NGMN Alliance.
@@ -24,17 +25,17 @@ class Socket;
  * An FTP session is a sequence of file transfers separated by reading times.
  * The two main FTP session parameters are:
  *      - The size S of a file to be transferred
- *      - The reading time D, i.e. the time interval between end of download
- *      of previous file and the user request for the next file
+ *      - The reading time D, i.e. the time interval between the end of download of the
+ *       previous file and the user request for the next file
  *
  * The file size follows Truncated Lognormal Distribution, while the
  * reading time follows Exponential Distribution.
  */
-
-class TrafficGeneratorNgmnFtpTestCase;
-
 class TrafficGeneratorNgmnFtpMulti : public TrafficGenerator
 {
+    /**
+     * @brief NGMN test friend class.
+     */
     friend TrafficGeneratorNgmnFtpTestCase;
 
   public:
@@ -52,7 +53,8 @@ class TrafficGeneratorNgmnFtpMulti : public TrafficGenerator
      */
     ~TrafficGeneratorNgmnFtpMulti() override;
     /**
-     * @brief Sets the packet size
+     * @brief Sets the packet sizes to use for FTP transfers
+     * @param packetSize Size (in bytes) of each packet
      */
     void SetPacketSize(uint32_t packetSize);
 
@@ -78,7 +80,6 @@ class TrafficGeneratorNgmnFtpMulti : public TrafficGenerator
     void StartApplication() override;
     /**
      * @brief Generates reading time using exponential distribution
-     *
      */
     void PacketBurstSent() override;
     /**
@@ -96,14 +97,20 @@ class TrafficGeneratorNgmnFtpMulti : public TrafficGenerator
      */
     uint32_t GetNextPacketSize() const override;
 
-    uint32_t m_maxFileSize;                       //!< Max file size in number of bytes
-    Ptr<ExponentialRandomVariable> m_readingTime; //!< Exponential random variable for reading time
-    Ptr<LogNormalRandomVariable> m_fileSize; //!< Lognormal random variable for file size generation
-    double m_readingTimeMean{0.0};           //!< The mean reading time in seconds
-    double m_fileSizeMu{0.0}; //!< Mu parameter of lognormal distribution for file size generation
-    double m_fileSizeSigma{
-        0.0}; //!< Sigma parameter of lognormal distribution for file size generation
-    uint32_t m_packetSize{0}; //!< Size of data to send each time
+    /// Max file size in number of bytes
+    uint32_t m_maxFileSize;
+    /// Exponential random variable for reading time
+    Ptr<ExponentialRandomVariable> m_readingTime;
+    /// Lognormal random variable for file size generation
+    Ptr<LogNormalRandomVariable> m_fileSize;
+    /// The mean reading time in seconds
+    double m_readingTimeMean{0.0};
+    /// Mu parameter of lognormal distribution for file size generation
+    double m_fileSizeMu{0.0};
+    /// Sigma parameter of lognormal distribution for file size generation
+    double m_fileSizeSigma{0.0};
+    /// Size of data to send each time
+    uint32_t m_packetSize{0};
 };
 
 } // namespace ns3

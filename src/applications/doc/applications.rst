@@ -223,17 +223,17 @@ Design
 a high-level of granularity of the possible configurations. It supports:
 
 - A variable packet burst size to support a wide range of different use cases, from just several packets to whatever size
-of the packet burst expressed in bytes. To support this it was necessary to allow specifying the packet burst size in
-either the number of bytes or a number of packets. For this we have created the function ``GenerateNextPacketBurstSize``
-which should be overridden by the child traffic generator class to generate the next packet burst size in bytes or in
-packets and set the corresponding value by calling either ``SetPacketBurstSizeInBytes`` or ``SetPacketBurstSizeInPackets``.
+  of the packet burst expressed in bytes. To support this it was necessary to allow specifying the packet burst size in
+  either the number of bytes or a number of packets. For this we have created the function ``GenerateNextPacketBurstSize``
+  which should be overridden by the child traffic generator class to generate the next packet burst size in bytes or in
+  packets and set the corresponding value by calling either ``SetPacketBurstSizeInBytes`` or ``SetPacketBurstSizeInPackets``.
 
 - A variable packet arrival time to support different use cases needed by different traffic models. ``TrafficGenerator``
-supports both, a deterministic and a variable packet arrival time. The function that should be implemented
-by the child classes is called ``GetNextPacketTime``.
+  supports both, a deterministic and a variable packet arrival time. The function that should be implemented
+  by the child classes is called ``GetNextPacketTime``.
 
 - A variable packet size to support different traffic models. ``TrafficGenerator`` supports both, a deterministic
-and a variable packet arrival time. The function that should be implemented by the child classes is called ``GetNextPacketSize``.
+  and a variable packet arrival time. The function that should be implemented by the child classes is called ``GetNextPacketSize``.
 
 Different traffic generators have been implemented by inheriting ``TrafficGenerator`` class and according to NGMN
 Alliance `[3]`_, such as FTP, video streaming, gaming and VoIP. In the following subsection we describe
@@ -354,7 +354,9 @@ References
 
 \
 
-.. _`5`:
+.. _`[5]`:
 
 [5] Biljana Bojovic and Sandra Lagen. "Enabling NGMN Mixed Traffic Models for ns-3", In Proceedings of the 2022 Workshop
 on ns-3 (WNS3 '22). ACM, New York, NY, USA, 127–134. https://doi.org/10.1145/3532577.3532602
+
+\

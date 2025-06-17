@@ -11,9 +11,8 @@
 
 namespace ns3
 {
-
-bool TGT_ENABLE_PRINTING =
-    false; // variable that allows printing of tested generated random values to files
+/// @brief variable that allows printing of tested generated random values to files
+bool TGT_ENABLE_PRINTING = false;
 
 TrafficGeneratorTestCase::TrafficGeneratorTestCase(std::string name,
                                                    TypeId trafficGeneratorType,
@@ -168,7 +167,7 @@ TrafficGeneratorNgmnFtpTestCase::DoRun()
 
     uint64_t averageFileSize = totalFileSizeBytes / repetitions;
     Time averageReadingTime = totalReadingTime / repetitions;
-    // According to the NMGN white paper the mean value should be aprox. 2MBytes
+    // According to the NMGN white paper the mean value should be approx. 2MBytes
     NS_TEST_ASSERT_MSG_EQ_TOL(averageFileSize,
                               2e6,
                               2e6 * 0.1,

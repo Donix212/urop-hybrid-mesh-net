@@ -52,9 +52,15 @@ class TrafficGeneratorNgmnVoip : public TrafficGenerator
 
     ~TrafficGeneratorNgmnVoip() override;
 
+    /**
+     * Enumeration representing different VOIP states
+     * @brief The possible states of a VOIP call
+     */
     enum class VoipState
     {
+        /// State when the call is not active
         INACTIVE,
+        /// State when the call is active
         ACTIVE
     };
 
@@ -73,52 +79,72 @@ class TrafficGeneratorNgmnVoip : public TrafficGenerator
     void DoInitialize() override;
 
   private:
-    /*
+    /**
      * @brief Inherited from Application base class.
-     *  In its implementation it calculates the transition probabilities between
-     *  active and inactive VOIP states
-     *  // Called at time specified by Start by the DoInitialize method
+     * In its implementation, it calculates the transition probabilities between
+     * active and inactive VOIP states
      */
     void StartApplication() override;
+    /**
+     * @brief Inherited from Application base class.
+     */
     void StopApplication() override;
-
-    /*
-     * @brief Updates the model state (ACTIVE/INACTIVE).
-     * The model is assumed updated at the speech encoder frame rate R=1/T,
+    /**
+     * Updates the current state of the VOIP generator (ACTIVE/INACTIVE).
+     * The model is updated at the speech encoder frame rate R=1/T,
      * where T is the encoder frame duration (typically, 20ms)
+     * @brief This method transitions between different states based on call activity and timing.
      */
     void UpdateState();
-
     /**
      * @brief Generates the packet burst size in bytes
      */
     void GenerateNextPacketBurstSize() override;
-
     /**
      * @brief Get the amount of data to transfer
      * @return the amount of data to transfer
      */
     uint32_t GetNextPacketSize() const override;
-
     /**
      * @brief Get the relative time when the next packet should be sent
      * @return the relative time when the next packet will be sent
      */
     Time GetNextPacketTime() const override;
-
+    /**
+     * A random variable used to determine the time spent in the active state before transitioning
+     * to the inactive state.
+     *
+     * In the VoIP traffic model, this random variable represents the probability of transitioning
+     * from the active speech state to the inactive or silent state. The model is updated at the
+     * speech encoder frame rate R=1/T, where T is the encoder frame duration (typically, 20ms).
+     */
     Ptr<UniformRandomVariable> m_fromActiveToInactive;
+    /**
+     * @brief A pointer to a uniform random variable used to determine the probability of
+     * transitioning from an inactive to an active state in the VOIP traffic model.
+     */
     Ptr<UniformRandomVariable> m_fromInactiveToActive;
 
-    uint32_t m_encoderFrameLength{0};       //!< The encoder frame length in ms
-    uint32_t m_meanTalkSpurtDuration{0};    //!< A mean talk spurt duration in ms
-    double m_voiceActivityFactor{0.0};      //!< The voice activity factor [0,1]
-    uint32_t m_activePayload{0};            //!< Active payload size in bytes
-    uint32_t m_SIDPeriodicity{0};           //!< SID periodicity in milliseconds
-    uint32_t m_SIDPayload{0};               //!<  The SID payload size in the number of bytes
-    VoipState m_state{VoipState::INACTIVE}; //!< Voip application state
-    EventId m_updateState;                  //! saves the event for the next update of the state
-    double m_a{0.0}; //!< The probability of transitioning from the active to the inactive state
-    double m_c{0.0}; //!< The probability of transitioning from the inactive to the active state
+    /// The encoder frame length in ms
+    uint32_t m_encoderFrameLength{0};
+    /// A mean talk spurt duration in ms
+    uint32_t m_meanTalkSpurtDuration{0};
+    /// The voice activity factor [0,1]
+    double m_voiceActivityFactor{0.0};
+    /// Active payload size in bytes
+    uint32_t m_activePayload{0};
+    /// SID periodicity in milliseconds
+    uint32_t m_SIDPeriodicity{0};
+    /// The SID payload size in the number of bytes
+    uint32_t m_SIDPayload{0};
+    /// Voip application state
+    VoipState m_state{VoipState::INACTIVE};
+    /// saves the event for the next update of the state
+    EventId m_updateState;
+    /// The probability of transitioning from the active to the inactive state
+    double m_a{0.0};
+    /// The probability of transitioning from the inactive to the active state
+    double m_c{0.0};
 };
 
 } // namespace ns3

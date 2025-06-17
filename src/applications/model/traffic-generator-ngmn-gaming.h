@@ -26,6 +26,9 @@ class TrafficGeneratorNgmnGamingTestCase;
 
 class TrafficGeneratorNgmnGaming : public TrafficGenerator
 {
+    /**
+     * @brief NGMN test friend class.
+     */
     friend TrafficGeneratorNgmnGamingTestCase;
 
   public:
@@ -40,7 +43,7 @@ class TrafficGeneratorNgmnGaming : public TrafficGenerator
     ~TrafficGeneratorNgmnGaming() override;
 
     /**
-     * Assign a fixed random variable stream number to the random variables
+     * @brief Assign a fixed random variable stream number to the random variables
      * used by this model. Return the number of streams (possibly zero) that
      * have been assigned.
      *
@@ -59,7 +62,6 @@ class TrafficGeneratorNgmnGaming : public TrafficGenerator
     void StartApplication() override;
     /**
      * @brief Generates reading time using exponential distribution
-     *
      */
     void PacketBurstSent() override;
     /**
@@ -81,35 +83,33 @@ class TrafficGeneratorNgmnGaming : public TrafficGenerator
      * @return the relative time when the next packet will be sent
      */
     Time GetNextPacketTime() const override;
-
-    Ptr<UniformRandomVariable>
-        m_initPacketArrivalVariable; //!< Uniform packet arrival random variable for the initial
-                                     //!< packet arrive time for downlink
-    Ptr<UniformRandomVariable>
-        m_packetSizeRandomVariable; //!< Uniform packet size random variable for the packet size
-                                    //!< generation for both, downlink and uplink
-    Ptr<UniformRandomVariable>
-        m_packetArrivalVariable; //!< Uniform packet arrival random variable for the packet arrival
-                                 //!< time for downlink
-    bool m_isDownlink{
-        true}; //!< whether this application will generate downlink or uplink gaming traffic
-    uint32_t m_aParamPacketSizeUl{
-        0}; //!< "a" parameter used for the packet size generation in uplink
-    double m_bParamPacketSizeUl{
-        0.0}; //!< "b" parameter used for the packet size generation in uplink
-    uint32_t m_aParamPacketSizeDl{
-        0}; //!< "a" parameter used for the packet size generation in downlink
-    double m_bParamPacketSizeDl{
-        0.0}; //!< "b" parameter used for the packet size generation in downlink
-    double m_aParamPacketArrivalDl{
-        0.0}; //!< "a" parameter used for the packet arrival generation in downlink
-    double m_bParamPacketArrivalDl{
-        0.0}; //!< "a" parameter used for the packet arrival generation in downlink
-    uint32_t m_initialPacketArrivalMin{0}; //!< the minimum value for the initial packet arrival
-                                           //!< generation for both, downlink and uplink
-    uint32_t m_initialPacketArrivalMax{0}; //!< the maximum value for the initial packet arrival
-                                           //!< generation for both, downlink and uplink
-    uint32_t m_packetArrivalUl{0}; //!< the packet arrival in uplink in number of milliseconds
+    /// Uniform packet arrival random variable for the initial packet arrive time for downlink
+    Ptr<UniformRandomVariable> m_initPacketArrivalVariable;
+    /// Uniform packet size random variable for the packet size generation for both, downlink and
+    /// uplink
+    Ptr<UniformRandomVariable> m_packetSizeRandomVariable;
+    /// Uniform packet arrival random variable for the packet arrival time for downlink
+    Ptr<UniformRandomVariable> m_packetArrivalVariable;
+    /// whether this application will generate downlink or uplink gaming traffic
+    bool m_isDownlink{true};
+    /// "a" parameter used for the packet size generation in uplink
+    uint32_t m_aParamPacketSizeUl{0};
+    /// "b" parameter used for the packet size generation in uplink
+    double m_bParamPacketSizeUl{0.0};
+    /// "a" parameter used for the packet size generation in downlink
+    uint32_t m_aParamPacketSizeDl{0};
+    /// "b" parameter used for the packet size generation in downlink
+    double m_bParamPacketSizeDl{0.0};
+    /// "a" parameter used for the packet arrival generation in downlink
+    double m_aParamPacketArrivalDl{0.0};
+    /// "a" parameter used for the packet arrival generation in downlink
+    double m_bParamPacketArrivalDl{0.0};
+    /// the minimum value for the initial packet arrival generation for both, downlink and uplink
+    uint32_t m_initialPacketArrivalMin{0};
+    /// the maximum value for the initial packet arrival generation for both, downlink and uplink
+    uint32_t m_initialPacketArrivalMax{0};
+    /// the packet arrival in uplink in number of milliseconds
+    uint32_t m_packetArrivalUl{0};
 };
 
 } // namespace ns3

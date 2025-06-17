@@ -87,7 +87,6 @@ TrafficGenerator::DoDispose()
 {
     NS_LOG_FUNCTION(this);
     m_socket = nullptr;
-    // chain up
     Application::DoDispose();
 }
 
@@ -159,7 +158,7 @@ TrafficGenerator::SendPacketBurst()
                 << m_packetBurstSizeInPackets << " packets");
         }
 
-        // If the event is running cancel it since we call directly the first packet of the packet
+        // If the event is running, cancel it since we call directly the first packet of the packet
         // burst
         if (m_eventIdSendNextPacket.IsPending())
         {
@@ -246,6 +245,8 @@ TrafficGenerator::GetPacketBurstSizeInPackets() const
 void
 TrafficGenerator::SendNextPacket()
 {
+    NS_LOG_FUNCTION(this);
+
     if (m_stopped)
     {
         NS_LOG_WARN("Ignore SendNextPacket because the application is stopped.");
@@ -268,7 +269,7 @@ TrafficGenerator::SendNextPacket()
     // Time to send more
     uint32_t toSend = GetNextPacketSize();
     // Make sure we don't send too many
-    if ((m_packetBurstSizeInBytes > 0) and
+    if ((m_packetBurstSizeInBytes > 0) &&
         (m_packetBurstSizeInBytes - m_currentBurstTotBytes > toSend))
     {
         toSend = std::min(toSend, m_packetBurstSizeInBytes - m_currentBurstTotBytes);
@@ -389,21 +390,27 @@ void
 TrafficGenerator::SendNextPacketIfConnected(Ptr<Socket>, uint32_t)
 {
     NS_LOG_FUNCTION(this);
-    if (m_socket)
+    if (!m_socket || (!m_connected && m_tid != UdpSocketFactory::GetTypeId()))
     {
-        if (m_connected || m_tid == UdpSocketFactory::GetTypeId())
-        { // Only send new data if the connection has completed
-            NS_LOG_LOGIC("TrafficGenerator SendNextPacketIfConnected callback triggers new "
-                         "SendNextPacket call");
-            // Only if the event is not running scheule it
-            if (!m_eventIdSendNextPacket.IsPending() && !m_waitForNextPacketBurst)
-            {
-                Time nextPacketTime = GetNextPacketTime();
-                m_eventIdSendNextPacket =
-                    Simulator::Schedule(nextPacketTime, &TrafficGenerator::SendNextPacket, this);
-            }
-        }
+        NS_LOG_INFO("Invalid socket or connection not established or invalid protocol - skipping "
+                    "packet send");
+        return;
     }
+
+    // Only send new data if the connection has completed
+    NS_LOG_LOGIC("TrafficGenerator SendNextPacketIfConnected callback triggers new "
+                 "SendNextPacket call");
+
+    if (m_eventIdSendNextPacket.IsPending() || m_waitForNextPacketBurst)
+    {
+        NS_LOG_INFO("Already scheduled next packet or waiting for burst - skipping");
+        return;
+    }
+
+    // Calculate and schedule next packet time
+    Time nextPacketTime = GetNextPacketTime();
+    m_eventIdSendNextPacket =
+        Simulator::Schedule(nextPacketTime, &TrafficGenerator::SendNextPacket, this);
 }
 
 void

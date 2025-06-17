@@ -124,8 +124,8 @@ TrafficGeneratorNgmnVideo::GetNextPacketSize() const
     // We implement a bounded pareto (not truncated Pareto), to get the expected mean.
     // This way, if RV x (generated according to Pareto type I distribution) is lower
     // than the maximum value, x=max.
-    // Also, in NGMN doc there is a typo in the scale value for video packet size,
-    // which is 40B according to wifi doc IEEE 802.16m-08/004r2.
+    // Also, in NGMN doc. there is a typo in the scale value for video packet size,
+    // which is 40B according to doc. IEEE 802.16m-08/004r2.
     uint32_t packetSize = floor(std::min(m_packetSizeGenerator->GetValue(), m_packetSizeBound));
     NS_LOG_DEBUG(" Next packet size :" << packetSize);
     return packetSize;
@@ -150,7 +150,6 @@ TrafficGeneratorNgmnVideo::PacketBurstSent()
     NS_LOG_FUNCTION(this);
     m_packetFrameCounter++;
     NS_LOG_INFO("Next frame to send: " << m_packetFrameCounter);
-    // inter-frame interval time
     Simulator::Schedule(m_interframeIntervalTime, &TrafficGenerator::SendPacketBurst, this);
 }
 
@@ -167,7 +166,6 @@ TrafficGeneratorNgmnVideo::DoDispose()
     NS_LOG_FUNCTION(this);
     m_packetSizeGenerator = nullptr;
     m_packetTimeGenerator = nullptr;
-    // chain up
     TrafficGenerator::DoDispose();
 }
 
@@ -181,7 +179,6 @@ TrafficGeneratorNgmnVideo::DoInitialize()
     m_packetTimeGenerator = CreateObject<ParetoRandomVariable>();
     m_packetTimeGenerator->SetAttribute("Scale", DoubleValue(m_packetTimeScale));
     m_packetTimeGenerator->SetAttribute("Shape", DoubleValue(m_packetTimeShape));
-    // chain up
     TrafficGenerator::DoInitialize();
 }
 
