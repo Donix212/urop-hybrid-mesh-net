@@ -157,6 +157,7 @@ set(source_files
     model/object.cc
     model/test.cc
     model/random-variable-stream.cc
+    model/replay-clock.cc
     model/rng-seed-manager.cc
     model/rng-stream.cc
     model/command-line.cc
@@ -266,6 +267,7 @@ set(header_files
     model/priority-queue-scheduler.h
     model/ptr.h
     model/random-variable-stream.h
+    model/replay-clock.h
     model/rng-seed-manager.h
     model/rng-stream.h
     model/scheduler.h
@@ -326,6 +328,7 @@ set(test_sources
     test/one-uniform-random-variable-many-get-value-calls-test-suite.cc
     test/pair-value-test-suite.cc
     test/ptr-test-suite.cc
+    test/replay-clock-test-suite.cc
     test/sample-test-suite.cc
     test/simulator-test-suite.cc
     test/splitstring-test-suite.cc
