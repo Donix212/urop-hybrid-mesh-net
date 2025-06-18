@@ -20,9 +20,35 @@ namespace ns3 {
 
 class ReplaySwitchClock {
 public:
+    /**
+     * @brief Default constructor for ReplaySwitchClock.
+     *
+     * This constructor initializes a ReplaySwitchClock instance with default values.
+     */
     ReplaySwitchClock();
+
+    /**
+     * @brief Constructor for ReplaySwitchClock.
+     *
+     * This constructor initializes a ReplaySwitchClock instance with the given parameters.
+     *
+     * @param clusterClock The cluster clock to set.
+     * @param switchClock The switch clock to set.
+     */
     virtual ~ReplaySwitchClock();
 
+    /**
+     * @brief Reconcile the cluster clock with the switch clock.
+     *
+     * This function updates the switch clock based on the cluster clock and reconciles the offsets.
+     *
+     * @param clusterClock The cluster clock to reconcile with.
+     * @param c_nodeId The ID of the cluster node.
+     * @param s_nodeId The ID of the switch node.
+     * @param physicalTime The physical time in nanoseconds.
+     * @param u_epsilon The epsilon value for offset calculations.
+     * @param u_interval The interval for HLC calculations.
+     */
     void ReconcileClusterClock(ReplayClock clusterClock, int64_t c_nodeId, int64_t s_nodeId, int64_t physicalTime, int64_t u_epsilon, int64_t u_interval);
 
 private:
