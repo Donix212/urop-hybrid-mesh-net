@@ -47,7 +47,7 @@ public:
    * @param offsets The offsets for the clock.
    * @param counters The counters for the clock.
    */
-  ReplayClock(Time hlc, std::bitset<64> bitmap, std::bitset<64> offsets, int64_t counters);
+  ReplayClock(int64_t hlc, std::bitset<64> bitmap, std::bitset<64> offsets, int64_t counters);
 
   /**
    * @brief Destructor for ReplayClock.
@@ -63,9 +63,9 @@ public:
    *
    * This function retrieves the HLC value for the clock.
    *
-   * @return The HLC value as a Time object.
+   * @return The HLC value as a int64 object.
    */
-  Time GetHLC() const { return m_hlc; }
+  int64_t GetHLC() const { return m_hlc; }
 
   /**
    * @brief Get the bitmap for the clock.
@@ -103,7 +103,7 @@ public:
    *
    * @param hlc The new HLC value to set.
    */
-  void SetHLC(Time hlc) { m_hlc = hlc; }
+  void SetHLC(int64_t hlc) { m_hlc = hlc; }
 
   /**
    * @brief Set the bitmap for the clock.
@@ -175,7 +175,6 @@ public:
       m_offsets(other.m_offsets),
       m_counters(other.m_counters)
   {
-    NS_LOG_FUNCTION(this);
   }
 
   /**
@@ -188,7 +187,6 @@ public:
    */
   ReplayClock& operator=(const ReplayClock& other)
   {
-    NS_LOG_FUNCTION(this);
     if (this != &other)
     {
       m_hlc = other.m_hlc;
@@ -211,7 +209,7 @@ public:
    * @param u_epsilon The epsilon value for offset calculations.
    * @param u_interval The interval for HLC calculations.
    */
-  void Shift(int64_t physicalTimeInt, int64_t nodeId, int64_t u_epsilon, int64_t u_interval);
+  void Shift(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon);
 
   /**
    * @brief Merge the current clock with another clock from the same epoch.
@@ -296,7 +294,7 @@ public:
    * @param u_epsilon The epsilon value for offset calculations.
    * @param u_interval The interval for HLC calculations.
    */
-  void Send(Time physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval);
+  void Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval);
 
   /**
    * @brief Receive a clock state from another node.
@@ -310,13 +308,13 @@ public:
    * @param u_epsilon The epsilon value for offset calculations.
    * @param u_interval The interval for HLC calculations.
    */
-  void Recv(ReplayClock o_replayClock, int64_t o_nodeId, Time physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval);
+  void Recv(ReplayClock o_replayClock, int64_t o_nodeId, int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval);
 
 private:
 
   // Top level clock variables
 
-  Time                  m_hlc;          //!< Hybrid Logical Clock value
+  int64_t               m_hlc;          //!< Hybrid Logical Clock value
   std::bitset<64>       m_bitmap;       //!< Logical clock value
   std::bitset<64>       m_offsets;      //!< Offset for the clock
   int64_t               m_counters;     //!< Counter for the clock

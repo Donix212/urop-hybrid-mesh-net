@@ -18,6 +18,8 @@
  */
 
 #include "replay-clock.h"
+#include "log.h"
+#include <bit>
 
 namespace ns3
 {
@@ -27,13 +29,13 @@ NS_LOG_COMPONENT_DEFINE("ReplayClock");
 ReplayClock::ReplayClock()
 {
     NS_LOG_FUNCTION(this);
-    m_hlc = Time(0.0);
+    m_hlc = 0;
     m_bitmap = 0;
     m_offsets = 0;
     m_counters = 0;
 }
 
-ReplayClock::ReplayClock(Time hlc, std::bitset<64> bitmap, std::bitset<64> offsets, int64_t counters)
+ReplayClock::ReplayClock(int64_t hlc, std::bitset<64> bitmap, std::bitset<64> offsets, int64_t counters)
 {
     NS_LOG_FUNCTION(this);
     m_hlc = hlc;
@@ -48,17 +50,17 @@ ReplayClock::~ReplayClock()
 }
 
 void 
-ReplayClock::Shift(int64_t physicalTimeInt, int64_t nodeId, int64_t u_epsilon, int64_t u_interval)
+ReplayClock::Shift(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this << physicalTimeInt << nodeId << u_epsilon);
+    NS_LOG_FUNCTION(this << physicalTime << nodeId << u_epsilon);
     int64_t index = 0;
     int64_t bitmap = m_bitmap.to_ullong();
     while(bitmap > 0)
     {
         int16_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
         int64_t offsetAtIndex = GetOffsetAtIndex(index, u_epsilon);
-        int64_t newOffsetAtIndex = std::min(physicalTimeInt - ((m_hlc.GetNanoSeconds() / u_interval) - offsetAtIndex), u_epsilon);
-        if(newOffsetAtIndex >= u_epsilon)
+        int64_t newOffsetAtIndex = std::min(physicalTime - (m_hlc - offsetAtIndex), u_epsilon);
+        if(newOffsetAtIndex == u_epsilon)
         {
             RemoveOffsetAtIndex(index, u_epsilon);
             m_bitmap[processId] = 0;
@@ -74,7 +76,7 @@ ReplayClock::Shift(int64_t physicalTimeInt, int64_t nodeId, int64_t u_epsilon, i
         index++;
     }
 
-    m_hlc = Time(NanoSeconds(physicalTimeInt * u_interval));
+    m_hlc = physicalTime;
     
 }
 
@@ -150,14 +152,14 @@ int64_t
 ReplayClock::ExtractKBitsFromPositionP(int64_t number, int64_t k, int64_t p)
 {
     NS_LOG_FUNCTION(this);
-    return ((number >> p) & ((1LL << k) - 1));
+    return ((number >> p) & ((1 << k) - 1));
 }
 
 int64_t 
 ReplayClock::GetOffsetAtIndex(int64_t index, int64_t u_epsilon)
 {
     NS_LOG_FUNCTION(this);
-    int64_t maxOffsetSize = log2(u_epsilon);
+    int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
     return ExtractKBitsFromPositionP(m_offsets.to_ulong(), maxOffsetSize, maxOffsetSize * index);
 }
 
@@ -166,7 +168,7 @@ ReplayClock::SetOffsetAtIndex(int64_t index, int64_t value, int64_t u_epsilon)
 {
     NS_LOG_FUNCTION(this);
 
-    int64_t maxOffsetSize = log2(u_epsilon);
+    int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
 
     std::bitset<64> newOffsets(ExtractKBitsFromPositionP(m_offsets.to_ulong(), maxOffsetSize*index, 0));
     newOffsets |= value << index * maxOffsetSize;
@@ -182,13 +184,13 @@ ReplayClock::RemoveOffsetAtIndex(int64_t index, int64_t u_epsilon)
 {
     NS_LOG_FUNCTION(this);
 
-    int64_t maxOffsetSize = log2(u_epsilon);
+    int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
 
     std::bitset<64> newOffsets(ExtractKBitsFromPositionP(m_offsets.to_ulong(), maxOffsetSize*index, 0));
 
     std::bitset<64> rightMask(ExtractKBitsFromPositionP(m_offsets.to_ulong(), 64 - maxOffsetSize * (index + 1), maxOffsetSize * (index + 1)));
 
-    newOffsets |= rightMask << ((index + 1) * maxOffsetSize);
+    newOffsets |= rightMask << (index * maxOffsetSize);
 
     m_offsets = newOffsets;
 
@@ -198,23 +200,23 @@ void
 ReplayClock::PrintClock()
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_INFO("HLC: " << m_hlc.GetNanoSeconds() << " ns");
+    NS_LOG_INFO("HLC: " << m_hlc);
     NS_LOG_INFO("Bitmap: " << m_bitmap);
     NS_LOG_INFO("Offsets: " << m_offsets);
     NS_LOG_INFO("Counters: " << m_counters);
 }
 
 void 
-ReplayClock::Send(Time physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval)
+ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval)
 {
     NS_LOG_FUNCTION(this << physicalTime << nodeId);
 
-    int64_t newHLC = std::max(physicalTime.GetNanoSeconds() / u_interval, m_hlc.GetNanoSeconds() / u_interval);
-    int64_t newOffset = newHLC - m_hlc.GetNanoSeconds() / u_interval;
+    int64_t newHLC = std::max(physicalTime / u_interval, m_hlc);
+    int64_t newOffset = newHLC - m_hlc;
 
     int64_t offsetAtNodeId = GetOffsetAtIndex(nodeId, u_epsilon);
 
-    if(newHLC == m_hlc.GetNanoSeconds() / u_interval)
+    if(newHLC == m_hlc)
     {   
         newOffset = std::min(newOffset, offsetAtNodeId);
 
@@ -248,7 +250,7 @@ ReplayClock::Send(Time physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t 
         {
             int16_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
             int64_t offsetAtIndex = GetOffsetAtIndex(index, u_epsilon);
-            int64_t newOffsetAtIndex = std::min(newHLC - ((m_hlc.GetNanoSeconds() / u_interval) - offsetAtIndex), u_epsilon); 
+            int64_t newOffsetAtIndex = std::min(newHLC - (m_hlc - offsetAtIndex), u_epsilon); 
 
             if(newOffsetAtIndex >= u_epsilon)
             {
@@ -273,25 +275,25 @@ ReplayClock::Send(Time physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t 
             index++;
         }
 
-        m_hlc = NanoSeconds(newHLC * u_interval);
+        m_hlc = newHLC;
         m_bitmap[nodeId] = 1;
 
     }
 }
 
 void 
-ReplayClock::Recv(ReplayClock o_replayClock, int64_t o_nodeId, Time physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval)
+ReplayClock::Recv(ReplayClock o_replayClock, int64_t o_nodeId, int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval)
 {
     NS_LOG_FUNCTION(this);
 
-    int64_t newHLC = std::max(physicalTime.GetNanoSeconds() / u_interval, m_hlc.GetNanoSeconds() / u_interval);
-    newHLC = std::max(newHLC, o_replayClock.m_hlc.GetNanoSeconds() / u_interval);
+    int64_t newHLC = std::max((physicalTime / u_interval), m_hlc);
+    newHLC = std::max(newHLC, o_replayClock.m_hlc);
 
     ReplayClock a = *this;
     ReplayClock b = o_replayClock;
 
-    a.Shift(newHLC, nodeId, u_epsilon, u_interval);
-    b.Shift(newHLC, o_nodeId, u_epsilon, u_interval);
+    a.Shift(newHLC, nodeId, u_epsilon);
+    b.Shift(newHLC, o_nodeId, u_epsilon);
 
     a.MergeSameEpoch(b, u_epsilon);
 
