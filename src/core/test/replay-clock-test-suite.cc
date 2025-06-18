@@ -18,8 +18,7 @@
  */
 
 #include "ns3/test.h"
-
-#include "replay-clock.h"
+#include "ns3/replay-clock.h"
 
 namespace ns3
 {
@@ -27,23 +26,38 @@ namespace ns3
 namespace tests
 {
 
-class ReplayClockTestCase1 : public TestCase
+class ReplayClockTestCase : public TestCase
 {
 
     public:
-        ReplayClockTestCase1();
-        ~ReplayClockTestCase1() override;
+        ReplayClockTestCase() 
+            : TestCase("ReplayClock Test Case"),
+              m_replayClock(Time(0.0), std::bitset<64>(0), std::bitset<64>(0), 0)
+        {
+            NS_LOG_FUNCTION(this);
+        }
+        ~ReplayClockTestCase() override;
     
     private:
         void DoRun() override;
 
         ReplayClock m_replayClock;
-        Time m_hlc;
-        std::bitset<64> m_bitmap;
-        std::bitset<64> m_offsets;
-        int64_t m_counters;
-
 };
+
+void
+ReplayClockTestCase::DoRun()
+{
+    NS_LOG_FUNCTION(this);
+
+    // Test the initial state of ReplayClock
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), Time(0.0), "Initial HLC should be 0");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(), std::bitset<64>(0), "Initial bitmap should be 0");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(0), "Initial offsets should be 0");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(), 0, "Initial counters should be 0");
+
+    // Additional tests can be added here to check functionality
+}
+
 
 
 class ReplayClockTestSuite : public TestSuite
@@ -56,7 +70,7 @@ class ReplayClockTestSuite : public TestSuite
 ReplayClockTestSuite::ReplayClockTestSuite()
     : TestSuite("ReplayClockTestSuite")
 {
-    AddTestCase(new ReplayClockTestCase1);
+    AddTestCase(new ReplayClockTestCase);
 }
 
 // Do not forget to allocate an instance of this TestSuite
