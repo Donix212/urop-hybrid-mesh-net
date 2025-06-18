@@ -158,6 +158,7 @@ set(source_files
     model/test.cc
     model/random-variable-stream.cc
     model/replay-clock.cc
+    model/replay-switch-clock.cc
     model/rng-seed-manager.cc
     model/rng-stream.cc
     model/command-line.cc
@@ -268,6 +269,7 @@ set(header_files
     model/ptr.h
     model/random-variable-stream.h
     model/replay-clock.h
+    model/replay-switch-clock.h
     model/rng-seed-manager.h
     model/rng-stream.h
     model/scheduler.h
