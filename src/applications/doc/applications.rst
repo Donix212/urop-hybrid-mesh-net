@@ -3,14 +3,8 @@
 3GPP HTTP applications
 ----------------------
 
-Model Description
-*****************
-
 The model is a part of the applications library. The HTTP model is based on a commonly
 used 3GPP model in standardization `[4]`_.
-
-Design
-======
 
 This traffic generator simulates web browsing traffic using the Hypertext
 Transfer Protocol (HTTP). It consists of one or more ``ThreeGppHttpClient``
@@ -60,8 +54,8 @@ generate any significant traffic in the system. Reading time is illustrated in
    3GPP HTTP reading time histogram
 
 
-3GPP HTTP server description
-############################
+3GPP HTTP server
+****************
 
 3GPP HTTP server is a model application which simulates the traffic of a web server. This
 application works in conjunction with ``ThreeGppHttpClient`` applications.
@@ -90,8 +84,8 @@ in the packet in such way that lower layers can avoid splitting packets. The cha
 affects all TCP sockets after the server application has started. It is mainly visible in sizes of
 packets received by ``ThreeGppHttpClient`` applications.
 
-3GPP HTTP client description
-############################
+3GPP HTTP client
+****************
 
 3GPP HTTP client is a model application which simulates the traffic of a web browser. This
 application works in conjunction with an ThreeGppHttpServer application.
@@ -147,7 +141,7 @@ compute the delay and RTT of the packet).
 
 
 References
-==========
+**********
 
 Many aspects of the traffic are randomly determined by ``ThreeGppHttpVariables``.
 A separate instance of this object is used by the HTTP server and client applications.
@@ -173,26 +167,15 @@ number on the client side ("ConnectionEstablished",
 "RxMainObjectPacket", "RxMainObject", "RxEmbeddedObjectPacket",
 "RxEmbeddedObject", "Rx", "RxDelay", "RxRtt", "StateTransition").
 
-
-Building the 3GPP HTTP applications
-===================================
-
 Building the applications does not require any special steps to be taken. It suffices to enable
 the applications module.
 
-Examples
-========
-
-For an example demonstrating HTTP applications
-run::
+For an example demonstrating HTTP applications run::
 
   $ ./ns3 run 'three-gpp-http-example'
 
 By default, the example will print out the web page requests of the client and responses of the
 server and client receiving content packets by using LOG_INFO of ``ThreeGppHttpServer`` and ``ThreeGppHttpClient``.
-
-Tests
-=====
 
 For testing HTTP applications, three-gpp-http-client-server-test is provided. Run::
 
@@ -210,15 +193,10 @@ total bytes received by the client, and that ``ThreeGppHttpHeader`` matches the 
 NGMN traffic generators
 -----------------------
 
-Model Description
-*****************
-
 The NGMN traffic generators are a part of the applications library. In the following subsections are described the design,
 different NGMN traffic generators being implemented, and the example and the test. More details and validation figures
 can be found in `[5]`_.
 
-Design
-======
 ``TrafficGenerator`` class is created with an idea to serve as a base class for different traffic generators by allowing
 a high-level of granularity of the possible configurations. It supports:
 
@@ -242,7 +220,7 @@ desired ``TrafficGenerator``` on the node container. It allows to configure the 
 and the remote address.
 
 NGMN FTP traffic generator
-##########################
+**************************
 
 ``TrafficGeneratorNgmnFtpMulti`` class implements the NGMN FTP traffic model defined in the Annex A of the White Paper
 by the NGMN Alliance `[3]`_. This file transfer application allows sending multiple files in a row where each file is of
@@ -257,7 +235,7 @@ which is called each time that the file transfer is finished, i.e., the ``Packet
 the next file transfer is scheduled to start once the reading time finishes.
 
 NGMN Video traffic generator
-############################
+****************************
 
 ``TrafficGeneratorNgmnVideo`` class implements the NGMN video application traffic model explained in Annex A of the White Paper by
 the NGMN Alliance `[3]`_. As per this model, the video traffic is composed of frames. Each frame of video data arrives at
@@ -275,7 +253,7 @@ Notice that one could generate another kind of video traffic in which the inter-
 follow a specific probability distribution.
 
 NGMN gaming traffic generator
-#############################
+*****************************
 
 ``TrafficGeneratorNgmnGaming`` class implements the NGMN gaming traffic models for both downlink and uplink explained
 in Annex A of the White Paper by the NGMN Alliance `[3]`_. Gaming application in NGMN is defined for interactive
@@ -293,7 +271,7 @@ are implemented to generate the packet size and the packet arrival time accordin
 (except for the packet arrival for the uplink which is defined to be deterministic).
 
 NGMN VoIP traffic generator
-###########################
+***************************
 
 ``TrafficGeneratorNgmnVoip`` class implements the NGMN VoIP traffic model as defined in Annex B of the White Paper by
 NGMN Alliance `[3]`_.  According to this document, the VOIP traffic can be modeled as a simple 2-state voice activity model.
@@ -312,14 +290,13 @@ another state. While being in the active state, the voice payload is being used 
 the inactive state the SID payload is being used. While in active state the source rate is 12.2 kbps and based on this is
 calculated the packet arrival time, while when in the inactive state the periodicity of the SID payload is 160 ms.
 
-Example
-=======
+Usage
+******
+
 Example ``three-gpp-http-example.cc`` is created to show how to configure and use different types of traffic generators.
 The example allows to configure the type of NGMN traffic and the protocol to be used, UDP or TCP. The statistics are
 obtain periodically and written into the file.
 
-Test
-====
 Test implemented in ``traffic-generator-test.cc`` tests that all the packets generated by the client application
 (e.g., NGMN VoIP, NGMN VIDEO, NGMN GAMING, NGMN FTP, etc.) are correctly received by the server application and
 tests whether the traffic generator works correctly with the different protocols (TCP/UCP).
