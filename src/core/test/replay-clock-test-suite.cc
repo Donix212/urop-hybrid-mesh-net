@@ -151,7 +151,7 @@ ReplayClockTestCase::TestOffsetsFunctionality()
 
     NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
                           std::bitset<64>(49408),
-                          "TestOffsetsFunctionality::Offset should be intialized correctly");
+                          "TestOffsetsFunctionality::Offset should be initialized correctly");
 
     NS_TEST_EXPECT_MSG_EQ(
         m_replayClock.GetOffsetAtIndex(index, u_epsilon),
@@ -331,7 +331,7 @@ ReplayClockTestSuite::ReplayClockTestSuite()
 // Do not forget to allocate an instance of this TestSuite
 /**
  * @ingroup replay-clock
- * ReplayClockTestSUite instance variable.
+ * ReplayClockTestSuite instance variable.
  */
 static ReplayClockTestSuite g_sampleReplayClockTestSuite;
 
