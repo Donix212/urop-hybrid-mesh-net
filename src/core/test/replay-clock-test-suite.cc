@@ -1,25 +1,19 @@
-/* 
+/*
  * Copyright (c) 2023 Ishaan Lagwankar <lagwanka@msu.edu>
  *
- * This program is free software; you can redistribute it and/or modify
+ * SPDX-License-Identifier: GPL-2.0-only
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
 
-#include "ns3/test.h"
-#include "ns3/replay-clock.h"
 #include "ns3/log.h"
+#include "ns3/replay-clock.h"
+#include "ns3/test.h"
 
 namespace ns3
 {
@@ -29,68 +23,73 @@ namespace tests
 
 class ReplayClockTestCase : public TestCase
 {
+  public:
+    ReplayClockTestCase()
+        : TestCase("ReplayClock Test Case")
+    {
+    }
 
-    public:
-        ReplayClockTestCase() 
-            : TestCase("ReplayClock Test Case")
-        {
-        }
-        ~ReplayClockTestCase() 
-        {
-            // Destructor implementation (if needed)
-        }
-    
-    private:
-        void DoRun() override;
+    ~ReplayClockTestCase()
+    {
+        // Destructor implementation (if needed)
+    }
 
-        /**
-         * @brief Test the initial state of ReplayClock.
-         *
-         * This function checks if the initial state of the ReplayClock is as expected.
-         */
-        void TestInitialState();
+  private:
+    void DoRun() override;
 
-        /**
-         * @brief Test the shift functionality of ReplayClock.
-         *
-         * This function tests if the shift operation updates the clock's HLC, bitmap, and offsets correctly.
-         */
-        void TestShiftFunctionality();
+    /**
+     * @brief Test the initial state of ReplayClock.
+     *
+     * This function checks if the initial state of the ReplayClock is as expected.
+     */
+    void TestInitialState();
 
-        /**
-         * @brief Test the merge functionality of ReplayClock.
-         *
-         * This function tests if the merge operation updates the clock's state correctly when merging with another clock from the same epoch.
-         */
-        void TestMergeSameEpoch();
+    /**
+     * @brief Test the shift functionality of ReplayClock.
+     *
+     * This function tests if the shift operation updates the clock's HLC, bitmap, and offsets
+     * correctly.
+     */
+    void TestShiftFunctionality();
 
-        /**
-         * @brief Test the offsets functionality of ReplayClock.
-         *
-         * This function tests if the offsets are set, removed, and retrieved correctly.
-         */
-        void TestOffsetsFunctionality();
+    /**
+     * @brief Test the merge functionality of ReplayClock.
+     *
+     * This function tests if the merge operation updates the clock's state correctly when merging
+     * with another clock from the same epoch.
+     */
+    void TestMergeSameEpoch();
 
-        /**
-         * @brief Test the copy constructor and assignment operator of ReplayClock.
-         *
-         * This function tests if the copy constructor and assignment operator work correctly by comparing the state of two ReplayClock instances.
-         */
-        void TestCopyAndAssignment();
+    /**
+     * @brief Test the offsets functionality of ReplayClock.
+     *
+     * This function tests if the offsets are set, removed, and retrieved correctly.
+     */
+    void TestOffsetsFunctionality();
 
-        /**
-         * @brief Test the send functionality of ReplayClock.
-         *
-         * This function tests if the send operation prepares the clock state correctly based on the physical time and node ID.
-         */
-        void TestSend();
+    /**
+     * @brief Test the copy constructor and assignment operator of ReplayClock.
+     *
+     * This function tests if the copy constructor and assignment operator work correctly by
+     * comparing the state of two ReplayClock instances.
+     */
+    void TestCopyAndAssignment();
 
-        /**
-         * @brief Test the receive functionality of ReplayClock.
-         *
-         * This function tests if the receive operation updates the clock state correctly when receiving a clock from another node.
-         */
-        void TestRecv();
+    /**
+     * @brief Test the send functionality of ReplayClock.
+     *
+     * This function tests if the send operation prepares the clock state correctly based on the
+     * physical time and node ID.
+     */
+    void TestSend();
+
+    /**
+     * @brief Test the receive functionality of ReplayClock.
+     *
+     * This function tests if the receive operation updates the clock state correctly when receiving
+     * a clock from another node.
+     */
+    void TestRecv();
 };
 
 /**
@@ -101,7 +100,6 @@ class ReplayClockTestCase : public TestCase
 void
 ReplayClockTestCase::DoRun()
 {
-
     TestInitialState();
 
     TestOffsetsFunctionality();
@@ -125,12 +123,17 @@ ReplayClockTestCase::DoRun()
 void
 ReplayClockTestCase::TestInitialState()
 {
-
     ReplayClock m_replayClock;
     NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), 0, "TestInitialState::Initial HLC should be 0");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(), std::bitset<64>(0), "TestInitialState::Initial bitmap should be 0");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(0), "TestInitialState::Initial offsets should be 0");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(), 0, "TestInitialState::Initial counters should be 0");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+                          std::bitset<64>(0),
+                          "TestInitialState::Initial bitmap should be 0");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(0),
+                          "TestInitialState::Initial offsets should be 0");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(),
+                          0,
+                          "TestInitialState::Initial counters should be 0");
 }
 
 /**
@@ -146,21 +149,31 @@ ReplayClockTestCase::TestOffsetsFunctionality()
     int64_t value = 5;
     int64_t u_epsilon = 100;
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(49408), "TestOffsetsFunctionality::Offset should be intialized correctly");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(49408),
+                          "TestOffsetsFunctionality::Offset should be intialized correctly");
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsetAtIndex(index, u_epsilon), 2, "TestOffsetsFunctionality::Offset at index should be retrieved correctly");
+    NS_TEST_EXPECT_MSG_EQ(
+        m_replayClock.GetOffsetAtIndex(index, u_epsilon),
+        2,
+        "TestOffsetsFunctionality::Offset at index should be retrieved correctly");
 
     m_replayClock.SetOffsetAtIndex(index, value, u_epsilon);
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(49792), "TestOffsetsFunctionality::Offset should be set correctly");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(49792),
+                          "TestOffsetsFunctionality::Offset should be set correctly");
 
     m_replayClock.RemoveOffsetAtIndex(index, u_epsilon);
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(384), "TestOffsetsFunctionality::Offset should be removed correctly");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(384),
+                          "TestOffsetsFunctionality::Offset should be removed correctly");
 }
 
 /**
  * @brief Test the copy constructor and assignment operator of ReplayClock.
  *
- * This function tests if the copy constructor and assignment operator work correctly by comparing the state of two ReplayClock instances.
+ * This function tests if the copy constructor and assignment operator work correctly by comparing
+ * the state of two ReplayClock instances.
  */
 void
 ReplayClockTestCase::TestCopyAndAssignment()
@@ -168,17 +181,22 @@ ReplayClockTestCase::TestCopyAndAssignment()
     ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
 
     ReplayClock copyClock = m_replayClock; // Copy constructor
-    NS_TEST_EXPECT_MSG_EQ(copyClock.GetHLC(), m_replayClock.GetHLC(), "TestCopyAndAssignment::Copy constructor should copy HLC correctly");
-    
+    NS_TEST_EXPECT_MSG_EQ(copyClock.GetHLC(),
+                          m_replayClock.GetHLC(),
+                          "TestCopyAndAssignment::Copy constructor should copy HLC correctly");
+
     ReplayClock assignedClock;
     assignedClock = m_replayClock; // Assignment operator
-    NS_TEST_EXPECT_MSG_EQ(assignedClock.GetHLC(), m_replayClock.GetHLC(), "TestCopyAndAssignment::Assignment operator should copy HLC correctly");
+    NS_TEST_EXPECT_MSG_EQ(assignedClock.GetHLC(),
+                          m_replayClock.GetHLC(),
+                          "TestCopyAndAssignment::Assignment operator should copy HLC correctly");
 }
 
 /**
  * @brief Test the shift functionality of ReplayClock.
  *
- * This function tests if the shift operation updates the clock's HLC, bitmap, and offsets correctly.
+ * This function tests if the shift operation updates the clock's HLC, bitmap, and offsets
+ * correctly.
  */
 void
 ReplayClockTestCase::TestShiftFunctionality()
@@ -190,16 +208,23 @@ ReplayClockTestCase::TestShiftFunctionality()
 
     m_replayClock.Shift(physicalTime, nodeId, u_epsilon);
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), 250, "TestShiftFunctionality::HLC should be updated to the physical time divided by u_interval");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(), std::bitset<64>(13), "TestShiftFunctionality::Bitmap should not change");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(875058), "TestShiftFunctionality::Offsets should change to [52, 53, 0]");
-
+    NS_TEST_EXPECT_MSG_EQ(
+        m_replayClock.GetHLC(),
+        250,
+        "TestShiftFunctionality::HLC should be updated to the physical time divided by u_interval");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+                          std::bitset<64>(13),
+                          "TestShiftFunctionality::Bitmap should not change");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(875058),
+                          "TestShiftFunctionality::Offsets should change to [52, 53, 0]");
 }
 
 /**
  * @brief Test the merge functionality of ReplayClock.
  *
- * This function tests if the merge operation updates the clock's state correctly when merging with another clock from the same epoch.
+ * This function tests if the merge operation updates the clock's state correctly when merging with
+ * another clock from the same epoch.
  */
 void
 ReplayClockTestCase::TestMergeSameEpoch()
@@ -210,16 +235,23 @@ ReplayClockTestCase::TestMergeSameEpoch()
 
     m_replayClock.MergeSameEpoch(otherClock, u_epsilon);
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), 200, "TestMergeSameEpoch::HLC should be updated to the maximum HLC of both clocks");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(), std::bitset<64>(13), "TestMergeSameEpoch::Bitmap should merge correctly");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(49152), "TestMergeSameEpoch::Offsets should merge correctly");
+    NS_TEST_EXPECT_MSG_EQ(
+        m_replayClock.GetHLC(),
+        200,
+        "TestMergeSameEpoch::HLC should be updated to the maximum HLC of both clocks");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+                          std::bitset<64>(13),
+                          "TestMergeSameEpoch::Bitmap should merge correctly");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(49152),
+                          "TestMergeSameEpoch::Offsets should merge correctly");
 }
-
 
 /**
  * @brief Test the send functionality of ReplayClock.
  *
- * This function tests if the send operation prepares the clock state correctly based on the physical time and node ID.
+ * This function tests if the send operation prepares the clock state correctly based on the
+ * physical time and node ID.
  */
 void
 ReplayClockTestCase::TestSend()
@@ -232,16 +264,25 @@ ReplayClockTestCase::TestSend()
 
     m_replayClock.Send(physicalTime, nodeId, u_epsilon, u_interval);
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), physicalTime / u_interval, "TestSend::HLC should match the physical time after send");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(), std::bitset<64>(13), "TestSend::Bitmap should have the nodeId set after send");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(868402), "TestSend::Offsets should be reset after send");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(), 0, "TestSend::Counters should be reset after send");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(),
+                          physicalTime / u_interval,
+                          "TestSend::HLC should match the physical time after send");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+                          std::bitset<64>(13),
+                          "TestSend::Bitmap should have the nodeId set after send");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(868402),
+                          "TestSend::Offsets should be reset after send");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(),
+                          0,
+                          "TestSend::Counters should be reset after send");
 }
 
 /**
  * @brief Test the receive functionality of ReplayClock.
  *
- * This function tests if the receive operation updates the clock state correctly when receiving a clock from another node.
+ * This function tests if the receive operation updates the clock state correctly when receiving a
+ * clock from another node.
  */
 void
 ReplayClockTestCase::TestRecv()
@@ -256,11 +297,18 @@ ReplayClockTestCase::TestRecv()
 
     m_replayClock.Recv(otherClock, o_nodeId, physicalTime, nodeId, u_epsilon, u_interval);
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), 230, "TestRecv::HLC should be updated to the maximum HLC after receive");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(), std::bitset<64>(31), "TestRecv::Bitmap should have the nodeId set after receive");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(), std::bitset<64>(3827827968), "TestRecv::Offsets should be updated correctly after receive");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(), 0, "TestRecv::Counters should be updated correctly after receive");
-
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(),
+                          230,
+                          "TestRecv::HLC should be updated to the maximum HLC after receive");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+                          std::bitset<64>(31),
+                          "TestRecv::Bitmap should have the nodeId set after receive");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          std::bitset<64>(3827827968),
+                          "TestRecv::Offsets should be updated correctly after receive");
+    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(),
+                          0,
+                          "TestRecv::Counters should be updated correctly after receive");
 }
 
 /**
@@ -287,6 +335,6 @@ ReplayClockTestSuite::ReplayClockTestSuite()
  */
 static ReplayClockTestSuite g_sampleReplayClockTestSuite;
 
-}
+} // namespace tests
 
-}
+} // namespace ns3
