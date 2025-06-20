@@ -388,13 +388,14 @@ Here are examples of common usage:
 
     std::cout << t4.As(Time::MS) << "\n"; // stream with specific unit
 
-.. warning::
+.. note::
 
-   While floating-point constructors like ``Seconds(1.5)`` are generally safe
-   and preserve sufficient precision (even with femtosecond resolution),
-   users should still be aware that floating-point arithmetic can introduce
-   subtle rounding errors in certain cases. When exact integer values are available
-   or required, prefer constructors like ``MilliSeconds(1500)`` for full control over precision.
+   When using floating-point values with constructors like ``Seconds(1.5)``,
+   users should be aware that values smaller than the current resolution
+   may be rounded. For example, if the resolution is set to nanoseconds,
+   values like ``Seconds(1e-10)`` will be rounded to zero.
+   Consider inspecting ``Time::SetResolution()`` and using methods like
+   ``GetNanoSeconds()`` to understand how sub-resolution values behave in practice.
 
 When calling ``Time::SetResolution()``, there is a trade-off between
 the precision of time measurements and the maximum simulation time
