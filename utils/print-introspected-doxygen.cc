@@ -44,6 +44,7 @@ bool outputText = false;
  * Markup tokens.
  * @{
  */
+std::string addToGroupStart; ///< ///< start of Doxygen group section
 std::string anchor;        ///< hyperlink anchor
 std::string argument;      ///< function argument
 std::string boldStart;     ///< start of bold span
@@ -135,6 +136,7 @@ SetMarkup()
     NS_LOG_FUNCTION(outputText);
     if (outputText)
     {
+        addToGroupStart = "";
         anchor = "";
         argument = "  Arg: ";
         boldStart = "";
@@ -180,6 +182,7 @@ SetMarkup()
     }
     else
     {
+        addToGroupStart = "\\addtogroup ";
         anchor = "\\anchor ";
         argument = "\\param ";
         boldStart = "<b>";
@@ -1209,25 +1212,29 @@ PrintAllGroupAttributes(std::ostream& os)
         const std::string& groupName = g.first;
         const auto& tids = g.second;
 
-        os << commentStart << " \\addtogroup " << groupName << "\n"
+        os << commentStart << " " << addToGroupStart << groupName << "\n"
            << " *  All Attributes of classes in group " << groupName << "\n"
-           << " *  @{ \n"
            << commentStop << std::endl;
 
         for (const auto& tid : tids)
         {
-            os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
-
-            os << listStart << std::endl;
-            for (uint32_t i = 0; i < tid.GetAttributeN(); ++i)
+            if (tid.GetAttributeN() == 0)
             {
-                os << indentHtmlOnly << listLineStart << tid.GetAttributeName(i) << ": "
-                   << tid.GetAttributeHelp(i) << listLineStop << std::endl;
+                continue;
+            }
+
+            auto index = SortedAttributeInfo(tid);
+
+            os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
+            os << listStart << std::endl;
+
+            for (const auto& [name, info] : index)
+            {
+                os << listLineStart << boldStart << name << boldStop << ": "
+                   << info.help << listLineStop << std::endl;
             }
             os << listStop << std::endl;
         }
-
-        os << commentStart << " @} " << commentStop << std::endl;
     }
 }
 
@@ -1620,7 +1627,6 @@ main(int argc, char* argv[])
     NS_LOG_FUNCTION_NOARGS();
 
     std::string typeId;
-
     bool printGroupAttributes = false;
 
     CommandLine cmd(__FILE__);
