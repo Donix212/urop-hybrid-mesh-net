@@ -1193,6 +1193,45 @@ PrintAllGroups(std::ostream& os)
 }
 
 /**
+ * Print all attributes grouped by their TypeId group.
+ *
+ * @param [in,out] os The output stream.
+ */
+void
+PrintAllGroupAttributes(std::ostream& os)
+{
+    NS_LOG_FUNCTION_NOARGS();
+
+    auto groups = GetGroupsList();
+
+    for (const auto& g : groups)
+    {
+        const std::string& groupName = g.first;
+        const auto& tids = g.second;
+
+        os << commentStart << " \\addtogroup " << groupName << "\n"
+           << " *  All Attributes of classes in group " << groupName << "\n"
+           << " *  @{ \n"
+           << commentStop << std::endl;
+
+        for (const auto& tid : tids)
+        {
+            os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
+
+            os << listStart << std::endl;
+            for (uint32_t i = 0; i < tid.GetAttributeN(); ++i)
+            {
+                os << indentHtmlOnly << listLineStart << tid.GetAttributeName(i) << ": "
+                   << tid.GetAttributeHelp(i) << listLineStop << std::endl;
+            }
+            os << listStop << std::endl;
+        }
+
+        os << commentStart << " @} " << commentStop << std::endl;
+    }
+}
+
+/**
  * Print the list of all LogComponents.
  *
  * @param [in,out] os The output stream.
@@ -1582,11 +1621,16 @@ main(int argc, char* argv[])
 
     std::string typeId;
 
+    bool printGroupAttributes = false;
+
     CommandLine cmd(__FILE__);
     cmd.Usage("Generate documentation for all ns-3 registered types, "
               "trace sources, attributes and global variables.");
     cmd.AddValue("output-text", "format output as plain text", outputText);
     cmd.AddValue("TypeId", "Print docs for just the given TypeId", typeId);
+    cmd.AddValue("print-group-attributes",
+                 "Print all Attributes organized by module group",
+                 printGroupAttributes);
     cmd.Parse(argc, argv);
 
     if (!typeId.empty())
@@ -1617,6 +1661,18 @@ main(int argc, char* argv[])
             std::cerr << cmd;
             exit(1);
         }
+    }
+
+    if (printGroupAttributes)
+    {
+        outputText = true;
+        SetMarkup();
+
+        NodeContainer c;
+        c.Create(1); // Ensure TypeIds are registered
+
+        PrintAllGroupAttributes(std::cout);
+        return 0;
     }
 
     SetMarkup();
