@@ -44,28 +44,28 @@ bool outputText = false;
  * Markup tokens.
  * @{
  */
-std::string addToGroupStart; ///< ///< start of Doxygen group section
-std::string anchor;        ///< hyperlink anchor
-std::string argument;      ///< function argument
-std::string boldStart;     ///< start of bold span
-std::string boldStop;      ///< end of bold span
-std::string breakBoth;     ///< linebreak
-std::string breakHtmlOnly; ///< linebreak for html output only
-std::string breakTextOnly; ///< linebreak for text output only
-std::string brief;         ///< brief tag
-std::string classStart;    ///< start of a class
-std::string classStop;     ///< end of a class
-std::string codeWord;      ///< format next word as source code
-std::string commentStart;  ///< start of code comment
-std::string commentStop;   ///< end of code comment
-std::string copyDoc;       ///< copy (or refer) to docs elsewhere
-std::string file;          ///< file
-std::string flagSpanStart; ///< start of Attribute flag value
-std::string flagSpanStop;  ///< end of Attribute flag value
-std::string functionStart; ///< start of a method/function
-std::string functionStop;  ///< end of a method/function
-std::string headingStart;  ///< start of section heading (h3)
-std::string headingStop;   ///< end of section heading (h3)
+std::string addToGroupStart; ///< start of Doxygen group section
+std::string anchor;          ///< hyperlink anchor
+std::string argument;        ///< function argument
+std::string boldStart;       ///< start of bold span
+std::string boldStop;        ///< end of bold span
+std::string breakBoth;       ///< linebreak
+std::string breakHtmlOnly;   ///< linebreak for html output only
+std::string breakTextOnly;   ///< linebreak for text output only
+std::string brief;           ///< brief tag
+std::string classStart;      ///< start of a class
+std::string classStop;       ///< end of a class
+std::string codeWord;        ///< format next word as source code
+std::string commentStart;    ///< start of code comment
+std::string commentStop;     ///< end of code comment
+std::string copyDoc;         ///< copy (or refer) to docs elsewhere
+std::string file;            ///< file
+std::string flagSpanStart;   ///< start of Attribute flag value
+std::string flagSpanStop;    ///< end of Attribute flag value
+std::string functionStart;   ///< start of a method/function
+std::string functionStop;    ///< end of a method/function
+std::string headingStart;    ///< start of section heading (h3)
+std::string headingStop;     ///< end of section heading (h3)
 // Linking:  [The link text displayed](\ref TheTarget)
 std::string hrefStart;        ///< start of a link
 std::string hrefMid;          ///< middle part of a link
@@ -137,6 +137,7 @@ SetMarkup()
     if (outputText)
     {
         addToGroupStart = "";
+        addToGroupStart = "";
         anchor = "";
         argument = "  Arg: ";
         boldStart = "";
@@ -182,6 +183,7 @@ SetMarkup()
     }
     else
     {
+        addToGroupStart = "\\addtogroup ";
         addToGroupStart = "\\addtogroup ";
         anchor = "\\anchor ";
         argument = "\\param ";
@@ -779,8 +781,8 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
                         dynamic_cast<const PointerChecker*>(PeekPointer(info.checker));
                     if (ptrChecker != nullptr)
                     {
-                        os << reference << "ns3::Ptr"
-                           << "< " << reference << ptrChecker->GetPointeeTypeId().GetName() << ">";
+                        os << reference << "ns3::Ptr" << "< " << reference
+                           << ptrChecker->GetPointeeTypeId().GetName() << ">";
                         handled = true;
                     }
                 }
@@ -790,8 +792,8 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
                         dynamic_cast<const ObjectPtrContainerChecker*>(PeekPointer(info.checker));
                     if (ptrChecker != nullptr)
                     {
-                        os << reference << "ns3::Ptr"
-                           << "< " << reference << ptrChecker->GetItemTypeId().GetName() << ">";
+                        os << reference << "ns3::Ptr" << "< " << reference
+                           << ptrChecker->GetItemTypeId().GetName() << ">";
                         handled = true;
                     }
                 }
@@ -1212,7 +1214,8 @@ PrintAllGroupAttributes(std::ostream& os)
         const std::string& groupName = g.first;
         const auto& tids = g.second;
 
-        os << commentStart << " " << addToGroupStart << groupName << "\n"
+        os << commentStart << " " << addToGroupStart << groupName << "\n" os << commentStart << " "
+           << addToGroupStart << groupName << "\n"
            << " *  All Attributes of classes in group " << groupName << "\n"
            << commentStop << std::endl;
 
@@ -1222,7 +1225,14 @@ PrintAllGroupAttributes(std::ostream& os)
             {
                 continue;
             }
+            if (tid.GetAttributeN() == 0)
+            {
+                continue;
+            }
 
+            auto index = SortedAttributeInfo(tid);
+
+            os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
             auto index = SortedAttributeInfo(tid);
 
             os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
@@ -1230,8 +1240,11 @@ PrintAllGroupAttributes(std::ostream& os)
 
             for (const auto& [name, info] : index)
             {
-                os << listLineStart << boldStart << name << boldStop << ": "
-                   << info.help << listLineStop << std::endl;
+                for (const auto& [name, info] : index)
+                {
+                    os << listLineStart << boldStart << name << boldStop << ": " << info.help
+                       << listLineStop << std::endl;
+                }
             }
             os << listStop << std::endl;
         }
@@ -1506,8 +1519,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     // \ingroup attribute_<name>Value
     // class <name>Checker
     os << commentStart << sectAttr << std::endl;
-    os << classStart << " ns3::" << name << "Checker"
-       << " \"" << header << "\"" << std::endl;
+    os << classStart << " ns3::" << name << "Checker" << " \"" << header << "\"" << std::endl;
     os << "AttributeChecker implementation for " << name << "Value." << std::endl;
     os << seeAlso << "AttributeChecker" << std::endl;
     os << commentStop;
