@@ -781,7 +781,7 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
                         dynamic_cast<const PointerChecker*>(PeekPointer(info.checker));
                     if (ptrChecker != nullptr)
                     {
-                        os << reference << "ns3::Ptr" << "< " << reference
+                        os << reference << "ns3::Ptr<" << reference
                            << ptrChecker->GetPointeeTypeId().GetName() << ">";
                         handled = true;
                     }
@@ -792,7 +792,7 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
                         dynamic_cast<const ObjectPtrContainerChecker*>(PeekPointer(info.checker));
                     if (ptrChecker != nullptr)
                     {
-                        os << reference << "ns3::Ptr" << "< " << reference
+                        os << reference << "ns3::Ptr< " << reference
                            << ptrChecker->GetItemTypeId().GetName() << ">";
                         handled = true;
                     }
