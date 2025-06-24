@@ -1155,8 +1155,8 @@ PrintAttributeList(const TypeId& tid, std::ostream& os)
     os << listStart << std::endl;
     for (const auto& [name, info] : index)
     {
-        os << listLineStart << boldStart << name << boldStop << ": "
-           << info.help << listLineStop << std::endl;
+        os << listLineStart << boldStart << name << boldStop << ": " << info.help << listLineStop
+           << std::endl;
     }
     os << listStop << std::endl;
 } // PrintAttributeList()
@@ -1236,9 +1236,12 @@ PrintAllGroupAttributes(std::ostream& os)
     for (const auto& [groupName, tids] : groups)
     {
         os << commentStart << " " << addToGroupStart << groupName << "\n"
-           << commentStart << " *  Attributes defined by classes in the \"" << groupName << "\" group.\n"
+           << commentStart << " *  Attributes defined by classes in the \"" << groupName
+           << "\" group.\n"
            << commentStart << " *  Note: Attributes of parent TypeIds may not be listed here;\n"
-           << commentStart << " *  see the documentation for each TypeId for the full list of applicable Attributes.\n"
+           << commentStart
+           << " *  see the documentation for each TypeId for the full list of applicable "
+              "Attributes.\n"
            << commentStop << std::endl;
 
         for (const auto& tid : tids)
