@@ -392,7 +392,7 @@ Here are examples of common usage:
 
    When using floating-point values with constructors like ``Seconds(1.5)``,
    users should be aware that values smaller than the current resolution
-   may be rounded. For example, if the resolution is set to nanoseconds,
+   will be rounded. For example, if the resolution is set to nanoseconds,
    values like ``Seconds(1e-10)`` will be rounded to zero.
    Consider inspecting ``Time::SetResolution()`` and using methods like
    ``GetNanoSeconds()`` to understand how sub-resolution values behave in practice.
@@ -428,13 +428,6 @@ duration.
   * - Femtoseconds
     - 1 fs
     - ~2.6 hours
-
-.. note::
-
-   Choosing a very fine resolution unit (such as ``ps`` or ``fs``)
-   limits the total simulation duration due to the 64-bit time
-   representation. Choose the coarsest resolution that meets the
-   accuracy needs of your simulation.
 
 Scheduler
 *********
