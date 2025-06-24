@@ -1519,7 +1519,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     // \ingroup attribute_<name>Value
     // class <name>Checker
     os << commentStart << sectAttr << std::endl;
-    os << classStart << " ns3::" << name << "Checker" << " \"" << header << "\"" << std::endl;
+    os << classStart << "ns3::" << name << "Checker\"" << header << "\"" << std::endl;
     os << "AttributeChecker implementation for " << name << "Value." << std::endl;
     os << seeAlso << "AttributeChecker" << std::endl;
     os << commentStop;
