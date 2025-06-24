@@ -137,7 +137,6 @@ SetMarkup()
     if (outputText)
     {
         addToGroupStart = "";
-        addToGroupStart = "";
         anchor = "";
         argument = "  Arg: ";
         boldStart = "";
@@ -183,7 +182,6 @@ SetMarkup()
     }
     else
     {
-        addToGroupStart = "\\addtogroup ";
         addToGroupStart = "\\addtogroup ";
         anchor = "\\anchor ";
         argument = "\\param ";
@@ -1138,6 +1136,32 @@ PrintAllAttributes(std::ostream& os)
 } // PrintAllAttributes()
 
 /**
+ * Print the list of attributes for a given TypeId.
+ *
+ * @param tid The TypeId whose attributes to print.
+ * @param [in,out] os The output stream.
+ */
+void
+PrintAttributeList(const TypeId& tid, std::ostream& os)
+{
+    if (tid.GetAttributeN() == 0)
+    {
+        return;
+    }
+
+    auto index = SortedAttributeInfo(tid);
+
+    os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
+    os << listStart << std::endl;
+    for (const auto& [name, info] : index)
+    {
+        os << listLineStart << boldStart << name << boldStop << ": "
+           << info.help << listLineStop << std::endl;
+    }
+    os << listStop << std::endl;
+} // PrintAttributeList()
+
+/**
  * Print the list of all global variables.
  *
  * @param [in,out] os The output stream.
@@ -1209,14 +1233,12 @@ PrintAllGroupAttributes(std::ostream& os)
 
     auto groups = GetGroupsList();
 
-    for (const auto& g : groups)
+    for (const auto& [groupName, tids] : groups)
     {
-        const std::string& groupName = g.first;
-        const auto& tids = g.second;
-
-        os << commentStart << " " << addToGroupStart << groupName << "\n" os << commentStart << " "
-           << addToGroupStart << groupName << "\n"
-           << " *  All Attributes of classes in group " << groupName << "\n"
+        os << commentStart << " " << addToGroupStart << groupName << "\n"
+           << commentStart << " *  Attributes defined by classes in the \"" << groupName << "\" group.\n"
+           << commentStart << " *  Note: Attributes of parent TypeIds may not be listed here;\n"
+           << commentStart << " *  see the documentation for each TypeId for the full list of applicable Attributes.\n"
            << commentStop << std::endl;
 
         for (const auto& tid : tids)
@@ -1225,31 +1247,11 @@ PrintAllGroupAttributes(std::ostream& os)
             {
                 continue;
             }
-            if (tid.GetAttributeN() == 0)
-            {
-                continue;
-            }
 
-            auto index = SortedAttributeInfo(tid);
-
-            os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
-            auto index = SortedAttributeInfo(tid);
-
-            os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
-            os << listStart << std::endl;
-
-            for (const auto& [name, info] : index)
-            {
-                for (const auto& [name, info] : index)
-                {
-                    os << listLineStart << boldStart << name << boldStop << ": " << info.help
-                       << listLineStop << std::endl;
-                }
-            }
-            os << listStop << std::endl;
+            PrintAttributeList(tid, os);
         }
     }
-}
+} // PrintAllGroupAttributes()
 
 /**
  * Print the list of all LogComponents.
