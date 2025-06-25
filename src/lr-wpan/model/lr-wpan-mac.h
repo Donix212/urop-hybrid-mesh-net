@@ -759,6 +759,14 @@ class LrWpanMac : public LrWpanMacBase
     };
 
     /**
+     * Process a frame when promiscuous mode is active.
+     *
+     * @param lqi The LQI value of the received packet
+     * @param p The frame with the MPDU
+     */
+    void ReceiveInPromiscuousMode(uint8_t lqi, Ptr<Packet> p);
+
+    /**
      * Called to send a single beacon frame.
      */
     void SendOneBeacon();
@@ -862,6 +870,30 @@ class LrWpanMac : public LrWpanMacBase
      * @param p The packet containing the MAC header and the beacon payload information
      */
     void ReceiveBeacon(uint8_t lqi, Ptr<Packet> p);
+
+    /**
+     * Used to process the reception of a command packet.
+     *
+     * @param lqi The value of the link quality indicator (LQI) of the received packet
+     * @param p The packet containing the MAC header and the beacon payload information
+     */
+    void ReceiveCommand(uint8_t lqi, Ptr<Packet> p);
+
+    /**
+     * Used to process the reception of data.
+     *
+     * @param lqi The value of the link quality indicator (LQI) of the received packet
+     * @param p The packet containing the MAC header and the data payload.
+     */
+    void ReceiveData(uint8_t lqi, Ptr<Packet> p);
+
+    /**
+     * Display the MAC header contents of a successfully received packet when
+     * logs are active.
+     *
+     * @param p The packet containing the MAC header
+     */
+    void PrintPacket(Ptr<Packet> p);
 
     /**
      * Send an acknowledgment packet for the given sequence number.

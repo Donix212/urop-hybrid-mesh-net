@@ -19,6 +19,33 @@ and references prefixed by '!' refer to a
 This release is intended to work on systems with the following minimal
 requirements (Note: not all ns-3 features are available on all systems):
 
+- g++-11.1 or later, or LLVM/clang++-17 or later
+- Python 3.8 or later
+- CMake 3.20 or later
+- (macOS only) Xcode 13.1.6 or later
+- (Windows only) Msys2/MinGW64 and Msys2/UCRT64 toolchains or WSL2
+
+Python API requires [Cppyy](https://cppyy.readthedocs.io/en/latest/installation.html) and has only
+been tested on Linux. As of this release, the latest known version to work with ns-3 is cppyy==3.5.0.
+
+### New user-visible features
+
+ns-3 has switched to the C++23 standard by default.
+
+- (core) A stacktrace will now be printed on fatal errors in supported platforms.
+
+### Bugs fixed
+
+## Release 3.45
+
+This release is available from:
+<https://www.nsnam.org/release/ns-3.45.tar.bz2>
+
+### Supported platforms
+
+This release is intended to work on systems with the following minimal
+requirements (Note: not all ns-3 features are available on all systems):
+
 - g++-10.1 or later, or LLVM/clang++-11 or later
 - Python 3.8 or later
 - CMake 3.13 or later
@@ -42,16 +69,20 @@ to work with the release.
 - (internet-apps) !2084 - GSoC 2024 DHCPV6 application added.
 - (lr-wpan) - !2429 - Renamed example lr-wpan-mlme to lr-wpan-beacon-mode.
 - (lr-wpan) - !2429 - Documentation update and small reformat fixes.
+- (wifi) 320 MHz channel support was added to the 802.11be model
 - (wifi) Added the `ProtectSingleExchange` attribute to the `QosFrameExchangeManager` to choose whether the NAV protection should cover the entire TXOP or only the current frame exchange when the TXOP limit is non-zero. In that case, the Duration/ID field in frames establishing the protection is set to the time remaining until the end of the current frame exchange. It is also possible to select whether the NAV duration should be extended by an additional time to protect beyond end of the immediate frame exchange via the `SingleExchangeProtectionSurplus` attribute of the `QosFrameExchangeManager`.
 
 ### Bugs fixed
 
 - (bindings) #1187 - Fix library filtering to skip non-ns-3 libraries with "ns3" in their names.
+- (flow-monitor) #1202 - Create XML file in text mode
 - (mobility) !2397 - Fix Rectangle::GetClosestSideOrCorner. It could assign the incorrect side when the checked position was outside the rectangle.
 - (wifi) #2368 - Fix various issues related to Content Channels and RU allocation. Fixes mostly covers cases where OFDMA is used with central 26 tones, where a single user is being assigned the whole PPDU bandwidth or where a RU is larger than 20 MHz.
-- (zigbee) !2383 - Fix malformed RREP command with missing command options field.
+- (wifi) Various fixes to the EMLSR model have been made
 - (wifi) Fix the time the `NSlotsLeftAlert` trace source of `ChannelAccessManager` is fired (it cannot be earlier than the access grant start time)
 - (wifi) Fix the EIFS computation, which depends on the modulation class of the PPDU whose reception failed rather than on the latest standard supported by a device
+- (wifi) #1158 - Reintroduce WifiPpdu's destructor due to PIMPL
+- (zigbee) !2383 - Fix malformed RREP command with missing command options field.
 
 ## Release 3.44
 
