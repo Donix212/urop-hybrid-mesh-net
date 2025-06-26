@@ -136,7 +136,7 @@ SetMarkup()
     NS_LOG_FUNCTION(outputText);
     if (outputText)
     {
-        addToGroupStart = "";
+        addToGroup = "";
         anchor = "";
         argument = "  Arg: ";
         boldStart = "";
@@ -182,7 +182,7 @@ SetMarkup()
     }
     else
     {
-        addToGroupStart = "\\addtogroup ";
+        addToGroup = "\\addtogroup ";
         anchor = "\\anchor ";
         argument = "\\param ";
         boldStart = "<b>";
@@ -1084,6 +1084,34 @@ PrintAllTypeIds(std::ostream& os)
 } // PrintAllTypeIds()
 
 /**
+ * Print the list of attributes for a given TypeId.
+ *
+ * @param [in,out] os The output stream.
+ * @param tid The TypeId whose attributes to print.
+ */
+void
+PrintAttributeList(const TypeId& tid, std::ostream& os)
+{
+    if (tid.GetAttributeN() == 0)
+    {
+        return;
+    }
+
+    const std::string listStart = "<ul>";
+    const std::string listLineStart = "<li>";
+    const std::string listLineStop = "</li>";
+    const std::string listStop = "</ul>";
+    const std::string boldStart = "<b>";
+    const std::string boldStop = "</b>";
+
+    std::vector<AttributeInformation> attributes = SortedAttributeInfo(tid);
+
+    PrintAttributeList(os, attributes,
+                       listStart, listLineStart, listLineStop,
+                       listStop, boldStart, boldStop);
+} //PrintAttributeList()
+
+/**
  * Print the list of all Attributes.
  *
  * @param [in,out] os The output stream.
@@ -1134,32 +1162,6 @@ PrintAllAttributes(std::ostream& os)
     os << commentStop << std::endl;
 
 } // PrintAllAttributes()
-
-/**
- * Print the list of attributes for a given TypeId.
- *
- * @param tid The TypeId whose attributes to print.
- * @param [in,out] os The output stream.
- */
-void
-PrintAttributeList(const TypeId& tid, std::ostream& os)
-{
-    if (tid.GetAttributeN() == 0)
-    {
-        return;
-    }
-
-    auto index = SortedAttributeInfo(tid);
-
-    os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
-    os << listStart << std::endl;
-    for (const auto& [name, info] : index)
-    {
-        os << listLineStart << boldStart << name << boldStop << ": " << info.help << listLineStop
-           << std::endl;
-    }
-    os << listStop << std::endl;
-} // PrintAttributeList()
 
 /**
  * Print the list of all global variables.
@@ -1236,21 +1238,15 @@ PrintAllGroupAttributes(std::ostream& os)
     for (const auto& [groupName, tids] : groups)
     {
         os << commentStart << " " << addToGroupStart << groupName << "\n"
-           << commentStart << " *  Attributes defined by classes in the \"" << groupName
+           << "Attributes defined by classes in the \"" << groupName
            << "\" group.\n"
-           << commentStart << " *  Note: Attributes of parent TypeIds may not be listed here;\n"
-           << commentStart
-           << " *  see the documentation for each TypeId for the full list of applicable "
+           << "Note: Attributes of parent TypeIds may not be listed here;\n"
+           << "see the documentation for each TypeId for the full list of applicable "
               "Attributes.\n"
            << commentStop << std::endl;
 
         for (const auto& tid : tids)
         {
-            if (tid.GetAttributeN() == 0)
-            {
-                continue;
-            }
-
             PrintAttributeList(tid, os);
         }
     }
@@ -1644,16 +1640,16 @@ main(int argc, char* argv[])
     NS_LOG_FUNCTION_NOARGS();
 
     std::string typeId;
-    bool printGroupAttributes = false;
+    std::string attributeGroup;
 
     CommandLine cmd(__FILE__);
     cmd.Usage("Generate documentation for all ns-3 registered types, "
               "trace sources, attributes and global variables.");
     cmd.AddValue("output-text", "format output as plain text", outputText);
     cmd.AddValue("TypeId", "Print docs for just the given TypeId", typeId);
-    cmd.AddValue("print-group-attributes",
-                 "Print all Attributes organized by module group",
-                 printGroupAttributes);
+    cmd.AddValue("group-attributes",
+             "Print all Attributes for the given module group",
+             attributeGroup);
     cmd.Parse(argc, argv);
 
     if (!typeId.empty())
