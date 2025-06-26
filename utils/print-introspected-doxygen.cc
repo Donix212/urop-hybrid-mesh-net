@@ -1106,10 +1106,10 @@ PrintAttributeList(const TypeId& tid, std::ostream& os)
 
     std::vector<AttributeInformation> attributes = SortedAttributeInfo(tid);
 
-    PrintAttributeList(os, attributes,
-                       listStart, listLineStart, listLineStop,
-                       listStop, boldStart, boldStop);
-} //PrintAttributeList()
+    PrintAttributeList(os,attributes,
+                       listStart,listLineStart,listLineStop,
+                       listStop,boldStart,boldStop);
+}
 
 /**
  * Print the list of all Attributes.
@@ -1238,8 +1238,7 @@ PrintAllGroupAttributes(std::ostream& os)
     for (const auto& [groupName, tids] : groups)
     {
         os << commentStart << " " << addToGroupStart << groupName << "\n"
-           << "Attributes defined by classes in the \"" << groupName
-           << "\" group.\n"
+           << "Attributes defined by classes in the \"" << groupName << "\" group.\n"
            << "Note: Attributes of parent TypeIds may not be listed here;\n"
            << "see the documentation for each TypeId for the full list of applicable "
               "Attributes.\n"
@@ -1647,9 +1646,7 @@ main(int argc, char* argv[])
               "trace sources, attributes and global variables.");
     cmd.AddValue("output-text", "format output as plain text", outputText);
     cmd.AddValue("TypeId", "Print docs for just the given TypeId", typeId);
-    cmd.AddValue("group-attributes",
-             "Print all Attributes for the given module group",
-             attributeGroup);
+    cmd.AddValue("group-attributes", "Print all Attributes for the given module group", attributeGroup);
     cmd.Parse(argc, argv);
 
     if (!typeId.empty())
