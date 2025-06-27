@@ -44,7 +44,7 @@ bool outputText = false;
  * Markup tokens.
  * @{
  */
-std::string addToGroupStart; ///< start of Doxygen group section
+std::string addToGroup; ///< start of Doxygen group section
 std::string anchor;          ///< hyperlink anchor
 std::string argument;        ///< function argument
 std::string boldStart;       ///< start of bold span
@@ -1090,25 +1090,14 @@ PrintAllTypeIds(std::ostream& os)
  * @param tid The TypeId whose attributes to print.
  */
 void
-PrintAttributeList(const TypeId& tid, std::ostream& os)
+PrintAttributeList(std::ostream& os, const TypeId& tid)
 {
     if (tid.GetAttributeN() == 0)
     {
         return;
     }
 
-    const std::string listStart = "<ul>";
-    const std::string listLineStart = "<li>";
-    const std::string listLineStop = "</li>";
-    const std::string listStop = "</ul>";
-    const std::string boldStart = "<b>";
-    const std::string boldStop = "</b>";
-
     std::vector<AttributeInformation> attributes = SortedAttributeInfo(tid);
-
-    PrintAttributeList(os,attributes,
-                       listStart,listLineStart,listLineStop,
-                       listStop,boldStart,boldStop);
 }
 
 /**
@@ -1646,7 +1635,8 @@ main(int argc, char* argv[])
               "trace sources, attributes and global variables.");
     cmd.AddValue("output-text", "format output as plain text", outputText);
     cmd.AddValue("TypeId", "Print docs for just the given TypeId", typeId);
-    cmd.AddValue("group-attributes", "Print all Attributes for the given module group", attributeGroup);
+    cmd.AddValue("group-attributes", "
+                 "Print all Attributes for the given module group.", attributeGroup);
     cmd.Parse(argc, argv);
 
     if (!typeId.empty())
