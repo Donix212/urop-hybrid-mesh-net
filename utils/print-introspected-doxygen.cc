@@ -1097,7 +1097,7 @@ PrintAttributeList(std::ostream& os, const TypeId& tid)
         return;
     }
 
-    std::vector<AttributeInformation> attributes = SortedAttributeInfo(tid);
+    std::map<std::string, ns3::TypeId::AttributeInformation> attributes = SortedAttributeInfo(tid);
 }
 
 /**
@@ -1226,7 +1226,7 @@ PrintAllGroupAttributes(std::ostream& os)
 
     for (const auto& [groupName, tids] : groups)
     {
-        os << commentStart << " " << addToGroupStart << groupName << "\n"
+        os << commentStart << " " << addToGroup << groupName << "\n"
            << "Attributes defined by classes in the \"" << groupName << "\" group.\n"
            << "Note: Attributes of parent TypeIds may not be listed here;\n"
            << "see the documentation for each TypeId for the full list of applicable "
@@ -1235,7 +1235,7 @@ PrintAllGroupAttributes(std::ostream& os)
 
         for (const auto& tid : tids)
         {
-            PrintAttributeList(tid, os);
+            PrintAttributeList(os, tid);
         }
     }
 } // PrintAllGroupAttributes()
@@ -1629,6 +1629,8 @@ main(int argc, char* argv[])
 
     std::string typeId;
     std::string attributeGroup;
+
+    bool printGroupAttributes = true;
 
     CommandLine cmd(__FILE__);
     cmd.Usage("Generate documentation for all ns-3 registered types, "
