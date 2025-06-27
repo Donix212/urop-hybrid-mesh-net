@@ -44,28 +44,28 @@ bool outputText = false;
  * Markup tokens.
  * @{
  */
-std::string addToGroup; ///< start of Doxygen group section
-std::string anchor;          ///< hyperlink anchor
-std::string argument;        ///< function argument
-std::string boldStart;       ///< start of bold span
-std::string boldStop;        ///< end of bold span
-std::string breakBoth;       ///< linebreak
-std::string breakHtmlOnly;   ///< linebreak for html output only
-std::string breakTextOnly;   ///< linebreak for text output only
-std::string brief;           ///< brief tag
-std::string classStart;      ///< start of a class
-std::string classStop;       ///< end of a class
-std::string codeWord;        ///< format next word as source code
-std::string commentStart;    ///< start of code comment
-std::string commentStop;     ///< end of code comment
-std::string copyDoc;         ///< copy (or refer) to docs elsewhere
-std::string file;            ///< file
-std::string flagSpanStart;   ///< start of Attribute flag value
-std::string flagSpanStop;    ///< end of Attribute flag value
-std::string functionStart;   ///< start of a method/function
-std::string functionStop;    ///< end of a method/function
-std::string headingStart;    ///< start of section heading (h3)
-std::string headingStop;     ///< end of section heading (h3)
+std::string addToGroup;       ///< start of Doxygen group section
+std::string anchor;           ///< hyperlink anchor
+std::string argument;         ///< function argument
+std::string boldStart;        ///< start of bold span
+std::string boldStop;         ///< end of bold span
+std::string breakBoth;        ///< linebreak
+std::string breakHtmlOnly;    ///< linebreak for html output only
+std::string breakTextOnly;    ///< linebreak for text output only
+std::string brief;            ///< brief tag
+std::string classStart;       ///< start of a class
+std::string classStop;        ///< end of a class
+std::string codeWord;         ///< format next word as source code
+std::string commentStart;     ///< start of code comment
+std::string commentStop;      ///< end of code comment
+std::string copyDoc;          ///< copy (or refer) to docs elsewhere
+std::string file;             ///< file
+std::string flagSpanStart;    ///< start of Attribute flag value
+std::string flagSpanStop;     ///< end of Attribute flag value
+std::string functionStart;    ///< start of a method/function
+std::string functionStop;     ///< end of a method/function
+std::string headingStart;     ///< start of section heading (h3)
+std::string headingStop;      ///< end of section heading (h3)
 // Linking:  [The link text displayed](\ref TheTarget)
 std::string hrefStart;        ///< start of a link
 std::string hrefMid;          ///< middle part of a link
@@ -1635,8 +1635,8 @@ main(int argc, char* argv[])
               "trace sources, attributes and global variables.");
     cmd.AddValue("output-text", "format output as plain text", outputText);
     cmd.AddValue("TypeId", "Print docs for just the given TypeId", typeId);
-    cmd.AddValue("group-attributes", "
-                 "Print all Attributes for the given module group.", attributeGroup);
+    cmd.AddValue("group-attributes","Print all Attributes for the given module group.",
+                  attributeGroup);
     cmd.Parse(argc, argv);
 
     if (!typeId.empty())
