@@ -778,7 +778,7 @@ Ipv6StaticRouting::NotifyInterfaceUp(uint32_t i)
             {
                 if (addr.GetOnLink())
                 {
-                    AddNetworkRouteTo(addr.GetAddress().CombinePrefix(addr.GetPrefix()),
+                    AddNetworkRouteTo(addr.GetAddress().GetPrefix(addr.GetPrefix()),
                                       addr.GetPrefix(),
                                       i);
                 }
@@ -824,7 +824,7 @@ Ipv6StaticRouting::NotifyRemoveAddress(uint32_t interface, Ipv6InterfaceAddress 
         return;
     }
 
-    Ipv6Address networkAddress = address.GetAddress().CombinePrefix(address.GetPrefix());
+    Ipv6Address networkAddress = address.GetAddress().GetPrefix(address.GetPrefix());
     Ipv6Prefix networkMask = address.GetPrefix();
 
     // Remove all static routes that are going through this interface

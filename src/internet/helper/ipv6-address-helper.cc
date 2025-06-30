@@ -46,11 +46,11 @@ Ipv6AddressHelper::Ipv6AddressHelper(Ipv6Address network, Ipv6Prefix prefix, Ipv
     m_address = base;
     m_base = base;
 
-    NS_ASSERT_MSG(m_network == network.CombinePrefix(prefix),
+    NS_ASSERT_MSG(m_network == network.GetPrefix(prefix),
                   "Ipv6AddressHelper: network address and prefix mismatch: " << m_network << " "
                                                                              << m_prefix);
 
-    NS_ASSERT_MSG(base.CombinePrefix(prefix) == Ipv6Address::GetZero(),
+    NS_ASSERT_MSG(base.GetPrefix(prefix) == Ipv6Address::GetZero(),
                   "Ipv6AddressHelper: base address and prefix mismatch: " << base << " "
                                                                           << m_prefix);
 }
@@ -65,11 +65,11 @@ Ipv6AddressHelper::SetBase(Ipv6Address network, Ipv6Prefix prefix, Ipv6Address b
     m_address = base;
     m_base = base;
 
-    NS_ASSERT_MSG(m_network == network.CombinePrefix(prefix),
+    NS_ASSERT_MSG(m_network == network.GetPrefix(prefix),
                   "Ipv6AddressHelper::SetBase(): network address and prefix mismatch: "
                       << m_network << " " << m_prefix);
 
-    NS_ASSERT_MSG(base.CombinePrefix(prefix) == Ipv6Address::GetZero(),
+    NS_ASSERT_MSG(base.GetPrefix(prefix) == Ipv6Address::GetZero(),
                   "Ipv6AddressHelper::SetBase(): base address and prefix mismatch: " << base << " "
                                                                                      << m_prefix);
 }
@@ -131,7 +131,7 @@ Ipv6AddressHelper::NewAddress()
     m_network.GetBytes(netBuf);
     m_address.GetBytes(hostBuf);
 
-    NS_ASSERT_MSG(m_address.CombinePrefix(m_prefix) == Ipv6Address::GetZero(),
+    NS_ASSERT_MSG(m_address.GetPrefix(m_prefix) == Ipv6Address::GetZero(),
                   "Ipv6AddressHelper::NewAddress(): Too many hosts in the network: "
                       << m_address << " " << m_prefix);
 

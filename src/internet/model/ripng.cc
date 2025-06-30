@@ -287,8 +287,8 @@ RipNg::NotifyInterfaceUp(uint32_t i)
     for (uint32_t j = 0; j < m_ipv6->GetNAddresses(i); j++)
     {
         Ipv6InterfaceAddress address = m_ipv6->GetAddress(i, j);
-        Ipv6Prefix networkMask = address.GetPrefix();
-        Ipv6Address networkAddress = address.GetAddress().CombinePrefix(networkMask);
+        Ipv6Prefix networkMask = address.GetPrefixLength();
+        Ipv6Address networkAddress = address.GetAddress().GetPrefix(networkMask);
 
         if (address.GetScope() == Ipv6InterfaceAddress::GLOBAL)
         {
@@ -404,7 +404,7 @@ RipNg::NotifyAddAddress(uint32_t interface, Ipv6InterfaceAddress address)
         return;
     }
 
-    Ipv6Address networkAddress = address.GetAddress().CombinePrefix(address.GetPrefix());
+    Ipv6Address networkAddress = address.GetAddress().GetPrefix(address.GetPrefix());
     Ipv6Prefix networkMask = address.GetPrefix();
 
     if (address.GetScope() == Ipv6InterfaceAddress::GLOBAL)
@@ -430,7 +430,7 @@ RipNg::NotifyRemoveAddress(uint32_t interface, Ipv6InterfaceAddress address)
         return;
     }
 
-    Ipv6Address networkAddress = address.GetAddress().CombinePrefix(address.GetPrefix());
+    Ipv6Address networkAddress = address.GetAddress().GetPrefix(address.GetPrefix());
     Ipv6Prefix networkMask = address.GetPrefix();
 
     // Remove all routes that are going through this interface
@@ -963,9 +963,9 @@ RipNg::HandleRequests(RipNgHeader requestHdr,
                     (rtIter->first->GetRouteStatus() == RipNgRoutingTableEntry::RIPNG_VALID))
                 {
                     Ipv6Address requestedAddress = iter->GetPrefix();
-                    requestedAddress.CombinePrefix(Ipv6Prefix(iter->GetPrefixLen()));
+                    requestedAddress.GetPrefix(Ipv6Prefix(iter->GetPrefixLen()));
                     Ipv6Address rtAddress = rtIter->first->GetDestNetwork();
-                    rtAddress.CombinePrefix(rtIter->first->GetDestNetworkPrefix());
+                    rtAddress.GetPrefix(rtIter->first->GetDestNetworkPrefix());
 
                     if (requestedAddress == rtAddress)
                     {
@@ -1047,7 +1047,7 @@ RipNg::HandleResponses(RipNgHeader hdr,
     for (auto iter = rtes.begin(); iter != rtes.end(); iter++)
     {
         Ipv6Prefix rtePrefix = Ipv6Prefix(iter->GetPrefixLen());
-        Ipv6Address rteAddr = iter->GetPrefix().CombinePrefix(rtePrefix);
+        Ipv6Address rteAddr = iter->GetPrefix().GetPrefix(rtePrefix);
 
         NS_LOG_LOGIC("Processing RTE " << *iter);
 

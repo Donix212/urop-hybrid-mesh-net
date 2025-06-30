@@ -16,9 +16,15 @@ This file is a best-effort approach to solving this issue; we will do our best b
 
 ### New API
 
+* (network) Added a new function `Ipv[4,6]Address::GetPrefix(prefixLength)`, using only the prefix length.
+* (internet) Added a new function `Ipv[4,6]InterfaceAddress::GetPrefixLength()`, returning the prefix length (in bits).
+
 ### Changes to existing API
 
 * (lr-wpan) Debloat MAC PD-DATA.indication
+* (network) Deprecated `Ipv4Address::CombineMask`, and `Ipv4Address::CombinePrefix`.
+* (internet) `Ipv[4,6]InterfaceAddress` now stores only the prefix length (deduced from the constructor params).
+* (internet) Removed `Ipv4InterfaceAddress::SetBroadcast()`, the broadcast address is automatically generated.
 
 ### Changes to build system
 

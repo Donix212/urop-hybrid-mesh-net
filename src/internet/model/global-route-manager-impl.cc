@@ -1581,7 +1581,7 @@ GlobalRouteManagerImpl::SPFAddASExternal(GlobalRoutingLSA* extlsa, SPFVertex* v)
                       "Expected valid LSA in SPFVertex* v");
         Ipv4Mask tempmask = extlsa->GetNetworkLSANetworkMask();
         Ipv4Address tempip = extlsa->GetLinkStateId();
-        tempip = tempip.CombineMask(tempmask);
+        tempip = tempip.GetPrefix(tempmask);
 
         //
         // Here's why we did all of that work.  We're going to add a host route to the
@@ -1744,7 +1744,7 @@ GlobalRouteManagerImpl::SPFIntraAddStub(GlobalRoutingLinkRecord* l, SPFVertex* v
                           "Expected valid LSA in SPFVertex* v");
             Ipv4Mask tempmask(l->GetLinkData().Get());
             Ipv4Address tempip = l->GetLinkId();
-            tempip = tempip.CombineMask(tempmask);
+            tempip = tempip.GetPrefix(tempmask);
             //
             // Here's why we did all of that work.  We're going to add a host route to the
             // host address found in the m_linkData field of the point-to-point link
@@ -2095,7 +2095,7 @@ GlobalRouteManagerImpl::SPFIntraAddTransit(SPFVertex* v)
                           "Expected valid LSA in SPFVertex* v");
             Ipv4Mask tempmask = lsa->GetNetworkLSANetworkMask();
             Ipv4Address tempip = lsa->GetLinkStateId();
-            tempip = tempip.CombineMask(tempmask);
+            tempip = tempip.GetPrefix(tempmask);
             Ptr<GlobalRouter> router = node->GetObject<GlobalRouter>();
             if (!router)
             {

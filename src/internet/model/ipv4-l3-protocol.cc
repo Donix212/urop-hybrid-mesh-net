@@ -463,7 +463,7 @@ Ipv4L3Protocol::GetInterfaceForPrefix(Ipv4Address address, Ipv4Mask mask) const
     {
         for (uint32_t j = 0; j < (*i)->GetNAddresses(); j++)
         {
-            if ((*i)->GetAddress(j).GetLocal().CombineMask(mask) == address.CombineMask(mask))
+            if ((*i)->GetAddress(j).GetLocal().GetPrefix(mask) == address.GetPrefix(mask))
             {
                 return interface;
             }
@@ -841,8 +841,8 @@ Ipv4L3Protocol::Send(Ptr<Packet> packet,
             NS_LOG_LOGIC("Testing address " << ifAddr.GetLocal() << " with mask "
                                             << ifAddr.GetMask());
             if (destination.IsSubnetDirectedBroadcast(ifAddr.GetMask()) &&
-                destination.CombineMask(ifAddr.GetMask()) ==
-                    ifAddr.GetLocal().CombineMask(ifAddr.GetMask()))
+                destination.GetPrefix(ifAddr.GetMask()) ==
+                    ifAddr.GetLocal().GetPrefix(ifAddr.GetMask()))
             {
                 NS_LOG_LOGIC("Ipv4L3Protocol::Send case 3:  subnet directed bcast to "
                              << ifAddr.GetLocal() << " - no route");
@@ -1120,8 +1120,8 @@ Ipv4L3Protocol::LocalDeliver(Ptr<const Packet> packet, const Ipv4Header& ip, uin
             for (uint32_t i = 0; i < GetNAddresses(iif); i++)
             {
                 Ipv4InterfaceAddress addr = GetAddress(iif, i);
-                if (addr.GetLocal().CombineMask(addr.GetMask()) ==
-                        ipHeader.GetDestination().CombineMask(addr.GetMask()) &&
+                if (addr.GetLocal().GetPrefix(addr.GetMask()) ==
+                        ipHeader.GetDestination().GetPrefix(addr.GetMask()) &&
                     ipHeader.GetDestination().IsSubnetDirectedBroadcast(addr.GetMask()))
                 {
                     subnetDirected = true;
@@ -1218,7 +1218,7 @@ Ipv4L3Protocol::SourceAddressSelection(uint32_t interfaceIdx, Ipv4Address dest)
     for (uint32_t i = 0; i < GetNAddresses(interfaceIdx); i++)
     {
         Ipv4InterfaceAddress test = GetAddress(interfaceIdx, i);
-        if (test.GetLocal().CombineMask(test.GetMask()) == dest.CombineMask(test.GetMask()))
+        if (test.GetLocal().GetPrefix(test.GetMask()) == dest.GetPrefix(test.GetMask()))
         {
             if (!test.IsSecondary())
             {
@@ -1254,7 +1254,7 @@ Ipv4L3Protocol::SelectSourceAddress(Ptr<const NetDevice> device,
             {
                 continue;
             }
-            if (dst.CombineMask(iaddr.GetMask()) == iaddr.GetLocal().CombineMask(iaddr.GetMask()))
+            if (dst.GetPrefix(iaddr.GetMask()) == iaddr.GetLocal().GetPrefix(iaddr.GetMask()))
             {
                 return iaddr.GetLocal();
             }

@@ -15,6 +15,7 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
+#include <cmath>
 #include <iomanip>
 #include <memory>
 
@@ -302,7 +303,7 @@ Ipv6Address::MakeAutoconfiguredAddress(Address addr, Ipv6Address prefix)
 Ipv6Address
 Ipv6Address::MakeAutoconfiguredAddress(Address addr, Ipv6Prefix prefix)
 {
-    Ipv6Address ipv6PrefixAddr = Ipv6Address::GetOnes().CombinePrefix(prefix);
+    Ipv6Address ipv6PrefixAddr = Ipv6Address::GetOnes().GetPrefix(prefix);
     return MakeAutoconfiguredAddress(addr, ipv6PrefixAddr);
 }
 
@@ -567,19 +568,42 @@ Ipv6Address::IsIpv4MappedAddress() const
 }
 
 Ipv6Address
-Ipv6Address::CombinePrefix(const Ipv6Prefix& prefix) const
+Ipv6Address::GetPrefix(const uint8_t prefixLength) const
+{
+    NS_LOG_FUNCTION(this << prefixLength);
+    NS_ASSERT_MSG(prefixLength <= 128, "Prefix length exceeding 128 bits: " << +prefixLength);
+
+    uint8_t addr[16] = {0};
+    uint8_t fullBytes = prefixLength / 8;
+    uint8_t remainingBits = prefixLength % 8;
+
+    // Copy the full bytes of the prefix
+    std::memcpy(addr, m_address, fullBytes);
+
+    // If remaining bits exist, apply bitmask to the next byte
+    if (remainingBits > 0 && fullBytes < 16)
+    {
+        auto mask = static_cast<uint8_t>(0xFF << (8 - remainingBits));
+        addr[fullBytes] = m_address[fullBytes] & mask;
+    }
+
+    Ipv6Address ipv6(addr);
+    return ipv6;
+}
+
+Ipv6Address
+Ipv6Address::GetPrefix(const Ipv6Prefix& prefix) const
 {
     NS_LOG_FUNCTION(this << prefix);
     Ipv6Address ipv6;
     uint8_t addr[16];
     uint8_t pref[16];
-    unsigned int i = 0;
 
     memcpy(addr, m_address, 16);
     ((Ipv6Prefix)prefix).GetBytes(pref);
 
     /* a little bit ugly... */
-    for (i = 0; i < 16; i++)
+    for (auto i = 0; i < 16; i++)
     {
         addr[i] = addr[i] & pref[i];
     }
@@ -587,13 +611,22 @@ Ipv6Address::CombinePrefix(const Ipv6Prefix& prefix) const
     return ipv6;
 }
 
+Ipv6Address
+Ipv6Address::CombinePrefix(const Ipv6Prefix& prefix) const
+{
+    return GetPrefix(prefix);
+}
+
 bool
 Ipv6Address::IsSolicitedMulticast() const
 {
     NS_LOG_FUNCTION(this);
 
-    static Ipv6Address documentation("ff02::1:ff00:0");
-    return CombinePrefix(Ipv6Prefix(104)) == documentation;
+    static uint8_t solicitedMulticastPrefix[] =
+        {0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff};
+    return std::equal(std::cbegin(solicitedMulticastPrefix),
+                      std::cend(solicitedMulticastPrefix),
+                      std::cbegin(m_address));
 }
 
 bool
@@ -622,16 +655,18 @@ bool
 Ipv6Address::IsAny() const
 {
     NS_LOG_FUNCTION(this);
-    static Ipv6Address any("::");
-    return (*this == any);
+
+    static uint8_t any[16] = {0x00};
+    return std::equal(std::cbegin(m_address), std::cend(m_address), std::cbegin(any));
 }
 
 bool
 Ipv6Address::IsDocumentation() const
 {
     NS_LOG_FUNCTION(this);
-    static Ipv6Address documentation("2001:db8::0");
-    return CombinePrefix(Ipv6Prefix(32)) == documentation;
+    static uint8_t documentation[] = {0x20, 0x01, 0x0d, 0xb8};
+
+    return std::equal(std::cbegin(documentation), std::cend(documentation), std::cbegin(m_address));
 }
 
 bool
@@ -639,8 +674,8 @@ Ipv6Address::HasPrefix(const Ipv6Prefix& prefix) const
 {
     NS_LOG_FUNCTION(this << prefix);
 
-    Ipv6Address masked = CombinePrefix(prefix);
-    Ipv6Address reference = Ipv6Address::GetOnes().CombinePrefix(prefix);
+    Ipv6Address masked = GetPrefix(prefix);
+    Ipv6Address reference = Ipv6Address::GetOnes().GetPrefix(prefix);
 
     return masked == reference;
 }
@@ -751,8 +786,8 @@ bool
 Ipv6Address::IsLinkLocal() const
 {
     NS_LOG_FUNCTION(this);
-    static Ipv6Address linkLocal("fe80::0");
-    return CombinePrefix(Ipv6Prefix(64)) == linkLocal;
+    static uint8_t linkLocal[] = {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    return std::equal(std::cbegin(linkLocal), std::cend(linkLocal), std::cbegin(m_address));
 }
 
 bool

@@ -2723,7 +2723,7 @@ SixLowPanNetDevice::AddContext(uint8_t contextId,
                                bool compressionAllowed,
                                Time validLifetime)
 {
-    NS_LOG_FUNCTION(this << +contextId << Ipv6Address::GetOnes().CombinePrefix(contextPrefix)
+    NS_LOG_FUNCTION(this << +contextId << Ipv6Address::GetOnes().GetPrefix(contextPrefix)
                          << contextPrefix << compressionAllowed << validLifetime.As(Time::S));
 
     if (contextId > 15)
@@ -2845,7 +2845,7 @@ SixLowPanNetDevice::FindUnicastCompressionContext(Ipv6Address address, uint8_t& 
             {
                 NS_LOG_LOGIC("Found context "
                              << +contextId << " "
-                             << Ipv6Address::GetOnes().CombinePrefix(context.contextPrefix)
+                             << Ipv6Address::GetOnes().GetPrefix(context.contextPrefix)
                              << context.contextPrefix << " matching");
 
                 contextId = iter.first;
@@ -2888,7 +2888,7 @@ SixLowPanNetDevice::FindMulticastCompressionContext(Ipv6Address address, uint8_t
                 {
                     NS_LOG_LOGIC("Found context "
                                  << +contextId << " "
-                                 << Ipv6Address::GetOnes().CombinePrefix(context.contextPrefix)
+                                 << Ipv6Address::GetOnes().GetPrefix(context.contextPrefix)
                                  << context.contextPrefix << " matching");
 
                     contextId = iter.first;
