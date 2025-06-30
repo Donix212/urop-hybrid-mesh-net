@@ -15,7 +15,6 @@
 
 #include "lr-wpan-constants.h"
 #include "lr-wpan-csmaca.h"
-#include "lr-wpan-mac-header.h"
 #include "lr-wpan-mac-pl-headers.h"
 #include "lr-wpan-mac-trailer.h"
 
@@ -1030,16 +1029,11 @@ LrWpanMac::MlmeGetRequest(MacPibAttributeIdentifier id)
 }
 
 void
-LrWpanMac::ReceiveInPromiscuousMode(uint8_t lqi, Ptr<Packet> p)
+LrWpanMac::ReceiveInPromiscuousMode(uint8_t lqi,
+                                    const LrWpanMacHeader& receivedMacHdr,
+                                    Ptr<Packet> p)
 {
     NS_LOG_FUNCTION(this);
-
-    // Strip the MAC header and MAC trailer
-    LrWpanMacTrailer receivedMacTrailer;
-    p->RemoveTrailer(receivedMacTrailer);
-
-    LrWpanMacHeader receivedMacHdr;
-    p->RemoveHeader(receivedMacHdr);
 
     NS_LOG_DEBUG("promiscuous mode, forwarding up");
 
@@ -1808,7 +1802,7 @@ LrWpanMac::BeaconSearchTimeout()
 }
 
 void
-LrWpanMac::ReceiveBeacon(uint8_t lqi, Ptr<Packet> p)
+LrWpanMac::ReceiveBeacon(uint8_t lqi, const LrWpanMacHeader& receivedMacHdr, Ptr<Packet> p)
 {
     NS_LOG_FUNCTION(this << lqi << p);
     // The received beacon size in symbols
@@ -1825,13 +1819,7 @@ LrWpanMac::ReceiveBeacon(uint8_t lqi, Ptr<Packet> p)
     NS_LOG_DEBUG("Beacon Received; forwarding up (m_macBeaconRxTime: "
                  << m_macBeaconRxTime.As(Time::S) << ")");
 
-    // Strip the MAC header, the trailer and the Beacon Payload
-    LrWpanMacTrailer receivedMacTrailer;
-    p->RemoveTrailer(receivedMacTrailer);
-
-    LrWpanMacHeader receivedMacHdr;
-    p->RemoveHeader(receivedMacHdr);
-
+    // Strip the Beacon Payload
     BeaconPayloadHeader receivedMacPayload;
     p->RemoveHeader(receivedMacPayload);
 
@@ -2012,17 +2000,11 @@ LrWpanMac::ReceiveBeacon(uint8_t lqi, Ptr<Packet> p)
 }
 
 void
-LrWpanMac::ReceiveCommand(uint8_t lqi, Ptr<Packet> p)
+LrWpanMac::ReceiveCommand(uint8_t lqi, const LrWpanMacHeader& receivedMacHdr, Ptr<Packet> p)
 {
     NS_LOG_FUNCTION(this << lqi << p);
 
     auto symbolRate = (uint64_t)m_phy->GetDataOrSymbolRate(false); // symbols per second
-
-    LrWpanMacTrailer receivedMacTrailer;
-    p->RemoveTrailer(receivedMacTrailer);
-
-    LrWpanMacHeader receivedMacHdr;
-    p->RemoveHeader(receivedMacHdr);
 
     CommandPayloadHeader receivedMacPayload;
     p->RemoveHeader(receivedMacPayload);
@@ -2095,15 +2077,9 @@ LrWpanMac::ReceiveCommand(uint8_t lqi, Ptr<Packet> p)
 }
 
 void
-LrWpanMac::ReceiveData(uint8_t lqi, Ptr<Packet> p)
+LrWpanMac::ReceiveData(uint8_t lqi, const LrWpanMacHeader& receivedMacHdr, Ptr<Packet> p)
 {
     NS_LOG_FUNCTION(this << lqi << p);
-
-    LrWpanMacTrailer receivedMacTrailer;
-    p->RemoveTrailer(receivedMacTrailer);
-
-    LrWpanMacHeader receivedMacHdr;
-    p->RemoveHeader(receivedMacHdr);
 
     NS_LOG_DEBUG("Data Packet is for me; forwarding up");
 
@@ -2147,32 +2123,183 @@ LrWpanMac::ReceiveData(uint8_t lqi, Ptr<Packet> p)
 }
 
 void
-LrWpanMac::PrintPacket(Ptr<Packet> p)
+LrWpanMac::ReceiveAcknowledgment(const LrWpanMacHeader& receivedMacHdr, Ptr<Packet> p)
 {
-    LrWpanMacHeader peekedMacHdr;
-    p->PeekHeader(peekedMacHdr);
+    NS_LOG_FUNCTION(this << p);
 
-    if (peekedMacHdr.GetSrcAddrMode() == SHORT_ADDR && peekedMacHdr.GetDstAddrMode() == SHORT_ADDR)
+    // Make a copy of the original transmitted packet that required ACK and
+    // extract its MAC header.
+    Ptr<Packet> txPkt = m_txPkt->Copy();
+    LrWpanMacHeader txMacHdr;
+    txPkt->RemoveHeader(txMacHdr);
+
+    // If it is an ACK with an unexpected sequence number, mark the current
+    // transmission as failed and start a retransmit. (cf 7.5.6.4.3)
+    if (receivedMacHdr.GetSeqNum() != txMacHdr.GetSeqNum())
     {
-        NS_LOG_DEBUG("Packet from [" << peekedMacHdr.GetShortSrcAddr() << "] to ["
-                                     << peekedMacHdr.GetShortDstAddr() << "]");
+        m_ackWaitTimeout.Cancel();
+        if (!PrepareRetransmission())
+        {
+            m_setMacState.Cancel();
+            m_setMacState = Simulator::ScheduleNow(&LrWpanMac::SetLrWpanMacState, this, MAC_IDLE);
+        }
+        else
+        {
+            m_setMacState.Cancel();
+            m_setMacState = Simulator::ScheduleNow(&LrWpanMac::SetLrWpanMacState, this, MAC_CSMA);
+        }
+
+        return;
     }
-    else if (peekedMacHdr.GetSrcAddrMode() == EXT_ADDR && peekedMacHdr.GetDstAddrMode() == EXT_ADDR)
+
+    // If it is an ACK with the expected sequence number, finish the transmission
+    m_ackWaitTimeout.Cancel();
+    m_macTxOkTrace(m_txPkt);
+
+    // TODO: check  if the IFS is the correct size after ACK.
+    double symbolRate = m_phy->GetDataOrSymbolRate(false);
+    Time ifsWaitTime = Seconds((double)GetIfsSize() / symbolRate);
+
+    if (txMacHdr.IsCommand())
     {
-        NS_LOG_DEBUG("Packet from [" << peekedMacHdr.GetExtSrcAddr() << "] to ["
-                                     << peekedMacHdr.GetExtDstAddr() << "]");
+        // We received an ACK to a command, we need to take actions depending on the
+        // transmitted command.
+
+        // Extract the command payload of the originally transmitted packet to know
+        // what command we transmitted.
+        CommandPayloadHeader txCmdPayload;
+        txPkt->RemoveHeader(txCmdPayload);
+
+        switch (txCmdPayload.GetCommandFrameType())
+        {
+        case CommandPayloadHeader::ASSOCIATION_REQ: {
+            Time waitTime = Seconds(static_cast<double>(m_macResponseWaitTime) / symbolRate);
+            if (!m_beaconTrackingOn)
+            {
+                m_respWaitTimeout =
+                    Simulator::Schedule(waitTime, &LrWpanMac::SendDataRequestCommand, this);
+            }
+            else
+            {
+                // TODO: The data must be extracted by the coordinator within
+                // macResponseWaitTime on timeout, MLME-ASSOCIATE.confirm is set
+                // with status NO_DATA, and this should trigger the cancellation
+                // of the beacon tracking (MLME-SYNC.request  trackBeacon
+                // =FALSE)
+            }
+            break;
+        }
+
+        case CommandPayloadHeader::ASSOCIATION_RESP: {
+            // MLME-comm-status.Indication generated as a result of an
+            // association response command, therefore src and dst address use
+            // extended mode (see 5.3.2.1)
+            if (!m_mlmeCommStatusIndicationCallback.IsNull())
+            {
+                MlmeCommStatusIndicationParams commStatusParams;
+                commStatusParams.m_panId = m_macPanId;
+                commStatusParams.m_srcAddrMode = LrWpanMacHeader::EXTADDR;
+                commStatusParams.m_srcExtAddr = txMacHdr.GetExtSrcAddr();
+                commStatusParams.m_dstAddrMode = LrWpanMacHeader::EXTADDR;
+                commStatusParams.m_dstExtAddr = txMacHdr.GetExtDstAddr();
+                commStatusParams.m_status = MacStatus::SUCCESS;
+                m_mlmeCommStatusIndicationCallback(commStatusParams);
+            }
+            // Remove element from Pending Transaction List
+            RemovePendTxQElement(m_txPkt->Copy());
+            break;
+        }
+
+        case CommandPayloadHeader::DATA_REQ: {
+            if (!m_ignoreDataCmdAck)
+            {
+                // Schedule an event in case the Association Response Command
+                // never reached this device during an association process.
+                Time waitTime = Seconds(static_cast<double>(m_assocRespCmdWaitTime) / symbolRate);
+                m_assocResCmdWaitTimeout =
+                    Simulator::Schedule(waitTime, &LrWpanMac::LostAssocRespCommand, this);
+            }
+
+            if (!m_mlmePollConfirmCallback.IsNull())
+            {
+                MlmePollConfirmParams pollConfirmParams;
+                pollConfirmParams.m_status = MacStatus::SUCCESS;
+                m_mlmePollConfirmCallback(pollConfirmParams);
+            }
+            break;
+        }
+
+        case CommandPayloadHeader::COOR_REALIGN: {
+            // ACK of coordinator realigment commands is not specified in the
+            // standard, in here, we assume they are required as in other
+            // commands.
+            if (!m_mlmeCommStatusIndicationCallback.IsNull())
+            {
+                MlmeCommStatusIndicationParams commStatusParams;
+                commStatusParams.m_panId = m_macPanId;
+                commStatusParams.m_srcAddrMode = LrWpanMacHeader::EXTADDR;
+                commStatusParams.m_srcExtAddr = txMacHdr.GetExtSrcAddr();
+                commStatusParams.m_dstAddrMode = LrWpanMacHeader::EXTADDR;
+                commStatusParams.m_dstExtAddr = txMacHdr.GetExtDstAddr();
+                commStatusParams.m_status = MacStatus::SUCCESS;
+                m_mlmeCommStatusIndicationCallback(commStatusParams);
+            }
+            break;
+        }
+
+        default: {
+            // TODO: add response to other request commands (e.g. Orphan)
+            break;
+        }
+        }
     }
-    else if (peekedMacHdr.GetSrcAddrMode() == SHORT_ADDR &&
-             peekedMacHdr.GetDstAddrMode() == EXT_ADDR)
+    else
     {
-        NS_LOG_DEBUG("Packet from [" << peekedMacHdr.GetShortSrcAddr() << "] to ["
-                                     << peekedMacHdr.GetExtDstAddr() << "]");
+        // Receive ACK to data packet
+        if (!m_mcpsDataConfirmCallback.IsNull())
+        {
+            Ptr<TxQueueElement> txQElement = m_txQueue.front();
+            McpsDataConfirmParams confirmParams;
+            confirmParams.m_msduHandle = txQElement->txQMsduHandle;
+            confirmParams.m_status = MacStatus::SUCCESS;
+            m_mcpsDataConfirmCallback(confirmParams);
+        }
     }
-    else if (peekedMacHdr.GetSrcAddrMode() == EXT_ADDR &&
-             peekedMacHdr.GetDstAddrMode() == SHORT_ADDR)
+
+    // Ack was successfully received, wait for the Interframe Space (IFS) and
+    // then proceed
+    RemoveFirstTxQElement();
+    m_setMacState.Cancel();
+    m_setMacState = Simulator::ScheduleNow(&LrWpanMac::SetLrWpanMacState, this, MAC_IDLE);
+    m_ifsEvent = Simulator::Schedule(ifsWaitTime, &LrWpanMac::IfsWaitTimeout, this, ifsWaitTime);
+}
+
+void
+LrWpanMac::PrintReceivedPacket(const LrWpanMacHeader& receivedMacHdr)
+{
+    if (receivedMacHdr.GetSrcAddrMode() == SHORT_ADDR &&
+        receivedMacHdr.GetDstAddrMode() == SHORT_ADDR)
     {
-        NS_LOG_DEBUG("Packet from [" << peekedMacHdr.GetExtSrcAddr() << "] to ["
-                                     << peekedMacHdr.GetShortDstAddr() << "]");
+        NS_LOG_DEBUG("Packet from [" << receivedMacHdr.GetShortSrcAddr() << "] to ["
+                                     << receivedMacHdr.GetShortDstAddr() << "]");
+    }
+    else if (receivedMacHdr.GetSrcAddrMode() == EXT_ADDR &&
+             receivedMacHdr.GetDstAddrMode() == EXT_ADDR)
+    {
+        NS_LOG_DEBUG("Packet from [" << receivedMacHdr.GetExtSrcAddr() << "] to ["
+                                     << receivedMacHdr.GetExtDstAddr() << "]");
+    }
+    else if (receivedMacHdr.GetSrcAddrMode() == SHORT_ADDR &&
+             receivedMacHdr.GetDstAddrMode() == EXT_ADDR)
+    {
+        NS_LOG_DEBUG("Packet from [" << receivedMacHdr.GetShortSrcAddr() << "] to ["
+                                     << receivedMacHdr.GetExtDstAddr() << "]");
+    }
+    else if (receivedMacHdr.GetSrcAddrMode() == EXT_ADDR &&
+             receivedMacHdr.GetDstAddrMode() == SHORT_ADDR)
+    {
+        NS_LOG_DEBUG("Packet from [" << receivedMacHdr.GetExtSrcAddr() << "] to ["
+                                     << receivedMacHdr.GetShortDstAddr() << "]");
     }
 }
 
@@ -2270,25 +2397,30 @@ LrWpanMac::PdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi)
     NS_ASSERT(m_macState == MAC_IDLE || m_macState == MAC_ACK_PENDING || m_macState == MAC_CSMA);
     NS_LOG_FUNCTION(this << psduLength << p << (uint16_t)lqi);
 
-    bool acceptFrame;
+    Ptr<Packet> originalPkt = p->Copy();
 
-    Ptr<Packet> originalPkt = p->Copy();                           // because we will strip headers
-    auto symbolRate = (uint64_t)m_phy->GetDataOrSymbolRate(false); // symbols per second
+    // If active, pass the complete packet to the traces
+    if (!m_promiscSnifferTrace.IsEmpty())
+    {
+        m_promiscSnifferTrace(p->Copy());
+    }
+    else if (!m_macPromiscRxTrace.IsEmpty())
+    {
+        m_macPromiscRxTrace(p->Copy());
+    }
 
-    m_promiscSnifferTrace(originalPkt);
-    m_macPromiscRxTrace(originalPkt);
-    // XXX no rejection tracing (to macRxDropTrace) being performed below
-
+    // Extract the MAC trailer
     LrWpanMacTrailer receivedMacTrailer;
     p->RemoveTrailer(receivedMacTrailer);
+
+    // Extract the MAC Header from the packet
+    LrWpanMacHeader receivedMacHdr;
+    p->RemoveHeader(receivedMacHdr);
 
     if (Node::ChecksumEnabled())
     {
         receivedMacTrailer.EnableFcs(true);
     }
-
-    LrWpanMacHeader receivedMacHdr;
-    p->RemoveHeader(receivedMacHdr);
 
     // From section 7.5.6.2 Reception and rejection, IEEE 802.15.4-2006
     // - Level 1 filtering: Test FCS field and reject if frame fails.
@@ -2310,12 +2442,13 @@ LrWpanMac::PdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi)
     // Level 2 filtering
     if (m_macPromiscuousMode)
     {
-        PrintPacket(originalPkt);
-        ReceiveInPromiscuousMode(lqi, originalPkt);
+        PrintReceivedPacket(receivedMacHdr);
+        ReceiveInPromiscuousMode(lqi, receivedMacHdr, p);
         return;
     }
 
     // Level 3 frame filtering
+    bool acceptFrame;
     acceptFrame = (receivedMacHdr.GetType() != LrWpanMacHeader::LRWPAN_MAC_RESERVED);
 
     if (acceptFrame)
@@ -2402,6 +2535,7 @@ LrWpanMac::PdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi)
             Time timeLeftInCap = Simulator::GetDelayLeft(m_capEvent);
             uint64_t ackSymbols = lrwpan::aTurnaroundTime + m_phy->GetPhySHRDuration() +
                                   ceil(6 * m_phy->GetPhySymbolsPerOctet());
+            auto symbolRate = m_phy->GetDataOrSymbolRate(false); // symbols per second
             Time ackTime = Seconds((double)ackSymbols / symbolRate);
 
             if (ackTime >= timeLeftInCap)
@@ -2457,7 +2591,7 @@ LrWpanMac::PdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi)
 
         // save received packet and LQI to process the appropriate indication/response
         // after sending ACK (PD-DATA.confirm)
-        m_rxPkt = originalPkt->Copy();
+        m_rxPkt = originalPkt;
         m_lastRxFrameLqi = lqi;
 
         // LOG Commands with ACK required.
@@ -2500,168 +2634,23 @@ LrWpanMac::PdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi)
             Simulator::ScheduleNow(&LrWpanMac::SendAck, this, receivedMacHdr.GetSeqNum());
     }
 
-    PrintPacket(originalPkt);
+    PrintReceivedPacket(receivedMacHdr);
 
     if (receivedMacHdr.IsBeacon())
     {
-        ReceiveBeacon(lqi, originalPkt);
+        ReceiveBeacon(lqi, receivedMacHdr, p);
     }
     else if (receivedMacHdr.IsCommand())
     {
-        ReceiveCommand(lqi, originalPkt);
+        ReceiveCommand(lqi, receivedMacHdr, p);
     }
     else if (receivedMacHdr.IsData())
     {
-        ReceiveData(lqi, originalPkt);
+        ReceiveData(lqi, receivedMacHdr, p);
     }
     else if (receivedMacHdr.IsAcknowledgment() && m_txPkt && m_macState == MAC_ACK_PENDING)
     {
-        LrWpanMacHeader peekedMacHdr;
-        m_txPkt->PeekHeader(peekedMacHdr);
-        // If it is an ACK with the expected sequence number, finish the transmission
-        if (receivedMacHdr.GetSeqNum() == peekedMacHdr.GetSeqNum())
-        {
-            m_ackWaitTimeout.Cancel();
-            m_macTxOkTrace(m_txPkt);
-
-            // TODO: check  if the IFS is the correct size after ACK.
-            Time ifsWaitTime = Seconds((double)GetIfsSize() / symbolRate);
-
-            // We received an ACK to a command
-            if (peekedMacHdr.IsCommand())
-            {
-                // check the original sent command frame which belongs to this received
-                // ACK
-                Ptr<Packet> pkt = m_txPkt->Copy();
-                LrWpanMacHeader macHdr;
-                CommandPayloadHeader cmdPayload;
-                pkt->RemoveHeader(macHdr);
-                pkt->RemoveHeader(cmdPayload);
-
-                switch (cmdPayload.GetCommandFrameType())
-                {
-                case CommandPayloadHeader::ASSOCIATION_REQ: {
-                    double symbolRate = m_phy->GetDataOrSymbolRate(false);
-                    Time waitTime =
-                        Seconds(static_cast<double>(m_macResponseWaitTime) / symbolRate);
-                    if (!m_beaconTrackingOn)
-                    {
-                        m_respWaitTimeout =
-                            Simulator::Schedule(waitTime, &LrWpanMac::SendDataRequestCommand, this);
-                    }
-                    else
-                    {
-                        // TODO: The data must be extracted by the coordinator within
-                        // macResponseWaitTime on timeout, MLME-ASSOCIATE.confirm is set
-                        // with status NO_DATA, and this should trigger the cancellation
-                        // of the beacon tracking (MLME-SYNC.request  trackBeacon
-                        // =FALSE)
-                    }
-                    break;
-                }
-
-                case CommandPayloadHeader::ASSOCIATION_RESP: {
-                    // MLME-comm-status.Indication generated as a result of an
-                    // association response command, therefore src and dst address use
-                    // extended mode (see 5.3.2.1)
-                    if (!m_mlmeCommStatusIndicationCallback.IsNull())
-                    {
-                        MlmeCommStatusIndicationParams commStatusParams;
-                        commStatusParams.m_panId = m_macPanId;
-                        commStatusParams.m_srcAddrMode = LrWpanMacHeader::EXTADDR;
-                        commStatusParams.m_srcExtAddr = macHdr.GetExtSrcAddr();
-                        commStatusParams.m_dstAddrMode = LrWpanMacHeader::EXTADDR;
-                        commStatusParams.m_dstExtAddr = macHdr.GetExtDstAddr();
-                        commStatusParams.m_status = MacStatus::SUCCESS;
-                        m_mlmeCommStatusIndicationCallback(commStatusParams);
-                    }
-                    // Remove element from Pending Transaction List
-                    RemovePendTxQElement(m_txPkt->Copy());
-                    break;
-                }
-
-                case CommandPayloadHeader::DATA_REQ: {
-                    if (!m_ignoreDataCmdAck)
-                    {
-                        // Schedule an event in case the Association Response Command
-                        // never reached this device during an association process.
-                        double symbolRate = m_phy->GetDataOrSymbolRate(false);
-                        Time waitTime =
-                            Seconds(static_cast<double>(m_assocRespCmdWaitTime) / symbolRate);
-                        m_assocResCmdWaitTimeout =
-                            Simulator::Schedule(waitTime, &LrWpanMac::LostAssocRespCommand, this);
-                    }
-
-                    if (!m_mlmePollConfirmCallback.IsNull())
-                    {
-                        MlmePollConfirmParams pollConfirmParams;
-                        pollConfirmParams.m_status = MacStatus::SUCCESS;
-                        m_mlmePollConfirmCallback(pollConfirmParams);
-                    }
-                    break;
-                }
-
-                case CommandPayloadHeader::COOR_REALIGN: {
-                    // ACK of coordinator realigment commands is not specified in the
-                    // standard, in here, we assume they are required as in other
-                    // commands.
-                    if (!m_mlmeCommStatusIndicationCallback.IsNull())
-                    {
-                        MlmeCommStatusIndicationParams commStatusParams;
-                        commStatusParams.m_panId = m_macPanId;
-                        commStatusParams.m_srcAddrMode = LrWpanMacHeader::EXTADDR;
-                        commStatusParams.m_srcExtAddr = macHdr.GetExtSrcAddr();
-                        commStatusParams.m_dstAddrMode = LrWpanMacHeader::EXTADDR;
-                        commStatusParams.m_dstExtAddr = macHdr.GetExtDstAddr();
-                        commStatusParams.m_status = MacStatus::SUCCESS;
-                        m_mlmeCommStatusIndicationCallback(commStatusParams);
-                    }
-                }
-
-                default: {
-                    // TODO: add response to other request commands (e.g. Orphan)
-                    break;
-                }
-                }
-            }
-            else
-            {
-                if (!m_mcpsDataConfirmCallback.IsNull())
-                {
-                    Ptr<TxQueueElement> txQElement = m_txQueue.front();
-                    McpsDataConfirmParams confirmParams;
-                    confirmParams.m_msduHandle = txQElement->txQMsduHandle;
-                    confirmParams.m_status = MacStatus::SUCCESS;
-                    m_mcpsDataConfirmCallback(confirmParams);
-                }
-            }
-
-            // Ack was successfully received, wait for the Interframe Space (IFS) and
-            // then proceed
-            RemoveFirstTxQElement();
-            m_setMacState.Cancel();
-            m_setMacState = Simulator::ScheduleNow(&LrWpanMac::SetLrWpanMacState, this, MAC_IDLE);
-            m_ifsEvent =
-                Simulator::Schedule(ifsWaitTime, &LrWpanMac::IfsWaitTimeout, this, ifsWaitTime);
-        }
-        else
-        {
-            // If it is an ACK with an unexpected sequence number, mark the current
-            // transmission as failed and start a retransmit. (cf 7.5.6.4.3)
-            m_ackWaitTimeout.Cancel();
-            if (!PrepareRetransmission())
-            {
-                m_setMacState.Cancel();
-                m_setMacState =
-                    Simulator::ScheduleNow(&LrWpanMac::SetLrWpanMacState, this, MAC_IDLE);
-            }
-            else
-            {
-                m_setMacState.Cancel();
-                m_setMacState =
-                    Simulator::ScheduleNow(&LrWpanMac::SetLrWpanMacState, this, MAC_CSMA);
-            }
-        }
+        ReceiveAcknowledgment(receivedMacHdr, p);
     }
 }
 
