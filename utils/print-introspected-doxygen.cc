@@ -227,6 +227,7 @@ SetMarkup()
         templateArgument = "\\tparam ";
         variable = "\\var ";
     }
+
 } // SetMarkup()
 
 /***************************************************************
@@ -317,8 +318,7 @@ class StaticInformation
      */
     mutable std::vector<std::string> m_noTids;
 
-    // end of class StaticInformation
-};
+}; // class StaticInformation
 
 void
 StaticInformation::RecordAggregationInfo(std::string a, std::string b)
@@ -442,11 +442,13 @@ StaticInformation::Gather(TypeId tid)
 void
 StaticInformation::DoGather(TypeId tid)
 {
-    NS_LOG_FUNCTION(this << tid);
     if (HasAlreadyBeenProcessed(tid))
     {
         return;
     }
+
+    NS_LOG_FUNCTION(this << tid);
+
     RecordOutput(tid);
     for (uint32_t i = 0; i < tid.GetAttributeN(); ++i)
     {
@@ -525,15 +527,17 @@ StaticInformation::DoGather(TypeId tid)
     }
 } // StaticInformation::DoGather()
 
-/// Register aggregation relationships that are not automatically
-/// detected by this introspection program.  Statements added here
-/// result in more configuration paths being added to the doxygen.
-/// @return instance of StaticInformation with the registered information
+/**
+ *  Register aggregation relationships that are not automatically
+ *  detected by this introspection program.
+ *  Statements added here result in more configuration paths
+ *  being added to the doxygen.
+ *
+ *  @return instance of StaticInformation with the registered information
+ */
 StaticInformation
 GetTypicalAggregations()
 {
-    NS_LOG_FUNCTION_NOARGS();
-
     static StaticInformation info;
     static bool mapped = false;
 
@@ -541,6 +545,8 @@ GetTypicalAggregations()
     {
         return info;
     }
+
+    NS_LOG_FUNCTION_NOARGS();
 
     // Short circuit next call
     mapped = true;
@@ -575,8 +581,7 @@ GetTypicalAggregations()
 
     // Create a channel object so that channels appear in the namespace
     // paths that will be generated here.
-    Ptr<SimpleChannel> simpleChannel;
-    simpleChannel = CreateObject<SimpleChannel>();
+    auto simpleChannel = CreateObject<SimpleChannel>();
 
     for (uint32_t i = 0; i < Config::GetRootNamespaceObjectN(); ++i)
     {
@@ -588,9 +593,10 @@ GetTypicalAggregations()
 
 } // GetTypicalAggregations()
 
-/// Map from TypeId name to tid
-typedef std::map<std::string, int32_t> NameMap;
-typedef NameMap::const_iterator NameMapIterator; ///< NameMap iterator
+/** Map from TypeId name to tid */
+typedef std::map</* name */ std::string, /* TypeId */ int32_t> NameMap;
+/**  NameMap iterator */
+typedef NameMap::const_iterator NameMapIterator;
 
 /**
  * Create a map from the class names to their index in the vector of
@@ -601,8 +607,6 @@ typedef NameMap::const_iterator NameMapIterator; ///< NameMap iterator
 NameMap
 GetNameMap()
 {
-    NS_LOG_FUNCTION_NOARGS();
-
     static NameMap nameMap;
     static bool mapped = false;
 
@@ -611,16 +615,18 @@ GetNameMap()
         return nameMap;
     }
 
+    NS_LOG_FUNCTION_NOARGS();
+
     // Short circuit next call
     mapped = true;
 
     // Get typical aggregation relationships.
-    StaticInformation info = GetTypicalAggregations();
+    auto info = GetTypicalAggregations();
 
     // Registered types
     for (uint32_t i = 0; i < TypeId::GetRegisteredN(); i++)
     {
-        TypeId tid = TypeId::GetRegistered(i);
+        auto tid = TypeId::GetRegistered(i);
         if (tid.MustHideFromDocumentation())
         {
             continue;
@@ -628,7 +634,7 @@ GetNameMap()
 
         // Capitalize all of letters in the name so that it sorts
         // correctly in the map.
-        std::string name = tid.GetName();
+        auto name = tid.GetName();
         std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 
         // Save this name's index.
@@ -636,18 +642,19 @@ GetNameMap()
     }
 
     // Type names without TypeIds
-    std::vector<std::string> noTids = info.GetNoTypeIds();
+    auto noTids = info.GetNoTypeIds();
     for (const auto& item : noTids)
     {
         nameMap[item] = -1;
     }
 
     return nameMap;
+
 } // GetNameMap()
 
-/// List of TypeIds for a group
+/**  List of TypeIds for a group */
 using GroupList_t = std::set<TypeId>;
-/// Collection of group names with associated TypeIds
+/**  Collection of group names with associated TypeIds */
 using GroupsList_t = std::map<std::string, GroupList_t>;
 
 /**
@@ -659,12 +666,15 @@ GetGroupsList()
 {
     static GroupsList_t groups;
     static bool mapped = false;
+
     if (mapped)
     {
         return groups;
     }
 
-    NameMap nameMap = GetNameMap();
+    NS_LOG_FUNCTION_NOARGS();
+
+    auto nameMap = GetNameMap();
     for (const auto& item : nameMap)
     {
         // Handle only real TypeIds
@@ -673,7 +683,7 @@ GetGroupsList()
             continue;
         }
         // Get the class's index out of the map;
-        TypeId tid = TypeId::GetRegistered(item.second);
+        auto tid = TypeId::GetRegistered(item.second);
         auto group = tid.GetGroupName();
 
         if (!group.empty())
@@ -698,6 +708,8 @@ GetGroupsList()
 void
 PrintSupportLevel(std::ostream& os, TypeId::SupportLevel supportLevel, std::string supportMsg)
 {
+    NS_LOG_FUNCTION(supportLevel << supportMsg);
+
     os << "    " << listLineStart << "Support level: ";
     os << flagSpanStart << supportLevel << flagSpanStop;
 
@@ -706,6 +718,7 @@ PrintSupportLevel(std::ostream& os, TypeId::SupportLevel supportLevel, std::stri
         os << ": " << supportMsg;
     }
     os << listLineStop << std::endl;
+
 } // PrintSupportLevel
 
 /**
@@ -717,9 +730,8 @@ void
 PrintConfigPaths(std::ostream& os, const TypeId tid)
 {
     NS_LOG_FUNCTION(tid);
-    std::vector<std::string> paths = GetTypicalAggregations().Get(tid);
 
-    // Config --------------
+    auto paths = GetTypicalAggregations().Get(tid);
     if (paths.empty())
     {
         os << "Introspection did not find any typical Config paths." << breakBoth << std::endl;
@@ -738,6 +750,7 @@ PrintConfigPaths(std::ostream& os, const TypeId tid)
         }
         os << listStop << std::endl;
     }
+
 } // PrintConfigPaths()
 
 /**
@@ -753,9 +766,9 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
 {
     NS_LOG_FUNCTION(tid);
 
-    auto index = SortedAttributeInfo(tid);
-
     os << listStart << std::endl;
+
+    auto index = SortedAttributeInfo(tid);
     for (const auto& [name, info] : index)
     {
         os << listLineStart << boldStart << name << boldStop << ": " << info.help << std::endl;
@@ -768,7 +781,7 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
         {
             os << "    " << listLineStart << "Underlying type: ";
 
-            std::string valType = info.checker->GetValueTypeName();
+            auto valType = info.checker->GetValueTypeName();
             underType = info.checker->GetUnderlyingTypeInformation();
             bool handled = false;
             if ((valType != "ns3::EnumValue") && (underType != "std::string"))
@@ -818,7 +831,7 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
         }
         if (info.flags & TypeId::ATTR_CONSTRUCT && info.accessor->HasSetter())
         {
-            std::string value = info.initialValue->SerializeToString(info.checker);
+            auto value = info.initialValue->SerializeToString(info.checker);
             if (underType == "std::string" && value.empty())
             {
                 value = "\"\"";
@@ -849,6 +862,7 @@ PrintAttributesTid(std::ostream& os, const TypeId tid)
         os << indentHtmlOnly << listStop << std::endl;
     }
     os << listStop << std::endl;
+
 } // PrintAttributesTid()
 
 /**
@@ -865,6 +879,7 @@ void
 PrintAttributes(std::ostream& os, const TypeId tid)
 {
     NS_LOG_FUNCTION(tid);
+
     if (tid.GetAttributeN() == 0)
     {
         os << "No Attributes are defined for this type." << breakBoth << std::endl;
@@ -887,6 +902,7 @@ PrintAttributes(std::ostream& os, const TypeId tid)
         }
         tmp = tmp.GetParent();
     }
+
 } // PrintAttributes()
 
 /**
@@ -902,9 +918,9 @@ PrintTraceSourcesTid(std::ostream& os, const TypeId tid)
 {
     NS_LOG_FUNCTION(tid);
 
-    auto index = SortedTraceSourceInfo(tid);
-
     os << listStart << std::endl;
+
+    auto index = SortedTraceSourceInfo(tid);
     for (const auto& [name, info] : index)
     {
         os << listLineStart << boldStart << name << boldStop << ": " << info.help << breakBoth;
@@ -922,6 +938,7 @@ PrintTraceSourcesTid(std::ostream& os, const TypeId tid)
         os << listStop << std::endl;
     }
     os << listStop << std::endl;
+
 } // PrintTraceSourcesTid()
 
 /**
@@ -938,6 +955,7 @@ void
 PrintTraceSources(std::ostream& os, const TypeId tid)
 {
     NS_LOG_FUNCTION(tid);
+
     if (tid.GetTraceSourceN() == 0)
     {
         os << "No TraceSources are defined for this type." << breakBoth << std::endl;
@@ -949,7 +967,7 @@ PrintTraceSources(std::ostream& os, const TypeId tid)
     }
 
     // Trace sources from base classes
-    TypeId tmp = tid.GetParent();
+    auto tmp = tid.GetParent();
     while (tmp.GetParent() != tmp)
     {
         if (tmp.GetTraceSourceN() != 0)
@@ -975,10 +993,11 @@ PrintSize(std::ostream& os, const TypeId tid)
     NS_LOG_FUNCTION(tid);
     NS_ASSERT_MSG(CHAR_BIT != 0, "CHAR_BIT is zero");
 
-    std::size_t arch = (sizeof(void*) * CHAR_BIT);
+    constexpr std::size_t arch = (sizeof(void*) * CHAR_BIT);
 
     os << boldStart << "Size" << boldStop << " of this type is " << tid.GetSize() << " bytes (on a "
        << arch << "-bit architecture)." << std::endl;
+
 } // PrintSize()
 
 /**
@@ -992,7 +1011,7 @@ PrintTypeIdBlock(std::ostream& os, const TypeId tid)
 {
     NS_LOG_FUNCTION(tid);
 
-    std::string name = tid.GetName();
+    auto name = tid.GetName();
 
     os << commentStart << std::endl;
 
@@ -1024,10 +1043,9 @@ PrintTypeIdBlocks(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
 
-    NameMap nameMap = GetNameMap();
-
     // Iterate over the map, which will print the class names in
     // alphabetical order.
+    auto nameMap = GetNameMap();
     for (const auto& item : nameMap)
     {
         // Handle only real TypeIds
@@ -1036,9 +1054,10 @@ PrintTypeIdBlocks(std::ostream& os)
             continue;
         }
         // Get the class's index out of the map;
-        TypeId tid = TypeId::GetRegistered(item.second);
+        auto tid = TypeId::GetRegistered(item.second);
         PrintTypeIdBlock(os, tid);
     }
+
 } // PrintTypeIdBlocks()
 
 /***************************************************************
@@ -1054,6 +1073,7 @@ void
 PrintAllTypeIds(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
+
     os << commentStart << page << "TypeIdList All ns3::TypeId's\n" << std::endl;
     os << "This is a list of all" << reference << "ns3::TypeId's.\n"
        << "For more information see the" << reference << "ns3::TypeId "
@@ -1063,9 +1083,9 @@ PrintAllTypeIds(std::ostream& os)
 
     os << listStart << std::endl;
 
-    NameMap nameMap = GetNameMap();
     // Iterate over the map, which will print the class names in
     // alphabetical order.
+    auto nameMap = GetNameMap();
     for (const auto& item : nameMap)
     {
         // Handle only real TypeIds
@@ -1074,7 +1094,7 @@ PrintAllTypeIds(std::ostream& os)
             continue;
         }
         // Get the class's index out of the map;
-        TypeId tid = TypeId::GetRegistered(item.second);
+        auto tid = TypeId::GetRegistered(item.second);
 
         os << indentHtmlOnly << listLineStart << boldStart << tid.GetName() << boldStop
            << listLineStop << std::endl;
@@ -1100,10 +1120,10 @@ PrintAttributeList(std::ostream& os, const TypeId& tid)
 
     NS_LOG_FUNCTION(tid);
 
-    auto index = SortedAttributeInfo(tid);
-
     os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
     os << listStart << std::endl;
+
+    auto index = SortedAttributeInfo(tid);
     for (const auto& [name, info] : index)
     {
         os << listLineStart << boldStart << name << boldStop << ": " << info.help << listLineStop
@@ -1150,7 +1170,6 @@ PrintAllGroupAttributes(std::ostream& os)
     NS_LOG_FUNCTION_NOARGS();
 
     auto groups = GetGroupsList();
-
     for (const auto& [groupName, dummy] : groups)
     {
         PrintGroupAttributes(os, groupName);
@@ -1170,6 +1189,7 @@ void
 PrintAllAttributes(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
+
     os << commentStart << page << "AttributeList All Attributes\n" << std::endl;
     os << "This is a list of all" << reference << "attributes classes.  "
        << "For more information see the" << reference << "attributes "
@@ -1177,9 +1197,9 @@ PrintAllAttributes(std::ostream& os)
        << "in the Tutorial and Manual.\n"
        << std::endl;
 
-    NameMap nameMap = GetNameMap();
     // Iterate over the map, which will print the class names in
     // alphabetical order.
+    auto nameMap = GetNameMap();
     for (const auto& item : nameMap)
     {
         // Handle only real TypeIds
@@ -1205,6 +1225,7 @@ void
 PrintAllGlobals(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
+
     os << commentStart << page << "GlobalValueList All GlobalValues\n" << std::endl;
     os << "This is a list of all" << reference << "ns3::GlobalValue instances.\n"
        << "See ns3::GlobalValue for how to set these." << std::endl;
@@ -1233,6 +1254,7 @@ void
 PrintAllGroups(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
+
     os << commentStart << page << "GroupsList All Object Groups\n" << std::endl;
     os << "This is a list of all Object Groups.\n"
        << "Objects are added to groups by " << hrefStart << "ns3::TypeId::SetGroupName()" << hrefMid
@@ -1240,7 +1262,6 @@ PrintAllGroups(std::ostream& os)
        << std::endl;
 
     auto groups = GetGroupsList();
-
     for (const auto& g : groups)
     {
         os << boldStart << reference << g.first << boldStop << breakHtmlOnly << std::endl;
@@ -1266,6 +1287,7 @@ void
 PrintAllLogComponents(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
+
     os << commentStart << page << "LogComponentList All LogComponents\n" << std::endl;
     os << "This is a list of all" << reference << "ns3::LogComponent instances.\n" << std::endl;
 
@@ -1273,14 +1295,14 @@ PrintAllLogComponents(std::ostream& os)
      * @todo Switch to a border-less table, so the file links align
      * See https://www.doxygen.nl/manual/htmlcmds.html
      */
-    LogComponent::ComponentList* logs = LogComponent::GetComponentList();
     // Find longest log name
-    std::size_t widthL = std::string("Log Component").size();
-    std::size_t widthR = std::string("file").size();
+    auto widthL = std::string("Log Component").size();
+    auto widthR = std::string("file").size();
+    auto logs = LogComponent::GetComponentList();
     for (const auto& it : (*logs))
     {
         widthL = std::max(widthL, it.first.size());
-        std::string file = it.second->File();
+        auto file = it.second->File();
         // Strip leading "../" related to depth in build directory
         // since doxygen only sees the path starting with "src/", etc.
         while (file.find("../") == 0)
@@ -1301,7 +1323,7 @@ PrintAllLogComponents(std::ostream& os)
 
     for (const auto& it : (*logs))
     {
-        std::string file = it.second->File();
+        auto file = it.second->File();
         // Strip leading "../" related to depth in build directory
         // since doxygen only sees the path starting with "src/", etc.
         while (file.find("../") == 0)
@@ -1314,6 +1336,7 @@ PrintAllLogComponents(std::ostream& os)
     }
     os << std::right << std::endl;
     os << commentStop << std::endl;
+
 } // PrintAllLogComponents()
 
 /**
@@ -1328,6 +1351,7 @@ void
 PrintAllTraceSources(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
+
     os << commentStart << page << "TraceSourceList All TraceSources\n" << std::endl;
     os << "This is a list of all" << reference << "tracing sources.  "
        << "For more information see the " << reference << "tracing "
@@ -1335,10 +1359,9 @@ PrintAllTraceSources(std::ostream& os)
        << "in the Tutorial and Manual.\n"
        << std::endl;
 
-    NameMap nameMap = GetNameMap();
-
     // Iterate over the map, which will print the class names in
     // alphabetical order.
+    auto nameMap = GetNameMap();
     for (const auto& item : nameMap)
     {
         // Handle only real TypeIds
@@ -1347,18 +1370,17 @@ PrintAllTraceSources(std::ostream& os)
             continue;
         }
         // Get the class's index out of the map;
-        TypeId tid = TypeId::GetRegistered(item.second);
+        auto tid = TypeId::GetRegistered(item.second);
 
         if (tid.GetTraceSourceN() == 0)
         {
             continue;
         }
 
-        auto index = SortedTraceSourceInfo(tid);
-
         os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << std::endl;
 
         os << listStart << std::endl;
+        auto index = SortedTraceSourceInfo(tid);
         for (const auto& [name, info] : index)
         {
             os << listLineStart << boldStart << name << boldStop << ": " << info.help
@@ -1390,7 +1412,8 @@ PrintAllTraceSources(std::ostream& os)
 void
 PrintAttributeValueSection(std::ostream& os, const std::string& name, const bool seeBase = true)
 {
-    NS_LOG_FUNCTION(name);
+    NS_LOG_FUNCTION(name << seeBase);
+
     std::string section = "attribute_" + name;
 
     // \ingroup attributes
@@ -1423,6 +1446,7 @@ PrintAttributeValueWithName(std::ostream& os,
                             const std::string& header)
 {
     NS_LOG_FUNCTION(name << type << header);
+
     std::string sectAttr = sectionStart + "attribute_" + name;
 
     // \ingroup attribute_<name>Value
@@ -1486,6 +1510,7 @@ void
 PrintMakeAccessors(std::ostream& os, const std::string& name)
 {
     NS_LOG_FUNCTION(name);
+
     std::string sectAttr = sectionStart + "attribute_" + name + "\n";
     std::string make = "ns3::Make" + name + "Accessor ";
 
@@ -1504,6 +1529,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
        << copyDoc << "ns3::MakeAccessorHelper(T1,T2)\n"
        << seeAlso << "AttributeAccessor\n"
        << commentStop;
+
 } // PrintMakeAccessors()
 
 /**
@@ -1519,6 +1545,7 @@ void
 PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& header)
 {
     NS_LOG_FUNCTION(name << header);
+
     std::string sectAttr = sectionStart + "attribute_" + name + "\n";
     std::string make = "ns3::Make" + name + "Checker ";
 
@@ -1537,6 +1564,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
        << returns << "The AttributeChecker.\n"
        << seeAlso << "AttributeChecker\n"
        << commentStop;
+
 } // PrintMakeChecker()
 
 /**Descriptor for an AttributeValue. */
@@ -1546,7 +1574,8 @@ struct AttributeDescriptor
     const std::string m_type;   //!< The name of the underlying type.
     const bool m_seeBase;       //!< Print a "see also" pointing to the base class.
     const std::string m_header; //!< The header file name.
-};
+
+}; // struct AttributeDescriptor
 
 /**
  * Print documentation corresponding to use of the
@@ -1560,10 +1589,12 @@ void
 PrintAttributeHelper(std::ostream& os, const AttributeDescriptor& attr)
 {
     NS_LOG_FUNCTION(attr.m_name << attr.m_type << attr.m_seeBase << attr.m_header);
+
     PrintAttributeValueSection(os, attr.m_name, attr.m_seeBase);
     PrintAttributeValueWithName(os, attr.m_name, attr.m_type, attr.m_header);
     PrintMakeAccessors(os, attr.m_name);
     PrintMakeChecker(os, attr.m_name, attr.m_header);
+
 } // PrintAttributeHelper()
 
 /**
