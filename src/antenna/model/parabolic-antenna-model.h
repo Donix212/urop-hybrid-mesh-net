@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup antenna
+ * @ingroup Antenna
  *
  * @brief  Antenna model based on a parabolic approximation of the main lobe radiation pattern.
  *

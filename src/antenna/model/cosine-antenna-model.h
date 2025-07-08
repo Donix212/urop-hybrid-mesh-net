@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup antenna
+ * @ingroup Antenna
  *
  * @brief Cosine Antenna Model
  *
