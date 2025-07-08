@@ -587,10 +587,19 @@ GlobalRouter::DiscoverLSAs()
     // Ipv4 interface.  This is where the information regarding the attached
     // interfaces lives.  If we're a router, we had better have an Ipv4 interface.
     //
-    Ptr<Ipv4> ipv4Local = node->GetObject<Ipv4>();
-    NS_ABORT_MSG_UNLESS(ipv4Local,
-                        "GlobalRouter::DiscoverLSAs (): GetObject for <Ipv4> interface failed");
-
+    Ptr<Object> ipLocal;
+    if (IsIpv4)
+    {
+        ipLocal = node->GetObject<Ipv4>();
+        NS_ABORT_MSG_UNLESS(ipLocal,
+                            "GlobalRouter::DiscoverLSAs (): GetObject for <Ipv4> interface failed");
+    }
+    else
+    {
+        ipLocal = node->GetObject<Ipv6>();
+        NS_ABORT_MSG_UNLESS(ipLocal,
+                            "GlobalRouter::DiscoverLSAs (): GetObject for <Ipv6> interface failed");
+    }
     //
     // Every router node originates a Router-LSA
     //
@@ -629,10 +638,22 @@ GlobalRouter::DiscoverLSAs()
         //
         if (NetDeviceIsBridged(ndLocal))
         {
-            int32_t ifIndex = ipv4Local->GetInterfaceForDevice(ndLocal);
-            NS_ABORT_MSG_IF(
-                ifIndex != -1,
-                "GlobalRouter::DiscoverLSAs(): Bridge ports must not have an IPv4 interface index");
+            if (IsIpv4)
+            {
+                Ptr<Ipv4> ipv4Local = DynamicCast<Ipv4>(ipLocal);
+                int32_t ifIndex = ipv4Local->GetInterfaceForDevice(ndLocal);
+                NS_ABORT_MSG_IF(ifIndex != -1,
+                                "GlobalRouter::DiscoverLSAs(): Bridge ports must not have an IPv4 "
+                                "interface index");
+            }
+            else
+            {
+                Ptr<Ipv6> ipv6Local = DynamicCast<Ipv6>(ipLocal);
+                int32_t ifIndex = ipv6Local->GetInterfaceForDevice(ndLocal);
+                NS_ABORT_MSG_IF(ifIndex != -1,
+                                "GlobalRouter::DiscoverLSAs(): Bridge ports must not have an IPv6 "
+                                "interface index");
+            }
         }
 
         //
@@ -641,14 +662,32 @@ GlobalRouter::DiscoverLSAs()
         // associated with a bridge.  We are only going to involve devices with
         // IP addresses in routing.
         //
-        int32_t interfaceNumber = ipv4Local->GetInterfaceForDevice(ndLocal);
-        if (interfaceNumber == -1 ||
-            !(ipv4Local->IsUp(interfaceNumber) && ipv4Local->IsForwarding(interfaceNumber)))
+        if (IsIpv4)
         {
-            NS_LOG_LOGIC("Net device "
-                         << ndLocal
-                         << "has no IP interface or is not enabled for forwarding, skipping");
-            continue;
+            Ptr<Ipv4> ipv4Local = DynamicCast<Ipv4>(ipLocal);
+
+            int32_t interfaceNumber = ipv4Local->GetInterfaceForDevice(ndLocal);
+            if (interfaceNumber == -1 ||
+                !(ipv4Local->IsUp(interfaceNumber) && ipv4Local->IsForwarding(interfaceNumber)))
+            {
+                NS_LOG_LOGIC("Net device "
+                             << ndLocal
+                             << "has no IP interface or is not enabled for forwarding, skipping");
+                continue;
+            }
+        }
+        else
+        {
+            Ptr<Ipv6> ipv6Local = DynamicCast<Ipv6>(ipLocal);
+            int32_t interfaceNumber = ipv6Local->GetInterfaceForDevice(ndLocal);
+            if (interfaceNumber == -1 ||
+                !(ipv6Local->IsUp(interfaceNumber) && ipv6Local->IsForwarding(interfaceNumber)))
+            {
+                NS_LOG_LOGIC("Net device "
+                             << ndLocal
+                             << "has no IP interface or is not enabled for forwarding, skipping");
+                continue;
+            }
         }
 
         //
@@ -745,25 +784,39 @@ GlobalRouter::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
     //
     Ptr<Node> node = nd->GetNode();
 
-    Ptr<Ipv4> ipv4Local = node->GetObject<Ipv4>();
-    NS_ABORT_MSG_UNLESS(
-        ipv4Local,
-        "GlobalRouter::ProcessSingleBroadcastLink (): GetObject for <Ipv4> interface failed");
+    Address addr;
+    uint16_t metricLocal;
+    uint32_t mask;
+    uint8_t prefix[16];
+    uint8_t prefixLength;
 
-    int32_t interfaceLocal = ipv4Local->GetInterfaceForDevice(nd);
-    NS_ABORT_MSG_IF(
-        interfaceLocal == -1,
-        "GlobalRouter::ProcessSingleBroadcastLink(): No interface index associated with device");
-
-    if (ipv4Local->GetNAddresses(interfaceLocal) > 1)
+    if (IsIpv4)
     {
-        NS_LOG_WARN("Warning, interface has multiple IP addresses; using only the primary one");
-    }
-    Ipv4Address addrLocal = ipv4Local->GetAddress(interfaceLocal, 0).GetLocal();
-    Ipv4Mask maskLocal = ipv4Local->GetAddress(interfaceLocal, 0).GetMask();
-    NS_LOG_LOGIC("Working with local address " << addrLocal);
-    uint16_t metricLocal = ipv4Local->GetMetric(interfaceLocal);
+        Ptr<Ipv4> ipv4Local = node->GetObject<Ipv4>();
+        NS_ABORT_MSG_UNLESS(
+            ipv4Local,
+            "GlobalRouter::ProcessSingleBroadcastLink (): GetObject for <Ipv4> interface failed");
 
+        int32_t interfaceLocal = ipv4Local->GetInterfaceForDevice(nd);
+        NS_ABORT_MSG_IF(interfaceLocal == -1,
+                        "GlobalRouter::ProcessSingleBroadcastLink(): No interface index associated "
+                        "with device");
+
+        if (ipv4Local->GetNAddresses(interfaceLocal) > 1)
+        {
+            NS_LOG_WARN("Warning, interface has multiple IP addresses; using only the primary one");
+        }
+        Ipv4Address addrLocal = ipv4Local->GetAddress(interfaceLocal, 0).GetLocal();
+        mask = ipv4Local->GetAddress(interfaceLocal, 0).GetMask().Get();
+        addr = addrLocal.ConvertTo();
+
+        NS_LOG_LOGIC("Working with local address " << addrLocal);
+        metricLocal = ipv4Local->GetMetric(interfaceLocal);
+    }
+    else
+    {
+        // do the same for ipv6
+    }
     //
     // Check to see if the net device is connected to a channel/network that has
     // another router on it.  If there is no other router on the link (but us) then
@@ -783,13 +836,25 @@ GlobalRouter::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
         // According to OSPF, the Link ID is the IP network number of
         // the attached network.
         //
-        plr->SetLinkId(addrLocal.CombineMask(maskLocal));
-
+        if (Ipv4Address::IsMatchingType(addr))
+        {
+            Ipv4Address addrLocal = Ipv4Address::ConvertFrom(addr);
+            Ipv4Mask maskLocal = Ipv4Mask(mask);
+            plr->SetLinkId(addrLocal.CombineMask(maskLocal));
+        }
+        else if (Ipv6Address::IsMatchingType(addr))
+        {
+            // add logic for ipv6 here
+        }
+        else
+        {
+            // assert if a different type of address is found
+        }
         //
         // and the Link Data is the network mask; converted to Ipv4Address
         //
         Ipv4Address maskLocalAddr;
-        maskLocalAddr.Set(maskLocal.Get());
+        maskLocalAddr.Set(mask);
         plr->SetLinkData(maskLocalAddr);
         plr->SetMetric(metricLocal);
         pLSA->AddLinkRecord(plr);
@@ -811,34 +876,48 @@ GlobalRouter::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
         // case.
         //
         ClearBridgesVisited();
-        Ipv4Address designatedRtr;
-        designatedRtr = FindDesignatedRouterForLink(nd);
+        Address designatedRtrAddr;
+        designatedRtrAddr = FindDesignatedRouterForLink(nd);
 
         //
         // Let's double-check that any designated router we find out on our
         // network is really on our network.
         //
-        if (designatedRtr != "255.255.255.255")
+        if (Ipv4Address::IsMatchingType(designatedRtrAddr))
         {
-            Ipv4Address networkHere = addrLocal.CombineMask(maskLocal);
-            Ipv4Address networkThere = designatedRtr.CombineMask(maskLocal);
-            NS_ABORT_MSG_UNLESS(
-                networkHere == networkThere,
-                "GlobalRouter::ProcessSingleBroadcastLink(): Network number confusion ("
-                    << addrLocal << "/" << maskLocal.GetPrefixLength() << ", " << designatedRtr
-                    << "/" << maskLocal.GetPrefixLength() << ")");
+            Ipv4Address designatedRtr = Ipv4Address::ConvertFrom(designatedRtrAddr);
+            Ipv4Address addrLocal = Ipv4Address::ConvertFrom(addr);
+            Ipv4Mask maskLocal = Ipv4Mask(mask);
+            if (designatedRtr != "255.255.255.255")
+            {
+                Ipv4Address networkHere = addrLocal.CombineMask(maskLocal);
+                Ipv4Address networkThere = designatedRtr.CombineMask(maskLocal);
+                NS_ABORT_MSG_UNLESS(
+                    networkHere == networkThere,
+                    "GlobalRouter::ProcessSingleBroadcastLink(): Network number confusion ("
+                        << addrLocal << "/" << maskLocal.GetPrefixLength() << ", " << designatedRtr
+                        << "/" << maskLocal.GetPrefixLength() << ")");
+            }
+            if (designatedRtr == addrLocal)
+            {
+                c.Add(nd);
+                NS_LOG_LOGIC("Node " << node->GetId() << " elected a designated router");
+            }
         }
-        if (designatedRtr == addrLocal)
+        else if (Ipv6Address::IsMatchingType(designatedRtrAddr))
         {
-            c.Add(nd);
-            NS_LOG_LOGIC("Node " << node->GetId() << " elected a designated router");
+            // add logic for ipv6 here
         }
-        plr->SetLinkId(designatedRtr);
+        else
+        {
+            // assert if a different address is found
+        }
+        plr->SetLinkId(designatedRtrAddr);
 
         //
         // OSPF says that the Link Data is this router's own IP address.
         //
-        plr->SetLinkData(addrLocal);
+        plr->SetLinkData(addr);
         plr->SetMetric(metricLocal);
         pLSA->AddLinkRecord(plr);
         plr = nullptr;
