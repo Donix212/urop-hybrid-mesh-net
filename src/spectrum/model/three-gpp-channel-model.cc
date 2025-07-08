@@ -1162,9 +1162,7 @@ ThreeGppChannelModel::GetTypeId()
                           "Enable the spatial consistency update, procedure A (7.6.3.2)",
                           BooleanValue(false),
                           MakeBooleanAccessor(&ThreeGppChannelModel::m_spatial_consistency),
-                          MakeBooleanChecker())
-
-        ;
+                          MakeBooleanChecker());
     return tid;
 }
 
@@ -2425,39 +2423,44 @@ ThreeGppChannelModel::GetThreeGppTable(const Ptr<const MobilityModel> aMob,
     return table3gpp;
 }
 
-std::pair<bool, bool>
-ThreeGppChannelModel::ChannelParamsNeedsUpdate(Ptr<const ThreeGppChannelParams> channelParams,
-                                               Ptr<const ChannelCondition> channelCondition) const
+bool
+ThreeGppChannelModel::NewChannelParamsNeeded(Ptr<const ThreeGppChannelParams> channelParams,
+                                             Ptr<const ChannelCondition> channelCondition) const
 {
     NS_LOG_FUNCTION(this);
-
-    bool condUpdate = false;
-    bool coherenceUpdate = false;
-
+    bool update = false;
     // if the channel condition is different the channel has to be updated
     if (!channelCondition->IsEqual(channelParams->m_losCondition, channelParams->m_o2iCondition))
     {
         NS_LOG_DEBUG("Update the channel condition");
-        condUpdate = true;
+        update = true;
     }
+    return update;
+}
 
-    // if the coherence time is over the channel has to be updated
+bool
+ThreeGppChannelModel::NewChannelMatrixNeeded(Ptr<const ThreeGppChannelParams> channelParams,
+                                             Ptr<const ChannelMatrix> channelMatrix,
+                                             Ptr<const PhasedArrayModel> aAntenna,
+                                             Ptr<const PhasedArrayModel> bAntenna)
+{
+    // channel parameters updated
+    return channelParams->m_generatedTime > channelMatrix->m_generatedTime ||
+           AntennaSetupChanged(aAntenna, bAntenna, channelMatrix);
+}
+
+bool
+ThreeGppChannelModel::SpatialConsistencyUpdate(Ptr<const ThreeGppChannelParams> channelParams)
+{
+    // if the coherence time is over, the channel has to be updated
     if (!m_updatePeriod.IsZero() &&
         Simulator::Now() - channelParams->m_generatedTime > m_updatePeriod)
     {
         NS_LOG_DEBUG("Generation time " << channelParams->m_generatedTime.As(Time::NS) << " now "
                                         << Now().As(Time::NS));
-        coherenceUpdate = true;
+        return true;
     }
-
-    return std::make_pair(condUpdate, coherenceUpdate);
-}
-
-bool
-ThreeGppChannelModel::ChannelMatrixNeedsUpdate(Ptr<const ThreeGppChannelParams> channelParams,
-                                               Ptr<const ChannelMatrix> channelMatrix)
-{
-    return channelParams->m_generatedTime > channelMatrix->m_generatedTime;
+    return false;
 }
 
 bool
@@ -2496,8 +2499,8 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
 
     // Check if the channel is present in the map and return it, otherwise
     // generate a new channel
-    std::pair<bool, bool> updateParams{false, false};
-    bool updateMatrix = false;
+    bool newChannelParamsNeeded = false;
+    bool newChannelMatrixNeeded = false;
     bool notFoundParams = false;
     bool notFoundMatrix = false;
     Ptr<ChannelMatrix> channelMatrix;
@@ -2507,7 +2510,7 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
     {
         channelParams = m_channelParamsMap[channelParamsKey];
         // check if it has to be updated
-        updateParams = ChannelParamsNeedsUpdate(channelParams, condition);
+        newChannelParamsNeeded = NewChannelParamsNeeded(channelParams, condition);
     }
     else
     {
@@ -2518,7 +2521,7 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
     // get the 3GPP parameters
     Ptr<const ParamsTable> table3gpp = GetThreeGppTable(aMob, bMob, condition);
 
-    if (notFoundParams || updateParams.first)
+    if (notFoundParams || newChannelParamsNeeded)
     {
         // Step 4: Generate large scale parameters. All LSPS are uncorrelated.
         // Step 5: Generate Delays.
@@ -2538,8 +2541,8 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
         // channel matrix present in the map
         NS_LOG_DEBUG("channel matrix present in the map");
         channelMatrix = m_channelMatrixMap[channelMatrixKey];
-        updateMatrix = ChannelMatrixNeedsUpdate(channelParams, channelMatrix);
-        updateMatrix |= AntennaSetupChanged(aAntenna, bAntenna, channelMatrix);
+        newChannelMatrixNeeded =
+            NewChannelMatrixNeeded(channelParams, channelMatrix, aAntenna, bAntenna);
     }
     else
     {
@@ -2549,12 +2552,12 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
 
     // If the channel is not present in the map or if it has to be updated
     // generate a new realization
-    if (notFoundMatrix || updateMatrix || !m_spatial_consistency)
+    if (notFoundMatrix || newChannelMatrixNeeded)
     {
         // generate a new channel matrix
         NS_LOG_DEBUG("Generate a new channel matrix. Matrix not found: "
-                     << notFoundMatrix << ", update channel matrix: " << updateMatrix
-                     << " , spatial consitency feature: " << m_spatial_consistency);
+                     << notFoundMatrix
+                     << ", new channel matrix needed: " << newChannelMatrixNeeded);
         // channel matrix not found or has to be updated, generate a new one
         channelMatrix = GetNewChannel(channelParams, table3gpp, aMob, bMob, aAntenna, bAntenna);
         channelMatrix->m_antennaPair =
@@ -2563,11 +2566,18 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
         // antennas at the moment of the channel generation
         // store or replace the channel matrix in the channel map
         m_channelMatrixMap[channelMatrixKey] = channelMatrix;
-        channelMatrix->m_txSpeed = bMob->GetVelocity();
-        channelMatrix->m_rxSpeed = aMob->GetVelocity();
+        channelParams->m_txSpeed = bMob->GetVelocity();
+        channelParams->m_rxSpeed = aMob->GetVelocity();
+        return channelMatrix;
     }
-    else if (updateParams.second && m_spatial_consistency)
+
+    // We are here because new channel matrix was not needed, we can check now if it is
+    // time to update the channel matrix to ensure spatial consistency, if spatial
+    // consistency feature is enabled
+
+    if (m_spatial_consistency && SpatialConsistencyUpdate(channelParams))
     {
+        NS_LOG_DEBUG("Update the existing channel matrix to ensure spatial consistency");
         Angles txAngle(bMob->GetPosition(), aMob->GetPosition());
         Angles rxAngle(aMob->GetPosition(), bMob->GetPosition());
         double x = aMob->GetPosition().x - bMob->GetPosition().x;
@@ -2593,14 +2603,11 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
                                           distance2D,
                                           hBs,
                                           hUt);
-        channelMatrix->m_txSpeed = bMob->GetVelocity();
-        channelMatrix->m_rxSpeed = aMob->GetVelocity();
-    }
-    else
-    {
-        NS_FATAL_ERROR("This condition should not come up");
+        channelParams->m_txSpeed = bMob->GetVelocity();
+        channelParams->m_rxSpeed = aMob->GetVelocity();
     }
 
+    NS_LOG_DEBUG("Return already existin channel matrix");
     return channelMatrix;
 }
 
@@ -3214,13 +3221,12 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
         clusterZod.push_back(clusterZod[max]);
         clusterZod.push_back(clusterZod[max]);
     }
-
-    NS_LOG_INFO("size of coefficient matrix =[" << hUsn.size() << "][" << hUsn[0].size() << "]["
-                                                << hUsn[0][0].size() << "]");
     DoubleVector consClusterDelay = clusterDelay;
     for (uint8_t cInd = 0; cInd < channelParams->m_reducedClusterNumber; cInd++)
     {
-        consClusterDelay[cInd] += minTau + (distance3D / 3e8);
+        // TODO check why this distance3D isneeded here, and how to pass it
+        //  check who sets it
+        consClusterDelay[cInd] += minTau + (channelParams->m_dis3D / 3e8);
     }
     channelParams->m_delayConsistency = consClusterDelay;
     channelParams->m_newChannel = true;
@@ -3670,58 +3676,60 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
     NS_LOG_FUNCTION(this);
 
     // retrieve the previous channel (timestep: k-1) based on channelId
-    Ptr<ChannelMatrix> prevChannel = m_channelMatrixMap.at(channelId);
-
+    Ptr<ThreeGppChannelParams> channelParams = m_channelParamsMap.at(channelId);
     // get the 3GPP parameters
-    Ptr<const ParamsTable> table3gpp = GetThreeGppTable(channelCondition, hBS, hUT, dis2D);
+    Ptr<const ParamsTable> table3gpp = GetThreeGppTable(sMob, uMob, channelCondition);
 
     // get the number of clusters and the number of rays per cluster
-    uint8_t numOfCluster = prevChannel->m_numCluster;
+    uint8_t numOfCluster = channelParams->m_reducedClusterNumber;
     uint8_t raysPerCluster = table3gpp->m_raysPerCluster;
 
     // create a channel matrix instance
-    Ptr<ChannelMatrix> channelParams = Create<ChannelMatrix>();
-    channelParams->m_o2iCondition = channelCondition->GetO2iCondition();
-    channelParams->m_generatedTime = Simulator::Now();
+    Ptr<ChannelMatrix> channelMatrix = Create<ChannelMatrix>();
+
+    // TODO check whether we need here to call to get the condition
+    // channelParams = channelCondition->GetO2iCondition();
+
+    channelMatrix->m_generatedTime = Simulator::Now();
 
     // compute the 3D distance using eq. 7.4-1
-    double disdistance3D = std::sqrt(dis2D * dis2D + (hBS - hUT) * (hBS - hUT));
+    double distance3D = std::sqrt(dis2D * dis2D + (hBS - hUT) * (hBS - hUT));
 
     bool los = channelCondition->IsLos();
     // bool o2i = channelCondition->IsO2i ();
 
     // get LSP from the previous channel
-    double DS = prevChannel->m_DS;
-    double kFactor = prevChannel->m_K;
+    double DS = channelParams->m_DS;
+    double kFactor = channelParams->m_K_factor;
 
-    Vector txSpeed = prevChannel->m_txSpeed;
-    Vector rxSpeed = prevChannel->m_rxSpeed;
+    Vector txSpeed = channelParams->m_txSpeed;
+    Vector rxSpeed = channelParams->m_rxSpeed;
 
     // update cluster delays based on equation (7.6-9)
     DoubleVector clusterDelay, prevClusterDelay;
-    if (prevChannel->m_newChannel)
+    if (channelParams->m_newChannel)
     {
-        prevClusterDelay = prevChannel->m_delayConsistency;
-        clusterDelay = prevChannel->m_delayConsistency;
+        prevClusterDelay = channelParams->m_delayConsistency;
+        clusterDelay = channelParams->m_delayConsistency;
         channelParams->m_newChannel = false;
     }
     else
     {
-        prevClusterDelay = prevChannel->m_delay;
-        clusterDelay = prevChannel->m_delay;
+        prevClusterDelay = channelParams->m_delay;
+        clusterDelay = channelParams->m_delay;
     }
 
     for (uint8_t cInd = 0; cInd < numOfCluster; cInd++)
     {
         clusterDelay[cInd] -=
-            ((sin(prevChannel->m_angle.at(ZOA_INDEX).at(cInd) * M_PI / 180) *
-                  cos(prevChannel->m_angle.at(AOA_INDEX).at(cInd) * M_PI / 180) * rxSpeed.x +
-              sin(prevChannel->m_angle.at(ZOA_INDEX).at(cInd) * M_PI / 180) *
-                  sin(prevChannel->m_angle.at(AOA_INDEX).at(cInd) * M_PI / 180) * rxSpeed.y) +
-             (sin(prevChannel->m_angle.at(ZOD_INDEX).at(cInd) * M_PI / 180) *
-                  cos(prevChannel->m_angle.at(AOD_INDEX).at(cInd) * M_PI / 180) * txSpeed.x +
-              sin(prevChannel->m_angle.at(ZOD_INDEX).at(cInd) * M_PI / 180) *
-                  sin(prevChannel->m_angle.at(AOD_INDEX).at(cInd) * M_PI / 180) * txSpeed.y)) *
+            ((sin(channelParams->m_angle.at(ZOA_INDEX).at(cInd) * M_PI / 180) *
+                  cos(channelParams->m_angle.at(AOA_INDEX).at(cInd) * M_PI / 180) * rxSpeed.x +
+              sin(channelParams->m_angle.at(ZOA_INDEX).at(cInd) * M_PI / 180) *
+                  sin(channelParams->m_angle.at(AOA_INDEX).at(cInd) * M_PI / 180) * rxSpeed.y) +
+             (sin(channelParams->m_angle.at(ZOD_INDEX).at(cInd) * M_PI / 180) *
+                  cos(channelParams->m_angle.at(AOD_INDEX).at(cInd) * M_PI / 180) * txSpeed.x +
+              sin(channelParams->m_angle.at(ZOD_INDEX).at(cInd) * M_PI / 180) *
+                  sin(channelParams->m_angle.at(AOD_INDEX).at(cInd) * M_PI / 180) * txSpeed.y)) *
             m_updatePeriod.GetSeconds() / 3e8; //(7.6-9)
     }
 
@@ -3747,8 +3755,8 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
     {
         double power =
             exp(-1 * clusterDelay[cInd] * (table3gpp->m_rTau - 1) / table3gpp->m_rTau / DS) *
-            pow(10,
-                -1 * m_normalRv->GetValue() * table3gpp->m_perClusterShadowingStd / 10); // (7.5-5)
+            pow(10, -1 * m_normalRv->GetValue() * table3gpp->m_perClusterShadowingStd / 10);
+        // (7.5-5)
         powerSum += power;
         clusterPower.push_back(power);
     }
@@ -3771,10 +3779,10 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
     // copy the angles from the previous channel
     for (uint8_t cInd = 0; cInd < numOfCluster; cInd++)
     {
-        clusterAoa.push_back(prevChannel->m_angle.at(AOA_INDEX).at(cInd));
-        clusterZoa.push_back(prevChannel->m_angle.at(ZOA_INDEX).at(cInd));
-        clusterAod.push_back(prevChannel->m_angle.at(AOD_INDEX).at(cInd));
-        clusterZod.push_back(prevChannel->m_angle.at(ZOD_INDEX).at(cInd));
+        clusterAoa.push_back(channelParams->m_angle.at(AOA_INDEX).at(cInd));
+        clusterZoa.push_back(channelParams->m_angle.at(ZOA_INDEX).at(cInd));
+        clusterAod.push_back(channelParams->m_angle.at(AOD_INDEX).at(cInd));
+        clusterZod.push_back(channelParams->m_angle.at(ZOD_INDEX).at(cInd));
     }
 
     newClusterAoa = clusterAoa;
@@ -3882,14 +3890,14 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
     NS_LOG_DEBUG("cluster angles updated");
 
     uint8_t numReducedCluster = numOfCluster;
-    double rayAoaRadian[numReducedCluster][raysPerCluster]; // rayAoaRadian[n][m], where n is
-                                                            // cluster index, m is ray index
-    double rayAodRadian[numReducedCluster][raysPerCluster]; // rayAodRadian[n][m], where n is
-                                                            // cluster index, m is ray index
-    double rayZoaRadian[numReducedCluster][raysPerCluster]; // rayZoaRadian[n][m], where n is
-                                                            // cluster index, m is ray index
-    double rayZodRadian[numReducedCluster][raysPerCluster]; // rayZodRadian[n][m], where n is
-                                                            // cluster index, m is ray index
+    double rayAoaRadian[numReducedCluster][raysPerCluster];
+    // rayAoaRadian[n][m], where n is cluster index, m is ray index
+    double rayAodRadian[numReducedCluster][raysPerCluster];
+    // rayAodRadian[n][m], where n is cluster index, m is ray index
+    double rayZoaRadian[numReducedCluster][raysPerCluster];
+    // rayZoaRadian[n][m], where n is cluster index, m is ray index
+    double rayZodRadian[numReducedCluster][raysPerCluster];
+    // rayZodRadian[n][m], where n is cluster index, m is ray index
 
     for (uint8_t nInd = 0; nInd < numReducedCluster; nInd++)
     {
@@ -3983,26 +3991,28 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
         attenuationDb.push_back(0);
     }
 
+    // TODO fix shuffling and all the previous code that is needed here
     // Step 8: Coupling of rays within a cluster for both azimuth and elevation
     // shuffle all the arrays to perform random coupling
     for (uint8_t cIndex = 0; cIndex < numReducedCluster; cIndex++)
     {
-        Shuffle(&rayAodRadian[cIndex][0], &rayAodRadian[cIndex][raysPerCluster]);
-        Shuffle(&rayAoaRadian[cIndex][0], &rayAoaRadian[cIndex][raysPerCluster]);
-        Shuffle(&rayZodRadian[cIndex][0], &rayZodRadian[cIndex][raysPerCluster]);
-        Shuffle(&rayZoaRadian[cIndex][0], &rayZoaRadian[cIndex][raysPerCluster]);
+        // Shuffle(rayAodRadian[cIndex].begin(), rayAodRadian[cIndex].end(), m_uniformRvShuffle);
+        // Shuffle(rayAoaRadian[cIndex].begin(), rayAoaRadian[cIndex].end(), m_uniformRvShuffle);
+        // Shuffle(rayZodRadian[cIndex].begin(), rayZodRadian[cIndex].end(), m_uniformRvShuffle);
+        // Shuffle(rayZoaRadian[cIndex].begin(), rayZoaRadian[cIndex].end(), m_uniformRvShuffle);
     }
 
     // Step 9: Generate the cross polarization power ratios
     // Step 10: Draw initial phases
-    Double2DVector crossPolarizationPowerRatios; // vector containing the cross polarization power
-                                                 // ratios, as defined by 7.5-21
+    Double2DVector crossPolarizationPowerRatios;
+    // vector containing the cross polarization power ratios, as defined by 7.5-21
     Double3DVector clusterPhase; // rayAoaRadian[n][m], where n is cluster index, m is ray index
+
     for (uint8_t nInd = 0; nInd < numReducedCluster; nInd++)
     {
         DoubleVector temp; // used to store the XPR values
-        Double2DVector
-            temp2; // used to store the PHI values for all the possible combination of polarization
+        Double2DVector temp2;
+        // used to store the PHI values for all the possible combination of polarization
         for (uint8_t mInd = 0; mInd < raysPerCluster; mInd++)
         {
             double uXprLinear = pow(10, table3gpp->m_uXpr / 10);     // convert to linear
@@ -4047,34 +4057,31 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
     NS_LOG_INFO("1st strongest cluster:" << +cluster1st
                                          << ", 2nd strongest cluster:" << +cluster2nd);
 
-    Complex3DVector hUsn; // channel coffecient hUsn[u][s][n];
     // where u and s are receive and transmit antenna element, n is cluster index.
     // NOTE Since each of the strongest 2 clusters are divided into 3 sub-clusters,
     // the total cluster will be numReducedCLuster + 4.
-    uint64_t uSize = uAntenna->GetNumberOfElements();
-    uint64_t sSize = sAntenna->GetNumberOfElements();
-
-    hUsn.resize(uSize);
-    for (uint64_t uIndex = 0; uIndex < uSize; uIndex++)
-    {
-        hUsn[uIndex].resize(sSize);
-        for (uint64_t sIndex = 0; sIndex < sSize; sIndex++)
-        {
-            hUsn[uIndex][sIndex].resize(numReducedCluster);
-        }
-    }
+    uint64_t uSize = uAntenna->GetNumElems();
+    uint64_t sSize = sAntenna->GetNumElems();
+    // NOTE: Since each of the strongest 2 clusters are divided into 3 sub-clusters,
+    // the total cluster will generally be numReducedCLuster + 4.
+    // However, it might be that m_cluster1st = m_cluster2nd. In this case the
+    // total number of clusters will be numReducedCLuster + 2.
+    uint16_t numOverallCluster = (channelParams->m_cluster1st != channelParams->m_cluster2nd)
+                                     ? channelParams->m_reducedClusterNumber + 4
+                                     : channelParams->m_reducedClusterNumber + 2;
+    Complex3DVector hUsn(uSize, sSize, numOverallCluster); // channel coefficient hUsn (u, s, n);
 
     // The following for loops computes the channel coefficients
-    for (uint64_t uIndex = 0; uIndex < uSize; uIndex++)
+    uint8_t numSubClustersAdded = 0;
+    for (uint8_t nIndex = 0; nIndex < channelParams->m_reducedClusterNumber; nIndex++)
     {
-        Vector uLoc = uAntenna->GetElementLocation(uIndex);
-
-        for (uint64_t sIndex = 0; sIndex < sSize; sIndex++)
+        for (size_t uIndex = 0; uIndex < uSize; uIndex++)
         {
-            Vector sLoc = sAntenna->GetElementLocation(sIndex);
+            Vector uLoc = uAntenna->GetElementLocation(uIndex);
 
-            for (uint8_t nIndex = 0; nIndex < numReducedCluster; nIndex++)
+            for (size_t sIndex = 0; sIndex < sSize; sIndex++)
             {
+                Vector sLoc = sAntenna->GetElementLocation(sIndex);
                 // Compute the N-2 weakest cluster, assuming 0 slant angle and a
                 // polarization slant angle configured in the array (7.5-22)
                 if (nIndex != cluster1st && nIndex != cluster2nd)
@@ -4122,7 +4129,7 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
                                 std::complex<double>(cos(txPhaseDiff), sin(txPhaseDiff));
                     }
                     rays *= sqrt(clusterPower[nIndex] / raysPerCluster);
-                    hUsn[uIndex][sIndex][nIndex] = rays;
+                    hUsn(uIndex, sIndex, nIndex) = rays;
                 }
                 else //(7.5-28)
                 {
@@ -4195,15 +4202,33 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
                     raysSub1 *= sqrt(clusterPower[nIndex] / raysPerCluster);
                     raysSub2 *= sqrt(clusterPower[nIndex] / raysPerCluster);
                     raysSub3 *= sqrt(clusterPower[nIndex] / raysPerCluster);
-                    hUsn[uIndex][sIndex][nIndex] = raysSub1;
-                    hUsn[uIndex][sIndex].push_back(raysSub2);
-                    hUsn[uIndex][sIndex].push_back(raysSub3);
+                    hUsn(uIndex, sIndex, nIndex) = raysSub1;
+                    hUsn(uIndex,
+                         sIndex,
+                         channelParams->m_reducedClusterNumber + numSubClustersAdded) = raysSub2;
+                    hUsn(uIndex,
+                         sIndex,
+                         channelParams->m_reducedClusterNumber + numSubClustersAdded + 1) =
+                        raysSub3;
                 }
             }
+        }
+        if (nIndex == channelParams->m_cluster1st || nIndex == channelParams->m_cluster2nd)
+        {
+            numSubClustersAdded += 2;
+        }
+    }
 
-            if (los) //(7.5-29) && (7.5-30)
+    if (los) //(7.5-29) && (7.5-30)
+    {
+        std::complex<double> ray(0, 0);
+        for (size_t uIndex = 0; uIndex < uSize; uIndex++)
+        {
+            Vector uLoc = uAntenna->GetElementLocation(uIndex);
+
+            for (size_t sIndex = 0; sIndex < sSize; sIndex++)
             {
-                std::complex<double> ray(0, 0);
+                Vector sLoc = sAntenna->GetElementLocation(sIndex);
                 double rxPhaseDiff =
                     2 * M_PI *
                     (sin(uAngle.GetInclination()) * cos(uAngle.GetAzimuth()) * uLoc.x +
@@ -4231,17 +4256,17 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
                       std::complex<double>(cos(rxPhaseDiff), sin(rxPhaseDiff)) *
                       std::complex<double>(cos(txPhaseDiff), sin(txPhaseDiff));
 
-                double kLinear = pow(10, kFactor / 10);
+                double kLinear = pow(10, channelParams->m_K_factor / 10.0);
                 // the LOS path should be attenuated if blockage is enabled.
-                hUsn[uIndex][sIndex][0] =
-                    sqrt(1 / (kLinear + 1)) * hUsn[uIndex][sIndex][0] +
+                hUsn(uIndex, sIndex, 0) =
+                    sqrt(1.0 / (kLinear + 1)) * hUsn(uIndex, sIndex, 0) +
                     sqrt(kLinear / (1 + kLinear)) * ray /
-                        pow(10, attenuationDb[0] / 10); //(7.5-30) for tau = tau1
-                double tempSize = hUsn[uIndex][sIndex].size();
-                for (uint8_t nIndex = 1; nIndex < tempSize; nIndex++)
+                        pow(10,
+                            channelParams->m_attenuation_dB[0] / 10.0); //(7.5-30) for tau = tau1
+                for (size_t nIndex = 1; nIndex < hUsn.GetNumPages(); nIndex++)
                 {
-                    hUsn[uIndex][sIndex][nIndex] *=
-                        sqrt(1 / (kLinear + 1)); //(7.5-30) for tau = tau2...taunN
+                    hUsn(uIndex, sIndex, nIndex) *=
+                        sqrt(1.0 / (kLinear + 1)); //(7.5-30) for tau = tau2...tauN
                 }
             }
         }
@@ -4304,14 +4329,14 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
         clusterZod.push_back(clusterZod[max]);
     }
 
-    NS_LOG_INFO("size of coefficient matrix =[" << hUsn.size() << "][" << hUsn[0].size() << "]["
-                                                << hUsn[0][0].size() << "]");
+    NS_LOG_INFO("size of coefficient matrix =[" << hUsn.GetNumCols() << "][" << hUsn.GetNumRows()
+                                                << "][" << hUsn.GetNumPages() << "]");
 
-    channelParams->m_channel = hUsn;
+    channelMatrix->m_channel = hUsn;
     channelParams->m_delay = clusterDelay;
-    channelParams->m_numCluster = numReducedCluster;
+    channelParams->m_reducedClusterNumber = numReducedCluster;
     channelParams->m_DS = DS;
-    channelParams->m_K = kFactor;
+    channelParams->m_K_factor = kFactor;
 
     channelParams->m_angle.clear();
     channelParams->m_angle.push_back(clusterAoa);
@@ -4319,7 +4344,7 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
     channelParams->m_angle.push_back(clusterAod);
     channelParams->m_angle.push_back(clusterZod);
 
-    return channelParams;
+    return channelMatrix;
 }
 
 std::pair<double, double>
