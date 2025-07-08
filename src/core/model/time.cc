@@ -13,7 +13,9 @@
 
 #include <cmath>   // pow
 #include <iomanip> // showpos
+#ifndef NS3_NO_TIME_TRACK
 #include <mutex>
+#endif
 #include <sstream>
 
 /**
@@ -73,6 +75,7 @@ const long double* UNIT_VALUE = InitUnitValue();
 
 } // unnamed namespace
 
+#ifndef NS3_NO_TIME_TRACK
 // The set of marked times
 // static
 Time::MarkedTimes* Time::g_markingTimes = nullptr;
@@ -114,6 +117,7 @@ Time::StaticInit()
 
     return firstTime;
 }
+#endif
 
 Time::Time(const std::string& s)
 {
@@ -181,10 +185,12 @@ Time::Time(const std::string& s)
         *this = Time::FromDouble(v, Time::S);
     }
 
+#ifndef NS3_NO_TIME_TRACK
     if (g_markingTimes)
     {
         Mark(this);
     }
+#endif
 }
 
 // static
@@ -212,9 +218,13 @@ Time::SetResolution(Unit unit, Resolution* resolution, const bool convert /* = t
     NS_LOG_FUNCTION(resolution);
     if (convert)
     {
+#ifndef NS3_NO_TIME_TRACK
         // We have to convert existing Times with the old
         // conversion values, so do it first
         ConvertTimes(unit);
+#else
+        NS_LOG_DEBUG("Not converting old values");
+#endif
     }
 
     for (int i = 0; i < Time::LAST; i++)
@@ -280,6 +290,7 @@ Time::SetResolution(Unit unit, Resolution* resolution, const bool convert /* = t
     resolution->unit = unit;
 }
 
+#ifndef NS3_NO_TIME_TRACK
 // static
 void
 Time::ClearMarkedTimes()
@@ -375,9 +386,14 @@ Time::ConvertTimes(const Unit unit)
     for (auto it = g_markingTimes->begin(); it != g_markingTimes->end(); it++)
     {
         Time* const tp = *it;
-        if (!(tp->m_data == std::numeric_limits<int64_t>::min() ||
-              tp->m_data == std::numeric_limits<int64_t>::max()))
+        if (tp->m_data == 0 || tp->m_data == std::numeric_limits<int64_t>::min() ||
+            tp->m_data == std::numeric_limits<int64_t>::max())
         {
+            NS_LOG_LOGIC("Time value " << tp << " need no conversion.");
+        }
+        else
+        {
+            NS_LOG_WARN("Converting " << tp << "!");
             tp->m_data = tp->ToInteger(unit);
         }
     }
@@ -390,6 +406,7 @@ Time::ConvertTimes(const Unit unit)
     g_markingTimes->erase(g_markingTimes->begin(), g_markingTimes->end());
     g_markingTimes = nullptr;
 }
+#endif
 
 // static
 Time::Unit

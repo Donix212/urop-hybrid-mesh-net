@@ -181,22 +181,13 @@ TimeSimpleTestCase::DoRun()
 
     DoTimeOperations();
 
-#if 0
-  Time ns = NanoSeconds (1);
-  ns.GetNanoSeconds ();
-  NS_TEST_ASSERT_MSG_EQ (NanoSeconds (1).GetNanoSeconds (), 1,
-                         "is 1ns really 1ns ?");
-  NS_TEST_ASSERT_MSG_EQ (PicoSeconds (1).GetPicoSeconds (), 1,
-                         "is 1ps really 1ps ?");
-  NS_TEST_ASSERT_MSG_EQ (FemtoSeconds (1).GetFemtoSeconds (), 1,
-                         "is 1fs really 1fs ?");
-#endif
-
+#ifndef NS3_NO_TIME_TRACK
     Time ten = NanoSeconds(10);
     int64_t tenValue = ten.GetInteger();
     Time::SetResolution(Time::PS);
     int64_t tenKValue = ten.GetInteger();
     NS_TEST_ASSERT_MSG_EQ(tenValue * 1000, tenKValue, "change resolution to PS");
+#endif
 }
 
 void

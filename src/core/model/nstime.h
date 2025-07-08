@@ -82,6 +82,9 @@ class TimeWithUnit;
  * For speed, once we convert the existing instances we discard the recording
  * data structure and stop tracking new instances, so we have no way
  * to do a second conversion.)
+ * Tracking could be disabled with NS3_NO_TIME_TRACK option.
+ * With this option set there is no overhead of tracking, but all Time objects
+ * created before the call to SetResolution() will remain in old resolution.
  *
  * If you increase the global resolution, you also implicitly decrease
  * the maximum simulation duration.  The global simulation time is stored
@@ -127,10 +130,12 @@ class Time
     inline Time()
         : m_data()
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     /**
@@ -141,10 +146,12 @@ class Time
     inline Time(const Time& o)
         : m_data(o.m_data)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     /**
@@ -155,10 +162,12 @@ class Time
     Time(Time&& o)
         : m_data(o.m_data)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     /**
@@ -174,73 +183,89 @@ class Time
     explicit inline Time(double v)
         : m_data(llround(v))
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(int v)
         : m_data(v)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(long int v)
         : m_data(v)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(long long int v)
         : m_data(v)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(unsigned int v)
         : m_data(v)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(unsigned long int v)
         : m_data(v)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(unsigned long long int v)
         : m_data(v)
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     explicit inline Time(const int64x64_t& v)
         : m_data(v.Round())
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Mark(this);
         }
+#endif
     }
 
     /**@}*/ // Numeric constructors
@@ -291,10 +316,12 @@ class Time
     /** Destructor */
     ~Time()
     {
+#ifndef NS3_NO_TIME_TRACK
         if (g_markingTimes)
         {
             Clear(this);
         }
+#endif
     }
 
     /**
@@ -709,6 +736,7 @@ class Time
      */
     static void SetResolution(Unit unit, Resolution* resolution, const bool convert = true);
 
+#ifndef NS3_NO_TIME_TRACK
     /**
      *  Record all instances of Time, so we can rescale them when
      *  the resolution changes.
@@ -787,9 +815,10 @@ class Time
      *  @param [in] unit The Unit to convert existing Times to.
      */
     static void ConvertTimes(const Unit unit);
+#endif
 
     // Operator and related functions which need access
-
+  private:
     /**
      * @name Comparison operators
      * @{
@@ -1510,6 +1539,7 @@ class TimeWithUnit
  */
 TYPENAMEGET_DEFINE(Time);
 
+#ifndef NS3_NO_TIME_TRACK
 /**
  * @ingroup time
  *
@@ -1530,6 +1560,7 @@ class TimeInitializationHelper
 };
 
 static TimeInitializationHelper g_timeInitHelper; ///< Instance of Time static initialization helper
+#endif
 
 } // namespace ns3
 
