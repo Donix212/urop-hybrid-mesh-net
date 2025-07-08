@@ -186,13 +186,13 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         uint8_t m_cluster1st;               //!< index of the first strongest cluster
         uint8_t m_cluster2nd;               //!< index of the second strongest cluster
 
-        Vector m_speed; //!< velocity
-        Vector m_txSpeed; //!< TX velocity
-        Vector m_rxSpeed; //!< RX velocity
-        double m_dis2D; //!< 2D distance between tx and rx
-        double m_dis3D; //!< 3D distance between tx and rx
+        Vector m_speed;                  //!< velocity
+        Vector m_txSpeed;                //!< TX velocity
+        Vector m_rxSpeed;                //!< RX velocity
+        double m_dis2D;                  //!< 2D distance between tx and rx
+        double m_dis3D;                  //!< 3D distance between tx and rx
         DoubleVector m_delayConsistency; //!< cluster delay for consistency update
-        bool m_newChannel; //!< true if the channel was generated with GetNewChannel
+        bool m_newChannel;               //!< true if the channel was generated with GetNewChannel
     };
 
     /**
@@ -320,10 +320,11 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      * generation time is more recent than channel matrix generation time
      * @param channelParams channel params structure
      * @param channelMatrix channel matrix structure
-     * @return pair indicating if the channel matrix has to be updated due to a change of condition or expiration of coherence time.
+     * @return pair indicating if the channel matrix has to be updated due to a change of condition
+     * or expiration of coherence time.
      */
     std::pair<bool, bool> ChannelMatrixNeedsUpdate(Ptr<const ThreeGppChannelParams> channelParams,
-                                  Ptr<const ChannelMatrix> channelMatrix);
+                                                   Ptr<const ChannelMatrix> channelMatrix);
 
     /**
      * Check if the channel matrix has to be updated due to
@@ -338,41 +339,43 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                              Ptr<const ChannelMatrix> channelMatrix);
 
     /**
-  * Update the channel matrix between two devices using the consistency procedure (procedure A)
-  * described in 3GPP TR 38.901
-  * \param channelId the Id of the channel between the two devices
-  * \param channelCondition the channel condition
-  * \param sMob the s node mobility model
-  * \param uMob the u node mobility model
-  * \param sAntenna the s node antenna array
-  * \param uAntenna the u node antenna array
-  * \param uAngle the u node angle
-  * \param sAngle the s node angle
-  * \param dis2D the 2D distance between tx and rx
-  * \param hBS the height of the BS
-  * \param hUT the height of the UT
-  * \return the updated channel realization
-  */
-    Ptr<ChannelMatrix> GetUpdatedChannel (uint32_t channelId,
-                                                  Ptr<const ChannelCondition> channelCondition,
-                                                  Ptr<const MobilityModel> sMob,
-                                                  Ptr<const MobilityModel> uMob,
-                                                  Ptr<const PhasedArrayModel> sAntenna,
-                                                  Ptr<const PhasedArrayModel> uAntenna,
-                                                  Angles &uAngle, Angles &sAngle,
-                                                  double dis2D, double hBS, double hUT) const;
+     * Update the channel matrix between two devices using the consistency procedure (procedure A)
+     * described in 3GPP TR 38.901
+     * @param channelId the Id of the channel between the two devices
+     * @param channelCondition the channel condition
+     * @param sMob the s node mobility model
+     * @param uMob the u node mobility model
+     * @param sAntenna the s node antenna array
+     * @param uAntenna the u node antenna array
+     * @param uAngle the u node angle
+     * @param sAngle the s node angle
+     * @param dis2D the 2D distance between tx and rx
+     * @param hBS the height of the BS
+     * @param hUT the height of the UT
+     * @return the updated channel realization
+     */
+    Ptr<ChannelMatrix> GetUpdatedChannel(uint32_t channelId,
+                                         Ptr<const ChannelCondition> channelCondition,
+                                         Ptr<const MobilityModel> sMob,
+                                         Ptr<const MobilityModel> uMob,
+                                         Ptr<const PhasedArrayModel> sAntenna,
+                                         Ptr<const PhasedArrayModel> uAntenna,
+                                         Angles& uAngle,
+                                         Angles& sAngle,
+                                         double dis2D,
+                                         double hBS,
+                                         double hUT) const;
 
     /**
      * Applies the blockage model A described in 3GPP TR 38.901
-     * \param params the channel matrix
-     * \param clusterAOA vector containing the azimuth angle of arrival for each cluster
-     * \param clusterZOA vector containing the zenith angle of arrival for each cluster
-     * \return vector containing the power attenuation for each cluster
+     * @param params the channel matrix
+     * @param clusterAOA vector containing the azimuth angle of arrival for each cluster
+     * @param clusterZOA vector containing the zenith angle of arrival for each cluster
+     * @return vector containing the power attenuation for each cluster
      */
-    DoubleVector CalcAttenuationOfBlockage (Ptr<ThreeGppChannelMatrix> params,
-                                            const DoubleVector &clusterAOA,
-                                            const DoubleVector &clusterZOA) const;
-
+    DoubleVector CalcAttenuationOfBlockage(Ptr<ThreeGppChannelMatrix> params,
+                                           const DoubleVector& clusterAOA,
+                                           const DoubleVector& clusterZOA) const;
 
     std::unordered_map<uint64_t, Ptr<ChannelMatrix>>
         m_channelMatrixMap; //!< map containing the channel realizations per pair of
