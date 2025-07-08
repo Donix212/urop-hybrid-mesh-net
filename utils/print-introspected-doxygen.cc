@@ -1140,16 +1140,16 @@ PrintAttributeList(std::ostream& os, const TypeId& tid)
  * @param group The group name, which must be valid
  */
 void
-PrintGroupAttributes(std::ostream& os, std::string groupName)
+PrintGroupAttributes(std::ostream& os, std::string group)
 {
-    NS_LOG_FUNCTION(groupName);
+    NS_LOG_FUNCTION(group);
 
-    os << commentStart << " " << subSectionStart << groupName << "\n\n "
-       << "Attributes defined by classes in the " << groupName << " group.\n\n "
+    os << commentStart << " " << subSectionStart << group << "\n\n "
+       << "Attributes defined by classes in the " << group << " group.\n\n "
        << "Note: Attributes of parent TypeIds may not be listed here.\n\n "
        << "See the documentation for each TypeId for the full list of applicable Attributes.\n\n ";
 
-    auto tids = GetGroupsList().find(groupName)->second;
+    auto tids = GetGroupsList().find(group)->second;
     for (const auto& tid : tids)
     {
         PrintAttributeList(os, tid);
@@ -1170,9 +1170,9 @@ PrintAllGroupAttributes(std::ostream& os)
     NS_LOG_FUNCTION_NOARGS();
 
     auto groups = GetGroupsList();
-    for (const auto& [groupName, dummy] : groups)
+    for (const auto& [group, dummy] : groups)
     {
-        PrintGroupAttributes(os, groupName);
+        PrintGroupAttributes(os, group);
     }
 
 } // PrintAllGroupAttributes()
