@@ -166,10 +166,8 @@ CentralClient::StartApplication()
         NS_ABORT_MSG_IF(m_peer.IsInvalid(), "Remote address not properly set");
         if (!m_local.IsInvalid())
         {
-            NS_ABORT_MSG_IF((Inet6SocketAddress::IsMatchingType(m_peer) &&
-                             InetSocketAddress::IsMatchingType(m_local)) ||
-                                (InetSocketAddress::IsMatchingType(m_peer) &&
-                                 Inet6SocketAddress::IsMatchingType(m_local)),
+            NS_ABORT_MSG_IF((InetSocketAddress::IsMatchingType(m_local)) ||
+                                (InetSocketAddress::IsMatchingType(m_peer)),
                             "Incompatible peer and local address IP version");
             if (m_socket->Bind(m_local) == -1)
             {

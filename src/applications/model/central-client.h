@@ -91,7 +91,7 @@ class CentralClient : public SourceApplication
     uint32_t m_count; //!< Maximum number of packets the application will send
     Time m_interval;  //!< Packet inter-send time
     uint32_t m_size;  //!< Size of the sent packet (including the SeqTsHeader)
-
+    std::optional<uint16_t> m_peerPort; //!< Remote port (temporary until deprecated attributes are removed)
     uint32_t m_sent;                    //!< Counter for sent packets
     uint64_t m_totalTx;                 //!< Total bytes sent
     Ptr<Socket> m_socket;               //!< Socket

@@ -14,6 +14,8 @@
 
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
+#include "ns3/socket.h"
+
 namespace ns3
 {
 /**

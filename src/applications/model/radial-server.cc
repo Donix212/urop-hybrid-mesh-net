@@ -85,7 +85,7 @@ RadialServer::StartApplication()
         {
             NS_FATAL_ERROR("Failed to bind socket");
         }
-        m_socket->SetRecvCallback(MakeCallback(&UdpServer::HandleRead, this));
+        m_socket->SetRecvCallback(MakeCallback(&RadialServer::HandleRead, this));
     }
 }
 
@@ -116,10 +116,9 @@ RadialServer::HandleRead(Ptr<Socket> socket)
             {
                 NS_LOG_INFO("TraceDelay: RX " << receivedSize << " bytes from "
                                               << InetSocketAddress::ConvertFrom(from).GetIpv4()
-                                              << " Sequence Number: " << currentSequenceNumber
-                                              << " Uid: " << packet->GetUid() << " TXtime: "
-                                              << seqTs.GetTs() << " RXtime: " << Simulator::Now()
-                                              << " Delay: " << Simulator::Now() - seqTs.GetTs());
+                                              << " Uid: " << packet->GetUid() 
+                                              << " RXtime: " << Simulator::Now()
+                                              );
             }
             m_received++;
         }
