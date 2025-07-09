@@ -9,9 +9,13 @@ build_lib(
     helper/udp-echo-helper.cc
     model/application-packet-probe.cc
     model/bulk-send-application.cc
+    model/central-client.cc
+    model/central-server.cc
     model/onoff-application.cc
     model/packet-loss-counter.cc
     model/packet-sink.cc
+    model/radial-client.cc
+    model/radial-server.cc
     model/seq-ts-echo-header.cc
     model/seq-ts-header.cc
     model/seq-ts-size-header.cc
@@ -35,9 +39,13 @@ build_lib(
     helper/udp-echo-helper.h
     model/application-packet-probe.h
     model/bulk-send-application.h
+    model/central-client.h
+    model/central-server.h
     model/onoff-application.h
     model/packet-loss-counter.h
     model/packet-sink.h
+    model/radial-client.h
+    model/radial-server.h
     model/seq-ts-echo-header.h
     model/seq-ts-header.h
     model/seq-ts-size-header.h
