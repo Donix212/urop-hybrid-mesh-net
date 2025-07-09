@@ -29,7 +29,7 @@ class RandomVariableStream;
 class Socket;
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup onoff OnOffApplication
  *
  * This traffic generator follows an On/Off pattern: after

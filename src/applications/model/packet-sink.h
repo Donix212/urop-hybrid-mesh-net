@@ -27,7 +27,7 @@ class Socket;
 class Packet;
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup packetsink PacketSink
  *
  * This application was written to complement OnOffApplication, but it

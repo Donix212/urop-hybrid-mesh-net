@@ -22,7 +22,7 @@ namespace ns3
 namespace aodv
 {
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  *
  * @brief Helper class used to remember already seen packets and detect duplicates.
  *

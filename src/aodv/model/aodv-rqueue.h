@@ -27,7 +27,7 @@ namespace aodv
 {
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief AODV Queue Entry
  */
 class QueueEntry
@@ -177,7 +177,7 @@ class QueueEntry
 };
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief AODV route request queue
  *
  * Since AODV is an on demand routing we queue requests while looking for route.

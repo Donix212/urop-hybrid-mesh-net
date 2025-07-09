@@ -24,7 +24,7 @@ class TcpHeader;
 class TcpSocketBase;
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup bulksend BulkSendApplication
  *
  * This traffic generator simply sends data

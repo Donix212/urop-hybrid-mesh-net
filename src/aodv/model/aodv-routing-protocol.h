@@ -40,7 +40,7 @@ enum WifiMacDropReason : uint8_t; // opaque enum declaration
 namespace aodv
 {
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  *
  * @brief AODV routing protocol
  */

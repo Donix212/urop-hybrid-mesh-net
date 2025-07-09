@@ -20,7 +20,7 @@ class Socket;
 class Packet;
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup udpecho UdpEcho
  */
 
