@@ -35,11 +35,7 @@ NS_LOG_COMPONENT_DEFINE("GlobalRouter");
 // ---------------------------------------------------------------------------
 
 GlobalRoutingLinkRecord::GlobalRoutingLinkRecord()
-    : m_linkIdv4("0.0.0.0"),
-      m_linkDatav4("0.0.0.0"),
-      m_linkIdv6(Ipv6Address::GetZero()),
-      m_linkDatav6(Ipv6Address::GetZero()),
-      m_linkType(Unknown),
+    : m_linkType(Unknown),
       m_metric(0)
 {
     NS_LOG_FUNCTION(this);
@@ -49,9 +45,7 @@ GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
                                                  Ipv4Address linkId,
                                                  Ipv4Address linkData,
                                                  uint16_t metric)
-    : m_linkIdv4(linkId),
-      m_linkDatav4(linkData),
-      m_linkType(linkType),
+    : m_linkType(linkType),
       m_metric(metric)
 {
     NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
@@ -71,15 +65,15 @@ GlobalRoutingLinkRecord::GetLinkId() const
     else if(m_linkIdv6.has_value())
     return m_linkIdv6.value().ConvertTo();
         
-        NS_ASSERT_MSG(false, "Link Id not set");
-        return Address();
+    NS_LOG_DEBUG("Link Id not set, returning empty address");
+    return Address();
 }
 
 void
 GlobalRoutingLinkRecord::SetLinkId(Ipv4Address addr)
 {
     NS_LOG_FUNCTION(this << addr);
-    m_linkIdv4 = addr;
+    m_linkIdv4.emplace(addr);
 }
 
 // add the overload for ipv6 address
@@ -1539,9 +1533,22 @@ GlobalRouter::FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const
                 }
 
                 NS_LOG_LOGIC("Recursively looking for routers down bridge port " << ndBridged);
-                Ipv4Address addrOther = FindDesignatedRouterForLink(ndBridged);
-                designatedRtr = addrOther < designatedRtr ? addrOther : designatedRtr;
+                Address addrOther = FindDesignatedRouterForLink(ndBridged);
+                if(Ipv4Address::IsMatchingType(addrOther))
+                {
+                    Ipv4Address addrOtherv4 = Ipv4Address::ConvertFrom(addrOther);
+                    designatedRtr = addrOtherv4 < designatedRtr ? addrOtherv4 : designatedRtr;
                 NS_LOG_LOGIC("designated router now " << designatedRtr);
+
+                }
+                else if(Ipv6Address::IsMatchingType(addrOther))
+                {
+                    // add logic for ipv6 here
+                }
+                else
+                {
+                    // assert if a different address is found
+                }
             }
         }
         else
