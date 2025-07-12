@@ -230,7 +230,7 @@ main(int argc, char* argv[])
     std::cout << "\nAverage throughput: " << averageThroughput << " Mbit/s" << std::endl;
 
     // Generate GnuPlot output if enabled
-    if (enableGnuplot && !throughputDataset.IsEmpty())
+    if (enableGnuplot)
     {
         Gnuplot plot(outputPrefix + "-throughput.png");
         plot.SetTitle("TCP Throughput over Time (" + tcpVariant + ")");
