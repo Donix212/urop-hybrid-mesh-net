@@ -28,6 +28,8 @@
 #include "ns3/error-model.h"
 #include "ns3/event-id.h"
 #include "ns3/flow-monitor-helper.h"
+#include "ns3/gnuplot-helper.h"
+#include "ns3/gnuplot.h"
 #include "ns3/internet-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
@@ -48,16 +50,20 @@ static std::map<uint32_t, bool> firstCwnd;                      //!< First conge
 static std::map<uint32_t, bool> firstSshThr;                    //!< First SlowStart threshold.
 static std::map<uint32_t, bool> firstRtt;                       //!< First RTT.
 static std::map<uint32_t, bool> firstRto;                       //!< First RTO.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> cWndStream; //!< Congstion window output stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> cWndStream; //!< Congestion window out stream.
 static std::map<uint32_t, Ptr<OutputStreamWrapper>>
-    ssThreshStream; //!< SlowStart threshold output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> rttStream;      //!< RTT output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> rtoStream;      //!< RTO output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextTxStream;   //!< Next TX output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextRxStream;   //!< Next RX output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> inFlightStream; //!< In flight output stream.
+    ssThreshStream;                                            //!< SlowStart threshold out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> rttStream; //!< RTT out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> rtoStream; //!< RTO out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextTxStream;   //!< Next TX out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextRxStream;   //!< Next RX out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> inFlightStream; //!< In flight out stream.
 static std::map<uint32_t, uint32_t> cWndValue;                      //!< congestion window value.
 static std::map<uint32_t, uint32_t> ssThreshValue;                  //!< SlowStart threshold value.
+
+// GnuPlot data structures
+static Ptr<GnuplotHelper> gnuplotHelper = nullptr; //!< GnuPlot helper for automatic plot generation
+static bool enableGnuplot = false;                 //!< Flag to enable/disable GnuPlot generation
 
 /**
  * Get the Node Id From Context.
@@ -371,6 +377,7 @@ main(int argc, char* argv[])
     cmd.AddValue("run", "Run index (for setting repeatable seeds)", run);
     cmd.AddValue("flow_monitor", "Enable flow monitor", flow_monitor);
     cmd.AddValue("pcap_tracing", "Enable or disable PCAP tracing", pcap);
+    cmd.AddValue("gnuplot", "Enable GnuPlot generation", enableGnuplot);
     cmd.AddValue("queue_disc_type",
                  "Queue disc type for gateway (e.g. ns3::CoDelQueueDisc)",
                  queue_disc_type);
@@ -382,6 +389,19 @@ main(int argc, char* argv[])
 
     SeedManager::SetSeed(1);
     SeedManager::SetRun(run);
+
+    // Configure GnuPlot helper if enabled
+    if (enableGnuplot)
+    {
+        gnuplotHelper = CreateObject<GnuplotHelper>();
+        gnuplotHelper->ConfigurePlot(prefix_file_name + "-tcp-comparison",
+                                     "TCP Variants Performance Comparison",
+                                     "Time (Seconds)",
+                                     "Value",
+                                     "png");
+        std::cout << "GnuPlot generation enabled. Plots will be generated for TCP metrics."
+                  << std::endl;
+    }
 
     // User may find it convenient to enable logging
     // LogComponentEnable("TcpVariantsComparison", LOG_LEVEL_ALL);
@@ -572,10 +592,35 @@ main(int argc, char* argv[])
                                 &TraceInFlight,
                                 prefix_file_name + flowString + "-inflight.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.1),
+            Simulator::Schedule(Seconds(start_time * index + 0.00001),
                                 &TraceNextRx,
                                 prefix_file_name + flowString + "-next-rx.data",
-                                num_flows + index + 1);
+                                index + 1);
+
+            // Configure GnuPlot probes if enabled
+            if (enableGnuplot && gnuplotHelper)
+            {
+                // Configure probes for congestion window monitoring
+                gnuplotHelper->PlotProbe("ns3::Uinteger32Probe",
+                                         "/NodeList/" + std::to_string(index + 1) +
+                                             "/$ns3::TcpL4Protocol/SocketList/0/CongestionWindow",
+                                         "Output",
+                                         "Congestion Window Flow " + std::to_string(index + 1));
+
+                // Configure probes for slow start threshold monitoring
+                gnuplotHelper->PlotProbe("ns3::Uinteger32Probe",
+                                         "/NodeList/" + std::to_string(index + 1) +
+                                             "/$ns3::TcpL4Protocol/SocketList/0/SlowStartThreshold",
+                                         "Output",
+                                         "Slow Start Threshold Flow " + std::to_string(index + 1));
+
+                // Configure probes for RTT monitoring
+                gnuplotHelper->PlotProbe("ns3::TimeProbe",
+                                         "/NodeList/" + std::to_string(index + 1) +
+                                             "/$ns3::TcpL4Protocol/SocketList/0/RTT",
+                                         "Output",
+                                         "RTT Flow " + std::to_string(index + 1));
+            }
         }
     }
 
