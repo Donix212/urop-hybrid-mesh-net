@@ -62,8 +62,8 @@ static std::map<uint32_t, uint32_t> cWndValue;                      //!< congest
 static std::map<uint32_t, uint32_t> ssThreshValue;                  //!< SlowStart threshold value.
 
 // GnuPlot data structures
-static Ptr<GnuplotHelper> gnuplotHelper = nullptr; //!< GnuPlot helper for automatic plot generation
-static bool enableGnuplot = false;                 //!< Flag to enable/disable GnuPlot generation
+static GnuplotHelper* gnuplotHelper = nullptr; //!< GnuPlot helper for automatic plot generation
+static bool enableGnuplot = false;             //!< Flag to enable/disable GnuPlot generation
 
 /**
  * Get the Node Id From Context.
@@ -393,12 +393,11 @@ main(int argc, char* argv[])
     // Configure GnuPlot helper if enabled
     if (enableGnuplot)
     {
-        gnuplotHelper = CreateObject<GnuplotHelper>();
-        gnuplotHelper->ConfigurePlot(prefix_file_name + "-tcp-comparison",
-                                     "TCP Variants Performance Comparison",
-                                     "Time (Seconds)",
-                                     "Value",
-                                     "png");
+        gnuplotHelper = new GnuplotHelper(prefix_file_name + "-tcp-comparison",
+                                          "TCP Variants Performance Comparison",
+                                          "Time (Seconds)",
+                                          "Value",
+                                          "png");
         std::cout << "GnuPlot generation enabled. Plots will be generated for TCP metrics."
                   << std::endl;
     }
@@ -643,6 +642,13 @@ main(int argc, char* argv[])
     if (flow_monitor)
     {
         flowHelper.SerializeToXmlFile(prefix_file_name + ".flowmonitor", true, true);
+    }
+
+    // Cleanup GnuPlot helper
+    if (gnuplotHelper)
+    {
+        delete gnuplotHelper;
+        gnuplotHelper = nullptr;
     }
 
     Simulator::Destroy();
