@@ -9,8 +9,9 @@
 #ifndef EXAMPLE_GNUPLOT_HELPER_H
 #define EXAMPLE_GNUPLOT_HELPER_H
 
-#include "ns3/gnuplot-aggregator.h"
-#include "ns3/gnuplot-helper.h"
+#include "gnuplot-aggregator.h"
+#include "gnuplot-helper.h"
+
 #include "ns3/gnuplot.h"
 #include "ns3/object.h"
 #include "ns3/ptr.h"
