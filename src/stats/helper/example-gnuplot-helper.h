@@ -151,16 +151,19 @@ class ExampleGnuplotHelper : public Object
                                  const std::string& header = "");
 
   private:
+    /**
+     * Structure to hold information about a single plot.
+     */
     struct PlotInfo
     {
-        std::string name;
-        std::string title;
-        std::string xLabel;
-        std::string yLabel;
-        Gnuplot plot;
-        std::map<uint32_t, Gnuplot2dDataset> datasets;
-        std::string extraOptions;
-        uint32_t nextDatasetId;
+        std::string name;                              //!< Plot filename
+        std::string title;                             //!< Plot title
+        std::string xLabel;                            //!< X-axis label
+        std::string yLabel;                            //!< Y-axis label
+        Gnuplot plot;                                  //!< Gnuplot object
+        std::map<uint32_t, Gnuplot2dDataset> datasets; //!< Map of dataset ID to dataset
+        std::string extraOptions;                      //!< Additional gnuplot options
+        uint32_t nextDatasetId;                        //!< Next available dataset ID
     };
 
     bool m_enableGnuplot;                 //!< Whether to generate gnuplot files
