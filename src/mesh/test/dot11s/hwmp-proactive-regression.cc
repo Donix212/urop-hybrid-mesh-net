@@ -33,9 +33,6 @@
 
 using namespace ns3;
 
-/// Unique PCAP file name prefix
-const char* const PREFIX = "hwmp-proactive-regression-test";
-
 HwmpProactiveRegressionTest::HwmpProactiveRegressionTest()
     : TestCase("HWMP proactive regression test"),
       m_nodes(nullptr),

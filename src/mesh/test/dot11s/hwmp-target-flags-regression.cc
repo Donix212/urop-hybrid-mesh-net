@@ -32,9 +32,6 @@
 
 using namespace ns3;
 
-/// Unique PCAP file name prefix
-const char* const PREFIX = "hwmp-target-flags-regression-test";
-
 HwmpDoRfRegressionTest::HwmpDoRfRegressionTest()
     : TestCase("HWMP target flags regression test"),
       m_nodes(nullptr),

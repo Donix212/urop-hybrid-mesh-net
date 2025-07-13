@@ -30,9 +30,6 @@
 
 using namespace ns3;
 
-/// Unique PCAP file name prefix
-const char* const PREFIX = "flame-regression-test";
-
 FlameRegressionTest::FlameRegressionTest()
     : TestCase("FLAME regression test"),
       m_nodes(nullptr),

@@ -32,9 +32,6 @@
 
 using namespace ns3;
 
-/// Unique PCAP file name prefix
-const char* const PREFIX = "hwmp-simplest-regression-test";
-
 HwmpSimplestRegressionTest::HwmpSimplestRegressionTest()
     : TestCase("Simplest HWMP regression test"),
       m_nodes(nullptr),

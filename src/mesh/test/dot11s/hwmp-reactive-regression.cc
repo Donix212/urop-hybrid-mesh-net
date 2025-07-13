@@ -30,9 +30,6 @@
 
 #include <sstream>
 
-/// Unique PCAP file name prefix
-const char* const PREFIX = "hwmp-reactive-regression-test";
-
 HwmpReactiveRegressionTest::HwmpReactiveRegressionTest()
     : TestCase("HWMP on-demand regression test"),
       m_nodes(nullptr),
