@@ -153,8 +153,8 @@ HwmpSimplestRegressionTest::CreateDevices()
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");
     m_interfaces = address.Assign(m_meshDevices);
-    // 4. write PCAP if needed
-    wifiPhy.EnablePcapAll(CreateTempDirFilename(PREFIX));
+    // Remove the PCAP output that was used for original testing
+    // wifiPhy.EnablePcapAll(CreateTempDirFilename(PREFIX));
 }
 
 void
