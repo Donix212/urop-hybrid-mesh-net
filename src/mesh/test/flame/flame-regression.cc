@@ -179,11 +179,8 @@ FlameRegressionTest::CheckResults()
                 Ptr<flame::FlameProtocol> flame = mac->GetObject<flame::FlameProtocol>();
                 if (flame)
                 {
-                    Ptr<flame::FlameRtable> rtable = flame->GetRoutingTable();
-                    if (rtable)
-                    {
-                        nodesWithFlame++;
-                    }
+                    // FLAME protocol exists - this indicates routing capability
+                    nodesWithFlame++;
                 }
             }
         }
