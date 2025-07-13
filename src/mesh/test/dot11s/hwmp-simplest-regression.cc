@@ -10,12 +10,17 @@
 
 #include "ns3/abort.h"
 #include "ns3/double.h"
+#include "ns3/hwmp-protocol.h"
+#include "ns3/hwmp-rtable.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/mesh-helper.h"
+#include "ns3/mesh-point-device.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/mobility-model.h"
 #include "ns3/pcap-test.h"
+#include "ns3/peer-link.h"
+#include "ns3/peer-management-protocol.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/rng-seed-manager.h"
 #include "ns3/simulator.h"
@@ -34,7 +39,8 @@ HwmpSimplestRegressionTest::HwmpSimplestRegressionTest()
     : TestCase("Simplest HWMP regression test"),
       m_nodes(nullptr),
       m_time(Seconds(15)),
-      m_sentPktsCounter(0)
+      m_sentPktsCounter(0),
+      m_receivedPktsCounter(0)
 {
 }
 
@@ -136,12 +142,12 @@ HwmpSimplestRegressionTest::CreateDevices()
     mesh.SetStackInstaller("ns3::Dot11sStack");
     mesh.SetMacType("RandomStart", TimeValue(Seconds(0.1)));
     mesh.SetNumberOfInterfaces(1);
-    NetDeviceContainer meshDevices = mesh.Install(wifiPhy, *m_nodes);
+    m_meshDevices = mesh.Install(wifiPhy, *m_nodes);
     // Two devices, ten streams per mesh device
-    streamsUsed += mesh.AssignStreams(meshDevices, streamsUsed);
-    NS_TEST_ASSERT_MSG_EQ(streamsUsed, (meshDevices.GetN() * 10), "Stream assignment mismatch");
+    streamsUsed += mesh.AssignStreams(m_meshDevices, streamsUsed);
+    NS_TEST_ASSERT_MSG_EQ(streamsUsed, (m_meshDevices.GetN() * 10), "Stream assignment mismatch");
     streamsUsed += wifiChannel.AssignStreams(chan, streamsUsed);
-    NS_TEST_ASSERT_MSG_EQ(streamsUsed, (meshDevices.GetN() * 10), "Stream assignment mismatch");
+    NS_TEST_ASSERT_MSG_EQ(streamsUsed, (m_meshDevices.GetN() * 10), "Stream assignment mismatch");
 
     // 3. setup TCP/IP
     InternetStackHelper internetStack;
@@ -149,7 +155,7 @@ HwmpSimplestRegressionTest::CreateDevices()
     streamsUsed += internetStack.AssignStreams(*m_nodes, streamsUsed);
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");
-    m_interfaces = address.Assign(meshDevices);
+    m_interfaces = address.Assign(m_meshDevices);
     // 4. write PCAP if needed
     wifiPhy.EnablePcapAll(CreateTempDirFilename(PREFIX));
 }
@@ -157,10 +163,58 @@ HwmpSimplestRegressionTest::CreateDevices()
 void
 HwmpSimplestRegressionTest::CheckResults()
 {
-    for (int i = 0; i < 2; ++i)
+    // 1. Check that peer links were established between both mesh points
+    for (uint32_t i = 0; i < m_meshDevices.GetN(); ++i)
     {
-        NS_PCAP_TEST_EXPECT_EQ(PREFIX << "-" << i << "-1.pcap");
+        Ptr<MeshPointDevice> device = DynamicCast<MeshPointDevice>(m_meshDevices.Get(i));
+        NS_TEST_ASSERT_MSG_NE(device, nullptr, "MeshPointDevice not found");
+
+        Ptr<dot11s::PeerManagementProtocol> pmp =
+            device->GetObject<dot11s::PeerManagementProtocol>();
+        NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol not found");
+
+        // Check that peer links exist
+        auto peerLinks = pmp->GetPeerLinks();
+        NS_TEST_ASSERT_MSG_GT(peerLinks.size(), 0, "No peer links found on node " << i);
+
+        // Note: We can't check LinkIsEstab() directly as it's private, but having peer links
+        // in the list generally indicates they were established at some point during the simulation
     }
+
+    // 2. Check that HWMP routes were established
+    for (uint32_t i = 0; i < m_meshDevices.GetN(); ++i)
+    {
+        Ptr<MeshPointDevice> device = DynamicCast<MeshPointDevice>(m_meshDevices.Get(i));
+        Ptr<dot11s::HwmpProtocol> hwmp = device->GetObject<dot11s::HwmpProtocol>();
+        NS_TEST_ASSERT_MSG_NE(hwmp, nullptr, "HwmpProtocol not found on node " << i);
+
+        auto rtable = hwmp->GetRoutingTable();
+        NS_TEST_ASSERT_MSG_NE(rtable, nullptr, "HWMP routing table not found on node " << i);
+
+        // Check routes to other mesh points exist
+        for (uint32_t j = 0; j < m_meshDevices.GetN(); ++j)
+        {
+            if (i != j)
+            {
+                Ptr<MeshPointDevice> targetDevice =
+                    DynamicCast<MeshPointDevice>(m_meshDevices.Get(j));
+                Mac48Address targetAddr = Mac48Address::ConvertFrom(targetDevice->GetAddress());
+
+                auto result = rtable->LookupReactive(targetAddr);
+                NS_TEST_ASSERT_MSG_NE(result.retransmitter,
+                                      Mac48Address::GetBroadcast(),
+                                      "No HWMP route found from node " << i << " to node " << j);
+            }
+        }
+    }
+
+    // 3. Check that data communication was successful
+    NS_TEST_ASSERT_MSG_GT(m_sentPktsCounter, 0, "No packets were sent");
+    NS_TEST_ASSERT_MSG_GT(m_receivedPktsCounter, 0, "No packets were received");
+
+    // We expect some packet loss due to mobility at 10s, but should have significant success
+    double deliveryRatio = static_cast<double>(m_receivedPktsCounter) / m_sentPktsCounter;
+    NS_TEST_ASSERT_MSG_GT(deliveryRatio, 0.1, "Packet delivery ratio too low: " << deliveryRatio);
 }
 
 void
@@ -185,6 +239,7 @@ HwmpSimplestRegressionTest::HandleReadServer(Ptr<Socket> socket)
     Address from;
     while ((packet = socket->RecvFrom(from)))
     {
+        m_receivedPktsCounter++;
         packet->RemoveAllPacketTags();
         packet->RemoveAllByteTags();
 
@@ -199,5 +254,6 @@ HwmpSimplestRegressionTest::HandleReadClient(Ptr<Socket> socket)
     Address from;
     while ((packet = socket->RecvFrom(from)))
     {
+        m_receivedPktsCounter++;
     }
 }

@@ -9,7 +9,6 @@
 #include "ns3/ipv4-interface-container.h"
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
-#include "ns3/pcap-file.h"
 #include "ns3/test.h"
 
 using namespace ns3;
@@ -79,6 +78,8 @@ class HwmpProactiveRegressionTest : public TestCase
 
     /// sent packets counter
     uint32_t m_sentPktsCounter;
+    /// received packets counter on server
+    uint32_t m_serverPktsReceived;
 
     /**
      * Send data

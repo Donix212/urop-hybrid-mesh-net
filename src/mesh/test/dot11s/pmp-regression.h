@@ -8,6 +8,7 @@
 
 #ifndef PMP_REGRESSION_H
 #define PMP_REGRESSION_H
+#include "ns3/net-device-container.h"
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
 #include "ns3/test.h"
@@ -42,6 +43,8 @@ class PeerManagementProtocolRegressionTest : public TestCase
     NodeContainer* m_nodes;
     /// Simulation time
     Time m_time;
+    /// Mesh devices for accessing peer links
+    NetDeviceContainer m_meshDevices;
 
     /// Create nodes function
     void CreateNodes();
