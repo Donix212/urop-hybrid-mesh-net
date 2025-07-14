@@ -155,9 +155,6 @@ HwmpReactiveRegressionTest::CheckResults()
             device->GetObject<dot11s::PeerManagementProtocol>();
         NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol not found");
 
-        // Check that PMP exists - GetPeerLinks() API changed
-        // The fact that PMP is installed indicates peer establishment capability
-
         // Node 3 is removed at 5s, so it may have lost peers by the end
         if (i == 3)
         {
@@ -165,7 +162,13 @@ HwmpReactiveRegressionTest::CheckResults()
             continue;
         }
 
-        // PMP validation is sufficient for peer connectivity verification
+        // Check that peer links are established using the proper API
+        std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
+        uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
+        
+        // For the remaining nodes in a chain after node removal, expect at least some peer connectivity
+        NS_TEST_ASSERT_MSG_GT(establishedCount, 0, "Node " << i << " should have established peer links");
+        NS_TEST_ASSERT_MSG_EQ(peerLinks.size(), establishedCount, "GetPeerLinks count should match GetEstablishedPeerLinksCount");
     }
 
     // 2. Check that HWMP routes were established (at least initially)

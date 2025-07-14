@@ -104,7 +104,7 @@ PeerManagementProtocolRegressionTest::CreateDevices()
 void
 PeerManagementProtocolRegressionTest::CheckResults()
 {
-    // Instead of checking PCAP files, check that peer links are properly established
+    // Check that peer links are properly established using the updated API
     for (uint32_t i = 0; i < m_meshDevices.GetN(); ++i)
     {
         Ptr<NetDevice> netDevice = m_meshDevices.Get(i);
@@ -116,8 +116,12 @@ PeerManagementProtocolRegressionTest::CheckResults()
             meshDevice->GetObject<dot11s::PeerManagementProtocol>();
         NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol should be installed");
 
-        // For a 2-node test, just verify PMP exists since GetPeerLinks() API changed
-        // The fact that PMP is installed and simulation runs indicates peer establishment
-        NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol indicates peer establishment");
+        // Check that peer links exist and are established
+        std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
+        uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
+        
+        // For a 2-node mesh, each node should have exactly 1 established peer link
+        NS_TEST_ASSERT_MSG_EQ(establishedCount, 1, "Each node should have 1 established peer link");
+        NS_TEST_ASSERT_MSG_EQ(peerLinks.size(), 1, "GetPeerLinks should return 1 established link");
     }
 }

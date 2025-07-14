@@ -160,7 +160,7 @@ HwmpProactiveRegressionTest::CheckResults()
     // Instead of PCAP comparison, verify the mesh network behavior
 
     // 1. Check peer links are established for proactive routing
-    uint32_t establishedPeerLinks = 0;
+    uint32_t totalEstablishedLinks = 0;
     for (uint32_t i = 0; i < m_nodes->GetN(); ++i)
     {
         Ptr<MeshPointDevice> mp = m_nodes->Get(i)->GetDevice(0)->GetObject<MeshPointDevice>();
@@ -168,9 +168,18 @@ HwmpProactiveRegressionTest::CheckResults()
 
         if (mp->GetNInterfaces() > 0)
         {
-            // Simply count configured nodes instead of checking peer links
-            // since GetPeerLinks() API is not available
-            establishedPeerLinks++;
+            // Get the peer management protocol and check established links
+            Ptr<dot11s::PeerManagementProtocol> pmp = mp->GetObject<dot11s::PeerManagementProtocol>();
+            NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol should exist");
+            
+            uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
+            std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
+            
+            // Each node should have some established peer links
+            NS_TEST_ASSERT_MSG_GT(establishedCount, 0, "Node " << i << " should have established peer links");
+            NS_TEST_ASSERT_MSG_EQ(peerLinks.size(), establishedCount, "GetPeerLinks count should match GetEstablishedPeerLinksCount");
+            
+            totalEstablishedLinks += establishedCount;
         }
     }
 
@@ -206,7 +215,7 @@ HwmpProactiveRegressionTest::CheckResults()
     NS_TEST_ASSERT_MSG_GT(m_sentPktsCounter, 0, "Client should have sent packets");
 
     // 4. Check that peer links were established
-    NS_TEST_ASSERT_MSG_GT(establishedPeerLinks, 1, "Multiple peer links should be established");
+    NS_TEST_ASSERT_MSG_GT(totalEstablishedLinks, 1, "Multiple peer links should be established");
 }
 
 void

@@ -24,6 +24,7 @@
 #include "ns3/string.h"
 #include "ns3/uinteger.h"
 #include "ns3/wifi-net-device.h"
+#include "ns3/yans-wifi-channel.h"
 #include "ns3/yans-wifi-helper.h"
 
 #include <sstream>
@@ -179,8 +180,12 @@ FlameRegressionTest::CheckResults()
                 Ptr<flame::FlameProtocol> flame = mac->GetObject<flame::FlameProtocol>();
                 if (flame)
                 {
-                    // FLAME protocol exists - this indicates routing capability
-                    nodesWithFlame++;
+                    // FLAME protocol exists - check routing table as well
+                    Ptr<flame::FlameRtable> rtable = flame->GetRoutingTable();
+                    if (rtable)
+                    {
+                        nodesWithFlame++;
+                    }
                 }
             }
         }
