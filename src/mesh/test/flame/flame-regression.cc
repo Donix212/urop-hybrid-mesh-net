@@ -106,8 +106,9 @@ FlameRegressionTest::CreateDevices()
     mesh.SetMacType("RandomStart", TimeValue(Seconds(0.1)));
     mesh.SetNumberOfInterfaces(1);
     NetDeviceContainer meshDevices = mesh.Install(wifiPhy, *m_nodes);
-    NS_ABORT_MSG_IF(meshDevices.GetN() != m_nodes->GetN(),
-                "Mesh device installation failed: number of devices does not match number of nodes");
+    NS_ABORT_MSG_IF(
+        meshDevices.GetN() != m_nodes->GetN(),
+        "Mesh device installation failed: number of devices does not match number of nodes");
 
     // Three devices, eight streams per device
     streamsUsed += mesh.AssignStreams(meshDevices, streamsUsed);
@@ -161,8 +162,9 @@ FlameRegressionTest::CheckResults()
     uint32_t configuredNodes = 0;
     for (uint32_t i = 0; i < m_nodes->GetN(); ++i)
     {
-        NS_TEST_ASSERT_MSG_GT(m_nodes->Get(i)->GetNDevices(), 0,
-                      "Node " << i << " has no devices installed");
+        NS_TEST_ASSERT_MSG_GT(m_nodes->Get(i)->GetNDevices(),
+                              0,
+                              "Node " << i << " has no devices installed");
         Ptr<MeshPointDevice> mp = m_nodes->Get(i)->GetDevice(0)->GetObject<MeshPointDevice>();
         NS_TEST_ASSERT_MSG_NE(mp, nullptr, "MeshPointDevice should exist");
 
@@ -176,8 +178,9 @@ FlameRegressionTest::CheckResults()
     uint32_t nodesWithFlame = 0;
     for (uint32_t i = 0; i < m_nodes->GetN(); ++i)
     {
-        NS_TEST_ASSERT_MSG_GT(m_nodes->Get(i)->GetNDevices(), 0,
-                      "Node " << i << " has no devices installed");
+        NS_TEST_ASSERT_MSG_GT(m_nodes->Get(i)->GetNDevices(),
+                              0,
+                              "Node " << i << " has no devices installed");
         Ptr<MeshPointDevice> mp = m_nodes->Get(i)->GetDevice(0)->GetObject<MeshPointDevice>();
         if (mp && mp->GetNInterfaces() > 0)
         {
