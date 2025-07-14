@@ -20,6 +20,8 @@
 #include "ns3/mesh-wifi-interface-mac.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/mobility-model.h"
+#include "ns3/peer-link.h"
+#include "ns3/peer-management-protocol.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/rng-seed-manager.h"
 #include "ns3/simulator.h"

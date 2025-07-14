@@ -174,14 +174,9 @@ HwmpSimplestRegressionTest::CheckResults()
         std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
         uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
 
-        // For a 5-node linear chain, nodes should have 1-2 established peer links
-        // (end nodes have 1, middle nodes have 2)
-        NS_TEST_ASSERT_MSG_GT(establishedCount,
-                              0,
-                              "Node " << i << " should have established peer links");
-        NS_TEST_ASSERT_MSG_LE(establishedCount,
-                              2,
-                              "Node " << i << " should have at most 2 peer links");
+        // For a 2-node mesh, each node should have exactly 1 established peer link
+        NS_TEST_ASSERT_MSG_GT(establishedCount, 0, "Node should have established peer links");
+        NS_TEST_ASSERT_MSG_LT(establishedCount, 3, "Node should have at most 2 peer links");
         NS_TEST_ASSERT_MSG_EQ(peerLinks.size(),
                               establishedCount,
                               "GetPeerLinks count should match GetEstablishedPeerLinksCount");
@@ -192,10 +187,10 @@ HwmpSimplestRegressionTest::CheckResults()
     {
         Ptr<MeshPointDevice> device = DynamicCast<MeshPointDevice>(m_meshDevices.Get(i));
         Ptr<dot11s::HwmpProtocol> hwmp = device->GetObject<dot11s::HwmpProtocol>();
-        NS_TEST_ASSERT_MSG_NE(hwmp, nullptr, "HwmpProtocol not found on node " << i);
+        NS_TEST_ASSERT_MSG_NE(hwmp, nullptr, "HwmpProtocol not found on node");
 
         auto rtable = hwmp->GetRoutingTable();
-        NS_TEST_ASSERT_MSG_NE(rtable, nullptr, "HWMP routing table not found on node " << i);
+        NS_TEST_ASSERT_MSG_NE(rtable, nullptr, "HWMP routing table not found on node");
 
         // Check routes to other mesh points exist
         for (uint32_t j = 0; j < m_meshDevices.GetN(); ++j)
@@ -209,7 +204,7 @@ HwmpSimplestRegressionTest::CheckResults()
                 auto result = rtable->LookupReactive(targetAddr);
                 NS_TEST_ASSERT_MSG_NE(result.retransmitter,
                                       Mac48Address::GetBroadcast(),
-                                      "No HWMP route found from node " << i << " to node " << j);
+                                      "No HWMP route found between nodes");
             }
         }
     }
@@ -220,7 +215,7 @@ HwmpSimplestRegressionTest::CheckResults()
 
     // We expect some packet loss due to mobility at 10s, but should have significant success
     double deliveryRatio = static_cast<double>(m_receivedPktsCounter) / m_sentPktsCounter;
-    NS_TEST_ASSERT_MSG_GT(deliveryRatio, 0.1, "Packet delivery ratio too low: " << deliveryRatio);
+    NS_TEST_ASSERT_MSG_GT(deliveryRatio, 0.1, "Packet delivery ratio too low");
 }
 
 void
