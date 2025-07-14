@@ -119,7 +119,7 @@ PeerManagementProtocolRegressionTest::CheckResults()
         // Check that peer links exist and are established
         std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
         uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
-        
+
         // For a 2-node mesh, each node should have exactly 1 established peer link
         NS_TEST_ASSERT_MSG_EQ(establishedCount, 1, "Each node should have 1 established peer link");
         NS_TEST_ASSERT_MSG_EQ(peerLinks.size(), 1, "GetPeerLinks should return 1 established link");

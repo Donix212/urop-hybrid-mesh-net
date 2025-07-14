@@ -169,16 +169,21 @@ HwmpProactiveRegressionTest::CheckResults()
         if (mp->GetNInterfaces() > 0)
         {
             // Get the peer management protocol and check established links
-            Ptr<dot11s::PeerManagementProtocol> pmp = mp->GetObject<dot11s::PeerManagementProtocol>();
+            Ptr<dot11s::PeerManagementProtocol> pmp =
+                mp->GetObject<dot11s::PeerManagementProtocol>();
             NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol should exist");
-            
+
             uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
             std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
-            
+
             // Each node should have some established peer links
-            NS_TEST_ASSERT_MSG_GT(establishedCount, 0, "Node " << i << " should have established peer links");
-            NS_TEST_ASSERT_MSG_EQ(peerLinks.size(), establishedCount, "GetPeerLinks count should match GetEstablishedPeerLinksCount");
-            
+            NS_TEST_ASSERT_MSG_GT(establishedCount,
+                                  0,
+                                  "Node " << i << " should have established peer links");
+            NS_TEST_ASSERT_MSG_EQ(peerLinks.size(),
+                                  establishedCount,
+                                  "GetPeerLinks count should match GetEstablishedPeerLinksCount");
+
             totalEstablishedLinks += establishedCount;
         }
     }

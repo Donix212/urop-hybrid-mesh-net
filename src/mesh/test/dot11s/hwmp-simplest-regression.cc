@@ -173,12 +173,18 @@ HwmpSimplestRegressionTest::CheckResults()
         // Check that peer links are established using the proper API
         std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
         uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
-        
+
         // For a 5-node linear chain, nodes should have 1-2 established peer links
         // (end nodes have 1, middle nodes have 2)
-        NS_TEST_ASSERT_MSG_GT(establishedCount, 0, "Node " << i << " should have established peer links");
-        NS_TEST_ASSERT_MSG_LE(establishedCount, 2, "Node " << i << " should have at most 2 peer links");
-        NS_TEST_ASSERT_MSG_EQ(peerLinks.size(), establishedCount, "GetPeerLinks count should match GetEstablishedPeerLinksCount");
+        NS_TEST_ASSERT_MSG_GT(establishedCount,
+                              0,
+                              "Node " << i << " should have established peer links");
+        NS_TEST_ASSERT_MSG_LE(establishedCount,
+                              2,
+                              "Node " << i << " should have at most 2 peer links");
+        NS_TEST_ASSERT_MSG_EQ(peerLinks.size(),
+                              establishedCount,
+                              "GetPeerLinks count should match GetEstablishedPeerLinksCount");
     }
 
     // 2. Check that HWMP routes were established
