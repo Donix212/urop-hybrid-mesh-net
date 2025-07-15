@@ -23,7 +23,7 @@ class Node;
 class Packet;
 
 /**
- * @defgroup lte LTE Models
+ * @defgroup Lte LTE Models
  *
  */
 

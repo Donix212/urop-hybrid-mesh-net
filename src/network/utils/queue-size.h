@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup queuesize Queue size
  */
 

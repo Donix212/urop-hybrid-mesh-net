@@ -6,7 +6,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * DARPA NMS Campus Network Model
  *

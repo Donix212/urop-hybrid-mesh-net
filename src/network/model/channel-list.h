@@ -18,7 +18,7 @@ class Channel;
 class CallbackBase;
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief the list of simulation channels.
  *

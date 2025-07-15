@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup datarate Data Rate
  */
 /**
@@ -307,7 +307,7 @@ namespace TracedValueCallback
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  * TracedValue callback signature for DataRate
  *
  * @param [in] oldValue original value of the traced variable

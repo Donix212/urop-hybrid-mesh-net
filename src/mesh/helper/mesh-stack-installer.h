@@ -13,7 +13,7 @@
 namespace ns3
 {
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  *
  * @brief Prototype for class, which helps to install MAC-layer
  * routing stack to ns3::MeshPointDevice

@@ -19,7 +19,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup netdevice Network Device
  */
 
@@ -111,7 +111,7 @@ class QueueItem : public SimpleRefCount<QueueItem>
 std::ostream& operator<<(std::ostream& os, const QueueItem& item);
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * QueueDiscItem is the abstract base class for items that are stored in a queue
  * disc. It is derived from QueueItem (which only consists of a Ptr<Packet>)

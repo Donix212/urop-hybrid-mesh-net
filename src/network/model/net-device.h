@@ -27,7 +27,7 @@ class Node;
 class Channel;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup netdevice Network Device
  */
 

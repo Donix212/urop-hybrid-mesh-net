@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * Common methods for MPI examples.
  *
@@ -39,7 +39,7 @@ class Address;
 class Packet;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * Write to std::cout only from rank 0.
  * Number line for sorting output of parallel runs.
@@ -59,7 +59,7 @@ class Packet;
     while (false)
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * Append to std::cout only from rank 0.
  * Number line for sorting output of parallel runs.
@@ -75,7 +75,7 @@ class Packet;
     while (false)
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * Collects data about incoming packets.
  */

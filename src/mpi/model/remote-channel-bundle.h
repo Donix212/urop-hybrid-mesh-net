@@ -9,7 +9,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of class ns3::RemoteChannelBundle.
  */
 
@@ -28,7 +28,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Collection of ns-3 channels between local and remote nodes.
  *

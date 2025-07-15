@@ -23,7 +23,7 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("NodeList");
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @brief private implementation detail of the NodeList API.
  */
 class NodeListPriv : public Object

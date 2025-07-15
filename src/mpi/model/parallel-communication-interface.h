@@ -9,7 +9,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of class ns3::ParallelCommunicationInterface.
  */
 
@@ -29,7 +29,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Pure virtual base class for the interface between ns-3 and
  * the parallel communication layer being used.

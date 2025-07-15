@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * Types of ethernet packets. Indicates the type of the current
  * header.
@@ -33,7 +33,7 @@ enum ethernet_header_t
 };
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief Packet header for Ethernet
  *

@@ -29,7 +29,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup queue Queue
  */
 

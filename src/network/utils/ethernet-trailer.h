@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief Packet trailer for Ethernet
  *

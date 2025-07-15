@@ -9,7 +9,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Implementation of classes ns3::NullMessageSentBuffer and ns3::NullMessageMpiInterface.
  */
 
@@ -40,7 +40,7 @@ NS_LOG_COMPONENT_DEFINE("NullMessageMpiInterface");
 NS_OBJECT_ENSURE_REGISTERED(NullMessageMpiInterface);
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Non-blocking send buffers for Null Message implementation.
  *

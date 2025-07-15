@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *  Declaration of classes  ns3::LbtsMessage and ns3::DistributedSimulatorImpl.
  */
 
@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Structure used for all-reduce LBTS computation
  */
@@ -89,7 +89,7 @@ class LbtsMessage
 
 /**
  * @ingroup simulator
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Distributed simulator implementation using lookahead
  */

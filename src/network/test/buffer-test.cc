@@ -14,7 +14,7 @@
 using namespace ns3;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup network-test Network module unit tests
  */
 

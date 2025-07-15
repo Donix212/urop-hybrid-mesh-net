@@ -8,7 +8,7 @@
 using namespace ns3;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * A simple example of an Header implementation
  */
 class MyHeader : public Header

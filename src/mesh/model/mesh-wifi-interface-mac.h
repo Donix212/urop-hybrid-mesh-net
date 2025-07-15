@@ -29,7 +29,7 @@ namespace ns3
 class UniformRandomVariable;
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  *
  * @brief Basic MAC of mesh point Wi-Fi interface. Its function is extendable through plugins
  * mechanism.

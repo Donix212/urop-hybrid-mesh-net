@@ -8,7 +8,7 @@
  * This is doxygen module description, don't include
  */
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  * @defgroup dot11s IEEE 802.11s draft
  *
  * @brief IEEE 802.11s (mesh) draft standard implementation

@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of class ns3::NullMessageSimulatorImpl.
  */
 
@@ -32,7 +32,7 @@ class NullMessageMpiInterface;
 class RemoteChannelBundle;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Simulator implementation using MPI and a Null Message algorithm.
  */

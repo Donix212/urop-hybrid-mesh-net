@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief Abstract base class for NetDevice queue length controller
  *

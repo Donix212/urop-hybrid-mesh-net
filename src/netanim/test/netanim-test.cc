@@ -26,7 +26,7 @@ using namespace ns3;
 using namespace ns3::energy;
 
 /**
- * @ingroup netanim
+ * @ingroup NetAnim
  * @ingroup tests
  * @defgroup netanim-test animation module tests
  */

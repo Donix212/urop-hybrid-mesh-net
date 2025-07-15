@@ -31,7 +31,7 @@ namespace ns3
 class Address;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup packet Packet
  */
 
@@ -797,7 +797,7 @@ class Packet : public SimpleRefCount<Packet>
 std::ostream& operator<<(std::ostream& os, const Packet& packet);
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup packetperf Packet Performance
  * The current implementation of the byte buffers and tag list is based
  * on COW (Copy On Write. An introduction to COW can be found in Scott

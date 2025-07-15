@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *  Implementation of classes  ns3::LbtsMessage and ns3::DistributedSimulatorImpl.
  */
 
