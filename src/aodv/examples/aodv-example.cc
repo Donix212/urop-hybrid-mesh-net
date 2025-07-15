@@ -23,13 +23,13 @@
 using namespace ns3;
 
 /**
- * @defgroup AodvExamples AODV Examples
+ * @defgroup aodv-examples AODV Examples
  * @ingroup Aodv
  * @ingroup examples
  */
 
 /**
- * @ingroup AodvExamples
+ * @ingroup aodv-examples
  * @ingroup examples
  * @brief Test script.
  *

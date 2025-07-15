@@ -28,7 +28,7 @@
 using namespace ns3;
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup applications-test applications module tests
  */
 
