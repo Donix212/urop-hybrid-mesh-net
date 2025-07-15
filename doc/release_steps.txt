@@ -210,7 +210,7 @@ Next, add a new deprecated tag for the new release cycle, similar to
 commit 643d06ed9:
 
 +/**
-+ * \ingroup core
++ * \ingroup Core
 + * \def NS_DEPRECATED_3_37
 + * Tag for things deprecated in version ns-3.37.
 + */

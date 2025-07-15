@@ -12,7 +12,7 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * ns3::ShowProgress declaration.
  */
 
@@ -28,7 +28,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @ingroup debugging
  *
  * Periodically print a status message indicating simulator progress.

@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @defgroup configstore Configuration Store/Load
+ * @defgroup ConfigStore Configuration Store/Load
  *
  * @brief Store and load simulation attribute configuration
  *
@@ -43,7 +43,7 @@ namespace ns3
  */
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  *
  */
 class ConfigStore : public ObjectBase

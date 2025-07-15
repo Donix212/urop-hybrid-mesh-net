@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  *
  * @brief Iterator to iterate on the values of attributes of an ns3::Object
  * @note This class is used internally by ConfigStore and GtkConfigStore.

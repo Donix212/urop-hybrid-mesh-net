@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup timer Virtual Time Timer and Watchdog
  *
  * The Timer and Watchdog objects both facilitate scheduling functions

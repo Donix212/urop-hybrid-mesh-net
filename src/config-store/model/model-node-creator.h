@@ -19,7 +19,7 @@ enum
 };
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief A class used in the implementation of the GtkConfigStore
  */
 struct ModelNode
@@ -47,7 +47,7 @@ struct ModelNode
 };
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief ModelCreator class
  *
  */

@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief A class to enable saving of configuration store in a raw text file
  *
  */
@@ -39,7 +39,7 @@ class RawTextConfigSave : public FileConfig
 };
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief A class to enable loading of configuration store from a raw text file
  *
  */

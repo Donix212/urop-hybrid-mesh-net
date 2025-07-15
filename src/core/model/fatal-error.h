@@ -41,7 +41,7 @@
  */
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup fatal Fatal Error Handlers
  *
  * @brief Functions to help clean up when a fatal error

@@ -36,7 +36,7 @@ namespace ns3
 class TimeWithUnit;
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup time Virtual Time
  *  Management of virtual time in real world units.
  *

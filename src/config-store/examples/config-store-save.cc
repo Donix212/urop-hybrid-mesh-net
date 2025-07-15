@@ -7,7 +7,7 @@ using namespace ns3;
 
 /**
  * @defgroup configstore-examples Config Store examples
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @ingroup examples
  */
 

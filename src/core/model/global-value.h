@@ -16,7 +16,7 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * ns3::GlobalValue declaration.
  */
 
@@ -30,7 +30,7 @@ class GlobalValueTestCase;
 }
 
 /**
- * @ingroup core
+ * @ingroup Core
  *
  * @brief Hold a so-called 'global value'.
  *

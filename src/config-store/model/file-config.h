@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief base class for ConfigStore classes using files
  *
  */
@@ -43,7 +43,7 @@ class FileConfig
 };
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief A dummy class (does nothing)
  */
 class NoneFileConfig : public FileConfig

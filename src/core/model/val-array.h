@@ -20,7 +20,7 @@ namespace ns3
 
 /**
  * @defgroup Matrices Classes to do efficient math operations on arrays
- * @ingroup core
+ * @ingroup Core
  */
 
 /**

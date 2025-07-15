@@ -12,7 +12,7 @@ namespace ns3
 {
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief A class that provides a GTK-based front end to ns3::ConfigStore
  *
  */

@@ -28,7 +28,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup commandline Command Line Parsing
  *
  * A uniform way to specify program documentation,

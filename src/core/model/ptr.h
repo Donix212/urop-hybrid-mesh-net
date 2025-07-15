@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup ptr Smart Pointer
  * @brief Heap memory management.
  *

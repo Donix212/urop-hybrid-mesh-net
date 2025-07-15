@@ -27,7 +27,7 @@ class Object;
 class CallbackBase;
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup config Configuration
  * @brief Configuration of simulation parameters and tracing.
  */

@@ -31,7 +31,7 @@ class SimulatorImpl;
 class Scheduler;
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup simulator Simulator
  * @brief Control the virtual time and the execution of simulation events.
  */

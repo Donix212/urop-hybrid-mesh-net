@@ -36,7 +36,7 @@ namespace ns3
 // since the implementations are interleaved.
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup callback Callbacks
  * @brief Wrap functions, objects, and arguments into self contained callbacks.
  *
