@@ -14,7 +14,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  *
  * @brief Mobility model for which the current acceleration does not change once it has been set and
  * until it is set again explicitly to a new value.

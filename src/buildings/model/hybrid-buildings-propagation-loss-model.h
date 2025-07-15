@@ -25,8 +25,8 @@ class ItuR1238PropagationLossModel;
 class Kun2600MhzPropagationLossModel;
 
 /**
- * @ingroup buildings
- * @ingroup propagation
+ * @ingroup Buildings
+ * @ingroup Propagation
  *
  * @brief The HybridBuildingsPropagationModel is a compound of different models able to evaluate
  * the pathloss from 200 to 2600 MHz, in different environments and with buildings (i.e., indoor and

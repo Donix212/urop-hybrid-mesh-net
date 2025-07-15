@@ -21,7 +21,7 @@ namespace ns3
 class Building;
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  *
  * Container for Building class
  */

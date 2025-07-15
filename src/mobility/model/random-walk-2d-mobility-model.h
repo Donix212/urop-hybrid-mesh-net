@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief 2D random walk mobility model.
  *
  * Each instance moves with a speed and direction chosen at random

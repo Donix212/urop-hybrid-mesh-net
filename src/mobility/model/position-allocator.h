@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate a set of positions. The allocation strategy is implemented in subclasses.
  *
  * This is a pure abstract base class.
@@ -51,7 +51,7 @@ class PositionAllocator : public Object
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate positions from a deterministic list specified by the user.
  *
  * The first call to ListPositionAllocator::GetNext  will return the
@@ -106,7 +106,7 @@ class ListPositionAllocator : public PositionAllocator
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate positions on a rectangular 2d grid.
  */
 class GridPositionAllocator : public PositionAllocator
@@ -209,7 +209,7 @@ class GridPositionAllocator : public PositionAllocator
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate random positions within a rectangle according to a pair of random variables.
  */
 class RandomRectanglePositionAllocator : public PositionAllocator
@@ -248,7 +248,7 @@ class RandomRectanglePositionAllocator : public PositionAllocator
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate random positions within a 3D box according to a set of three random variables.
  */
 class RandomBoxPositionAllocator : public PositionAllocator
@@ -288,7 +288,7 @@ class RandomBoxPositionAllocator : public PositionAllocator
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate random positions within a disc according to
  * a given distribution for the polar coordinates of each node
  * with respect to the provided center of the disc.
@@ -348,7 +348,7 @@ class RandomDiscPositionAllocator : public PositionAllocator
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Allocate the positions uniformly (with constant density) randomly within a disc.
  *
  * UniformDiscPositionAllocator allocates the positions randomly within a disc \f$ D \f$ lying on

@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  *
  * @brief keep track of a set of building pointers.
  *

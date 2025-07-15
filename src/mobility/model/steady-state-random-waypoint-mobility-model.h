@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Steady-state random waypoint mobility model.
  *
  * This model based on random waypoint mobility (RWM) model for case when

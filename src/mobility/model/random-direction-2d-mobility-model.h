@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Random direction mobility model.
  *
  * The movement of objects is based on random directions: each object

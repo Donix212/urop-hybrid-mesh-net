@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Random waypoint mobility model.
  *
  * Each object starts by pausing at time zero for the duration governed

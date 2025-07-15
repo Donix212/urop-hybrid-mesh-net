@@ -25,8 +25,8 @@ class ShadowingLossModel;
 class JakesFadingLossModel;
 
 /**
- * @ingroup buildings
- * @ingroup propagation
+ * @ingroup Buildings
+ * @ingroup Propagation
  *
  *  This model provides means for simulating the following propagation
  *  phenomena in the presence of buildings:
@@ -97,7 +97,7 @@ class BuildingsPropagationLossModel : public PropagationLossModel
     double m_lossInternalWall; //!< loss from internal walls (in dBm)
 
     /**
-     * @ingroup propagation
+     * @ingroup Propagation
      *
      * This model allows the computation of shadowing loss
      */

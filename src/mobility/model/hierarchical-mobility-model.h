@@ -14,7 +14,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Hierarchical mobility model.
  *
  * This model allows you to specify the position of a child object

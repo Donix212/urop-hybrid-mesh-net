@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  *  @brief The COST-Hata-Model is the most often cited of the COST 231 models.
  *

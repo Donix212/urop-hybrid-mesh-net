@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Gauss-Markov mobility model
  *
  * This is a 3D version of the Gauss-Markov mobility model described in [1].

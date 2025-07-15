@@ -15,7 +15,7 @@
 namespace ns3
 {
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief a  Jakes narrowband propagation model.
  * Symmetrical cache for JakesProcess

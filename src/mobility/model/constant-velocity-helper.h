@@ -19,7 +19,7 @@ namespace ns3
 class Rectangle;
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  *
  * @brief Utility class used to move node with constant velocity.
  */

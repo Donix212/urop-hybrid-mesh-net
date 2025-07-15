@@ -20,7 +20,7 @@ class PropagationLossModel;
 class JakesPropagationLossModel;
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implementation for a single path Stationary Jakes propagation loss model.
  *

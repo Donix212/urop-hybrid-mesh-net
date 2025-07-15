@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief a 2d rectangle
  * @see attribute_Rectangle
  */

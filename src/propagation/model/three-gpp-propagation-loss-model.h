@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Base class for the 3GPP propagation models
  */
@@ -327,7 +327,7 @@ class ThreeGppPropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.901, Table 7.4.1-1
  *        for the RMa scenario.
@@ -438,7 +438,7 @@ class ThreeGppRmaPropagationLossModel : public ThreeGppPropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.901, Table 7.4.1-1
  *        for the UMa scenario.
@@ -533,7 +533,7 @@ class ThreeGppUmaPropagationLossModel : public ThreeGppPropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.901, Table 7.4.1-1
  *        for the UMi-Street Canyon scenario.
@@ -625,7 +625,7 @@ class ThreeGppUmiStreetCanyonPropagationLossModel : public ThreeGppPropagationLo
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.901, Table 7.4.1-1
  *        for the Indoor Office scenario.
@@ -708,7 +708,7 @@ class ThreeGppIndoorOfficePropagationLossModel : public ThreeGppPropagationLossM
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.811, Table ????
  *        for the NTN Dense Urban scenario.
@@ -772,7 +772,7 @@ class ThreeGppNTNDenseUrbanPropagationLossModel : public ThreeGppPropagationLoss
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.811, Table ????
  *        for the NTN Urban scenario.
@@ -835,7 +835,7 @@ class ThreeGppNTNUrbanPropagationLossModel : public ThreeGppPropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.811, Table ????
  *        for the NTN Suburban scenario.
@@ -899,7 +899,7 @@ class ThreeGppNTNSuburbanPropagationLossModel : public ThreeGppPropagationLossMo
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 38.811, Table ????
  *        for the NTN Rural scenario.
