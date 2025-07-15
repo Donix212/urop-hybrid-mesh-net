@@ -141,7 +141,7 @@ PeerManagementProtocolRegressionTest::CheckResults()
         // For a 2-node mesh, we expect peer links to be established
         // However, peer establishment can be sensitive to timing and randomness
         // so we'll allow for either established links or links in progress
-        if (peerLinks.size() == 0)
+        if (peerLinks.empty())
         {
             // This indicates a fundamental issue with mesh setup
             std::cout << "Warning: Node " << i << " has no peer links" << std::endl;
