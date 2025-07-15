@@ -465,7 +465,7 @@ struct NlmeNetworkDiscoveryRequestParams
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Network Descriptor, Zigbee Specification  r22.1.0, 3.2.2.4, Table 3-12
  */

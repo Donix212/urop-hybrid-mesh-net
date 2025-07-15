@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * The LteSimpleSpectrumPhy models the physical layer of LTE
  * This class is used to test Frequency Reuse Algorithms,

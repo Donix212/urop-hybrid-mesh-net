@@ -20,7 +20,7 @@
 using namespace ns3;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @ingroup tests
  * @defgroup internet-test internet module tests
  */

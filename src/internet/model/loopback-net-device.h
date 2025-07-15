@@ -21,7 +21,7 @@ class Node;
 
 /**
  * @ingroup netdevice
- * @ingroup internet
+ * @ingroup Internet
  *
  * @brief Virtual network interface that loops back any data sent to it to
  * be immediately received on the same interface.

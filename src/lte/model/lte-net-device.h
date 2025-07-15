@@ -28,7 +28,7 @@ class Packet;
  */
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * LteNetDevice provides  basic implementation for all LTE network devices
  */

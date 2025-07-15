@@ -23,7 +23,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Represent the Mac Trailer with the Frame Check Sequence field.
  */

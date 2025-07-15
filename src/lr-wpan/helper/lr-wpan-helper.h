@@ -22,7 +22,7 @@ class SpectrumChannel;
 class MobilityModel;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * @brief helps to manage and create IEEE 802.15.4 NetDevice objects
  *

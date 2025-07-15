@@ -23,7 +23,7 @@ namespace ns3
 class LteUeMac;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * ComponentCarrierUe Object, it defines a single Carrier for the Ue
  */

@@ -26,7 +26,7 @@ class LteEnbRrcSapProvider;
 class LteUeRrc;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Models the transmission of RRC messages from the UE to the eNB in
  * an ideal fashion, without errors and without consuming any radio

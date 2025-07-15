@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Takes care of storing the information generated at MAC layer. Metrics saved are:
  *   - Timestamp (in seconds)

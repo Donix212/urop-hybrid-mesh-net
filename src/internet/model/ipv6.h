@@ -31,7 +31,7 @@ class IpL4Protocol;
 class Ipv6Route;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup ipv6 IPv6 classes and sub-modules
  */
 

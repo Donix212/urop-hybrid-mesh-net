@@ -30,7 +30,7 @@ class Ipv4Route;
 class Ipv6Route;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  *
  * @brief L4 Protocol abstract base class.
  *

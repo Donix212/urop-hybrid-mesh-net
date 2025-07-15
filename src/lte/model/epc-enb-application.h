@@ -31,7 +31,7 @@ class EpcEnbS1SapUser;
 class EpcEnbS1SapProvider;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * This application is installed inside eNBs and provides the bridge functionality for user data
  * plane packets between the radio interface and the S1-U interface.

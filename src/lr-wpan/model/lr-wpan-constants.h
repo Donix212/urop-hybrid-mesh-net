@@ -24,7 +24,7 @@ namespace lrwpan
 
 /**
  * @defgroup LrWpanConstants LR-WPAN common parameters
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Contains common parameters about LR-WPAN that can be reused in multiple files.
  * These parameters are defined in the IEEE 802.15.4-2011 standard and adopt the

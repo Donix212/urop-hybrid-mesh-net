@@ -21,7 +21,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Implements the header for the MAC payload beacon frame according to
  * the IEEE 802.15.4-2011 Std.
  */
@@ -86,7 +86,7 @@ class BeaconPayloadHeader : public Header
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Implements the header for the MAC payload command frame according to
  * the IEEE 802.15.4-2011 Std.
  * - Association Response Command (See 5.3.2.2.)

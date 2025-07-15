@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * ComponentCarrier Object, it defines a single Carrier
  * This is the parent class for both ComponentCarrierBaseStation
@@ -149,7 +149,7 @@ class ComponentCarrier : public Object
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Defines a Base station, that is a ComponentCarrier but with a cell Id.
  *

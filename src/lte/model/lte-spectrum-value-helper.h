@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief This class defines all functions to create spectrum model for lte
  */

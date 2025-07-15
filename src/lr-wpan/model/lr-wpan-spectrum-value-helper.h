@@ -19,7 +19,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * @brief This class defines all functions to create spectrum model for LrWpan
  */

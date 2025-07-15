@@ -23,7 +23,7 @@ class Ipv4FlowClassifier;
 class Ipv6FlowClassifier;
 
 /**
- * @ingroup flow-monitor
+ * @ingroup FlowMonitor
  * @brief Helper to enable IP flow monitoring on a set of Nodes
  */
 class FlowMonitorHelper

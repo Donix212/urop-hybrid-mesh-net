@@ -16,7 +16,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Model the error rate for IEEE 802.15.4 2.4 GHz AWGN channel for OQPSK
  * the model description can be found in IEEE Std 802.15.4-2006, section

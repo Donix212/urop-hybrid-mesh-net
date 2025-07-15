@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Creation and configuration of Component Carrier entities. One CcHelper instance is
  * typically enough for an LTE simulation. To create it:

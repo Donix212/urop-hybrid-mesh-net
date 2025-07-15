@@ -43,7 +43,7 @@ class PropagationLossModel;
 class SpectrumPropagationLossModel;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Creation and configuration of LTE entities. One LteHelper instance is
  * typically enough for an LTE simulation. To create it:

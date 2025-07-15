@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Header of the GTPv2-C protocol
  *
@@ -177,7 +177,7 @@ class GtpcHeader : public Header
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Information Elements
  */
 class GtpcIes
@@ -341,7 +341,7 @@ class GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Create Session Request Message
  */
 class GtpcCreateSessionRequestMessage : public GtpcHeader, public GtpcIes
@@ -426,7 +426,7 @@ class GtpcCreateSessionRequestMessage : public GtpcHeader, public GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Create Session Response Message
  */
 class GtpcCreateSessionResponseMessage : public GtpcHeader, public GtpcIes
@@ -499,7 +499,7 @@ class GtpcCreateSessionResponseMessage : public GtpcHeader, public GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Modify Bearer Request Message
  */
 class GtpcModifyBearerRequestMessage : public GtpcHeader, public GtpcIes
@@ -570,7 +570,7 @@ class GtpcModifyBearerRequestMessage : public GtpcHeader, public GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Modify Bearer Response Message
  */
 class GtpcModifyBearerResponseMessage : public GtpcHeader, public GtpcIes
@@ -606,7 +606,7 @@ class GtpcModifyBearerResponseMessage : public GtpcHeader, public GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Delete Bearer Command Message
  */
 class GtpcDeleteBearerCommandMessage : public GtpcHeader, public GtpcIes
@@ -648,7 +648,7 @@ class GtpcDeleteBearerCommandMessage : public GtpcHeader, public GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Delete Bearer Request Message
  */
 class GtpcDeleteBearerRequestMessage : public GtpcHeader, public GtpcIes
@@ -684,7 +684,7 @@ class GtpcDeleteBearerRequestMessage : public GtpcHeader, public GtpcIes
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * GTP-C Delete Bearer Response Message
  */
 class GtpcDeleteBearerResponseMessage : public GtpcHeader, public GtpcIes

@@ -26,13 +26,13 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method informs the MAC whether the channel is idle or busy.
  */
 typedef Callback<void, MacState> LrWpanMacStateCallback;
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method informs the transaction cost in a slotted CSMA-CA data transmission.
  * i.e. Reports number of symbols (time) it would take slotted CSMA-CA to process the current
@@ -42,7 +42,7 @@ typedef Callback<void, MacState> LrWpanMacStateCallback;
 typedef Callback<void, uint32_t> LrWpanMacTransCostCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This class is a helper for the LrWpanMac to manage the Csma/CA
  * state machine according to IEEE 802.15.4-2006, section 7.5.1.4.

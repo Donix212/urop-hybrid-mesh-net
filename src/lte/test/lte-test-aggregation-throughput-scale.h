@@ -26,7 +26,7 @@ class LteAggregationThroughputScaleTestSuite : public TestSuite
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Testing that UE throughput scales linearly with number of component carriers.
  *        Also attaches UE to last component carrier to make sure no code assumes

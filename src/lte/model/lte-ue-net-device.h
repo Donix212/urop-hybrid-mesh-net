@@ -39,7 +39,7 @@ class EpcTft;
 class LteUeComponentCarrierManager;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The LteUeNetDevice class implements the UE net device
  */
 class LteUeNetDevice : public LteNetDevice

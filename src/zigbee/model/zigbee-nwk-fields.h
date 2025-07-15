@@ -166,7 +166,7 @@ class CapabilityInformation
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the Superframe Specification information field.
  * See IEEE 802.15.4-2011   Section 5.2.2.1.2 Figure 41
  */

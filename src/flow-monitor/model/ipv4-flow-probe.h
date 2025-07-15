@@ -21,7 +21,7 @@ namespace ns3
 class FlowMonitor;
 class Node;
 
-/// @ingroup flow-monitor
+/// @ingroup FlowMonitor
 /// @brief Class that monitors flows at the IPv4 layer of a Node
 ///
 /// For each node in the simulation, one instance of the class

@@ -33,7 +33,7 @@ class Ipv6EndPoint;
 class NetDevice;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup tcp TCP
  *
  * This is an implementation of various Transmission Control Protocol flavors.

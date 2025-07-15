@@ -29,7 +29,7 @@ namespace ns3
 {
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  *
  * @brief A helper class to populate neighbor cache.
  *

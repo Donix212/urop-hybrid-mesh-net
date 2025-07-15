@@ -29,7 +29,7 @@ class LteEnbRrcSapProvider;
 class LteUeRrc;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Models the transmission of RRC messages from the UE to the eNB in
  * a real fashion, by creating real RRC PDUs and transmitting them

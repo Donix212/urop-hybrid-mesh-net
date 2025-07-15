@@ -40,7 +40,7 @@ class LteCellSelectionTestSuite : public TestSuite
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Testing the initial cell selection procedure by UE at IDLE state in
  *        the beginning of simulation.

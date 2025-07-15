@@ -80,7 +80,7 @@ class X2CellInfo : public SimpleRefCount<X2CellInfo>
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * This entity is installed inside an eNB and provides the functionality for the X2 interface
  */

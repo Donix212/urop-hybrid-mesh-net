@@ -19,7 +19,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Implementation of the GPRS Tunnelling Protocol header according to
  * GTPv1-U Release 10 as per 3Gpp TS 29.281 document

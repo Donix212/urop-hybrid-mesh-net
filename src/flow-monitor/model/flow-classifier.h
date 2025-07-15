@@ -17,18 +17,18 @@ namespace ns3
 {
 
 /**
- * @ingroup flow-monitor
+ * @ingroup FlowMonitor
  * @brief Abstract identifier of a packet flow
  */
 typedef uint32_t FlowId;
 
 /**
- * @ingroup flow-monitor
+ * @ingroup FlowMonitor
  * @brief Abstract identifier of a packet within a flow
  */
 typedef uint32_t FlowPacketId;
 
-/// @ingroup flow-monitor
+/// @ingroup FlowMonitor
 /// Provides a method to translate raw packet data into abstract
 /// `flow identifier` and `packet identifier` parameters.  These
 /// identifiers are unsigned 32-bit integers that uniquely identify a

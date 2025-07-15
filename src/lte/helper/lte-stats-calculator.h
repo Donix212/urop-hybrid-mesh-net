@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Base class for ***StatsCalculator classes. Provides
  * basic functionality to parse and store IMSI and CellId.

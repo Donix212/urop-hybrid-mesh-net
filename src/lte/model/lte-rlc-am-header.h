@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief The packet header for the AM Radio Link Control (RLC) protocol packets
  *
  * This class has fields corresponding to those in an RLC header as well as

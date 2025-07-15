@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief Create an EPC network with PointToPoint links in the backhaul network.
  *
  * This Helper extends NoBackhaulEpcHelper creating PointToPoint links in the

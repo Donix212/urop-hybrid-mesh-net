@@ -49,7 +49,7 @@ class LteEnbRrc;
 class Packet;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * Manages all the radio bearer information possessed by the ENB RRC for a
  * single UE.
  */
@@ -637,7 +637,7 @@ class UeManager : public Object
 }; // end of `class UeManager`
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * The LTE Radio Resource Control entity at the eNB
  */

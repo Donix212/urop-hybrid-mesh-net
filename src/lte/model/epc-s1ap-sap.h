@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Base class that defines EPC S1-AP Service Access Point (SAP) interface.
  */
@@ -33,7 +33,7 @@ class EpcS1apSap
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * MME side of the S1-AP Service Access Point (SAP), provides the MME
  * methods to be called when an S1-AP message is received by the MME.
@@ -124,7 +124,7 @@ class EpcS1apSapMme : public EpcS1apSap
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * eNB side of the S1-AP Service Access Point (SAP), provides the eNB
  * methods to be called when an S1-AP message is received by the eNB.
