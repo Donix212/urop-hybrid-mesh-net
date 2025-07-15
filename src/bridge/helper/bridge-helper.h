@@ -16,7 +16,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * ns3::BridgeHelper declaration.
  */
 
@@ -27,7 +27,7 @@ class Node;
 class AttributeValue;
 
 /**
- * @ingroup bridge
+ * @ingroup Bridge
  * @brief Add capability to bridge multiple LAN segments (IEEE 802.1D bridging)
  */
 class BridgeHelper

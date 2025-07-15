@@ -18,7 +18,7 @@
 # - Tracing of queues and packet receptions to file "csma-bridge.tr"
 
 ## \file
-#  \ingroup bridge
+#  \ingroup Bridge
 #  Bridge example connecting two broadcast domains.
 
 ## Import ns-3

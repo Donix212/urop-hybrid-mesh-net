@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * ns3::BridgeChannel implementation.
  */
 

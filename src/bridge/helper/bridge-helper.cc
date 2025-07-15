@@ -13,7 +13,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * ns3::BridgeHelper implementation.
  */
 
