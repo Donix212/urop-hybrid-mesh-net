@@ -35,29 +35,6 @@ class WifiPsdu;
 struct RxSignalInfo;
 
 /**
- * Callback if PSDU successfully received (i.e. if aggregate,
- * it means that at least one MPDU of the A-MPDU was received,
- * considering that the per-MPDU reception status is also provided).
- *
- * arg1: PSDU received successfully
- * arg2: info on the received signal (\see RxSignalInfo)
- * arg3: TXVECTOR of PSDU
- * arg4: vector of per-MPDU status of reception.
- */
-typedef Callback<void,
-                 Ptr<const WifiPsdu>,
-                 RxSignalInfo,
-                 const WifiTxVector&,
-                 const std::vector<bool>&>
-    RxOkCallback;
-/**
- * Callback if PSDU unsuccessfuly received
- *
- * arg1: PSDU received unsuccessfuly
- */
-typedef Callback<void, Ptr<const WifiPsdu>> RxErrorCallback;
-
-/**
  * @ingroup wifi
  *
  * This objects implements the PHY state machine of the Wifi device.

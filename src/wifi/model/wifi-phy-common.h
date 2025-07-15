@@ -15,6 +15,7 @@
 #include "wifi-standards.h"
 #include "wifi-types.h"
 
+#include "ns3/callback.h"
 #include "ns3/fatal-error.h"
 #include "ns3/ptr.h"
 
@@ -39,6 +40,9 @@ namespace ns3
 class WifiNetDevice;
 class WifiMode;
 class Time;
+class WifiPsdu;
+struct RxSignalInfo;
+class WifiTxVector;
 
 /**
  * typedef for a pair of start and stop frequencies to represent a band
@@ -99,6 +103,28 @@ operator<<(std::ostream& os, const WifiSpectrumBandInfo& band)
     }
     return os;
 }
+
+/**
+ * Callback if PSDU successfully received (i.e. if aggregate,
+ * it means that at least one MPDU of the A-MPDU was received,
+ * considering that the per-MPDU reception status is also provided).
+ *
+ * arg1: PSDU received successfully
+ * arg2: info on the received signal (\see RxSignalInfo)
+ * arg3: TXVECTOR of PSDU
+ * arg4: vector of per-MPDU status of reception.
+ */
+using RxOkCallback = Callback<void,
+                              Ptr<const WifiPsdu>,
+                              RxSignalInfo,
+                              const WifiTxVector&,
+                              const std::vector<bool>&>;
+/**
+ * Callback if PSDU unsuccessfuly received
+ *
+ * arg1: PSDU received unsuccessfuly
+ */
+using RxErrorCallback = Callback<void, Ptr<const WifiPsdu>>;
 
 /**
  * These constants define the various convolutional coding rates
