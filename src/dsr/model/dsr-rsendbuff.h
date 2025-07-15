@@ -30,7 +30,7 @@ namespace ns3
 namespace dsr
 {
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR Send Buffer Entry
  */
 class DsrSendBuffEntry
@@ -150,7 +150,7 @@ class DsrSendBuffEntry
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR send buffer
  */
 /************************************************************************************************************************/

@@ -24,7 +24,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup csma
+ * @ingroup Csma
  * @brief build a set of CsmaNetDevice objects
  *
  * Normally we eschew multiple inheritance, however, the classes

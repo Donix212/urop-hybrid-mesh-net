@@ -40,7 +40,7 @@ enum DsrMessageType
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR Network Queue Entry
  */
 class DsrNetworkQueueEntry

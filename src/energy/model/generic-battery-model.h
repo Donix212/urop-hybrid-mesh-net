@@ -24,7 +24,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  *  Battery types.
  *  These are grouped according to their chemical characteristics
@@ -38,7 +38,7 @@ enum GenericBatteryType
 };
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  *  Battery models that described the parameters of the the battery presets.
  */
@@ -52,7 +52,7 @@ enum BatteryModel
 };
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  *  The structure containing the the parameter values that describe a
  *  battery preset.
@@ -73,7 +73,7 @@ struct BatteryPresets
 };
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  *  Contains the values that form the battery presents available in this module.
  */
@@ -134,7 +134,7 @@ static BatteryPresets g_batteryPreset[] = {{NIMH_NICD,
                                             0.8}};
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief A generic battery model for  Li-Ion, NiCd, NiMh and Lead acid batteries
  *
  * The generic battery model can be used to describe the discharge behavior of

@@ -20,7 +20,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  * A simple device energy model where current drain can be set by the user.
  *

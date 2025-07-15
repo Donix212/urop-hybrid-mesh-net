@@ -74,7 +74,7 @@ namespace dsr
   \endverbatim
  */
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR Route Cache Entry
  */
 struct Link
@@ -357,7 +357,7 @@ class DsrRouteCacheEntry
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR route request queue
  * Since DSR is an on demand routing we queue requests while looking for route.
  */

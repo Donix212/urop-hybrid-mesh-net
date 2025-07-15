@@ -21,7 +21,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * BasicEnergySource decreases/increases remaining energy stored in itself in
  * linearly.
  *

@@ -30,7 +30,7 @@ namespace ns3
 namespace dsdv
 {
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief DSDV Queue Entry
  */
 class QueueEntry
@@ -178,7 +178,7 @@ class QueueEntry
 };
 
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief DSDV Packet queue
  *
  * When a route is not available, the packets are queued. Every node can buffer up to 5 packets per

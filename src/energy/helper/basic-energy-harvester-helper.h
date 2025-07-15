@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Creates a BasicEnergyHarvester object.
  */
 class BasicEnergyHarvesterHelper : public EnergyHarvesterHelper

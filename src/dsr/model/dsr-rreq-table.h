@@ -195,7 +195,7 @@ class DsrReceivedRreqEntry
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief maintain list of DsrRreqTable entry
  */
 class DsrRreqTable : public Object

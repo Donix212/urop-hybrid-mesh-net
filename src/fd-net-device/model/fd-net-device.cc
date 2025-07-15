@@ -326,7 +326,7 @@ FdNetDevice::ReceiveCallback(uint8_t* buf, ssize_t len)
 }
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  * @brief Synthesize PI header for the kernel
  * @param buf the buffer to add the header to
  * @param len the buffer length
@@ -372,7 +372,7 @@ AddPIHeader(uint8_t*& buf, size_t& len)
 }
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  * @brief Removes PI header
  * @param buf the buffer to add the header to
  * @param len the buffer length

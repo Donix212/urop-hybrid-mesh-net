@@ -36,7 +36,7 @@ NS_LOG_COMPONENT_DEFINE("DsdvManetExample");
 
 /**
  * @defgroup dsdv-examples DSDV Examples
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @ingroup examples
  */
 
@@ -169,10 +169,8 @@ main(int argc, char** argv)
     cmd.Parse(argc, argv);
 
     std::ofstream out(CSVfileName);
-    out << "SimulationSecond,"
-        << "ReceiveRate,"
-        << "PacketsReceived,"
-        << "NumberOfSinks," << std::endl;
+    out << "SimulationSecond," << "ReceiveRate," << "PacketsReceived," << "NumberOfSinks,"
+        << std::endl;
     out.close();
 
     SeedManager::SetSeed(12345);

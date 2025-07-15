@@ -34,7 +34,7 @@
 using namespace ns3;
 
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @ingroup tests
  * @defgroup dsdv-test DSDV module tests
  */

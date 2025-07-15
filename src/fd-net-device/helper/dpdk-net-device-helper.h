@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  * @brief build a DpdkNetDevice object attached to a physical network
  * interface
  */

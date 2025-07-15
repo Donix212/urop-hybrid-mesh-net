@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  *
  * @brief a NetDevice to read/write network traffic from/into a
  *        Dpdk enabled port.

@@ -23,7 +23,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Holds a vector of ns3::EnergySource pointers.
  *
  * EnergySourceHelper returns a list of EnergySource pointers installed onto a

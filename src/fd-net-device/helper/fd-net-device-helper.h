@@ -23,7 +23,7 @@ namespace ns3
 {
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  * @brief build a set of FdNetDevice objects
  * Normally we eschew multiple inheritance, however, the classes
  * PcapUserHelperForDevice and AsciiTraceUserHelperForDevice are

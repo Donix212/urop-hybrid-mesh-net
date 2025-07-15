@@ -31,7 +31,7 @@ namespace ns3
 {
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  *
  * @brief Helper class that adds DSR routing to nodes.
  */
