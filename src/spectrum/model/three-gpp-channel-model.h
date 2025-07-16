@@ -181,7 +181,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         Vector m_speed;                     //!< velocity
         double m_dis2D;                     //!< 2D distance between tx and rx
         double m_dis3D;                     //!< 3D distance between tx and rx
-        DoubleVector m_clusterPower;        //!< cluster powers
+        DoubleVector m_clusterPowers; //!< cluster powers
         DoubleVector m_attenuation_dB;      //!< vector that stores the attenuation of the blockage
         uint8_t m_cluster1st;               //!< index of the first strongest cluster
         uint8_t m_cluster2nd;               //!< index of the second strongest cluster
@@ -269,6 +269,85 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         const Ptr<const ParamsTable> table3gpp,
         const Ptr<const MobilityModel> aMob,
         const Ptr<const MobilityModel> bMob) const;
+
+
+    struct LargeScaleParameters
+    {
+        // NOTE the shadowing is generated in the propagation loss model
+        double DS{0};
+        double ASD{0};
+        double ASA{0};
+        double ZSA{0};
+        double ZSD{0};
+        double kFactor{0};
+    };
+
+    LargeScaleParameters GenerateLSPs(ChannelCondition::LosConditionValue losCondition,
+                                      const Ptr<const ParamsTable> table3gpp) const;
+
+    DoubleVector GenerateClusterDelays(double DS,
+                                       const Ptr<const ParamsTable> table3gpp,
+                                       double* minTau) const;
+
+    MatrixBasedChannelModel::DoubleVector GenerateClusterPowers(const DoubleVector& clusterDelays,
+                                                                const double DS,
+                                                                const Ptr<const ParamsTable>
+                                                                table3gpp) const;
+
+    MatrixBasedChannelModel::DoubleVector RemoveClusters(DoubleVector* clusterPowers,
+                                                         DoubleVector* clusterDelays,
+                                                         ChannelCondition::LosConditionValue
+                                                         losCondition,
+                                                         const Ptr<const ParamsTable> table3gpp,
+                                                         double kFactor,
+                                                         double* powerMax) const;
+
+    std::pair<double, double> CalculateCphiCtheta(ChannelCondition::LosConditionValue losCondition,
+                                                  const Ptr<const ParamsTable> table3gpp,
+                                                  double kFactor) const;
+
+    void GenerateArrivalDepartureAngles(
+        const Ptr<const ThreeGppChannelParams> channelParams,
+        const DoubleVector& clusterPowerForAngles,
+        double powerMax,
+        double cPhi,
+        double cTheta,
+        LargeScaleParameters& lsps,
+        const Ptr<const MobilityModel> aMob,
+        const Ptr<const MobilityModel> bMob,
+        const Ptr<const ParamsTable> table3gpp,
+        DoubleVector* clusterAoa,
+        DoubleVector* clusterAod,
+        DoubleVector* clusterZoa,
+        DoubleVector* clusterZod) const;
+
+
+    void RandomRaysCoupling(const Ptr<const ThreeGppChannelParams> channelParams,
+                            const Ptr<const ParamsTable> table3gpp,
+                            Double2DVector* rayAoaRadian,
+                            Double2DVector* rayAodRadian,
+                            Double2DVector* rayZoaRadian,
+                            Double2DVector* rayZodRadian,
+                            const DoubleVector& clusterAoa,
+                            const DoubleVector& clusterAod,
+                            const DoubleVector& clusterZoa,
+                            const DoubleVector& clusterZod) const;
+
+    void GenerateCrossPolPowerRatiosAndInitialPhases(Double2DVector* crossPolarizationPowerRatios,
+                                                     Double3DVector* clusterPhase,
+                                                     uint8_t reducedClusterNumber,
+                                                     const Ptr<const ParamsTable> table3gpp) const;
+
+
+    void FindStrongestClusters(const Ptr<const ThreeGppChannelParams> channelParams,
+                               const Ptr<const ParamsTable> table3gpp,
+                               uint8_t* cluster1st,
+                               uint8_t* cluster2nd,
+                               DoubleVector* clusterDelay,
+                               DoubleVector* clusterAoa,
+                               DoubleVector* clusterAod,
+                               DoubleVector* clusterZoa,
+                               DoubleVector* clusterZod) const;
 
     /**
      * Compute the channel matrix between two nodes a and b, and their
