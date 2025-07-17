@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class manages a list of SSrecords
  * @see SSrecord
  */

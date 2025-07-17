@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * WHOI micro-modem energy model.
  *

@@ -13,7 +13,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of the constants used across wifi module
  */
 

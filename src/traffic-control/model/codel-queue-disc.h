@@ -44,7 +44,7 @@ static const int CODEL_SHIFT = 10;
 class TraceContainer;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A CoDel packet queue disc
  */

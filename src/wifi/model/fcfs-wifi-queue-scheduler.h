@@ -19,7 +19,7 @@ namespace ns3
 class WifiMpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Definition of priority for container queues.
  */
@@ -43,7 +43,7 @@ bool operator==(const FcfsPrio& lhs, const FcfsPrio& rhs);
 bool operator<(const FcfsPrio& lhs, const FcfsPrio& rhs);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * FcfsWifiQueueScheduler is a wifi queue scheduler that serves data frames in a
  * first come first serve fashion. Control frames have the highest priority.

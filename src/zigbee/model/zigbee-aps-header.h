@@ -20,7 +20,7 @@ namespace zigbee
 {
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  Values of the Frame Type Sub-Field.
  *  Zigbee Specification r22.1.0, Table 2-20
@@ -34,7 +34,7 @@ enum ApsFrameType : uint8_t
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  Values of the Delivery Mode Sub-Field.
  *  Zigbee Specification r22.1.0, Table 2-21
@@ -47,7 +47,7 @@ enum ApsDeliveryMode : uint8_t
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  Table 2-22 Values of the Fragmentation Sub-Field
  *  Zigbee Specification r22.1.0, Table 2-22
@@ -60,7 +60,7 @@ enum ApsFragmentation : uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Defines the APS header use by data transfer and commands issued from
  * the APS layer. Zigbee Specification r22.1.0, Section 2.2.5.1.

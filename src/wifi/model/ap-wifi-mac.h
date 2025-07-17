@@ -47,7 +47,7 @@ using AssocReqRefVariant = std::variant<std::reference_wrapper<MgtAssocRequestHe
 
 /**
  * @brief Wi-Fi AP state machine
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Handle association, dis-association and authentication,
  * of STAs within an infrastructure BSS.  By default, beacons are

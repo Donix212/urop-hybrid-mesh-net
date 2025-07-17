@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * VhtFrameExchangeManager handles the frame exchange sequences
  * for VHT stations.

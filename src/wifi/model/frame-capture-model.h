@@ -19,7 +19,7 @@ class Event;
 class Time;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief the interface for Wifi's frame capture models
  *
  */

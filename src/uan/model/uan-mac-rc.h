@@ -136,7 +136,7 @@ class Reservation
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Non-gateway node MAC for reservation channel MAC protocol.
  *

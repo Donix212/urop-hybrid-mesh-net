@@ -19,7 +19,7 @@
 using namespace ns3;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  * @ingroup tests
  * @defgroup traffic-control-test traffic-control module tests
  */

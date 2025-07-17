@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * CW-MAC protocol, similar in idea to the 802.11 DCF with
  * constant backoff window

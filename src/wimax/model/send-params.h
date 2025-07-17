@@ -17,7 +17,7 @@ namespace ns3
 class WimaxPhy;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief The SendParams class defines the parameters with which Send() function of
  *  a particular PHY is called. The sole purpose of this class is to allow
  *  defining the pure virtual Send() function in the PHY base-class (WimaxPhy).

@@ -28,7 +28,7 @@ class WimaxNetDevice;
 class SubscriberStationNetDevice;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * The same connection manager class serves both for BS and SS though some functions are exclusive
  * to only one of them.
  */

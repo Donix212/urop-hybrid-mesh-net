@@ -17,7 +17,7 @@ namespace ns3
 
 /**
  * @brief HT configuration
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This object stores HT configuration information, for use in modifying
  * AP or STA behavior and for constructing HT-related information elements.

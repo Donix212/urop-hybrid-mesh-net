@@ -22,7 +22,7 @@ class WifiPsdu;
 class WifiTxVector;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * ApEmlsrManager is an abstract base class defining the API that EHT AP MLDs with
  * EMLSR activated can use to handle the operations on the EMLSR links of EMLSR clients

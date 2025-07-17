@@ -16,7 +16,7 @@ namespace ns3
 
 /**
  * @brief The VHT Operation Information Element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class knows how to serialize and deserialize
  * the VHT Operation Information Element

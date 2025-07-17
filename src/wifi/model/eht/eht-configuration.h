@@ -67,7 +67,7 @@ std::ostream& operator<<(std::ostream& os, WifiTidToLinkMappingNegSupport negsup
 
 /**
  * @brief EHT configuration
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This object stores EHT configuration information, for use in modifying
  * AP or STA behavior and for constructing EHT-related information elements.

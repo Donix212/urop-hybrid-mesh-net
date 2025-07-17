@@ -21,7 +21,7 @@ namespace ns3
 
 /**
  * @brief Information element vector
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Implements a vector of WifiInformationElements.
  * Information elements typically come in groups, and the

@@ -41,7 +41,7 @@ enum GroupcastProtectionMode : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * GcrManager is a base class defining the API to handle 802.11aa GCR.
  */

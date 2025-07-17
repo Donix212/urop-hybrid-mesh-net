@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A flow queue used by the FqCoDel queue disc
  */
@@ -95,7 +95,7 @@ class FqCoDelFlow : public QueueDiscClass
 };
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A FqCoDel packet queue disc
  */

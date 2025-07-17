@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief CsParameters class
  */
 class CsParameters

@@ -30,7 +30,7 @@ using namespace ns3::energy;
 NS_LOG_COMPONENT_DEFINE("UanEnergyModelTestSuite");
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  * @defgroup uan-test uan module tests
  */
 

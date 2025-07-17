@@ -32,7 +32,7 @@ class MgtEmlOmn;
 class WifiMpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Base struct for EMLSR Main PHY switch traces.
  */
 struct EmlsrMainPhySwitchTrace
@@ -71,7 +71,7 @@ struct EmlsrMainPhySwitchTraceImpl : public EmlsrMainPhySwitchTrace
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * EmlsrManager is an abstract base class defining the API that EHT non-AP MLDs
  * with EMLSR activated can use to handle the operations on the EMLSR links

@@ -44,7 +44,7 @@ constexpr uint8_t WIFI_DEFAULT_GRP_BU_EXP = 0;
 
 /**
  * @brief EHT Operation Information Element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class serializes and deserializes
  * the EHT Operation Information Element

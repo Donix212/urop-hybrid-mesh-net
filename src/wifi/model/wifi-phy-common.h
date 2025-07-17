@@ -24,7 +24,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of the following enums:
  * - ns3::WifiPreamble
  * - ns3::WifiModulationClass
@@ -58,7 +58,7 @@ struct WifiSpectrumBandInfo
 using WifiSpectrumBands = std::vector<WifiSpectrumBandInfo>;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Compare two bands.
  *
  * @param lhs the band on the left of operator<
@@ -169,7 +169,7 @@ operator<<(std::ostream& os, const WifiCodeRate& codeRate)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The type of preamble to be used by an IEEE 802.11 transmission
  */
 enum WifiPreamble
@@ -237,7 +237,7 @@ operator<<(std::ostream& os, const WifiPreamble& preamble)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * This enumeration defines the modulation classes per
  * (Table 10-6 "Modulation classes"; IEEE 802.11-2016, with
  * updated in 802.11ax/D6.0 as Table 10-9).
@@ -304,7 +304,7 @@ operator<<(std::ostream& os, const WifiModulationClass& modulation)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The type of PPDU field (grouped for convenience)
  */
 enum WifiPpduField
@@ -369,7 +369,7 @@ operator<<(std::ostream& os, const WifiPpduField& field)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The type of PPDU (SU, DL MU, or UL MU)
  */
 enum WifiPpduType
@@ -404,7 +404,7 @@ operator<<(std::ostream& os, const WifiPpduType& type)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Enumeration of the possible reception failure reasons.
  */
 enum WifiPhyRxfailureReason
@@ -504,7 +504,7 @@ operator<<(std::ostream& os, const WifiPhyRxfailureReason& reason)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Enumeration of the possible channel-list parameter elements
  * defined in Table 8-5 of IEEE 802.11-2016.
  */

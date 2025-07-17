@@ -26,7 +26,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A flow queue used by the FqPie queue disc
  */
@@ -100,7 +100,7 @@ class FqPieFlow : public QueueDiscClass
 };
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A FqPie packet queue disc
  */

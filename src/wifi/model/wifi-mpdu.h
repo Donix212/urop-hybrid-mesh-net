@@ -28,7 +28,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Tag used to allow (only) WifiMacQueue to access the queue iterator stored
  * by a WifiMpdu.
@@ -40,7 +40,7 @@ class WmqIteratorTag
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiMpdu stores a (const) packet along with a MAC header. To support 802.11be
  * Multi-Link Operation (MLO), a WifiMpdu variant, referred to as WifiMpdu alias,

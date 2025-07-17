@@ -36,7 +36,7 @@ class TraceContainer;
 class UniformRandomVariable;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief Implements PIE Active Queue Management discipline
  */

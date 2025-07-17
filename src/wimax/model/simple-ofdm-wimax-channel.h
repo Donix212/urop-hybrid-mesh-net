@@ -27,7 +27,7 @@ class PacketBurst;
 class SimpleOfdmWimaxPhy;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief SimpleOfdmWimaxChannel class
  */
 class SimpleOfdmWimaxChannel : public WimaxChannel

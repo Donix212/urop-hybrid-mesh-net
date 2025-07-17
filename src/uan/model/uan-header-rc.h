@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Extra data header information.
  *
@@ -97,7 +97,7 @@ class UanHeaderRcData : public Header
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * RTS header.
  *
@@ -219,7 +219,7 @@ class UanHeaderRcRts : public Header
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Cycle broadcast information.
  *
@@ -323,7 +323,7 @@ class UanHeaderRcCtsGlobal : public Header
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * CTS header
  *
@@ -443,7 +443,7 @@ class UanHeaderRcCts : public Header
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Header used for ACK packets by protocol UanMacRc
  */

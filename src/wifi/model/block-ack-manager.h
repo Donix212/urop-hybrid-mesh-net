@@ -36,7 +36,7 @@ class MacRxMiddle;
 
 /**
  * @brief Manages all block ack agreements for an originator station.
- * @ingroup wifi
+ * @ingroup Wifi
  */
 class BlockAckManager : public Object
 {

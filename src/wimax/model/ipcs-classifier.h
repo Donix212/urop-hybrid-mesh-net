@@ -23,7 +23,7 @@ namespace ns3
 class SsServiceFlowManager;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * IPCS classifier
  */

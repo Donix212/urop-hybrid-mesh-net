@@ -62,7 +62,7 @@ namespace ns3
 class TraceContainer;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A RED packet queue disc
  */

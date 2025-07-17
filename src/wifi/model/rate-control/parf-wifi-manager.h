@@ -17,7 +17,7 @@ namespace ns3
 struct ParfWifiRemoteStation;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * PARF Rate control algorithm
  *
  * This class implements the PARF algorithm as described in

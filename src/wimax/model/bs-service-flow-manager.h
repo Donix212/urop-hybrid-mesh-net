@@ -29,7 +29,7 @@ class WimaxConnection;
 class BaseStationNetDevice;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief BsServiceFlowManager
  */
 class BsServiceFlowManager : public ServiceFlowManager

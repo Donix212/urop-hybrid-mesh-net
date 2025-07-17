@@ -51,7 +51,7 @@ class UniformRandomVariable;
 enum class WifiIcfDrop : uint8_t; // opaque enum declaration
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Enumeration for type of WiFi station
  */
 enum TypeOfStation
@@ -64,7 +64,7 @@ enum TypeOfStation
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief The reason why an MPDU was dropped
  */
 enum WifiMacDropReason : uint8_t
@@ -79,7 +79,7 @@ typedef std::unordered_map<uint16_t /* staId */, Ptr<WifiPsdu> /* PSDU */> WifiP
 
 /**
  * @brief base class for all MAC-level wifi objects.
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class encapsulates all the low-level MAC functionality
  * DCA, EDCA, etc) and all the high-level MAC functionality

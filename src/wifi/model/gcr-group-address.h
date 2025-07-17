@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The IEEE 802.11 GCR Group Address Element (Sec. 9.4.2.125 of 802.11-2020)
  */

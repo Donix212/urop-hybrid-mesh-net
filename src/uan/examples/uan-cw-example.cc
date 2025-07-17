@@ -8,7 +8,7 @@
 
 /**
  * @file uan-cw-example.cc
- * @ingroup uan
+ * @ingroup Uan
  *
  * This example showcases the "CW-MAC" described in System Design Considerations
  * for Undersea Networks article in the IEEE Journal on Selected Areas of

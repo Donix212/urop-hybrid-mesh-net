@@ -75,7 +75,7 @@ using WifiContainerQueueId = std::
  ***************************************************/
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Hashing functor taking a QueueId and returning a @c std::size_t.
  * For use with `unordered_map` and `unordered_set`.
  */
@@ -94,7 +94,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Class for the container used by WifiMacQueue
  *
  * This container holds multiple container queues organized in an hash table

@@ -50,7 +50,7 @@ enum MulticastMode
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Represent the NWK Header with the Frame Control and Routing fields
  * Zigbee Specification r22.1.0, General NPDU Frame Format (Section 3.3.1)
  */

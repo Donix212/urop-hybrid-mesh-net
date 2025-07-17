@@ -24,7 +24,7 @@ namespace ns3
 class UanTxMode;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Gateway side of RC-MAC.
  *
@@ -91,7 +91,7 @@ class UanMacRcGw : public UanMac
     State m_state; //!< Gateway processing state.
 
     /**
-     * @ingroup uan
+     * @ingroup Uan
      * Reservation request.
      */
     struct Request
@@ -104,7 +104,7 @@ class UanMacRcGw : public UanMac
     };
 
     /**
-     * @ingroup uan
+     * @ingroup Uan
      * Packet ACK data.
      */
     struct AckData

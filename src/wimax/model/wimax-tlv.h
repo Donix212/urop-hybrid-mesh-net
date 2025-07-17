@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * The value field of a tlv can take different values (uint8_t, uint16,
  * vector, ...). This class is a virtual interface
  * from which all the types of tlv values should derive
@@ -65,7 +65,7 @@ class TlvValue
 
 // =============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief This class implements the Type-Len-Value structure channel encodings as described by "IEEE
  * Standard for Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband
  * Wireless Access Systems"
@@ -157,7 +157,7 @@ class Tlv : public Header
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief U8TlvValue class
  */
 class U8TlvValue : public TlvValue
@@ -197,7 +197,7 @@ class U8TlvValue : public TlvValue
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief U16TlvValue class
  */
 class U16TlvValue : public TlvValue
@@ -237,7 +237,7 @@ class U16TlvValue : public TlvValue
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief U32TlvValue class
  */
 class U32TlvValue : public TlvValue
@@ -279,7 +279,7 @@ class U32TlvValue : public TlvValue
 // ==============================================================================
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class is used to implement a vector of values in one tlv value field
  */
 class VectorTlvValue : public TlvValue
@@ -319,7 +319,7 @@ class VectorTlvValue : public TlvValue
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief SfVectorTlvValue class
  */
 class SfVectorTlvValue : public VectorTlvValue
@@ -367,7 +367,7 @@ class SfVectorTlvValue : public VectorTlvValue
 // ==============================================================================
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class implements the convergence sub-layer descriptor as a tlv vector
  */
 class CsParamVectorTlvValue : public VectorTlvValue
@@ -390,7 +390,7 @@ class CsParamVectorTlvValue : public VectorTlvValue
 // ==============================================================================
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class implements the classifier descriptor as a tlv vector
  */
 class ClassificationRuleVectorTlvValue : public VectorTlvValue
@@ -418,7 +418,7 @@ class ClassificationRuleVectorTlvValue : public VectorTlvValue
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief TosTlvValue class
  */
 class TosTlvValue : public TlvValue
@@ -466,7 +466,7 @@ class TosTlvValue : public TlvValue
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief PortRangeTlvValue class
  */
 class PortRangeTlvValue : public TlvValue
@@ -514,7 +514,7 @@ class PortRangeTlvValue : public TlvValue
 
 // ==============================================================================
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief ProtocolTlvValue class
  */
 class ProtocolTlvValue : public TlvValue
@@ -555,7 +555,7 @@ class ProtocolTlvValue : public TlvValue
 // ==============================================================================
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief Ipv4AddressTlvValue class
  */
 class Ipv4AddressTlvValue : public TlvValue

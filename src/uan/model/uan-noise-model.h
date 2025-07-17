@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * UAN Noise Model base class.
  */

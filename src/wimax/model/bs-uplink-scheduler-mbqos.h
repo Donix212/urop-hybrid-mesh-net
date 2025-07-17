@@ -33,7 +33,7 @@ class ServiceFlowRecord;
 class UlJob;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief This class implements a Migration-based Quality of Service uplink scheduler(MBQoS).
  *
  * This uplink scheduler uses three queues, the low priority

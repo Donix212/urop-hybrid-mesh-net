@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the UCD channel encodings as described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems" 11.3.1 UCD channel encodings, page 651

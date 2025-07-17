@@ -32,7 +32,7 @@ class WifiMpdu;
 class WifiMacQueue;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiMacQueueSchedulerImpl is a template class enabling the definition of
  * different types of priority values for the container queues. The function to

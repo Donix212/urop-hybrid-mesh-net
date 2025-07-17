@@ -35,7 +35,7 @@ class UplinkScheduler;
 class BsServiceFlowManager;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * BaseStation NetDevice
  */

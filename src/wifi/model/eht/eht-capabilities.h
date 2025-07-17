@@ -233,7 +233,7 @@ struct EhtPpeThresholds
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The IEEE 802.11be EHT Capabilities
  */

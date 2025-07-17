@@ -20,7 +20,7 @@ class YansWifiChannel;
 
 /**
  * @brief 802.11 PHY layer model
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This PHY implements a model of 802.11a. The model
  * implemented here is based on the model described

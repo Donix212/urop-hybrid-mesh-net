@@ -27,7 +27,7 @@ namespace ns3
 class ServiceFlow;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief This class is used by the base station to store some information related to subscriber
  * station in the cell.
  */

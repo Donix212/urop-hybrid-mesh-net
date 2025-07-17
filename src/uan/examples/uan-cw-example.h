@@ -16,7 +16,7 @@
 using namespace ns3;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  * @brief Helper class for UAN CW MAC example.
  *
  * An experiment measures the average throughput for a series of CW values.

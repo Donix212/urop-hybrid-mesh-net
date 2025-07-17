@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class implements the link manager of subscriber station net device. An ss link
  * manager is responsible for link scanning and ranging
  */

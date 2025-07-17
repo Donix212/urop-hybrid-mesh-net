@@ -104,7 +104,7 @@ struct MinstrelWifiRemoteStation : public WifiRemoteStation
 
 /**
  * @brief Implementation of Minstrel Rate Control Algorithm
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Minstrel is a rate control algorithm implemented in MadWifi and Linux.
  * The basic principle is to probe the environment and adapt the rate

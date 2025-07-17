@@ -20,7 +20,7 @@ namespace ns3
 {
 /**
  * @brief Maintains information for a block ack agreement.
- * @ingroup wifi
+ * @ingroup Wifi
  */
 class BlockAckAgreement
 {

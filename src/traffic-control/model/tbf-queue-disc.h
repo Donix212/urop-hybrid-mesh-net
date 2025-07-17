@@ -31,7 +31,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A TBF packet queue disc
  */

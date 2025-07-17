@@ -26,7 +26,7 @@ class AttributeValue;
 class Time;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  *  Setup a Zigbee stack to be used with LrWpanNetDevice.
  */

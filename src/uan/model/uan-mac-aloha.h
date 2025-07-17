@@ -20,7 +20,7 @@ class UanPhy;
 class UanTxMode;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * ALOHA MAC Protocol, the simplest MAC protocol for wireless networks.
  *

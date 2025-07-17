@@ -21,7 +21,7 @@ namespace ns3
 
 /**
  * @brief VHT configuration
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This object stores VHT configuration information, for use in modifying
  * AP or STA behavior and for constructing VHT-related information elements.

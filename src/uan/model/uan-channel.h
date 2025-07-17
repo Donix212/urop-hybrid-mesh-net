@@ -28,7 +28,7 @@ class UanTransducer;
 class UanTxMode;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Channel class used by UAN devices.
  */

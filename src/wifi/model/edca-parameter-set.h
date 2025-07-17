@@ -16,7 +16,7 @@ namespace ns3
 
 /**
  * @brief The EDCA Parameter Set
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class knows how to serialize and deserialize the EDCA Parameter Set.
  */

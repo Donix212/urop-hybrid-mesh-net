@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The IEEE 802.11ac VHT Capabilities
  */

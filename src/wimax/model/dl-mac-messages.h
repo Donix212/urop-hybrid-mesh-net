@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the DCD channel encodings as described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems" 11.4.1 DCD channel encodings, page 659

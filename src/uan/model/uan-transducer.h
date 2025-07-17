@@ -24,7 +24,7 @@ class UanPhy;
 class UanChannel;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Class consisting of packet arrival information (Time, RxPower, mode, PDP).
  */
@@ -125,7 +125,7 @@ class UanPacketArrival
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Virtual base for Transducer objects.
  *

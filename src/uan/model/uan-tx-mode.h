@@ -20,7 +20,7 @@ class UanTxModeFactory;
 class UanTxMode;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Abstraction of packet modulation information.
  *
@@ -122,7 +122,7 @@ std::ostream& operator<<(std::ostream& os, const UanTxMode& mode);
 std::istream& operator>>(std::istream& is, UanTxMode& mode);
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Global database of UanTxMode objects, retrievable by id or name.
  */
@@ -172,7 +172,7 @@ class UanTxModeFactory
     uint32_t m_nextUid; //!< next id number
 
     /**
-     * @ingroup uan
+     * @ingroup Uan
      * Container for the UanTxMode properties.
      */
     struct UanTxModeItem
@@ -240,7 +240,7 @@ class UanTxModeFactory
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Container for UanTxModes.
  *

@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Assign AcousticModemEnergyModel to uan devices.
  *

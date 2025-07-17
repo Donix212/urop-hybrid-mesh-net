@@ -30,7 +30,7 @@ class WifiTxParameters;
 
 /**
  * @brief Aggregator used to construct A-MSDUs
- * @ingroup wifi
+ * @ingroup Wifi
  */
 class MsduAggregator : public Object
 {

@@ -18,7 +18,7 @@ namespace ns3
 
 /**
  * @brief The Traffic Indication Map Information Element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The 802.11 Traffic Indication Map (see section 9.4.2.5 of 802.11-2020)
  *

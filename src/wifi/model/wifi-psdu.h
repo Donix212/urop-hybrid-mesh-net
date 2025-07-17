@@ -24,7 +24,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiPsdu stores an MPDU, S-MPDU or A-MPDU, by keeping header(s) and
  * payload(s) separate for each constituent MPDU.

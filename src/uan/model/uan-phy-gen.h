@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Default Packet Error Rate calculator for UanPhyGen
  *
@@ -54,7 +54,7 @@ class UanPhyPerGenDefault : public UanPhyPer
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Packet error rate calculation assuming WHOI Micromodem-like PHY (FH-FSK)
  *
@@ -107,7 +107,7 @@ class UanPhyPerUmodem : public UanPhyPer
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Packet error rate calculation for common tx modes based on UanPhyPerUmodem
  *
@@ -146,7 +146,7 @@ class UanPhyPerCommonModes : public UanPhyPer
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Default SINR calculator for UanPhyGen.
  *
@@ -195,7 +195,7 @@ class UanPhyCalcSinrDefault : public UanPhyCalcSinr
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * WHOI Micromodem like FH-FSK model.
  *
@@ -242,7 +242,7 @@ class UanPhyCalcSinrFhFsk : public UanPhyCalcSinr
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Generic PHY model.
  *

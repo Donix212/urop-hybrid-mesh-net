@@ -27,7 +27,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A flow queue used by the FqCobalt queue disc
  */
@@ -101,7 +101,7 @@ class FqCobaltFlow : public QueueDiscClass
 };
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief A FqCobalt packet queue disc
  */

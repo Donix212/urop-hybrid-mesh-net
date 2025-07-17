@@ -25,7 +25,7 @@ namespace ns3
 class HeFrameExchangeManager;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * MultiUserScheduler is an abstract base class defining the API that APs
  * supporting at least VHT can use to determine the format of their next transmission.

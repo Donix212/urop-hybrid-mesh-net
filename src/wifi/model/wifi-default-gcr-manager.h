@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiDefaultGcrManager is the default implementation for groupcast with retries GCR, as defined in
  * 802.11aa. Since the standard does not describe how to map GCR-capable STAs to a given GCR group,

@@ -17,7 +17,7 @@ namespace ns3
 
 /**
  * @brief HE configuration
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This object stores HE configuration information, for use in modifying
  * AP or STA behavior and for constructing HE-related information elements.

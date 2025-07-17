@@ -26,7 +26,7 @@ class SubscriberStationNetDevice;
 class WimaxConnection;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @param SSScheduler class
  */
 class SSScheduler : public Object

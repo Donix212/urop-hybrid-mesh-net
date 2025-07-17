@@ -16,7 +16,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::OfdmPpdu class.
  */
 
@@ -27,7 +27,7 @@ class WifiPsdu;
 
 /**
  * @brief OFDM PPDU (11a)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * OfdmPpdu stores a preamble, PHY headers and a PSDU of a PPDU with non-HT header,
  * i.e., PPDU that uses OFDM modulation.

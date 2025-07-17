@@ -23,7 +23,7 @@ namespace ns3
 class UanTxMode;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Holds PDP Tap information (amplitude and delay)
  */
@@ -61,7 +61,7 @@ class Tap
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * The power delay profile returned by propagation models.
  *
@@ -245,7 +245,7 @@ class UanPdp
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Writes PDP to stream as list of arrivals
  *
@@ -255,7 +255,7 @@ class UanPdp
  */
 std::ostream& operator<<(std::ostream& os, const UanPdp& pdp);
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Reads in list of arrivals from stream is
  *
@@ -266,7 +266,7 @@ std::ostream& operator<<(std::ostream& os, const UanPdp& pdp);
 std::istream& operator>>(std::istream& is, UanPdp& pdp);
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Base class for implemented underwater propagation models
  */

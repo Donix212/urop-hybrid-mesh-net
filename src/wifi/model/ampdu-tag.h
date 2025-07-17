@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The aim of the AmpduTag is to provide means for a MAC to specify that a packet includes A-MPDU
  * since this is done in HT-SIG and there is no HT-SIG representation in ns-3

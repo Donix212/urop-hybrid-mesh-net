@@ -53,7 +53,7 @@ struct FrequencyChannelInfo
 std::ostream& operator<<(std::ostream& os, const FrequencyChannelInfo& info);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Class that keeps track of all information about the current PHY operating channel.
  */

@@ -25,7 +25,7 @@ class WimaxConnection;
 class WimaxMacQueue;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements service flows as described by the IEEE-802.16 standard
  */
 class ServiceFlow

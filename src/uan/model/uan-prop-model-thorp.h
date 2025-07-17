@@ -17,7 +17,7 @@ namespace ns3
 class UanTxMode;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Uses Thorp's approximation to compute pathloss.  Assumes implulse PDP.
  */

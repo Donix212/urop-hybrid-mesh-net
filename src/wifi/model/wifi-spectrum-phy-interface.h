@@ -22,7 +22,7 @@ namespace ns3
 class SpectrumWifiPhy;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class is an adaptor between class SpectrumWifiPhy (which inherits
  * from WifiPhy) and class SpectrumChannel (which expects objects derived

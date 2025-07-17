@@ -33,7 +33,7 @@ typedef std::vector<std::pair<WifiRraaThresholds, WifiMode>> RraaThresholdsTable
 
 /**
  * @brief Robust Rate Adaptation Algorithm
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This is an implementation of RRAA as described in
  * "Robust rate adaptation for 802.11 wireless networks"

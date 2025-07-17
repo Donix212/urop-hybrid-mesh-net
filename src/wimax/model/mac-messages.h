@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * Mac Management messages
  * Section 6.3.2.3 MAC Management messages page 42, Table 14 page 43
  */
@@ -105,7 +105,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the ranging response message described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems" 6.3.2.3.6 Ranging response (RNG-RSP) message, page 50
@@ -366,7 +366,7 @@ class RngRsp : public Header
 namespace ns3
 {
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the DSA-REQ message described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems" 6.3.2.3.10 DSA-REQ message, page 62
@@ -461,7 +461,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the DSA-RSP message described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems" 6.3.2.3.11 DSA-RSP message, page 63
@@ -569,7 +569,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the DSA-ACK message described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems" 6.3.2.3.12 DSA-ACK message, page 64
@@ -643,7 +643,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the ranging request message described by "IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems"

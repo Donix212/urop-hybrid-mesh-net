@@ -15,7 +15,7 @@
 namespace ns3
 {
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * A simple threshold-based model for frame capture effect.
  * If the new incoming frame arrives while the receiver is

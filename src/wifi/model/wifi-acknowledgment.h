@@ -26,7 +26,7 @@ namespace ns3
 class Mac48Address;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiAcknowledgment is an abstract base struct. Each derived struct defines an acknowledgment
  * method and stores the information needed to perform acknowledgment according to
@@ -113,7 +113,7 @@ struct WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiNoAck specifies that no acknowledgment is required.
  */
@@ -129,7 +129,7 @@ struct WifiNoAck : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiNormalAck specifies that acknowledgment via Normal Ack is required.
  */
@@ -147,7 +147,7 @@ struct WifiNormalAck : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiBlockAck specifies that acknowledgment via Block Ack is required.
  */
@@ -166,7 +166,7 @@ struct WifiBlockAck : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiBarBlockAck specifies that a BlockAckReq is sent to solicit a Block Ack response.
  */
@@ -187,7 +187,7 @@ struct WifiBarBlockAck : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiDlMuBarBaSequence specifies that a DL MU PPDU is acknowledged through a
  * sequence of BlockAckReq and BlockAck frames. Only one station may be allowed
@@ -234,7 +234,7 @@ struct WifiDlMuBarBaSequence : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiDlMuTfMuBar specifies that a DL MU PPDU is followed after a SIFS duration
  * by a MU-BAR Trigger Frame (sent as single user frame) soliciting BlockAck
@@ -266,7 +266,7 @@ struct WifiDlMuTfMuBar : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiDlMuAggregateTf specifies that a DL MU PPDU made of PSDUs including each
  * a MU-BAR Trigger Frame is acknowledged through BlockAck frames sent as
@@ -297,7 +297,7 @@ struct WifiDlMuAggregateTf : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiUlMuMultiStaBa specifies that a Basic Trigger Frame is being sent to
  * solicit TB PPDUs that will be acknowledged through a multi-STA BlockAck frame.
@@ -320,7 +320,7 @@ struct WifiUlMuMultiStaBa : public WifiAcknowledgment
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiAckAfterTbPpdu is used when a station prepares a TB PPDU to send in
  * response to a Basic Trigger Frame. The acknowledgment time must be

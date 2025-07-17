@@ -32,7 +32,7 @@ class ZigbeeNwk;
 class ZigbeeAps;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  *  Zigbee protocol stack to device interface.
  *

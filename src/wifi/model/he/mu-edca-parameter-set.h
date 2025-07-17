@@ -19,7 +19,7 @@ namespace ns3
 
 /**
  * @brief The MU EDCA Parameter Set
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The 802.11ax MU EDCA Parameter Set.
  */

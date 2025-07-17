@@ -22,7 +22,7 @@ class WifiMacHeader;
 class Mac48Address;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Handles sequence numbering of IEEE 802.11 data frames
  */

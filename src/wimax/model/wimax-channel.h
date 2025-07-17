@@ -25,7 +25,7 @@ class Position;
 class PacketBurst;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * The channel object to attach Wimax NetDevices
  */
 class WimaxChannel : public Channel

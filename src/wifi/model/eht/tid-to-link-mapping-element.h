@@ -32,7 +32,7 @@ constexpr uint16_t WIFI_LINK_MAPPING_PRESENCE_IND_SIZE_B = 1;
 
 /**
  * @brief TID-to-Link Mapping Information Element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class serializes and deserializes
  * the TID-to-Link Mapping element

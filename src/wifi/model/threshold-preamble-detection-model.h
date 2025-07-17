@@ -15,7 +15,7 @@
 namespace ns3
 {
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * A threshold-based model for detecting PHY preamble.
  * This model assumes that a preamble is successfully detected if SNR is at or above a given

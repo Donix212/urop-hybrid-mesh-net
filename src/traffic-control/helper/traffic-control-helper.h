@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * This class stores object factories required to create a queue disc and all of
  * its components (packet filters, internal queues, classes).
@@ -96,7 +96,7 @@ class QueueDiscFactory
 };
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief Build a set of QueueDisc objects
  *

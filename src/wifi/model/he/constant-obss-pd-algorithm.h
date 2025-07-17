@@ -16,7 +16,7 @@ namespace ns3
 
 /**
  * @brief Constant OBSS PD algorithm
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This constant OBSS_PD algorithm is a simple OBSS_PD algorithm which evaluates if a receiving
  * signal should be accepted or rejected based on a constant threshold.

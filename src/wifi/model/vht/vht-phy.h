@@ -14,7 +14,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::VhtPhy class.
  */
 
@@ -28,7 +28,7 @@ namespace ns3
 
 /**
  * @brief PHY entity for VHT (11ac)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * VHT PHY is based on HT PHY.
  *

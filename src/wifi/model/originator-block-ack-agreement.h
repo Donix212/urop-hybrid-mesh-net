@@ -22,7 +22,7 @@ namespace ns3
 class WifiMpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Maintains the state and information about transmitted MPDUs with Ack Policy set to Block Ack
  * for an originator station. The state diagram is as follows:
  *

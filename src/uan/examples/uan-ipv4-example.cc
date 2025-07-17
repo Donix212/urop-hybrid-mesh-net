@@ -20,7 +20,7 @@ using namespace ns3;
 using namespace ns3::energy;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * This example shows the usage of UDP over IPv4 to transfer data.
  * Two nodes are sending their remaining energy percentage (1 byte)
@@ -156,8 +156,7 @@ UanExperiment::PrintReceivedPacket(Ptr<Socket> socket)
 
         if (InetSocketAddress::IsMatchingType(srcAddress))
         {
-            NS_LOG_UNCOND("Time: " << Simulator::Now().GetHours() << "h"
-                                   << " | Node: "
+            NS_LOG_UNCOND("Time: " << Simulator::Now().GetHours() << "h" << " | Node: "
                                    << InetSocketAddress::ConvertFrom(srcAddress).GetIpv4()
                                    << " | Energy: " << +energyReading << "%");
         }

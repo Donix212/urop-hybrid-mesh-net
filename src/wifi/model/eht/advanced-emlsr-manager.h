@@ -23,7 +23,7 @@ namespace ns3
 class WifiPhyListener;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * AdvancedEmlsrManager is an advanced EMLSR manager.
  */

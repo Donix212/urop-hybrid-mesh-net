@@ -27,7 +27,7 @@ class WifiTxVector;
 enum AcIndex : uint8_t;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Headers for BlockAckRequest.
  *
  *  802.11 standard includes multiple BlockAckReq variants:
@@ -179,7 +179,7 @@ class CtrlBAckRequestHeader : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Headers for BlockAck response.
  *
  *  802.11 standard includes multiple BlockAck variants:
@@ -546,7 +546,7 @@ class CtrlBAckResponseHeader : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The different Trigger frame types.
  */
 enum class TriggerFrameType : uint8_t
@@ -562,7 +562,7 @@ enum class TriggerFrameType : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The different variants for Common Info field and User Info field of Trigger Frames.
  */
 enum class TriggerFrameVariant : uint8_t
@@ -572,7 +572,7 @@ enum class TriggerFrameVariant : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief User Info field of Trigger frames.
  *
  * Trigger frames, introduced by 802.11ax amendment (see Section 9.3.1.23 of D3.0),
@@ -912,7 +912,7 @@ class CtrlTriggerUserInfoField
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Special User Info field of Trigger frames.
  *
  * Trigger frames have been extended by 802.11be amendment and may include one Special User Info
@@ -1013,7 +1013,7 @@ class CtrlTriggerSpecialUserInfoField
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Headers for Trigger frames.
  *
  * 802.11ax amendment defines eight types of Trigger frames (see Section 9.3.1.23 of D3.0):

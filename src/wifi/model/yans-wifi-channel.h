@@ -26,7 +26,7 @@ class WifiPpdu;
 
 /**
  * @brief a channel to interconnect ns3::YansWifiPhy objects.
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class is expected to be used in tandem with the ns3::YansWifiPhy
  * class and supports an ns3::PropagationLossModel and an

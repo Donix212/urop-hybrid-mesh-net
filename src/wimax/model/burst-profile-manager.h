@@ -22,7 +22,7 @@ class SSRecord;
 class RngReq;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * Profile manager for burst communications
  */
