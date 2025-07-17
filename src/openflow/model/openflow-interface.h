@@ -95,7 +95,7 @@ namespace ofi
 {
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief Port and its metadata.
  *
  * We need to store port metadata, because OpenFlow dictates that there
@@ -130,7 +130,7 @@ struct Port
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * OpenFlow statistics
  */
 class Stats
@@ -187,7 +187,7 @@ class Stats
     };
 
     /**
-     * @ingroup openflow
+     * @ingroup OpenFlow
      * @brief State of the PortStats request/reply.
      */
     struct PortStatsState
@@ -243,7 +243,7 @@ class Stats
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief Class for handling flow table actions.
  */
 struct Action
@@ -283,7 +283,7 @@ struct Action
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief Class for handling virtual port table actions.
  */
 struct VPortAction
@@ -319,7 +319,7 @@ struct VPortAction
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief Class for handling Ericsson Vendor-defined actions.
  */
 struct EricssonAction
@@ -354,7 +354,7 @@ struct EricssonAction
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief Callback for a stats dump request.
  */
 struct StatsDumpCallback
@@ -367,7 +367,7 @@ struct StatsDumpCallback
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief Packet Metadata, allows us to track the packet's metadata as it passes through the switch.
  */
 struct SwitchPacketMetadata
@@ -380,7 +380,7 @@ struct SwitchPacketMetadata
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief An interface for a Controller of OpenFlowSwitchNetDevices
  *
  * Follows the OpenFlow specification for a controller.
@@ -483,7 +483,7 @@ class Controller : public Object
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * Demonstration of a Drop controller. When a connected switch
  * passes it a packet the switch doesn't recognize, the controller
  * configures the switch to make a flow that drops alike packets.
@@ -501,7 +501,7 @@ class DropController : public Controller
 };
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * Demonstration of a Learning controller. When a connected switch
  * passes it a packet the switch doesn't recognize, the controller
  * delves into its learned states and figures out if we know what

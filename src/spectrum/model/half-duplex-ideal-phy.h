@@ -27,7 +27,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * This PHY layer implementation realizes an ideal OFDM PHY which
  * transmits half-duplex (i.e., it can either receive or transmit at a

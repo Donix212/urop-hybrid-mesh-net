@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * @brief SpectrumChannel implementation which handles a single spectrum model
  *

@@ -26,7 +26,7 @@ namespace ns3
 class AntennaModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Simple SpectrumPhy implementation that sends customizable waveform.
  * The generated waveforms have a given Spectrum Power Density and

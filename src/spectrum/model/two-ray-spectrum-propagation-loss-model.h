@@ -25,7 +25,7 @@ namespace ns3
 class NetDevice;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @brief Two Ray Spectrum Propagation Loss Model
  *
  * This class implements a performance-oriented channel and beamforming models alternative to the

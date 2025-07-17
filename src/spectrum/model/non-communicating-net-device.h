@@ -27,7 +27,7 @@ class Channel;
 class SpectrumErrorModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * This class implements a device which does not communicate, in the
  * sense that it does not interact with the above protocol stack. The

@@ -20,7 +20,7 @@ namespace ns3
 struct SpectrumSignalParameters;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * @brief spectrum-aware propagation loss model
  *

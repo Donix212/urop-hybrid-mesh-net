@@ -35,7 +35,7 @@ isNaN(double x)
 class DataOutputCallback;
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @class StatisticalSummary
  * @brief Abstract class for calculating statistical data
  *
@@ -102,7 +102,7 @@ class StatisticalSummary
 //------------------------------------------------------------
 //--------------------------------------------
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @class DataCalculator
  * @brief Calculates data during a simulation
  *

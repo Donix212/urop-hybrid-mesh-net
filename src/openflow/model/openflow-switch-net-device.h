@@ -5,7 +5,7 @@
  */
 
 /**
- * @defgroup openflow OpenFlow Switch Device
+ * @defgroup OpenFlow OpenFlow Switch Device
  * This section documents the API of the ns-3 OpenFlow module. For a generic functional description,
  * please refer to the ns-3 manual.
  */
@@ -38,7 +38,7 @@ namespace ns3
 {
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief A net device that switches multiple LAN segments via an OpenFlow-compatible flow table
  *
  * The OpenFlowSwitchNetDevice object aggregates multiple netdevices as ports
@@ -67,13 +67,13 @@ namespace ns3
  */
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @ingroup tests
  * @defgroup openflow-tests OpenFlow module tests
  */
 
 /**
- * @ingroup openflow
+ * @ingroup OpenFlow
  * @brief A net device that switches multiple LAN segments via an OpenFlow-compatible flow table
  */
 class OpenFlowSwitchNetDevice : public NetDevice

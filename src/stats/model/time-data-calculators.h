@@ -20,7 +20,7 @@ namespace ns3
 //------------------------------------------------------------
 //--------------------------------------------
 /**
- * @ingroup stats
+ * @ingroup Stats
  *
  * Unfortunately, templating the base MinMaxAvgTotalCalculator to
  * operate over Time values isn't straightforward.  The main issues

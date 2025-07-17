@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Simple SpectrumPhy implementation that averages the spectrum power
  * density of incoming transmissions to produce a spectrogram.

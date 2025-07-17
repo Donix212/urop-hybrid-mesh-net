@@ -26,7 +26,7 @@ class NetDevice;
 struct SpectrumSignalParameters;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Abstract base class for Spectrum-aware PHY layers
  *

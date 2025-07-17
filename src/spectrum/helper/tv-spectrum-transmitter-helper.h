@@ -29,7 +29,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Helper class which uses TvSpectrumTransmitter class to create customizable
  * TV transmitter(s) that transmit PSD spectrum specified by user-set attributes.

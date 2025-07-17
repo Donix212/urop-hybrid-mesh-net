@@ -31,7 +31,7 @@ class Channel;
 class SpectrumErrorModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * This devices implements the following features:
  *  - layer 3 protocol multiplexing

@@ -18,17 +18,17 @@ namespace ns3
 {
 
 /**
- * @defgroup spectrum Spectrum Models
+ * @defgroup Spectrum Spectrum Models
  */
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @ingroup tests
  * @defgroup spectrum-tests Spectrum Models tests
  */
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * The building block of a SpectrumModel. This struct models
  * a frequency band defined by the frequency interval [fl, fc] and

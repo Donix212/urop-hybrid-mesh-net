@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  *
  *  A stat for counting packets
  *
@@ -64,7 +64,7 @@ class PacketCounterCalculator : public CounterCalculator<uint32_t>
 };
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  *
  * A stat for collecting packet size statistics: min, max and average
  *

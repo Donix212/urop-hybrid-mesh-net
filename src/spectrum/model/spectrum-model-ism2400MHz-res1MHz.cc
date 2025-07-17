@@ -12,7 +12,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * Spectrum model logger for frequencies in the 2.4 GHz ISM band
  * with 1 MHz resolution.
  */

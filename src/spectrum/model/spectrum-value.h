@@ -24,7 +24,7 @@ namespace ns3
 typedef std::vector<double> Values;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * @brief Set of values corresponding to a given SpectrumModel
  *

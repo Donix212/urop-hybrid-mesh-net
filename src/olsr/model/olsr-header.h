@@ -27,7 +27,7 @@ double EmfToSeconds(uint8_t emf);
 uint8_t SecondsToEmf(double seconds);
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  *
  * The basic layout of any packet in OLSR is as follows (omitting IP and
  * UDP headers):
@@ -124,7 +124,7 @@ class PacketHeader : public Header
 };
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  *
  * This header can store HELP, TC, MID and HNA messages.
  * The header size is variable, and depends on the
@@ -293,7 +293,7 @@ class MessageHeader : public Header
     uint32_t Deserialize(Buffer::Iterator start) override;
 
     /**
-     * @ingroup olsr
+     * @ingroup Olsr
      * MID Message Format
      *
     \verbatim
@@ -342,7 +342,7 @@ class MessageHeader : public Header
     };
 
     /**
-     * @ingroup olsr
+     * @ingroup Olsr
      * HELLO Message Format
      *
     \verbatim
@@ -438,7 +438,7 @@ class MessageHeader : public Header
     };
 
     /**
-     * @ingroup olsr
+     * @ingroup Olsr
      * TC Message Format
      *
      \verbatim
@@ -491,7 +491,7 @@ class MessageHeader : public Header
     };
 
     /**
-     * @ingroup olsr
+     * @ingroup Olsr
      * HNA (Host Network Association) Message Format
      *
      \verbatim

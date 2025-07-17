@@ -50,7 +50,7 @@ PhyRxEndOkTrace(std::string context, Ptr<const Packet> p)
 }
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Store the last pathloss value for each TX-RX pair. This is an
  * example of how the PathlossTrace (provided by some SpectrumChannel

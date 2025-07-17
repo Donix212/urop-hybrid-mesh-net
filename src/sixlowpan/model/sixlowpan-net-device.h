@@ -29,7 +29,7 @@ class UniformRandomVariable;
 class EventId;
 
 /**
- * @defgroup sixlowpan 6LoWPAN
+ * @defgroup SixLowPan 6LoWPAN
  * @brief Performs 6LoWPAN compression of IPv6 packets as specified by \RFC{4944} and \RFC{6282}
  *
  * This module acts as a shim between IPv6 and a generic NetDevice.
@@ -43,13 +43,13 @@ class EventId;
  */
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @ingroup tests
  * @defgroup sixlowpan-tests 6LoWPAN module tests
  */
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  *
  * @brief Shim performing 6LoWPAN compression, decompression and fragmentation.
  *

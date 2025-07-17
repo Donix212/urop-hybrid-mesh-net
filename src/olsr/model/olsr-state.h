@@ -18,7 +18,7 @@ namespace ns3
 namespace olsr
 {
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// This class encapsulates all data structures needed for maintaining internal state of an OLSR
 /// node.
 class OlsrState

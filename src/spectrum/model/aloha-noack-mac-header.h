@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *  Header for the AlohaNoack NetDevice
  *
  */

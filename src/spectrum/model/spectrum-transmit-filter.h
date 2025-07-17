@@ -16,7 +16,7 @@ struct SpectrumSignalParameters;
 class SpectrumPhy;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * @brief spectrum-aware transmit filter object
  *

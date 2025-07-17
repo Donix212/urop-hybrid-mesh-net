@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @brief Helper class used to put data values into a file.
  **/
 class FileHelper

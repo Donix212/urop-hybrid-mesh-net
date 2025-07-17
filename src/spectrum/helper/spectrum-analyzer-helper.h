@@ -25,7 +25,7 @@ class SpectrumChannel;
 class SpectrumModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @brief Class to allow the Spectrum Analysis
  */
 class SpectrumAnalyzerHelper

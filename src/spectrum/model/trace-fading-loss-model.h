@@ -24,7 +24,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * @brief fading loss model based on precalculated fading traces
  */

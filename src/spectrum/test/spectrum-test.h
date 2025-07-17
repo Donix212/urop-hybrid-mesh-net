@@ -15,7 +15,7 @@
 #include "ns3/test.h"
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @defgroup spectrum-test Spectrum module tests
  */
 

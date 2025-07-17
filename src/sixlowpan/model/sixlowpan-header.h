@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
-* @ingroup sixlowpan
+* @ingroup SixLowPan
 * @brief   Dispatch header helper. This class only purpose is to interpret
 * the Dispatch header into its correct type.
 *
@@ -113,7 +113,7 @@ class SixLowPanDispatch
 };
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @brief 6LoWPAN HC1 header - see \RFC{4944}.
  */
 class SixLowPanHc1 : public Header
@@ -354,7 +354,7 @@ class SixLowPanHc1 : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanHc1& header);
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @brief 6LoWPAN FRAG1 header - see \RFC{4944}.
  */
 class SixLowPanFrag1 : public Header
@@ -434,7 +434,7 @@ class SixLowPanFrag1 : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanFrag1& header);
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @brief 6LoWPAN FRAGN header - see \RFC{4944}.
  */
 class SixLowPanFragN : public Header
@@ -527,7 +527,7 @@ class SixLowPanFragN : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanFragN& header);
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @brief 6LoWPAN IPv6 uncompressed header - see \RFC{4944}.
  */
 class SixLowPanIpv6 : public Header
@@ -579,7 +579,7 @@ class SixLowPanIpv6 : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanIpv6& header);
 
 /**
-* @ingroup sixlowpan
+* @ingroup SixLowPan
 * @brief   LOWPAN_IPHC base Encoding - see \RFC{6282}.
   \verbatim
        0                                       1
@@ -921,7 +921,7 @@ class SixLowPanIphc : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanIphc& header);
 
 /**
-* @ingroup sixlowpan
+* @ingroup SixLowPan
 * @brief   LOWPAN_NHC Extension Header Encoding - see \RFC{6282}.
   \verbatim
      0   1   2   3   4   5   6   7
@@ -1065,7 +1065,7 @@ class SixLowPanNhcExtension : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanNhcExtension& header);
 
 /**
-* @ingroup sixlowpan
+* @ingroup SixLowPan
 * @brief   UDP LOWPAN_NHC Extension Header Encoding - see \RFC{6282}.
   \verbatim
      0   1   2   3   4   5   6   7
@@ -1211,7 +1211,7 @@ class SixLowPanUdpNhcExtension : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanUdpNhcExtension& header);
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @brief 6LoWPAN BC0 header - see \RFC{4944}.
  */
 class SixLowPanBc0 : public Header
@@ -1278,7 +1278,7 @@ class SixLowPanBc0 : public Header
 std::ostream& operator<<(std::ostream& os, const SixLowPanBc0& header);
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  * @brief 6LoWPAN Mesh header - see \RFC{4944}.
  */
 class SixLowPanMesh : public Header
