@@ -65,9 +65,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_RMa_LOS = {{
 /**
  * The square root matrix for <em>RMa NLOS</em>, which is generated using the
  * Cholesky decomposition according to table 7.5-6 Part 2 and follows the order
- * of [SF, K, DS, ASD, ASA, ZSD, ZSA].
- * The parameter K is ignored.
- *
+ * of [SF, DS, ASD, ASA, ZSD, ZSA].
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
  */
@@ -118,8 +116,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_UMa_LOS = {{
 /**
  * The square root matrix for <em>UMa NLOS</em>, which is generated using the
  * Cholesky decomposition according to table 7.5-6 Part 1 and follows the order
- * of [SF, K, DS, ASD, ASA, ZSD, ZSA].
- * The parameter K is ignored.
+ * of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -136,7 +133,7 @@ static constexpr std::array<std::array<double, 6>, 6> sqrtC_UMa_NLOS = {{
 /**
  * The square root matrix for <em>UMa O2I</em>, which is generated using the
  * Cholesky decomposition according to table 7.5-6 Part 1 and follows the order
- * of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -171,8 +168,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_UMi_LOS = {{
 /**
  * The square root matrix for <em>UMi NLOS</em>, which is generated using the
  * Cholesky decomposition according to table 7.5-6 Part 1 and follows the order
- * of [SF, K, DS, ASD, ASA, ZSD, ZSA].
- * The parameter K is ignored.
+ * of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -189,7 +185,7 @@ static constexpr std::array<std::array<double, 6>, 6> sqrtC_UMi_NLOS = {{
 /**
  * The square root matrix for <em>UMi O2I</em>, which is generated using the
  * Cholesky decomposition according to table 7.5-6 Part 1 and follows the order
- * of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -224,8 +220,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_office_LOS = {{
 /**
  * The square root matrix for <em>Indoor-Office NLOS</em>, which is generated
  * using the Cholesky decomposition according to table 7.5-6 Part 2 and follows
- * the order of [SF, K, DS, ASD, ASA, ZSD, ZSA].
- * The parameter K is ignored.
+ * the order of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -260,7 +255,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_NTN_DenseUrban_LOS =
 /**
  * The square root matrix for <em>NTN Dense Urban NLOS</em>, which is generated
  * using the Cholesky decomposition according to 3GPP TR 38.811 v15.4.0 table 6.7.2-2 and follows
- * the order of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * the order of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -295,7 +290,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_NTN_Urban_LOS = {{
 /**
  * The square root matrix for <em>NTN Urban NLOS</em>, which is generated
  * using the Cholesky decomposition according to 3GPP TR 38.811 v15.4.0 table 6.7.2-4 and follows
- * the order of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * the order of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The square root matrix is dependent on the elevation angle, thus requiring a map.
  *
@@ -407,7 +402,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_NTN_Suburban_LOS = {
 /**
  * The square root matrix for <em>NTN Suburban NLOS</em>, which is generated
  * using the Cholesky decomposition according to 3GPP TR 38.811 v15.4.0 table 6.7.2-6 and follows
- * the order of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * the order of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
@@ -442,7 +437,7 @@ static constexpr std::array<std::array<double, 7>, 7> sqrtC_NTN_Rural_LOS = {{
 /**
  * The square root matrix for <em>NTN Rural NLOS S Band</em>, which is generated
  * using the Cholesky decomposition according to 3GPP TR 38.811 v15.4.0 table 6.7.2-8a and follows
- * the order of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * the order of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The square root matrix is dependent on the elevation angle, thus requiring a map.
  *
@@ -536,10 +531,10 @@ static const std::map<int, std::array<std::array<double, 6>, 6>> sqrtC_NTN_Rural
 /**
  * The square root matrix for <em>NTN Rural NLOS Ka Band</em>, which is generated
  * using the Cholesky decomposition according to 3GPP TR 38.811 v15.4.0 table 6.7.2-8b and follows
- * the order of [SF, K, DS, ASD, ASA, ZSD, ZSA].
+ * the order of [SF, DS, ASD, ASA, ZSD, ZSA].
  *
  * The square root matrix is dependent on the elevation angle, which acts as the corresponding map's
- * key..
+ * key.
  *
  * The Matlab file to generate the matrices can be found in
  * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m

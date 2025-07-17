@@ -226,8 +226,12 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         double m_uXpr = 0;                   //!< Mean of Cross-Polarization Ratio
         double m_sigXpr = 0;                 //!< Standard deviation of Cross-Polarization Ratio
         double m_perClusterShadowingStd = 0; //!< Per cluster shadowing standard deviation
-        double m_sqrtC[7][7]; //!< The square root matrix and follows the order of [SF, K, DS, ASD,
-                              //!< ASA, ZSD, ZSA]
+        /**
+         * For LOS, LSP is following the order of [SF,K,DS,ASD,ASA,ZSD,ZSA].
+         * For NLOS, LSP is following the order of [SF,DS,ASD,ASA,ZSD,ZSA].
+         * https://github.com/nyuwireless-unipd/ns3-mmwave/blob/master/src/mmwave/model/BeamFormingMatrix/SqrtMatrix.m
+         */
+        double m_sqrtC[7][7];
     };
 
     /**
