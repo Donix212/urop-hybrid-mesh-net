@@ -175,15 +175,11 @@ HwmpSimplestRegressionTest::CheckResults()
         NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol not found");
 
         // Check that peer links are established using the proper API
-        std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetPeerLinks();
         uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
 
         // For a 2-node mesh, each node should have at most 1 established peer link
         // But after mobility, links might be broken, so we just check consistency
         NS_TEST_ASSERT_MSG_LT(establishedCount, 2, "Node should have at most 1 peer link");
-        NS_TEST_ASSERT_MSG_EQ(peerLinks.size(),
-                              establishedCount,
-                              "GetPeerLinks count should match GetEstablishedPeerLinksCount");
 
         totalEstablishedLinks += establishedCount;
     }

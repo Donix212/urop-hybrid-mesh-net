@@ -131,8 +131,8 @@ PeerManagementProtocolRegressionTest::CheckResults()
         NS_TEST_ASSERT_MSG_NE(pmp, nullptr, "PeerManagementProtocol should be installed");
 
         // Check that peer links exist and are established
-        std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetAllPeerLinks();
         uint32_t establishedCount = pmp->GetEstablishedPeerLinksCount();
+        std::vector<Ptr<dot11s::PeerLink>> peerLinks = pmp->GetAllPeerLinks();
 
         // Debug output
         std::cout << "Node " << i << ": peerLinks.size() = " << peerLinks.size()
@@ -152,9 +152,7 @@ PeerManagementProtocolRegressionTest::CheckResults()
             std::cout << "Node " << i << " has " << peerLinks.size() << " peer links" << std::endl;
         }
 
-        // For now, let's not require established links since they can be timing-sensitive
-        // Just verify that the API works correctly
-        NS_TEST_ASSERT_MSG_EQ(peerLinks.size() >= 0, true, "GetAllPeerLinks should work");
+        // Verify that the API works correctly
         NS_TEST_ASSERT_MSG_EQ(establishedCount >= 0,
                               true,
                               "GetEstablishedPeerLinksCount should work");
