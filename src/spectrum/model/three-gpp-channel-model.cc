@@ -1060,6 +1060,36 @@ static const std::map<std::string, std::map<int, std::array<float, 22>>> NTNRura
      }},
 };
 
+// According to table 7.5-6, only cluster number equals to 8, 10, 11, 12, 19 and 20 is valid.
+// (38.901) Not sure why the other cases are in Table 7.5-2. Added case 2 and 3 for the NTN
+// according to table 6.7.2-1aa (28.811)
+static const std::unordered_map<int, double> cNlosTablePhi = {{2, 0.501},
+                                                              {3, 0.680},
+                                                              {4, 0.779},
+                                                              {5, 0.860},
+                                                              {8, 1.018},
+                                                              {10, 1.090},
+                                                              {11, 1.123},
+                                                              {12, 1.146},
+                                                              {14, 1.190},
+                                                              {15, 1.221},
+                                                              {16, 1.226},
+                                                              {19, 1.273},
+                                                              {20, 1.289}};
+
+// Table 7.5-4 (38.901)
+// Added case 2, 3 and 4 for the NTN according to table 6.7.2-1ab (28.811)
+static const std::unordered_map<int, double> cNlosTableTheta = {{2, 0.430},
+                                                                {3, 0.594},
+                                                                {4, 0.697},
+                                                                {8, 0.889},
+                                                                {10, 0.957},
+                                                                {11, 1.031},
+                                                                {12, 1.104},
+                                                                {15, 1.1088},
+                                                                {19, 1.184},
+                                                                {20, 1.178}};
+
 ThreeGppChannelModel::ThreeGppChannelModel()
 {
     NS_LOG_FUNCTION(this);
@@ -2602,7 +2632,7 @@ ThreeGppChannelModel::GetChannel(Ptr<const MobilityModel> aMob,
         channelParams->m_rxSpeed = aMob->GetVelocity();
     }
 
-    NS_LOG_DEBUG("Return already existin channel matrix");
+    NS_LOG_DEBUG("Return already existing channel matrix");
     return channelMatrix;
 }
 
@@ -2631,69 +2661,53 @@ ThreeGppChannelModel::GenerateLSPs(ChannelCondition::LosConditionValue losCondit
                                    const Ptr<const ParamsTable> table3gpp) const
 {
     NS_LOG_FUNCTION(this);
-    DoubleVector LSPsIndep;
-    DoubleVector LSPs;
-    uint8_t paramNum = 6;
-    if (losCondition == ChannelCondition::LOS)
-    {
-        paramNum = 7;
-    }
+    DoubleVector lspIndepRandomVar;
+    DoubleVector lsp;
+    uint8_t paramNum = (losCondition == ChannelCondition::LOS) ? 7 : 6;
 
     // Generate paramNum independent LSPs.
     for (uint8_t iter = 0; iter < paramNum; iter++)
     {
-        LSPsIndep.push_back(m_normalRv->GetValue());
+        lspIndepRandomVar.push_back(m_normalRv->GetValue());
     }
     for (uint8_t row = 0; row < paramNum; row++)
     {
         double temp = 0;
         for (uint8_t column = 0; column < paramNum; column++)
         {
-            temp += table3gpp->m_sqrtC[row][column] * LSPsIndep[column];
+            temp += table3gpp->m_sqrtC[row][column] * lspIndepRandomVar[column];
         }
-        LSPs.push_back(temp);
+        lsp.push_back(temp);
     }
 
+    LargeScaleParameters lsps;
     // NOTE the shadowing is generated in the propagation loss model
-    double DS;
-    double ASD;
-    double ASA;
-    double ZSA;
-    double ZSD;
-    double kFactor = 0;
+    // For LOS, LSP is following the order of [SF,K,DS,ASD,ASA,ZSD,ZSA].
+    // For NLOS, LSP is following the order of [SF,DS,ASD,ASA,ZSD,ZSA].
     if (losCondition == ChannelCondition::LOS)
     {
-        kFactor = LSPs[1] * table3gpp->m_sigK + table3gpp->m_uK;
-        DS = pow(10, LSPs[2] * table3gpp->m_sigLgDS + table3gpp->m_uLgDS);
-        ASD = pow(10, LSPs[3] * table3gpp->m_sigLgASD + table3gpp->m_uLgASD);
-        ASA = pow(10, LSPs[4] * table3gpp->m_sigLgASA + table3gpp->m_uLgASA);
-        ZSD = pow(10, LSPs[5] * table3gpp->m_sigLgZSD + table3gpp->m_uLgZSD);
-        ZSA = pow(10, LSPs[6] * table3gpp->m_sigLgZSA + table3gpp->m_uLgZSA);
+        lsps.kFactor = lsp[1] * table3gpp->m_sigK + table3gpp->m_uK;
+        lsps.DS = pow(10, lsp[2] * table3gpp->m_sigLgDS + table3gpp->m_uLgDS);
+        lsps.ASD = pow(10, lsp[3] * table3gpp->m_sigLgASD + table3gpp->m_uLgASD);
+        lsps.ASA = pow(10, lsp[4] * table3gpp->m_sigLgASA + table3gpp->m_uLgASA);
+        lsps.ZSD = pow(10, lsp[5] * table3gpp->m_sigLgZSD + table3gpp->m_uLgZSD);
+        lsps.ZSA = pow(10, lsp[6] * table3gpp->m_sigLgZSA + table3gpp->m_uLgZSA);
     }
     else
     {
-        DS = pow(10, LSPs[1] * table3gpp->m_sigLgDS + table3gpp->m_uLgDS);
-        ASD = pow(10, LSPs[2] * table3gpp->m_sigLgASD + table3gpp->m_uLgASD);
-        ASA = pow(10, LSPs[3] * table3gpp->m_sigLgASA + table3gpp->m_uLgASA);
-        ZSD = pow(10, LSPs[4] * table3gpp->m_sigLgZSD + table3gpp->m_uLgZSD);
-        ZSA = pow(10, LSPs[5] * table3gpp->m_sigLgZSA + table3gpp->m_uLgZSA);
+        lsps.DS = pow(10, lsp[1] * table3gpp->m_sigLgDS + table3gpp->m_uLgDS);
+        lsps.ASD = pow(10, lsp[2] * table3gpp->m_sigLgASD + table3gpp->m_uLgASD);
+        lsps.ASA = pow(10, lsp[3] * table3gpp->m_sigLgASA + table3gpp->m_uLgASA);
+        lsps.ZSD = pow(10, lsp[4] * table3gpp->m_sigLgZSD + table3gpp->m_uLgZSD);
+        lsps.ZSA = pow(10, lsp[5] * table3gpp->m_sigLgZSA + table3gpp->m_uLgZSA);
     }
-    ASD = std::min(ASD, 104.0);
-    ASA = std::min(ASA, 104.0);
-    ZSD = std::min(ZSD, 52.0);
-    ZSA = std::min(ZSA, 52.0);
-
-    LargeScaleParameters lsps;
-    lsps.DS = DS;
-    lsps.ASD = ASD;
-    lsps.ASA = ASA;
-    lsps.ZSD = ZSD;
-    lsps.ZSA = ZSA;
-    lsps.kFactor = kFactor;
-
-    NS_LOG_INFO(
-        "K-factor=" << lsps.kFactor << ", DS=" << lsps.DS << ", ASD=" << lsps.ASD << ", ASA=" <<
-        lsps.ASA << ", ZSD=" << lsps.ZSD << ", ZSA=" << lsps.ZSA);
+    lsps.ASD = std::min(lsps.ASD, 104.0);
+    lsps.ASA = std::min(lsps.ASA, 104.0);
+    lsps.ZSD = std::min(lsps.ZSD, 52.0);
+    lsps.ZSA = std::min(lsps.ZSA, 52.0);
+    NS_LOG_INFO("K-factor=" << lsps.kFactor << ", DS=" << lsps.DS << ", ASD=" << lsps.ASD
+                            << ", ASA=" << lsps.ASA << ", ZSD=" << lsps.ZSD
+                            << ", ZSA=" << lsps.ZSA);
     return lsps;
 }
 
@@ -2733,8 +2747,7 @@ ThreeGppChannelModel::GenerateClusterPowers(const DoubleVector& clusterDelays,
     for (uint8_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
     {
         double power =
-            exp(-1 * clusterDelays[cIndex] * (table3gpp->m_rTau - 1) / table3gpp->m_rTau / DS)
-            *
+            exp(-1 * clusterDelays[cIndex] * (table3gpp->m_rTau - 1) / table3gpp->m_rTau / DS) *
             pow(10,
                 -1 * m_normalRv->GetValue() * table3gpp->m_perClusterShadowingStd / 10.0); //(7.5-5)
         powerSum += power;
@@ -2743,8 +2756,7 @@ ThreeGppChannelModel::GenerateClusterPowers(const DoubleVector& clusterDelays,
 
     for (uint8_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
     {
-        clusterPowers[cIndex] =
-            clusterPowers[cIndex] / powerSum; //(7.5-6)
+        clusterPowers[cIndex] = clusterPowers[cIndex] / powerSum; //(7.5-6)
     }
     return clusterPowers;
 }
@@ -2770,8 +2782,7 @@ ThreeGppChannelModel::RemoveClusters(DoubleVector* clusterPowers,
         {
             if (cIndex == 0)
             {
-                clusterPowersForAngles.push_back((*clusterPowers)[cIndex] /
-                                                 (1 + kLinear) +
+                clusterPowersForAngles.push_back((*clusterPowers)[cIndex] / (1 + kLinear) +
                                                  kLinear / (1 + kLinear)); //(7.5-8)
             }
             else
@@ -2812,113 +2823,61 @@ ThreeGppChannelModel::RemoveClusters(DoubleVector* clusterPowers,
     return clusterPowersForAngles;
 }
 
-std::pair<double, double>
-ThreeGppChannelModel::CalculateCphiCtheta(ChannelCondition::LosConditionValue losCondition,
-                                          const Ptr<const ParamsTable> table3gpp,
-                                          double kFactor) const
+void
+ThreeGppChannelModel::AdjustClusterDelaysForLosCondition(DoubleVector* clusterDelays,
+                                                         uint8_t reducedClusterNumber,
+                                                         double kFactor) const
 {
     NS_LOG_FUNCTION(this);
-    double cNlos;
-    // According to table 7.5-6, only cluster number equals to 8, 10, 11, 12, 19 and 20 is valid.
-    // Not sure why the other cases are in Table 7.5-2.
-    // Added case 2 and 3 for the NTN according to table 6.7.2-1aa (28.811)
-    switch (table3gpp->m_numOfCluster) // Table 7.5-2
+    const double cTau = 0.7705 - 0.0433 * kFactor + 2e-4 * pow(kFactor, 2) +
+                        17e-6 * pow(kFactor,
+                                    3); //(7.5-3)
+    for (uint8_t cIndex = 0; cIndex < reducedClusterNumber; cIndex++)
     {
-    case 2:
-        cNlos = 0.501;
-        break;
-    case 3:
-        cNlos = 0.680;
-        break;
-    case 4:
-        cNlos = 0.779;
-        break;
-    case 5:
-        cNlos = 0.860;
-        break;
-    case 8:
-        cNlos = 1.018;
-        break;
-    case 10:
-        cNlos = 1.090;
-        break;
-    case 11:
-        cNlos = 1.123;
-        break;
-    case 12:
-        cNlos = 1.146;
-        break;
-    case 14:
-        cNlos = 1.190;
-        break;
-    case 15:
-        cNlos = 1.221;
-        break;
-    case 16:
-        cNlos = 1.226;
-        break;
-    case 19:
-        cNlos = 1.273;
-        break;
-    case 20:
-        cNlos = 1.289;
-        break;
-    default:
-        NS_FATAL_ERROR("Invalid cluster number");
+        (*clusterDelays)[cIndex] = (*clusterDelays)[cIndex] / cTau; //(7.5-4)
     }
+}
 
-    double cPhi = cNlos;
-
-    if (losCondition == ChannelCondition::LOS)
+double
+ThreeGppChannelModel::CalculateCphi(ChannelCondition::LosConditionValue losCondition,
+                                    const Ptr<const ParamsTable> table3gpp,
+                                    double kFactor)
+{
+    try
     {
-        cPhi *= (1.1035 - 0.028 * kFactor - 2e-3 * pow(kFactor, 2) +
-                 1e-4 * pow(kFactor, 3)); //(7.5-10))
+        double cPhi = cNlosTablePhi.at(table3gpp->m_numOfCluster);
+        if (losCondition == ChannelCondition::LOS)
+        {
+            cPhi *= (1.1035 - 0.028 * kFactor - 2e-3 * pow(kFactor, 2) +
+                     1e-4 * pow(kFactor, 3)); // (7.5-10)
+        }
+        return cPhi;
     }
-
-    // Added case 2, 3 and 4 for the NTN according to table 6.7.2-1ab (28.811)
-    switch (table3gpp->m_numOfCluster) // Table 7.5-4
+    catch (const std::out_of_range&)
     {
-    case 2:
-        cNlos = 0.430;
-        break;
-    case 3:
-        cNlos = 0.594;
-        break;
-    case 4:
-        cNlos = 0.697;
-        break;
-    case 8:
-        cNlos = 0.889;
-        break;
-    case 10:
-        cNlos = 0.957;
-        break;
-    case 11:
-        cNlos = 1.031;
-        break;
-    case 12:
-        cNlos = 1.104;
-        break;
-    case 15:
-        cNlos = 1.1088;
-        break;
-    case 19:
-        cNlos = 1.184;
-        break;
-    case 20:
-        cNlos = 1.178;
-        break;
-    default:
-        NS_FATAL_ERROR("Invalid cluster number");
+        NS_FATAL_ERROR("Invalid cluster number in cNlosTablePhi");
     }
+}
 
-    double cTheta = cNlos;
-    if (losCondition == ChannelCondition::LOS)
+double
+ThreeGppChannelModel::CalculateCtheta(ChannelCondition::LosConditionValue losCondition,
+                                      const Ptr<const ParamsTable> table3gpp,
+                                      double kFactor)
+{
+    try
     {
-        cTheta *= (1.3086 + 0.0339 * kFactor - 0.0077 * pow(kFactor, 2) +
-                   2e-4 * pow(kFactor, 3)); //(7.5-15)
+        double cTheta = cNlosTableTheta.at(table3gpp->m_numOfCluster);
+        if (losCondition == ChannelCondition::LOS)
+        {
+            cTheta *= (1.3086 + 0.0339 * kFactor - 0.0077 * pow(kFactor, 2) +
+                       2e-4 * pow(kFactor, 3)); // (7.5-15)
+        }
+        return cTheta;
     }
-    return std::pair<double, double>(cPhi, cTheta);
+    catch (const std::out_of_range&)
+    {
+        NS_FATAL_ERROR("Invalid cluster number in cNlosTableTheta");
+    }
 }
 
 void
@@ -2960,12 +2919,11 @@ ThreeGppChannelModel::GenerateArrivalDepartureAngles(
         {
             Xn = -1;
         }
-        (*clusterAoa)[cIndex] = (*clusterAoa)[cIndex] * Xn + (
-                                    m_normalRv->GetValue() * lsps.ASA / 7.0)
-                                +
+        (*clusterAoa)[cIndex] = (*clusterAoa)[cIndex] * Xn +
+                                (m_normalRv->GetValue() * lsps.ASA / 7.0) +
                                 RadiansToDegrees(uAngle.GetAzimuth()); //(7.5-11)
-        (*clusterAod)[cIndex] = (*clusterAod)[cIndex] * Xn + (
-                                    m_normalRv->GetValue() * lsps.ASD / 7.0) +
+        (*clusterAod)[cIndex] = (*clusterAod)[cIndex] * Xn +
+                                (m_normalRv->GetValue() * lsps.ASD / 7.0) +
                                 RadiansToDegrees(sAngle.GetAzimuth());
         if (channelParams->m_o2iCondition == ChannelCondition::O2I)
         {
@@ -2975,15 +2933,13 @@ ThreeGppChannelModel::GenerateArrivalDepartureAngles(
         }
         else
         {
-            (*clusterZoa)[cIndex] = (*clusterZoa)[cIndex] * Xn + (
-                                        m_normalRv->GetValue() * lsps.ZSA / 7.0)
-                                    +
+            (*clusterZoa)[cIndex] = (*clusterZoa)[cIndex] * Xn +
+                                    (m_normalRv->GetValue() * lsps.ZSA / 7.0) +
                                     RadiansToDegrees(uAngle.GetInclination()); //(7.5-16)
         }
-        (*clusterZod)[cIndex] = (*clusterZod)[cIndex] * Xn + (
-                                    m_normalRv->GetValue() * lsps.ZSD / 7.0) +
-                                RadiansToDegrees(sAngle.GetInclination()) +
-                                table3gpp->m_offsetZOD; //(7.5-19)
+        (*clusterZod)[cIndex] =
+            (*clusterZod)[cIndex] * Xn + (m_normalRv->GetValue() * lsps.ZSD / 7.0) +
+            RadiansToDegrees(sAngle.GetInclination()) + table3gpp->m_offsetZOD; //(7.5-19)
     }
 
     if (channelParams->m_losCondition == ChannelCondition::LOS)
@@ -3107,7 +3063,7 @@ ThreeGppChannelModel::RandomRaysCoupling(const Ptr<const ThreeGppChannelParams> 
             std::tie((*rayAoaRadian)[nInd][mInd], (*rayZoaRadian)[nInd][mInd]) =
                 WrapAngles(DegreesToRadians(tempAoa), DegreesToRadians(tempZoa));
 
-            double tempAod = clusterAod[nInd] + table3gpp->m_cASD * offSetAlpha[mInd]; //(7.5-13)
+            double tempAod = clusterAod[nInd] + table3gpp->m_cASD * offSetAlpha[mInd];    //(7.5-13)
             double tempZod = clusterZod[nInd] + 0.375 * pow10_uLgZSD * offSetAlpha[mInd]; //(7.5-20)
             std::tie((*rayAodRadian)[nInd][mInd], (*rayZodRadian)[nInd][mInd]) =
                 WrapAngles(DegreesToRadians(tempAod), DegreesToRadians(tempZod));
@@ -3132,7 +3088,7 @@ ThreeGppChannelModel::GenerateCrossPolPowerRatiosAndInitialPhases(
 {
     // vector containing the cross polarization power ratios, as defined by 7.5-21
     // rayAoaRadian[n][m], where n is cluster index, m is ray index
-    const double uXprLinear = pow(10, table3gpp->m_uXpr / 10.0); // convert to linear
+    const double uXprLinear = pow(10, table3gpp->m_uXpr / 10.0);     // convert to linear
     const double sigXprLinear = pow(10, table3gpp->m_sigXpr / 10.0); // convert to linear
 
     // store the PHI values for all the possible combination of polarization
@@ -3191,7 +3147,7 @@ ThreeGppChannelModel::FindStrongestClusters(const Ptr<const ThreeGppChannelParam
     }
 
     NS_LOG_INFO("1st strongest cluster:" << +cluster1st
-        << ", 2nd strongest cluster:" << +cluster2nd);
+                                         << ", 2nd strongest cluster:" << +cluster2nd);
 
     // store the delays and the angles for the subclusters
     if (cluster1st == cluster2nd)
@@ -3297,20 +3253,14 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
     // Resume step 5 to compute the delay for LoS condition.
     if (channelParams->m_losCondition == ChannelCondition::LOS)
     {
-        double cTau =
-            0.7705 - 0.0433 * lsps.kFactor + 2e-4 * pow(lsps.kFactor, 2) + 17e-6 * pow(
-                lsps.kFactor,
-                3); //(7.5-3)
-        for (uint8_t cIndex = 0; cIndex < channelParams->m_reducedClusterNumber; cIndex++)
-        {
-            clusterDelays[cIndex] = clusterDelays[cIndex] / cTau; //(7.5-4)
-        }
+        AdjustClusterDelaysForLosCondition(&clusterDelays,
+                                           channelParams->m_reducedClusterNumber,
+                                           channelParams->m_K_factor);
     }
 
     // Step 7: Generate arrival and departure angles for both azimuth and elevation.
-    auto [cPhi, cTheta] = CalculateCphiCtheta(channelParams->m_losCondition,
-                                              table3gpp,
-                                              lsps.kFactor);
+    auto cPhi = CalculateCphi(channelParams->m_losCondition, table3gpp, lsps.kFactor);
+    auto cTheta = CalculateCtheta(channelParams->m_losCondition, table3gpp, lsps.kFactor);
 
     DoubleVector clusterAoa;
     DoubleVector clusterAod;
@@ -3334,16 +3284,13 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
     // if blockage enabled, calculate, apply and store attenuation
     if (m_blockage)
     {
-        channelParams->m_attenuation_dB = CalcAttenuationOfBlockage(
-            channelParams,
-            clusterAoa,
-            clusterZoa);
+        channelParams->m_attenuation_dB =
+            CalcAttenuationOfBlockage(channelParams, clusterAoa, clusterZoa);
         for (uint8_t cInd = 0; cInd < channelParams->m_reducedClusterNumber; cInd++)
         {
             channelParams->m_clusterPowers[cInd] =
-                channelParams->m_clusterPowers[cInd] / pow(10,
-                                                           channelParams->m_attenuation_dB[cInd] /
-                                                           10.0);
+                channelParams->m_clusterPowers[cInd] /
+                pow(10, channelParams->m_attenuation_dB[cInd] / 10.0);
         }
     }
     else
@@ -3362,8 +3309,7 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
                        clusterAoa,
                        clusterAod,
                        clusterZoa,
-                       clusterZod
-        );
+                       clusterZod);
 
     // Step 9: Generate the cross polarization power ratios
     // Step 10: Draw initial phases
@@ -4180,7 +4126,7 @@ ThreeGppChannelModel::GetUpdatedChannel(uint32_t channelId,
             double sigXprLinear = pow(10, table3gpp->m_sigXpr / 10); // convert to linear
 
             temp.push_back(std::pow(10, (m_normalRv->GetValue() * sigXprLinear + uXprLinear) / 10));
-            DoubleVector temp3; // used to store the PHI valuse
+            DoubleVector temp3; // used to store the PHI values
             for (uint8_t pInd = 0; pInd < 4; pInd++)
             {
                 temp3.push_back(m_uniformRv->GetValue(-1 * M_PI, M_PI));

@@ -181,7 +181,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         Vector m_speed;                     //!< velocity
         double m_dis2D;                     //!< 2D distance between tx and rx
         double m_dis3D;                     //!< 3D distance between tx and rx
-        DoubleVector m_clusterPowers; //!< cluster powers
+        DoubleVector m_clusterPowers;       //!< cluster powers
         DoubleVector m_attenuation_dB;      //!< vector that stores the attenuation of the blockage
         uint8_t m_cluster1st;               //!< index of the first strongest cluster
         uint8_t m_cluster2nd;               //!< index of the second strongest cluster
@@ -274,7 +274,6 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         const Ptr<const MobilityModel> aMob,
         const Ptr<const MobilityModel> bMob) const;
 
-
     struct LargeScaleParameters
     {
         // NOTE the shadowing is generated in the propagation loss model
@@ -293,38 +292,118 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                                        const Ptr<const ParamsTable> table3gpp,
                                        double* minTau) const;
 
-    MatrixBasedChannelModel::DoubleVector GenerateClusterPowers(const DoubleVector& clusterDelays,
-                                                                const double DS,
-                                                                const Ptr<const ParamsTable>
-                                                                table3gpp) const;
+    MatrixBasedChannelModel::DoubleVector GenerateClusterPowers(
+        const DoubleVector& clusterDelays,
+        const double DS,
+        const Ptr<const ParamsTable> table3gpp) const;
 
-    MatrixBasedChannelModel::DoubleVector RemoveClusters(DoubleVector* clusterPowers,
-                                                         DoubleVector* clusterDelays,
-                                                         ChannelCondition::LosConditionValue
-                                                         losCondition,
-                                                         const Ptr<const ParamsTable> table3gpp,
-                                                         double kFactor,
-                                                         double* powerMax) const;
-
-    std::pair<double, double> CalculateCphiCtheta(ChannelCondition::LosConditionValue losCondition,
-                                                  const Ptr<const ParamsTable> table3gpp,
-                                                  double kFactor) const;
-
-    void GenerateArrivalDepartureAngles(
-        const Ptr<const ThreeGppChannelParams> channelParams,
-        const DoubleVector& clusterPowerForAngles,
-        double powerMax,
-        double cPhi,
-        double cTheta,
-        LargeScaleParameters& lsps,
-        const Ptr<const MobilityModel> aMob,
-        const Ptr<const MobilityModel> bMob,
+    MatrixBasedChannelModel::DoubleVector RemoveClusters(
+        DoubleVector* clusterPowers,
+        DoubleVector* clusterDelays,
+        ChannelCondition::LosConditionValue losCondition,
         const Ptr<const ParamsTable> table3gpp,
-        DoubleVector* clusterAoa,
-        DoubleVector* clusterAod,
-        DoubleVector* clusterZoa,
-        DoubleVector* clusterZod) const;
+        double kFactor,
+        double* powerMax) const;
 
+    /**
+    * @brief Adjusts cluster delays for LOS channel condition based on the K-factor.
+    *
+    * This function scales the initial NLOS cluster delays to reflect LOS conditions
+    * as described in 3GPP TR 38.901. The delays are normalized using a correction
+    * factor `cTau` that depends on the Rician K-factor, as defined in Table 7.5-3.
+    *
+    * The formula used to compute `cTau` is:
+    * \f[
+    * c_{\tau} = 0.7705 - 0.0433K + 0.0002K^2 + 0.000017K^3
+    * \f]
+    *
+    * Each cluster delay \f$\tau_i\f$ is then scaled by:
+    * \f[
+    * \tau_i^{\text{LOS}} = \frac{\tau_i^{\text{NLOS}}}{c_{\tau}}
+    * \f]
+    * (see Equation 7.5-4)
+    *
+    * @param clusterDelays Pointer to a vector of initial (NLOS) cluster delays, which will be
+    updated in place.
+    * @param reducedClusterNumber The number of clusters to be considered (can be < total clusters).
+    * @param kFactor The Rician K-factor, used to adjust the delay scaling factor `cTau`.
+    *
+    * @note This function modifies the input `clusterDelays` vector directly.
+    *
+    * @throw No exceptions are thrown, but invalid inputs (e.g., null pointer) may result in
+    undefined behavior.
+    s*/
+    void AdjustClusterDelaysForLosCondition(DoubleVector* clusterDelays,
+                                            uint8_t reducedClusterNumber,
+                                            double kFactor) const;
+
+    /**
+     * @brief Calculates the cPhi parameter for azimuth angular spread modeling.
+     *
+     * This function computes the `cPhi` coefficient used to model the azimuth
+     * angular spread (ASA or ASD) for a given channel condition and cluster configuration.
+     *
+     * - In NLOS conditions, the value is taken directly from the `cNlosTablePhi`.
+     * - In LOS conditions, the NLOS value is adjusted using a polynomial function
+     *   of the Rician K-factor, as defined in Table 7.5-10 of 3GPP TR 38.901.
+     *
+     * The formula applied under LOS is:
+     * \f[
+     * c_{\phi,\text{LOS}} = c_{\phi,\text{NLOS}} \cdot (1.1035 - 0.028K - 0.002K^2 + 0.0001K^3)
+     * \f]
+     *
+     * @param losCondition Indicates whether the channel is LOS or NLOS.
+     * @param table3gpp Pointer to the table containing the number of clusters.
+     * @param kFactor The Rician K-factor, used to scale cPhi in LOS conditions.
+     *
+     * @return The computed cPhi value.
+     *
+     * @throw NS_FATAL_ERROR if the number of clusters is invalid or not found in the lookup table.
+     */
+    static double CalculateCphi(ChannelCondition::LosConditionValue losCondition,
+                                const Ptr<const ParamsTable> table3gpp,
+                                double kFactor);
+
+    /**
+     * @brief Calculates the cTheta parameter for zenith angular spread modeling.
+     *
+     * This function computes the `cTheta` coefficient used to model the zenith
+     * angular spread (ZSA or ZSD) for a given channel condition and cluster configuration.
+     *
+     * - In NLOS conditions, the value is taken directly from the `cNlosTableTheta`.
+     * - In LOS conditions, the NLOS value is adjusted using a polynomial function
+     *   of the Rician K-factor, as defined in Table 7.5-15 of 3GPP TR 38.901.
+     *
+     * The formula applied under LOS is:
+     * \f[
+     * c_{\theta,\text{LOS}} = c_{\theta,\text{NLOS}} \cdot (1.3086 + 0.0339K - 0.0077K^2 +
+     * 0.0002K^3) \f]
+     *
+     * @param losCondition Indicates whether the channel is LOS or NLOS.
+     * @param table3gpp Pointer to the table containing the number of clusters.
+     * @param kFactor The Rician K-factor, used to scale cTheta in LOS conditions.
+     *
+     * @return The computed cTheta value.
+     *
+     * @throw NS_FATAL_ERROR if the number of clusters is invalid or not found in the lookup table.
+     */
+    static double CalculateCtheta(ChannelCondition::LosConditionValue losCondition,
+                                  const Ptr<const ParamsTable> table3gpp,
+                                  double kFactor);
+
+    void GenerateArrivalDepartureAngles(const Ptr<const ThreeGppChannelParams> channelParams,
+                                        const DoubleVector& clusterPowerForAngles,
+                                        double powerMax,
+                                        double cPhi,
+                                        double cTheta,
+                                        LargeScaleParameters& lsps,
+                                        const Ptr<const MobilityModel> aMob,
+                                        const Ptr<const MobilityModel> bMob,
+                                        const Ptr<const ParamsTable> table3gpp,
+                                        DoubleVector* clusterAoa,
+                                        DoubleVector* clusterAod,
+                                        DoubleVector* clusterZoa,
+                                        DoubleVector* clusterZod) const;
 
     void RandomRaysCoupling(const Ptr<const ThreeGppChannelParams> channelParams,
                             const Ptr<const ParamsTable> table3gpp,
@@ -341,7 +420,6 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                                                      Double3DVector* clusterPhase,
                                                      uint8_t reducedClusterNumber,
                                                      const Ptr<const ParamsTable> table3gpp) const;
-
 
     void FindStrongestClusters(const Ptr<const ThreeGppChannelParams> channelParams,
                                const Ptr<const ParamsTable> table3gpp,
