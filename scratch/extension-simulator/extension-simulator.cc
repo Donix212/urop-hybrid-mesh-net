@@ -8,9 +8,9 @@
 using namespace ns3;
 
 int main(int argc, char *argv[]) {
-    uint32_t u_radialNodes = 12;
+    uint32_t u_radialNodes = 128;
     uint32_t u_centralNodes = 1;
-    uint32_t u_clusters = 2;
+    uint32_t u_clusters = 8;
 
     // Basic Setup
     NodeContainer centralNodes;
@@ -28,7 +28,21 @@ int main(int argc, char *argv[]) {
     p2p.SetChannelAttribute("Delay", StringValue("2ms"));
 
     Ipv4AddressHelper ipv4;
-    uint32_t subnetCounter = 1;
+
+    // Subnet management
+    uint32_t subnetX = 1;
+    uint32_t subnetY = 0;
+
+    auto allocateSubnet = [&]() {
+        std::ostringstream subnet;
+        subnet << "10." << subnetX << "." << subnetY << ".0";
+        subnetY++;
+        if (subnetY > 254) {
+            subnetY = 0;
+            subnetX++;
+        }
+        return subnet.str();
+    };
 
     // Create all radial nodes
     NodeContainer allRadialNodes;
@@ -51,7 +65,7 @@ int main(int argc, char *argv[]) {
     std::vector<std::pair<Ptr<Node>, std::vector<Ptr<Node>>>> clusters;
 
     for (uint32_t i = 0; i < u_clusters; ++i) {
-        Ptr<Node> central = centralNodes.Get(0); // only 1 central node for now
+        Ptr<Node> central = centralNodes.Get(0); // single central node
 
         std::vector<Ptr<Node>> clusterRadials;
         NodeContainer cluster;
@@ -61,7 +75,7 @@ int main(int argc, char *argv[]) {
             clusterRadials.push_back(radial);
         }
 
-        // Full mesh in cluster
+        // Full mesh in cluster (CSMA links)
         for (uint32_t m1 = 0; m1 < cluster.GetN(); ++m1) {
             for (uint32_t m2 = m1 + 1; m2 < cluster.GetN(); ++m2) {
                 NodeContainer pair;
@@ -69,9 +83,8 @@ int main(int argc, char *argv[]) {
                 pair.Add(cluster.Get(m2));
                 NetDeviceContainer devices = csma.Install(pair);
 
-                std::ostringstream subnet;
-                subnet << "10.1." << subnetCounter++ << ".0";
-                ipv4.SetBase(subnet.str().c_str(), "255.255.255.0");
+                std::string subnetBase = allocateSubnet();
+                ipv4.SetBase(subnetBase.c_str(), "255.255.255.0");
                 Ipv4InterfaceContainer ifc = ipv4.Assign(devices);
 
                 storeIfNew(pair.Get(0), ifc.GetAddress(0));
@@ -79,16 +92,15 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // Connect gateway to central node
+        // Connect gateway radial node to central node (P2P link)
         Ptr<Node> gateway = cluster.Get(0);
         NodeContainer gwPair;
         gwPair.Add(gateway);
         gwPair.Add(central);
         NetDeviceContainer gwDevs = p2p.Install(gwPair);
 
-        std::ostringstream subnet;
-        subnet << "10.2." << subnetCounter++ << ".0";
-        ipv4.SetBase(subnet.str().c_str(), "255.255.255.0");
+        std::string gwSubnet = allocateSubnet();
+        ipv4.SetBase(gwSubnet.c_str(), "255.255.255.0");
         Ipv4InterfaceContainer gwIfc = ipv4.Assign(gwDevs);
 
         storeIfNew(gwPair.Get(0), gwIfc.GetAddress(0));
@@ -112,7 +124,7 @@ int main(int argc, char *argv[]) {
         std::cout << "\n";
     }
 
-    // === Print Unique IPs ===
+    // === Print Unique Node IPs ===
     std::cout << "\n=== Unique Node IPs ===\n";
     uint32_t idx = 0;
     for (const auto &[node, ip] : nodeToFirstIp) {
