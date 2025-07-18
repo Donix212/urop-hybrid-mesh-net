@@ -12,7 +12,6 @@ int main(int argc, char *argv[]) {
     uint32_t u_centralNodes = 1;
     uint32_t u_clusters = 8;
 
-    // Basic Setup
     NodeContainer centralNodes;
     centralNodes.Create(u_centralNodes);
 
@@ -29,7 +28,6 @@ int main(int argc, char *argv[]) {
 
     Ipv4AddressHelper ipv4;
 
-    // Subnet management
     uint32_t subnetX = 1;
     uint32_t subnetY = 0;
 
@@ -44,7 +42,20 @@ int main(int argc, char *argv[]) {
         return subnet.str();
     };
 
-    // Create all radial nodes
+    // Mesh network between central nodes
+    for (uint32_t i = 0; i < u_centralNodes; ++i) {
+        for (uint32_t j = i + 1; j < u_centralNodes; ++j) {
+            NodeContainer pair;
+            pair.Add(centralNodes.Get(i));
+            pair.Add(centralNodes.Get(j));
+            NetDeviceContainer devices = p2p.Install(pair);
+
+            std::string subnetBase = allocateSubnet();
+            ipv4.SetBase(subnetBase.c_str(), "255.255.255.0");
+            ipv4.Assign(devices);
+        }
+    }
+
     NodeContainer allRadialNodes;
     allRadialNodes.Create(u_radialNodes);
     internet.Install(allRadialNodes);
@@ -54,18 +65,16 @@ int main(int argc, char *argv[]) {
 
     std::map<Ptr<Node>, Ipv4Address> nodeToFirstIp;
 
-    // Helper: record only first IP assigned per node
     auto storeIfNew = [&](Ptr<Node> node, Ipv4Address ip) {
         if (nodeToFirstIp.find(node) == nodeToFirstIp.end()) {
             nodeToFirstIp[node] = ip;
         }
     };
 
-    // Store each cluster as (central, radial list)
     std::vector<std::pair<Ptr<Node>, std::vector<Ptr<Node>>>> clusters;
 
     for (uint32_t i = 0; i < u_clusters; ++i) {
-        Ptr<Node> central = centralNodes.Get(0); // single central node
+        Ptr<Node> central = centralNodes.Get(i % u_centralNodes);
 
         std::vector<Ptr<Node>> clusterRadials;
         NodeContainer cluster;
@@ -75,7 +84,6 @@ int main(int argc, char *argv[]) {
             clusterRadials.push_back(radial);
         }
 
-        // Full mesh in cluster (CSMA links)
         for (uint32_t m1 = 0; m1 < cluster.GetN(); ++m1) {
             for (uint32_t m2 = m1 + 1; m2 < cluster.GetN(); ++m2) {
                 NodeContainer pair;
@@ -92,7 +100,6 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // Connect gateway radial node to central node (P2P link)
         Ptr<Node> gateway = cluster.Get(0);
         NodeContainer gwPair;
         gwPair.Add(gateway);
@@ -111,8 +118,7 @@ int main(int argc, char *argv[]) {
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
-    // === Print Cluster Topology ===
-    std::cout << "\n=== Clustered Ring Topology ===\n";
+    std::cout << "\n=== Clustered Mesh Topology ===\n";
     uint32_t clusterId = 0;
     for (auto &[central, radials] : clusters) {
         std::cout << "Cluster " << clusterId++ << ":\n";
@@ -124,7 +130,6 @@ int main(int argc, char *argv[]) {
         std::cout << "\n";
     }
 
-    // === Print Unique Node IPs ===
     std::cout << "\n=== Unique Node IPs ===\n";
     uint32_t idx = 0;
     for (const auto &[node, ip] : nodeToFirstIp) {
