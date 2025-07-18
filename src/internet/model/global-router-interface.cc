@@ -10,6 +10,7 @@
 
 #include "ipv4-global-routing.h"
 #include "ipv4.h"
+#include "ipv6.h"
 #include "loopback-net-device.h"
 
 #include "ns3/abort.h"
@@ -20,7 +21,7 @@
 #include "ns3/net-device.h"
 #include "ns3/node-list.h"
 #include "ns3/node.h"
-#include "ns3/ipv6.h"
+
 #include <vector>
 
 namespace ns3
@@ -56,17 +57,34 @@ GlobalRoutingLinkRecord::~GlobalRoutingLinkRecord()
     NS_LOG_FUNCTION(this);
 }
 
-Address
-GlobalRoutingLinkRecord::GetLinkId() const
+Ipv4Address
+GlobalRoutingLinkRecord::GetLinkIdv4() const
 {
     NS_LOG_FUNCTION(this);
-    if(m_linkIdv4.has_value())
-    return m_linkIdv4.value().ConvertTo();
-    else if(m_linkIdv6.has_value())
-    return m_linkIdv6.value().ConvertTo();
-        
-    NS_LOG_DEBUG("Link Id not set, returning empty address");
-    return Address();
+    if (m_linkIdv4.has_value())
+    {
+        return m_linkIdv4.value();
+    }
+    else
+    {
+        NS_LOG_DEBUG("Link Id not set for IPv4 link, returning empty Ipv4Address");
+        return Ipv4Address();
+    }
+}
+
+Ipv6Address
+GlobalRoutingLinkRecord::GetLinkIdv6() const
+{
+    NS_LOG_FUNCTION(this);
+    if (m_linkIdv6.has_value())
+    {
+        return m_linkIdv6.value();
+    }
+    else
+    {
+        NS_LOG_DEBUG("Link Id not set for IPv4 link, returning empty Ipv4Address");
+        return Ipv6Address();
+    }
 }
 
 void
@@ -76,31 +94,55 @@ GlobalRoutingLinkRecord::SetLinkId(Ipv4Address addr)
     m_linkIdv4.emplace(addr);
 }
 
-// add the overload for ipv6 address
+void
+GlobalRoutingLinkRecord::SetLinkId(Ipv6Address addr)
+{
+    NS_LOG_FUNCTION(this << addr);
+    m_linkIdv6.emplace(addr);
+}
+
 void
 GlobalRoutingLinkRecord::SetLinkId(Address addr)
 {
     NS_LOG_FUNCTION(this << addr);
-    if(Ipv4Address::IsMatchingType(addr))
-    m_linkIdv4 = Ipv4Address::ConvertFrom(addr);
-    else if(Ipv6Address::IsMatchingType(addr))
-    m_linkIdv6 = Ipv6Address::ConvertFrom(addr);
+    if (Ipv4Address::IsMatchingType(addr))
+    {
+        m_linkIdv4 = Ipv4Address::ConvertFrom(addr);
+    }
+    else if (Ipv6Address::IsMatchingType(addr))
+    {
+        m_linkIdv6 = Ipv6Address::ConvertFrom(addr);
+    }
     else
     {
         NS_ASSERT_MSG(false, "GlobalRoutingLinkRecord::SetLinkId(): Invalid address type");
     }
 }
 
-Address
-GlobalRoutingLinkRecord::GetLinkData() const
+Ipv4Address
+GlobalRoutingLinkRecord::GetLinkDatav4() const
 {
     NS_LOG_FUNCTION(this);
-    if(m_linkDatav4.has_value())
-    return m_linkDatav4.value().ConvertTo();
-    else if(m_linkDatav6.has_value())
-    return m_linkDatav6.value().ConvertTo();
-    NS_ASSERT_MSG(false, "Link Data not set");
-    return Address();
+    if (m_linkDatav4.has_value())
+    {
+        return m_linkDatav4.value();
+    }
+
+    NS_LOG_WARN("Link Data not set for IPv4 link, returning empty Ipv4Address");
+    return Ipv4Address();
+}
+
+Ipv6Address
+GlobalRoutingLinkRecord::GetLinkDatav6() const
+{
+    NS_LOG_FUNCTION(this);
+    if (m_linkDatav6.has_value())
+    {
+        return m_linkDatav6.value();
+    }
+
+    NS_ASSERT_MSG(false, "Link Data not set for IPv6 link, returning empty Ipv6Address");
+    return Ipv6Address();
 }
 
 void
@@ -111,19 +153,29 @@ GlobalRoutingLinkRecord::SetLinkData(Ipv4Address addr)
 }
 
 void
+GlobalRoutingLinkRecord::SetLinkData(Ipv6Address addr)
+{
+    NS_LOG_FUNCTION(this << addr);
+    m_linkDatav6 = addr;
+}
+
+void
 GlobalRoutingLinkRecord::SetLinkData(Address addr)
 {
     NS_LOG_FUNCTION(this << addr);
-    if(Ipv4Address::IsMatchingType(addr))
-    m_linkDatav4 = Ipv4Address::ConvertFrom(addr);
-    else if(Ipv6Address::IsMatchingType(addr))
-    m_linkDatav6 = Ipv6Address::ConvertFrom(addr);
+    if (Ipv4Address::IsMatchingType(addr))
+    {
+        m_linkDatav4 = Ipv4Address::ConvertFrom(addr);
+    }
+    else if (Ipv6Address::IsMatchingType(addr))
+    {
+        m_linkDatav6 = Ipv6Address::ConvertFrom(addr);
+    }
     else
     {
         NS_ASSERT_MSG(false, "GlobalRoutingLinkRecord::SetLinkData(): Invalid address type");
     }
 }
-
 
 GlobalRoutingLinkRecord::LinkType
 GlobalRoutingLinkRecord::GetLinkType() const
@@ -163,7 +215,8 @@ GlobalRoutingLSA::GlobalRoutingLSA()
     : m_lsType(GlobalRoutingLSA::Unknown),
       m_linkStateId("0.0.0.0"),
       m_advertisingRtr("0.0.0.0"),
-      m_linkRecords(),
+      m_linkRecordsv4(),
+      m_linkRecordsv6(),
       m_networkLSANetworkMask("0.0.0.0"),
       m_status(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED),
       m_node_id(0)
@@ -177,7 +230,8 @@ GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA::SPFStatus status,
     : m_lsType(GlobalRoutingLSA::Unknown),
       m_linkStateId(linkStateId),
       m_advertisingRtr(advertisingRtr),
-      m_linkRecords(),
+      m_linkRecordsv4(),
+      m_linkRecordsv6(),
       m_networkLSANetworkMask("0.0.0.0"),
       m_status(status),
       m_node_id(0)
@@ -194,8 +248,12 @@ GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA& lsa)
       m_node_id(lsa.m_node_id)
 {
     NS_LOG_FUNCTION(this << &lsa);
-    NS_ASSERT_MSG(IsEmpty(), "GlobalRoutingLSA::GlobalRoutingLSA (): Non-empty LSA in constructor");
-    CopyLinkRecords(lsa);
+    if (IsEmptyv4() && IsEmptyv6())
+    {
+        NS_ASSERT("Empty LSA in constructor");
+    }
+    CopyLinkRecordsv4(lsa);
+    CopyLinkRecordsv6(lsa);
 }
 
 GlobalRoutingLSA&
@@ -209,29 +267,50 @@ GlobalRoutingLSA::operator=(const GlobalRoutingLSA& lsa)
     m_node_id = lsa.m_node_id;
 
     ClearLinkRecords();
-    CopyLinkRecords(lsa);
+    CopyLinkRecordsv4(lsa);
+    CopyLinkRecordsv6(lsa);
     return *this;
 }
 
 void
-GlobalRoutingLSA::CopyLinkRecords(const GlobalRoutingLSA& lsa)
+GlobalRoutingLSA::CopyLinkRecordsv4(const GlobalRoutingLSA& lsa)
 {
     NS_LOG_FUNCTION(this << &lsa);
-    for (auto i = lsa.m_linkRecords.begin(); i != lsa.m_linkRecords.end(); i++)
+    for (auto i = lsa.m_linkRecordsv4.begin(); i != lsa.m_linkRecordsv4.end(); i++)
     {
         GlobalRoutingLinkRecord* pSrc = *i;
         auto pDst = new GlobalRoutingLinkRecord;
 
         pDst->SetLinkType(pSrc->GetLinkType());
-        pDst->SetLinkId(pSrc->GetLinkId());
-        pDst->SetLinkData(pSrc->GetLinkData());
+        pDst->SetLinkId(pSrc->GetLinkIdv4());
+        pDst->SetLinkData(pSrc->GetLinkDatav4());
         pDst->SetMetric(pSrc->GetMetric());
 
-        m_linkRecords.push_back(pDst);
+        m_linkRecordsv4.push_back(pDst);
         pDst = nullptr;
     }
 
     m_attachedRoutersv4 = lsa.m_attachedRoutersv4;
+}
+
+void
+GlobalRoutingLSA::CopyLinkRecordsv6(const GlobalRoutingLSA& lsa)
+{
+    NS_LOG_FUNCTION(this << &lsa);
+    for (auto i = lsa.m_linkRecordsv6.begin(); i != lsa.m_linkRecordsv6.end(); i++)
+    {
+        GlobalRoutingLinkRecord* pSrc = *i;
+        auto pDst = new GlobalRoutingLinkRecord;
+
+        pDst->SetLinkType(pSrc->GetLinkType());
+        pDst->SetLinkId(pSrc->GetLinkIdv6());
+        pDst->SetLinkData(pSrc->GetLinkDatav6());
+        pDst->SetMetric(pSrc->GetMetric());
+
+        m_linkRecordsv6.push_back(pDst);
+        pDst = nullptr;
+    }
+
     m_attachedRoutersv6 = lsa.m_attachedRoutersv6;
 }
 
@@ -245,7 +324,7 @@ void
 GlobalRoutingLSA::ClearLinkRecords()
 {
     NS_LOG_FUNCTION(this);
-    for (auto i = m_linkRecords.begin(); i != m_linkRecords.end(); i++)
+    for (auto i = m_linkRecordsv4.begin(); i != m_linkRecordsv4.end(); i++)
     {
         NS_LOG_LOGIC("Free link record");
 
@@ -256,30 +335,74 @@ GlobalRoutingLSA::ClearLinkRecords()
         *i = nullptr;
     }
     NS_LOG_LOGIC("Clear list");
-    m_linkRecords.clear();
+    m_linkRecordsv4.clear();
+
+    for (auto i = m_linkRecordsv6.begin(); i != m_linkRecordsv6.end(); i++)
+    {
+        NS_LOG_LOGIC("Free link record");
+
+        GlobalRoutingLinkRecord* p = *i;
+        delete p;
+        p = nullptr;
+
+        *i = nullptr;
+    }
+    NS_LOG_LOGIC("Clear list");
+    m_linkRecordsv6.clear();
 }
 
 uint32_t
-GlobalRoutingLSA::AddLinkRecord(GlobalRoutingLinkRecord* lr)
+GlobalRoutingLSA::AddLinkRecordv4(GlobalRoutingLinkRecord* lr)
 {
     NS_LOG_FUNCTION(this << lr);
-    m_linkRecords.push_back(lr);
-    return m_linkRecords.size();
+    m_linkRecordsv4.push_back(lr);
+    return m_linkRecordsv4.size();
 }
 
 uint32_t
-GlobalRoutingLSA::GetNLinkRecords() const
+GlobalRoutingLSA::AddLinkRecordv6(GlobalRoutingLinkRecord* lr)
+{
+    NS_LOG_FUNCTION(this << lr);
+    m_linkRecordsv6.push_back(lr);
+    return m_linkRecordsv6.size();
+}
+
+uint32_t
+GlobalRoutingLSA::GetNLinkRecordsv4() const
 {
     NS_LOG_FUNCTION(this);
-    return m_linkRecords.size();
+    return m_linkRecordsv4.size();
+}
+
+uint32_t
+GlobalRoutingLSA::GetNLinkRecordsv6() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_linkRecordsv4.size();
 }
 
 GlobalRoutingLinkRecord*
-GlobalRoutingLSA::GetLinkRecord(uint32_t n) const
+GlobalRoutingLSA::GetLinkRecordv4(uint32_t n) const
 {
     NS_LOG_FUNCTION(this << n);
     uint32_t j = 0;
-    for (auto i = m_linkRecords.begin(); i != m_linkRecords.end(); i++, j++)
+    for (auto i = m_linkRecordsv4.begin(); i != m_linkRecordsv4.end(); i++, j++)
+    {
+        if (j == n)
+        {
+            return *i;
+        }
+    }
+    NS_ASSERT_MSG(false, "GlobalRoutingLSA::GetLinkRecord (): invalid index");
+    return nullptr;
+}
+
+GlobalRoutingLinkRecord*
+GlobalRoutingLSA::GetLinkRecordv6(uint32_t n) const
+{
+    NS_LOG_FUNCTION(this << n);
+    uint32_t j = 0;
+    for (auto i = m_linkRecordsv6.begin(); i != m_linkRecordsv6.end(); i++, j++)
     {
         if (j == n)
         {
@@ -291,10 +414,17 @@ GlobalRoutingLSA::GetLinkRecord(uint32_t n) const
 }
 
 bool
-GlobalRoutingLSA::IsEmpty() const
+GlobalRoutingLSA::IsEmptyv4() const
 {
     NS_LOG_FUNCTION(this);
-    return m_linkRecords.empty();
+    return m_linkRecordsv4.empty();
+}
+
+bool
+GlobalRoutingLSA::IsEmptyv6() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_linkRecordsv6.empty();
 }
 
 GlobalRoutingLSA::LSType
@@ -346,16 +476,40 @@ GlobalRoutingLSA::SetNetworkLSANetworkMask(Ipv4Mask mask)
     m_networkLSANetworkMask = mask;
 }
 
+void
+GlobalRoutingLSA::SetNetworkLSANetworkPrefix(Ipv6Prefix prefix)
+{
+    NS_LOG_FUNCTION(this << prefix);
+    m_networkLSANetworkPrefix = prefix;
+}
+
 Ipv4Mask
 GlobalRoutingLSA::GetNetworkLSANetworkMask() const
 {
     NS_LOG_FUNCTION(this);
-    if(m_networkLSANetworkMask.has_value())
-    return m_networkLSANetworkMask.value();
+    if (m_networkLSANetworkMask.has_value())
+    {
+        return m_networkLSANetworkMask.value();
+    }
     else
     {
-        NS_ASSERT_MSG(false, "NetworkLSA Network Mask not set");
-        return Ipv4Mask("0.0.0.0");
+        NS_ASSERT_MSG(false, "NetworkLSA Network Mask not set. Returning Empty Mask");
+        return Ipv4Mask();
+    }
+}
+
+Ipv6Prefix
+GlobalRoutingLSA::GetNetworkLSANetworkPrefix() const
+{
+    NS_LOG_FUNCTION(this);
+    if (m_networkLSANetworkPrefix.has_value())
+    {
+        return m_networkLSANetworkPrefix.value();
+    }
+    else
+    {
+        NS_LOG_WARN("NetworkLSA Network Prefix not set. Returning Empty prefix");
+        return Ipv6Prefix();
     }
 }
 
@@ -375,14 +529,22 @@ GlobalRoutingLSA::AddAttachedRouter(Ipv4Address addr)
 }
 
 uint32_t
-GlobalRoutingLSA::GetNAttachedRouters() const
+GlobalRoutingLSA::AddAttachedRouter(Ipv6Address addr)
+{
+    NS_LOG_FUNCTION(this << addr);
+    m_attachedRoutersv6.push_back(addr);
+    return m_attachedRoutersv6.size();
+}
+
+uint32_t
+GlobalRoutingLSA::GetNAttachedRoutersv4() const
 {
     NS_LOG_FUNCTION(this);
     return m_attachedRoutersv4.size();
 }
 
-Address
-GlobalRoutingLSA::GetAttachedRouter(uint32_t n) const
+Ipv4Address
+GlobalRoutingLSA::GetAttachedRouterv4(uint32_t n) const
 {
     NS_LOG_FUNCTION(this << n);
     uint32_t j = 0;
@@ -395,6 +557,22 @@ GlobalRoutingLSA::GetAttachedRouter(uint32_t n) const
     }
     NS_ASSERT_MSG(false, "GlobalRoutingLSA::GetAttachedRouter (): invalid index");
     return Ipv4Address("0.0.0.0");
+}
+
+Ipv6Address
+GlobalRoutingLSA::GetAttachedRouterv6(uint32_t n) const
+{
+    NS_LOG_FUNCTION(this << n);
+    uint32_t j = 0;
+    for (auto i = m_attachedRoutersv6.begin(); i != m_attachedRoutersv6.end(); i++, j++)
+    {
+        if (j == n)
+        {
+            return *i;
+        }
+    }
+    NS_ASSERT_MSG(false, "GlobalRoutingLSA::GetAttachedRouter (): invalid index");
+    return Ipv6Address();
 }
 
 void
@@ -448,11 +626,11 @@ GlobalRoutingLSA::Print(std::ostream& os) const
 
     if (m_lsType == GlobalRoutingLSA::RouterLSA)
     {
-        for (auto i = m_linkRecords.begin(); i != m_linkRecords.end(); i++)
+        for (auto i = m_linkRecordsv4.begin(); i != m_linkRecordsv4.end(); i++)
         {
             GlobalRoutingLinkRecord* p = *i;
 
-            os << "---------- RouterLSA Link Record ----------" << std::endl;
+            os << "---------- RouterLSA Link Record Ipv4----------" << std::endl;
             os << "m_linkType = " << p->m_linkType;
             if (p->m_linkType == GlobalRoutingLinkRecord::PointToPoint)
             {
@@ -473,10 +651,10 @@ GlobalRoutingLSA::Print(std::ostream& os) const
             else if (p->m_linkType == GlobalRoutingLinkRecord::StubNetwork)
             {
                 os << " (GlobalRoutingLinkRecord::StubNetwork)" << std::endl;
-                os << "m_linkId = " << p->m_linkIdv4.value() << " (Network number of attached network)"
-                   << std::endl;
-                os << "m_linkData = " << p->m_linkDatav4.value() << " (Network mask of attached network)"
-                   << std::endl;
+                os << "m_linkId = " << p->m_linkIdv4.value()
+                   << " (Network number of attached network)" << std::endl;
+                os << "m_linkData = " << p->m_linkDatav4.value()
+                   << " (Network mask of attached network)" << std::endl;
                 os << "m_metric = " << p->m_metric << std::endl;
             }
             else
@@ -488,14 +666,68 @@ GlobalRoutingLSA::Print(std::ostream& os) const
             }
             os << "---------- End RouterLSA Link Record ----------" << std::endl;
         }
+
+        for (auto i = m_linkRecordsv6.begin(); i != m_linkRecordsv6.end(); i++)
+        {
+            GlobalRoutingLinkRecord* p = *i;
+
+            os << "---------- RouterLSA Link Record Ipv6----------" << std::endl;
+            os << "m_linkType = " << p->m_linkType;
+            if (p->m_linkType == GlobalRoutingLinkRecord::PointToPoint)
+            {
+                os << " (GlobalRoutingLinkRecord::PointToPoint)" << std::endl;
+                os << "m_linkId = " << p->m_linkIdv6.value() << std::endl;
+                os << "m_linkData = " << p->m_linkDatav6.value() << std::endl;
+                os << "m_metric = " << p->m_metric << std::endl;
+            }
+            else if (p->m_linkType == GlobalRoutingLinkRecord::TransitNetwork)
+            {
+                os << " (GlobalRoutingLinkRecord::TransitNetwork)" << std::endl;
+                os << "m_linkId = " << p->m_linkIdv6.value() << " (Designated router for network)"
+                   << std::endl;
+                os << "m_linkData = " << p->m_linkDatav6.value() << " (This router's IP address)"
+                   << std::endl;
+                os << "m_metric = " << p->m_metric << std::endl;
+            }
+            else if (p->m_linkType == GlobalRoutingLinkRecord::StubNetwork)
+            {
+                os << " (GlobalRoutingLinkRecord::StubNetwork)" << std::endl;
+                os << "m_linkId = " << p->m_linkIdv6.value()
+                   << " (Network number of attached network)" << std::endl;
+                os << "m_linkData = " << p->m_linkDatav6.value()
+                   << " (Network mask of attached network)" << std::endl;
+                os << "m_metric = " << p->m_metric << std::endl;
+            }
+            else
+            {
+                os << " (Unknown LinkType)" << std::endl;
+                os << "m_linkId = " << p->m_linkIdv6.value() << std::endl;
+                os << "m_linkData = " << p->m_linkDatav6.value() << std::endl;
+                os << "m_metric = " << p->m_metric << std::endl;
+            }
+            os << "---------- End RouterLSA Link Record ----------" << std::endl;
+        }
     }
     else if (m_lsType == GlobalRoutingLSA::NetworkLSA)
     {
-        os << "---------- NetworkLSA Link Record ----------" << std::endl;
-        os << "m_networkLSANetworkMask = " << m_networkLSANetworkMask.value() << std::endl;
+        os << "---------- NetworkLSA Link Record Ipv4 ----------" << std::endl;
+        if (m_networkLSANetworkMask.has_value())
+        {
+            os << "m_networkLSANetworkMask = " << m_networkLSANetworkMask.value() << std::endl;
+        }
         for (auto i = m_attachedRoutersv4.begin(); i != m_attachedRoutersv4.end(); i++)
         {
             Ipv4Address p = *i;
+            os << "attachedRouter = " << p << std::endl;
+        }
+        os << "---------- NetworkLSA Link Record Ipv6 ----------" << std::endl;
+        if (m_networkLSANetworkPrefix.has_value())
+        {
+            os << "m_networkLSANetworkPrefix = " << m_networkLSANetworkPrefix.value() << std::endl;
+        }
+        for (auto i = m_attachedRoutersv6.begin(); i != m_attachedRoutersv6.end(); i++)
+        {
+            Ipv6Address p = *i;
             os << "attachedRouter = " << p << std::endl;
         }
         os << "---------- End NetworkLSA Link Record ----------" << std::endl;
@@ -504,7 +736,14 @@ GlobalRoutingLSA::Print(std::ostream& os) const
     {
         os << "---------- ASExternalLSA Link Record --------" << std::endl;
         os << "m_linkStateId = " << m_linkStateId << std::endl;
-        os << "m_networkLSANetworkMask = " << m_networkLSANetworkMask.value() << std::endl;
+        if (m_networkLSANetworkMask.has_value())
+        {
+            os << "m_networkLSANetworkMask = " << m_networkLSANetworkMask.value() << std::endl;
+        }
+        else if (m_networkLSANetworkPrefix.has_value())
+        {
+            os << "m_networkLSANetworkPrefix = " << m_networkLSANetworkPrefix.value() << std::endl;
+        }
     }
     else
     {
@@ -1534,14 +1773,13 @@ GlobalRouter::FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const
 
                 NS_LOG_LOGIC("Recursively looking for routers down bridge port " << ndBridged);
                 Address addrOther = FindDesignatedRouterForLink(ndBridged);
-                if(Ipv4Address::IsMatchingType(addrOther))
+                if (Ipv4Address::IsMatchingType(addrOther))
                 {
                     Ipv4Address addrOtherv4 = Ipv4Address::ConvertFrom(addrOther);
                     designatedRtr = addrOtherv4 < designatedRtr ? addrOtherv4 : designatedRtr;
-                NS_LOG_LOGIC("designated router now " << designatedRtr);
-
+                    NS_LOG_LOGIC("designated router now " << designatedRtr);
                 }
-                else if(Ipv6Address::IsMatchingType(addrOther))
+                else if (Ipv6Address::IsMatchingType(addrOther))
                 {
                     // add logic for ipv6 here
                 }
