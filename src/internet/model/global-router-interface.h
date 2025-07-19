@@ -12,6 +12,7 @@
 
 #include "global-route-manager.h"
 #include "ipv4-routing-table-entry.h"
+#include "ipv6-routing-table-entry.h"
 
 #include "ns3/bridge-net-device.h"
 #include "ns3/channel.h"
@@ -527,6 +528,20 @@ class GlobalRoutingLSA
     Ipv4Address GetLinkStateId() const;
 
     /**
+     *  @brief Get the InjectedRouteId.  We always set it to the destination Network of the injected
+     * route this LSA is exporting as ExternalRoutes
+     * @returns The Ipv4Address stored as the injected route Id.
+     */
+    Ipv4Address GetInjectedRouteIdv4() const;
+
+    /**
+     *  @brief Get the InjectedRouteId.  We always set it to the destination Network of the injected
+     * route this LSA is exporting as ExternalRoutes
+     * @returns The Ipv6Address stored as the injected route Id.
+     */
+    Ipv6Address GetInjectedRouteIdv6() const;
+
+    /**
      * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
      * to the router ID of the router making the advertisement.
      * @param addr IPv4 address which will act as ID
@@ -534,6 +549,20 @@ class GlobalRoutingLSA
      * @see GlobalRouting::GetRouterId ()
      */
     void SetLinkStateId(Ipv4Address addr);
+
+    /**
+     * @brief Set the Injected Route Id. we always set it to the destination Network of the injected
+     * route this LSA is exporting as ExternalRoutes
+     * @param addr Ipv4Address of the destination network of the injected route
+     */
+    void SetInjectedRouteId(Ipv4Address addr);
+
+    /**
+     * @brief Set the Injected Route Id. we always set it to the destination Network of the injected
+     * route this LSA is exporting as ExternalRoutes
+     * @param addr Ipv6Address of the destination network of the injected route
+     */
+    void SetInjectedRouteId(Ipv6Address addr);
 
     /**
      * @brief Get the Advertising Router as defined by the OSPF spec.  We always
@@ -629,7 +658,7 @@ class GlobalRoutingLSA
      * @param n The attached router number desired (number in the list).
      * @returns The Ipv4Address of the requested router
      */
-    Ipv4Address GetAttachedRouterv6(uint32_t n) const;
+    Ipv6Address GetAttachedRouterv6(uint32_t n) const;
 
     /**
      * @brief Get the SPF status of the advertisement.
@@ -674,6 +703,22 @@ class GlobalRoutingLSA
      */
     Ipv4Address m_linkStateId; // this is same for ipv4 and ipv6 both because OSPFv2 and OSPFv3 both
                                // use the same Ipv4Address to represent RouterIds
+
+    /**
+     *
+     * The injected Route Id is set to the destination Network of the  injected route this LSA is
+     * exporting as ExternalRoutes
+     * @see DiscoverLSAs()
+     */
+    std::optional<Ipv4Address> m_injectedRouteIdv4;
+
+    /**
+     *
+     * The injected Route Id is set to the destination Network of the  injected route this LSA is
+     * exporting as ExternalRoutes
+     * @see DiscoverLSAs()
+     */
+    std::optional<Ipv6Address> m_injectedRouteIdv6;
 
     /**
      * The Advertising Router is defined by the OSPF spec.  We always set it to
@@ -796,8 +841,14 @@ class GlobalRouter : public Object
      * @brief Get the specific Global Routing Protocol used
      * @returns the routing protocol
      */
-    Ptr<Ipv4GlobalRouting> GetRoutingProtocol(); // again we may need to change this later for now
-                                                 // this works
+    Ptr<Ipv4GlobalRouting> GetRoutingProtocolv4(); // again we may need to change this later for now
+
+    /**
+     * @brief Get the specific Global Routing Protocol used
+     * @returns the routing protocol
+     */
+    // Ptr<Ipv6GlobalRouting> GetRoutingProtocolv6(); // again we may need to change this later for
+    // now
 
     /**
      * @brief Get the Router ID associated with this Global Router.
@@ -881,24 +932,39 @@ class GlobalRouter : public Object
      * route
      *
      * @param network The Network to inject
-     * @param networkMask The Network Mask to inject
+     * @param networkPrefix The Network Prefix to inject
      */
-    void InjectRoute(Ipv6Address network, Ipv6Prefix networkMask);
+    void InjectRoute(Ipv6Address network, Ipv6Prefix networkPrefix);
 
     /**
      * @brief Get the number of injected routes that have been added
-     * to the routing table.
+     * to the routing table. only considers the Ipv4 Routes.
      * @return number of injected routes
      */
-    uint32_t GetNInjectedRoutes();
+    uint32_t GetNInjectedRoutesv4();
 
     /**
-     * @brief Return the injected route indexed by i
+     * @brief Get the number of injected routes that have been added
+     * to the routing table. Only considers the Ipv6 routes
+     * @return number of injected routes
+     */
+    uint32_t GetNInjectedRoutesv6();
+
+    /**
+     * @brief Return the Ipv4 injected route indexed by i.
      * @param i the index of the route
      * @return a pointer to that Ipv4RoutingTableEntry is returned
      *
      */
-    Ipv4RoutingTableEntry* GetInjectedRoute(uint32_t i);
+    Ipv4RoutingTableEntry* GetInjectedRoutev4(uint32_t i);
+
+    /**
+     * @brief Return the Ipv6 injected route indexed by i
+     * @param i the index of the route
+     * @return a pointer to that Ipv4RoutingTableEntry is returned
+     *
+     */
+    Ipv6RoutingTableEntry* GetInjectedRoutev6(uint32_t i);
 
     /**
      * @brief Withdraw a route from the global unicast routing table.
@@ -907,11 +973,24 @@ class GlobalRouter : public Object
      * index i to have their index decremented.  For instance, it is possible to
      * remove N injected routes by calling RemoveInjectedRoute (0) N times.
      *
-     * @param i The index (into the injected routing list) of the route to remove.
+     * @param i The index (into the injected routing list for Ipv4) of the route to remove.
      *
      * @see GlobalRouter::WithdrawRoute ()
      */
-    void RemoveInjectedRoute(uint32_t i);
+    void RemoveInjectedRoutev4(uint32_t i);
+
+    /**
+     * @brief Withdraw a route from the global unicast routing table.
+     *
+     * Calling this function will cause all indexed routes numbered above
+     * index i to have their index decremented.  For instance, it is possible to
+     * remove N injected routes by calling RemoveInjectedRoute (0) N times.
+     *
+     * @param i The index (into the injected routing list for Ipv4) of the route to remove.
+     *
+     * @see GlobalRouter::WithdrawRoute ()
+     */
+    void RemoveInjectedRoutev6(uint32_t i);
 
     /**
      * @brief Withdraw a route from the global unicast routing table.
@@ -963,9 +1042,22 @@ class GlobalRouter : public Object
      * connecting to the channel becomes the designated router for the link.
      *
      * @param ndLocal local NetDevice to scan
-     * @returns the IP address of the designated router
+     * @returns the IPv4 address of the designated router
      */
-    Address FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const;
+    Ipv4Address FindDesignatedRouterForLinkv4(Ptr<NetDevice> ndLocal) const;
+
+    /**
+     * @brief Finds a designated router
+     *
+     * Given a local net device, we need to walk the channel to which the net device is
+     * attached and look for nodes with GlobalRouter interfaces on them (one of them
+     * will be us).  Of these, the router with the lowest IP address on the net device
+     * connecting to the channel becomes the designated router for the link.
+     *
+     * @param ndLocal local NetDevice to scan
+     * @returns the IPv6 address of the designated router
+     */
+    Ipv6Address FindDesignatedRouterForLinkv6(Ptr<NetDevice> ndLocal) const;
 
     /**
      * @brief Checks for the presence of another router on the NetDevice
@@ -1053,17 +1145,27 @@ class GlobalRouter : public Object
     typedef std::list<GlobalRoutingLSA*> ListOfLSAs_t; //!< container for the GlobalRoutingLSAs
     ListOfLSAs_t m_LSAs;                               //!< database of GlobalRoutingLSAs
 
-    Ipv4Address m_routerId;                   //!< router ID (its IPv4 address)
-    Ptr<Ipv4GlobalRouting> m_routingProtocol; //!< the Ipv4GlobalRouting in use
-    bool IsIpv4;
+    Ipv4Address m_routerId;                     //!< router ID (its IPv4 address)
+    Ptr<Ipv4GlobalRouting> m_routingProtocolv4; //!< the Ipv4GlobalRouting in use
+    //  Ptr<Ipv6GlobalRouting> m_routingProtocolv6; //!< the Ipv6GlobalRouting in use
+
+    bool IsIpv4; //!< Flag to determine if router exports Ipv4 or Ipv6 information
 
     typedef std::list<Ipv4RoutingTableEntry*>
-        InjectedRoutes; //!< container of Ipv4RoutingTableEntry
+        InjectedRoutesv4; //!< container of Ipv4RoutingTableEntry
     typedef std::list<Ipv4RoutingTableEntry*>::const_iterator
-        InjectedRoutesCI; //!< Const Iterator to container of Ipv4RoutingTableEntry
+        InjectedRoutesv4CI; //!< Const Iterator to container of Ipv4RoutingTableEntry
     typedef std::list<Ipv4RoutingTableEntry*>::iterator
-        InjectedRoutesI;             //!< Iterator to container of Ipv4RoutingTableEntry
-    InjectedRoutes m_injectedRoutes; //!< Routes we are exporting
+        InjectedRoutesv4I;               //!< Iterator to container of Ipv4RoutingTableEntry
+    InjectedRoutesv4 m_injectedRoutesv4; //!< Routes we are exporting
+
+    typedef std::list<Ipv6RoutingTableEntry*>
+        InjectedRoutesv6; //!< container of Ipv4RoutingTableEntry
+    typedef std::list<Ipv6RoutingTableEntry*>::const_iterator
+        InjectedRoutesv6CI; //!< Const Iterator to container of Ipv4RoutingTableEntry
+    typedef std::list<Ipv6RoutingTableEntry*>::iterator
+        InjectedRoutesv6I;               //!< Iterator to container of Ipv4RoutingTableEntry
+    InjectedRoutesv6 m_injectedRoutesv6; //!< Routes we are exporting
 
     // Declared mutable so that const member functions can clear it
     // (supporting the logical constness of the search methods of this class)

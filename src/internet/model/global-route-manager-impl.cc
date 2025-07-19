@@ -1480,7 +1480,7 @@ GlobalRouteManagerImpl::ProcessASExternals(SPFVertex* v, GlobalRoutingLSA* extls
 {
     NS_LOG_FUNCTION(this << v << extlsa);
     NS_LOG_LOGIC("Processing external for destination "
-                 << extlsa->GetLinkStateId() << ", for router " << v->GetVertexId()
+                 << extlsa->GetInjectedRouteIdv4() << ", for router " << v->GetVertexId()
                  << ", advertised by " << extlsa->GetAdvertisingRouter());
     if (v->GetVertexType() == SPFVertex::VertexRouter)
     {
@@ -1580,7 +1580,7 @@ GlobalRouteManagerImpl::SPFAddASExternal(GlobalRoutingLSA* extlsa, SPFVertex* v)
                       "GlobalRouteManagerImpl::SPFIntraAddRouter (): "
                       "Expected valid LSA in SPFVertex* v");
         Ipv4Mask tempmask = extlsa->GetNetworkLSANetworkMask();
-        Ipv4Address tempip = extlsa->GetLinkStateId();
+        Ipv4Address tempip = extlsa->GetInjectedRouteIdv4();
         tempip = tempip.CombineMask(tempmask);
 
         //
