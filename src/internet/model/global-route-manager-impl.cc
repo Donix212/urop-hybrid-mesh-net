@@ -42,7 +42,21 @@ NS_LOG_COMPONENT_DEFINE("GlobalRouteManagerImpl");
  * @returns the reference to the output stream
  */
 std::ostream&
-operator<<(std::ostream& os, const SPFVertex::NodeExit_t& exit)
+operator<<(std::ostream& os, const SPFVertex::NodeExitv4_t& exit)
+{
+    os << "(" << exit.first << " ," << exit.second << ")";
+    return os;
+}
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param os the reference to the output stream
+ * @param exit the exit node
+ * @returns the reference to the output stream
+ */
+std::ostream&
+operator<<(std::ostream& os, const SPFVertex::NodeExitv6_t& exit)
 {
     os << "(" << exit.first << " ," << exit.second << ")";
     return os;
@@ -80,7 +94,8 @@ SPFVertex::SPFVertex()
       m_lsa(nullptr),
       m_distanceFromRoot(SPF_INFINITY),
       m_rootOif(SPF_INFINITY),
-      m_nextHop("0.0.0.0"),
+      m_nextHopv4("0.0.0.0"),
+      m_nextHopv6(Ipv6Address::GetOnes()),
       m_parents(),
       m_children(),
       m_vertexProcessed(false)
@@ -93,7 +108,8 @@ SPFVertex::SPFVertex(GlobalRoutingLSA* lsa)
       m_lsa(lsa),
       m_distanceFromRoot(SPF_INFINITY),
       m_rootOif(SPF_INFINITY),
-      m_nextHop("0.0.0.0"),
+      m_nextHopv4("0.0.0.0"),
+      m_nextHopv6(Ipv6Address::GetOnes()),
       m_parents(),
       m_children(),
       m_vertexProcessed(false)
@@ -159,8 +175,8 @@ SPFVertex::~SPFVertex()
     // delete parents
     m_parents.clear();
     // delete root exit direction
-    m_ecmpRootExits.clear();
-
+    m_ecmpRootExitsv4.clear();
+    m_ecmpRootExitsv6.clear();
     NS_LOG_LOGIC("Vertex-" << m_vertexId << " completed deleted");
 }
 
@@ -269,29 +285,50 @@ SPFVertex::SetRootExitDirection(Ipv4Address nextHop, int32_t id)
     NS_LOG_FUNCTION(this << nextHop << id);
 
     // always maintain only one root's exit
-    m_ecmpRootExits.clear();
-    m_ecmpRootExits.emplace_back(nextHop, id);
+    m_ecmpRootExitsv4.clear();
+    m_ecmpRootExitsv4.emplace_back(nextHop, id);
     // update the following in order to be backward compatible with
     // GetNextHop and GetOutgoingInterface methods
-    m_nextHop = nextHop;
+    m_nextHopv4 = nextHop;
     m_rootOif = id;
 }
 
 void
-SPFVertex::SetRootExitDirection(SPFVertex::NodeExit_t exit)
+SPFVertex::SetRootExitDirection(Ipv6Address nextHop, int32_t id)
+{
+    NS_LOG_FUNCTION(this << nextHop << id);
+
+    // always maintain only one root's exit
+    m_ecmpRootExitsv6.clear();
+    m_ecmpRootExitsv6.emplace_back(nextHop, id);
+    // update the following in order to be backward compatible with
+    // GetNextHop and GetOutgoingInterface methods
+    m_nextHopv6 = nextHop;
+    m_rootOif = id;
+}
+
+void
+SPFVertex::SetRootExitDirection(SPFVertex::NodeExitv4_t exit)
 {
     NS_LOG_FUNCTION(this << exit);
     SetRootExitDirection(exit.first, exit.second);
 }
 
-SPFVertex::NodeExit_t
-SPFVertex::GetRootExitDirection(uint32_t i) const
+void
+SPFVertex::SetRootExitDirection(SPFVertex::NodeExitv6_t exit)
+{
+    NS_LOG_FUNCTION(this << exit);
+    SetRootExitDirection(exit.first, exit.second);
+}
+
+SPFVertex::NodeExitv4_t
+SPFVertex::GetRootExitDirectionv4(uint32_t i) const
 {
     NS_LOG_FUNCTION(this << i);
 
-    NS_ASSERT_MSG(i < m_ecmpRootExits.size(),
+    NS_ASSERT_MSG(i < m_ecmpRootExitsv4.size(),
                   "Index out-of-range when accessing SPFVertex::m_ecmpRootExits!");
-    auto iter = m_ecmpRootExits.begin();
+    auto iter = m_ecmpRootExitsv4.begin();
     while (i-- > 0)
     {
         iter++;
@@ -300,14 +337,40 @@ SPFVertex::GetRootExitDirection(uint32_t i) const
     return *iter;
 }
 
-SPFVertex::NodeExit_t
-SPFVertex::GetRootExitDirection() const
+SPFVertex::NodeExitv6_t
+SPFVertex::GetRootExitDirectionv6(uint32_t i) const
+{
+    NS_LOG_FUNCTION(this << i);
+
+    NS_ASSERT_MSG(i < m_ecmpRootExitsv6.size(),
+                  "Index out-of-range when accessing SPFVertex::m_ecmpRootExits!");
+    auto iter = m_ecmpRootExitsv6.begin();
+    while (i-- > 0)
+    {
+        iter++;
+    }
+
+    return *iter;
+}
+
+SPFVertex::NodeExitv4_t
+SPFVertex::GetRootExitDirectionv4() const
 {
     NS_LOG_FUNCTION(this);
 
-    NS_ASSERT_MSG(m_ecmpRootExits.size() <= 1,
+    NS_ASSERT_MSG(m_ecmpRootExitsv4.size() <= 1,
                   "Assumed there is at most one exit from the root to this vertex");
-    return GetRootExitDirection(0);
+    return GetRootExitDirectionv4(0);
+}
+
+SPFVertex::NodeExitv6_t
+SPFVertex::GetRootExitDirectionv6() const
+{
+    NS_LOG_FUNCTION(this);
+
+    NS_ASSERT_MSG(m_ecmpRootExitsv6.size() <= 1,
+                  "Assumed there is at most one exit from the root to this vertex");
+    return GetRootExitDirectionv6(0);
 }
 
 void
@@ -318,10 +381,16 @@ SPFVertex::MergeRootExitDirections(const SPFVertex* vertex)
     // obtain the external list of exit directions
     //
     // Append the external list into 'this' and remove duplication afterward
-    const ListOfNodeExit_t& extList = vertex->m_ecmpRootExits;
-    m_ecmpRootExits.insert(m_ecmpRootExits.end(), extList.begin(), extList.end());
-    m_ecmpRootExits.sort();
-    m_ecmpRootExits.unique();
+    const ListOfNodeExitv4_t& extList = vertex->m_ecmpRootExitsv4;
+    m_ecmpRootExitsv4.insert(m_ecmpRootExitsv4.end(), extList.begin(), extList.end());
+    m_ecmpRootExitsv4.sort();
+    m_ecmpRootExitsv4.unique();
+
+    // do the same for ipv6
+    const ListOfNodeExitv6_t& extList = vertex->m_ecmpRootExitsv6;
+    m_ecmpRootExitsv6.insert(m_ecmpRootExitsv6.end(), extList.begin(), extList.end());
+    m_ecmpRootExitsv6.sort();
+    m_ecmpRootExitsv6.unique();
 }
 
 void
@@ -331,21 +400,38 @@ SPFVertex::InheritAllRootExitDirections(const SPFVertex* vertex)
 
     // discard all exit direction currently associated with this vertex,
     // and copy all the exit directions from the given vertex
-    if (!m_ecmpRootExits.empty())
+    if (!m_ecmpRootExitsv4.empty())
     {
         NS_LOG_WARN("x root exit directions in this vertex are going to be discarded");
     }
-    m_ecmpRootExits.clear();
-    m_ecmpRootExits.insert(m_ecmpRootExits.end(),
-                           vertex->m_ecmpRootExits.begin(),
-                           vertex->m_ecmpRootExits.end());
+    m_ecmpRootExitsv4.clear();
+    m_ecmpRootExitsv4.insert(m_ecmpRootExitsv4.end(),
+                             vertex->m_ecmpRootExitsv4.begin(),
+                             vertex->m_ecmpRootExitsv4.end());
+
+    // do the same for ipv6
+    if (!m_ecmpRootExitsv6.empty())
+    {
+        NS_LOG_WARN("x root exit directions in this vertex are going to be discarded");
+    }
+    m_ecmpRootExitsv6.clear();
+    m_ecmpRootExitsv6.insert(m_ecmpRootExitsv6.end(),
+                             vertex->m_ecmpRootExitsv6.begin(),
+                             vertex->m_ecmpRootExitsv6.end());
 }
 
 uint32_t
-SPFVertex::GetNRootExitDirections() const
+SPFVertex::GetNRootExitDirectionsv4() const
 {
     NS_LOG_FUNCTION(this);
-    return m_ecmpRootExits.size();
+    return m_ecmpRootExitsv4.size();
+}
+
+uint32_t
+SPFVertex::GetNRootExitDirectionsv6() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_ecmpRootExitsv6.size();
 }
 
 uint32_t
@@ -438,6 +524,20 @@ GlobalRouteManagerLSDB::~GlobalRouteManagerLSDB()
 }
 
 void
+GlobalRouteManagerLSDB::SetAddressType(bool IsIpv4)
+{
+    NS_LOG_FUNCTION_NOARGS();
+    m_isIpv4 = IsIpv4;
+}
+
+bool
+GlobalRouteManagerLSDB::GetAddressType()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    return m_isIpv4;
+}
+
+void
 GlobalRouteManagerLSDB::Initialize()
 {
     NS_LOG_FUNCTION(this);
@@ -503,14 +603,30 @@ GlobalRouteManagerLSDB::GetLSAByLinkData(Ipv4Address addr) const
     for (auto i = m_database.begin(); i != m_database.end(); i++)
     {
         GlobalRoutingLSA* temp = i->second;
-        // Iterate among temp's Link Records
-        for (uint32_t j = 0; j < temp->GetNLinkRecords(); j++)
+        if (m_isIpv4)
         {
-            GlobalRoutingLinkRecord* lr = temp->GetLinkRecord(j);
-            if (lr->GetLinkType() == GlobalRoutingLinkRecord::TransitNetwork &&
-                lr->GetLinkData() == addr)
+            // Iterate among temp's Link Records
+            for (uint32_t j = 0; j < temp->GetNLinkRecordsv4(); j++)
             {
-                return temp;
+                GlobalRoutingLinkRecord* lr = temp->GetLinkRecordv4(j);
+                if (lr->GetLinkType() == GlobalRoutingLinkRecord::TransitNetwork &&
+                    lr->GetLinkDatav4() == addr)
+                {
+                    return temp;
+                }
+            }
+        }
+        else
+        {
+            // Iterate among temp's Link Records
+            for (uint32_t j = 0; j < temp->GetNLinkRecordsv6(); j++)
+            {
+                GlobalRoutingLinkRecord* lr = temp->GetLinkRecordv6(j);
+                if (lr->GetLinkType() == GlobalRoutingLinkRecord::TransitNetwork &&
+                    lr->GetLinkDatav6() == addr)
+                {
+                    return temp;
+                }
             }
         }
     }
@@ -562,7 +678,7 @@ GlobalRouteManagerImpl::DeleteGlobalRoutes()
         {
             continue;
         }
-        Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();
+        Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocolv4();
         uint32_t j = 0;
         uint32_t nRoutes = gr->GetNRoutes();
         NS_LOG_LOGIC("Deleting " << gr->GetNRoutes() << " routes from node " << node->GetId());
@@ -637,7 +753,7 @@ GlobalRouteManagerImpl::BuildGlobalRoutingDatabase()
             //
             // Write the newly discovered link state advertisement to the database.
             //
-            m_lsdb->Insert(lsa->GetLinkStateId(), lsa);
+            m_lsdb->Insert(lsa->GetInjectedRouteIdv4(), lsa);
         }
     }
 }
