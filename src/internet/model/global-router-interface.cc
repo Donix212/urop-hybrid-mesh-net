@@ -814,6 +814,18 @@ GlobalRouter::GetTypeId()
     return tid;
 }
 
+void
+GlobalRouter::SetAddressType(bool IsIpv4)
+{
+    m_isIpv4 = IsIpv4;
+}
+
+bool
+GlobalRouter::GetAddressType()
+{
+    return m_isIpv4;
+}
+
 GlobalRouter::GlobalRouter()
     : m_LSAs()
 {
@@ -931,7 +943,7 @@ GlobalRouter::DiscoverLSAs()
     //
     Ptr<Ipv4> ipv4Local;
     Ptr<Ipv6> ipv6Local;
-    if (IsIpv4) // assume this is set when we are calling this function
+    if (m_isIpv4) // assume this is set when we are calling this function
     {
         ipv4Local = node->GetObject<Ipv4>();
         NS_ABORT_MSG_UNLESS(ipv4Local,
@@ -981,7 +993,7 @@ GlobalRouter::DiscoverLSAs()
         //
         if (NetDeviceIsBridged(ndLocal))
         {
-            if (IsIpv4)
+            if (m_isIpv4)
             {
                 int32_t ifIndex = ipv4Local->GetInterfaceForDevice(ndLocal);
                 NS_ABORT_MSG_IF(ifIndex != -1,
@@ -1003,7 +1015,7 @@ GlobalRouter::DiscoverLSAs()
         // associated with a bridge.  We are only going to involve devices with
         // IP addresses in routing.
         //
-        if (IsIpv4)
+        if (m_isIpv4)
         {
             int32_t interfaceNumber = ipv4Local->GetInterfaceForDevice(ndLocal);
             if (interfaceNumber == -1 ||
@@ -1074,7 +1086,7 @@ GlobalRouter::DiscoverLSAs()
     // Build injected route LSAs as external routes
     // RFC 2328, section 12.4.4
     //
-    if (IsIpv4)
+    if (m_isIpv4)
     {
         for (auto i = m_injectedRoutesv4.begin(); i != m_injectedRoutesv4.end(); i++)
         {
@@ -1163,7 +1175,7 @@ GlobalRouter::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
     //
     Ptr<Node> node = nd->GetNode();
 
-    if (IsIpv4)
+    if (m_isIpv4)
     {
         Ptr<Ipv4> ipv4Local = node->GetObject<Ipv4>();
         NS_ABORT_MSG_UNLESS(
@@ -1287,7 +1299,7 @@ GlobalRouter::ProcessBridgedBroadcastLink(Ptr<NetDevice> nd,
   Address addressLocal; //this represents either ipv4 or ipv6 address, we need this because the if blocks are not scoped
   Ipv4Mask maskLocal;
   Ipv6Prefix prefixLocal;
-  if(IsIpv4)
+  if(m_isIpv4)
   {
   Ptr<Ipv4> ipv4Local = node->GetObject<Ipv4> ();
   NS_ABORT_MSG_UNLESS (ipv4Local, "GlobalRouter::ProcessBridgedBroadcastLink (): GetObject for <Ipv4> interface failed");
@@ -1345,7 +1357,7 @@ GlobalRouter::ProcessBridgedBroadcastLink(Ptr<NetDevice> nd,
           // all.
           //
            ClearBridgesVisited ();
-          if(IsIpv4)
+          if(m_isIpv4)
         {
           Ipv4Address designatedRtrTemp = FindDesignatedRouterForLink (ndTemp);
           if(Ipv4Address::IsMatchingType(addressLocal))
@@ -1385,7 +1397,7 @@ GlobalRouter::ProcessBridgedBroadcastLink(Ptr<NetDevice> nd,
   GlobalRoutingLinkRecord *plr = new GlobalRoutingLinkRecord;
   NS_ABORT_MSG_IF (plr == 0, "GlobalRouter::ProcessBridgedBroadcastLink(): Can't alloc link record");
 
-  if(IsIpv4)
+  if(m_isIpv4)
   {
           if(Ipv4Address::IsMatchingType(addressLocal))
           Ipv4Address addrLocal=Ipv4Address::ConvertFrom(addressLocal);
@@ -1480,7 +1492,7 @@ GlobalRouter::ProcessPointToPointLink(Ptr<NetDevice> ndLocal, GlobalRoutingLSA* 
     uint16_t metricLocal;
     Address addressLocal;
 
-    if (IsIpv4)
+    if (m_isIpv4)
     {
         Ptr<Ipv4> ipv4Local = nodeLocal->GetObject<Ipv4>();
         NS_ABORT_MSG_UNLESS(
@@ -1545,7 +1557,7 @@ GlobalRouter::ProcessPointToPointLink(Ptr<NetDevice> ndLocal, GlobalRoutingLSA* 
 
     GlobalRoutingLinkRecord* plr;
 
-    if (IsIpv4)
+    if (m_isIpv4)
     {
         Ptr<Ipv4> ipv4Remote = nodeRemote->GetObject<Ipv4>();
         NS_ABORT_MSG_UNLESS(
@@ -1645,7 +1657,7 @@ GlobalRouter::BuildNetworkLSAs(NetDeviceContainer c)
         Ptr<Node> node = ndLocal->GetNode();
         Address addressLocal; // this represents either ipv4 or ipv6 address, we need this because
                               // the if blocks are not scoped
-        if (IsIpv4)
+        if (m_isIpv4)
         {
             Ptr<Ipv4> ipv4Local = node->GetObject<Ipv4>();
             NS_ABORT_MSG_UNLESS(
@@ -1706,7 +1718,7 @@ GlobalRouter::BuildNetworkLSAs(NetDeviceContainer c)
                                      << " does not have GlobalRouter interface--skipping");
                 continue;
             }
-            if (IsIpv4)
+            if (m_isIpv4)
             {
                 Ipv4Address addrLocal;
                 if (Ipv4Address::IsMatchingType(addressLocal))

@@ -823,6 +823,18 @@ class GlobalRouter : public Object
     static TypeId GetTypeId();
 
     /**
+     * @brief Set the Address Type  that is exported by the Global Router
+     * @param IsIpv4 true if Ipv4 is exported, false if Ipv6 is exported
+     */
+    static void SetAddressType(bool IsIpv4);
+
+    /**
+     * @brief Get the type of address that is exported by the Global Router
+     * @returns  true if Ipv4 is exported, false if Ipv6 is exported
+     */
+    static bool GetAddressType();
+
+    /**
      * @brief Create a Global Router class
      */
     GlobalRouter();
@@ -1149,7 +1161,7 @@ class GlobalRouter : public Object
     Ptr<Ipv4GlobalRouting> m_routingProtocolv4; //!< the Ipv4GlobalRouting in use
     //  Ptr<Ipv6GlobalRouting> m_routingProtocolv6; //!< the Ipv6GlobalRouting in use
 
-    bool IsIpv4; //!< Flag to determine if router exports Ipv4 or Ipv6 information
+    static bool m_isIpv4; //!< Flag to determine if router exports Ipv4 or Ipv6 information
 
     typedef std::list<Ipv4RoutingTableEntry*>
         InjectedRoutesv4; //!< container of Ipv4RoutingTableEntry
