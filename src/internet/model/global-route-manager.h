@@ -42,23 +42,42 @@ class GlobalRouteManager
     static uint32_t AllocateRouterId();
 
     /**
-     * @brief Delete all static routes on all nodes that have a
+     * @brief Delete all Ipv4 static routes on all nodes that have a
      * GlobalRouterInterface
      *
      */
-    static void DeleteGlobalRoutes();
+    static void DeleteGlobalRoutesv4();
 
     /**
-     * @brief Build the routing database by gathering Link State Advertisements
+     * @brief Delete all Ipv6 static routes on all nodes that have a
+     * GlobalRouterInterface
+     *
+     */
+    static void DeleteGlobalRoutesv6();
+
+    /**
+     * @brief Build the routing database for Ipv4 addresses by gathering Link State Advertisements
      * from each node exporting a GlobalRouter interface.
      */
-    static void BuildGlobalRoutingDatabase();
+    static void BuildGlobalRoutingDatabasev4();
 
     /**
-     * @brief Compute routes using a Dijkstra SPF computation and populate
+     * @brief Build the routing database for Ipv6 addresses by gathering Link State Advertisements
+     * from each node exporting a GlobalRouter interface.
+     */
+    static void BuildGlobalRoutingDatabasev6();
+
+    /**
+     * @brief Compute all ipv4 routes using a Dijkstra SPF computation and populate
      * per-node forwarding tables
      */
-    static void InitializeRoutes();
+    static void InitializeRoutesv4();
+
+    /**
+     * @brief Compute all ipv6 routes using a Dijkstra SPF computation and populate
+     * per-node forwarding tables
+     */
+    static void InitializeRoutesv6();
 
     /**
      * @brief Reset the router ID counter to zero. This should only be called by tests to reset the

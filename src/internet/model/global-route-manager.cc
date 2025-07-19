@@ -28,23 +28,57 @@ NS_LOG_COMPONENT_DEFINE("GlobalRouteManager");
 uint32_t GlobalRouteManager::routerId = 0;
 
 void
-GlobalRouteManager::DeleteGlobalRoutes()
+GlobalRouteManager::DeleteGlobalRoutesv4()
 {
     NS_LOG_FUNCTION_NOARGS();
+    bool IsIpv4 = true;
+    GlobalRouter::SetAddressType(IsIpv4);
     SimulationSingleton<GlobalRouteManagerImpl>::Get()->DeleteGlobalRoutes();
 }
 
 void
-GlobalRouteManager::BuildGlobalRoutingDatabase()
+GlobalRouteManager::BuildGlobalRoutingDatabasev4()
 {
     NS_LOG_FUNCTION_NOARGS();
+    bool IsIpv4 = true;
+    GlobalRouter::SetAddressType(IsIpv4);
+
     SimulationSingleton<GlobalRouteManagerImpl>::Get()->BuildGlobalRoutingDatabase();
 }
 
 void
-GlobalRouteManager::InitializeRoutes()
+GlobalRouteManager::InitializeRoutesv4()
 {
     NS_LOG_FUNCTION_NOARGS();
+    bool IsIpv4 = true;
+    GlobalRouter::SetAddressType(IsIpv4);
+    SimulationSingleton<GlobalRouteManagerImpl>::Get()->InitializeRoutes();
+}
+
+void
+GlobalRouteManager::DeleteGlobalRoutesv6()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    bool IsIpv4 = false;
+    GlobalRouter::SetAddressType(IsIpv4);
+    SimulationSingleton<GlobalRouteManagerImpl>::Get()->DeleteGlobalRoutes();
+}
+
+void
+GlobalRouteManager::BuildGlobalRoutingDatabasev6()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    bool IsIpv4 = false;
+    GlobalRouter::SetAddressType(IsIpv4);
+    SimulationSingleton<GlobalRouteManagerImpl>::Get()->BuildGlobalRoutingDatabase();
+}
+
+void
+GlobalRouteManager::InitializeRoutesv6()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    bool IsIpv4 = false;
+    GlobalRouter::SetAddressType(IsIpv4);
     SimulationSingleton<GlobalRouteManagerImpl>::Get()->InitializeRoutes();
 }
 
