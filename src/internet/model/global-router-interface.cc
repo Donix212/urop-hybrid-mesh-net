@@ -817,12 +817,15 @@ GlobalRouter::GetTypeId()
 void
 GlobalRouter::SetAddressType(bool IsIpv4)
 {
+    NS_LOG_FUNCTION_NOARGS();
     m_isIpv4 = IsIpv4;
 }
 
 bool
 GlobalRouter::GetAddressType()
 {
+    NS_LOG_FUNCTION_NOARGS();
+
     return m_isIpv4;
 }
 
