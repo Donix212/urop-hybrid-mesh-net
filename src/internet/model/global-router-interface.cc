@@ -213,7 +213,6 @@ GlobalRoutingLinkRecord::SetMetric(uint16_t metric)
 
 GlobalRoutingLSA::GlobalRoutingLSA()
     : m_lsType(GlobalRoutingLSA::Unknown),
-      m_linkStateId("0.0.0.0"),
       m_advertisingRtr("0.0.0.0"),
       m_linkRecordsv4(),
       m_linkRecordsv6(),
@@ -228,7 +227,22 @@ GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA::SPFStatus status,
                                    Ipv4Address linkStateId,
                                    Ipv4Address advertisingRtr)
     : m_lsType(GlobalRoutingLSA::Unknown),
-      m_linkStateId(linkStateId),
+      m_linkStateIdv4(m_linkStateIdv4),
+      m_advertisingRtr(advertisingRtr),
+      m_linkRecordsv4(),
+      m_linkRecordsv6(),
+      m_networkLSANetworkMask("0.0.0.0"),
+      m_status(status),
+      m_node_id(0)
+{
+    NS_LOG_FUNCTION(this << status << linkStateId << advertisingRtr);
+}
+
+GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA::SPFStatus status,
+                                   Ipv6Address linkStateId,
+                                   Ipv4Address advertisingRtr)
+    : m_lsType(GlobalRoutingLSA::Unknown),
+      m_linkStateIdv4(m_linkStateIdv4),
       m_advertisingRtr(advertisingRtr),
       m_linkRecordsv4(),
       m_linkRecordsv6(),
@@ -241,9 +255,11 @@ GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA::SPFStatus status,
 
 GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA& lsa)
     : m_lsType(lsa.m_lsType),
-      m_linkStateId(lsa.m_linkStateId),
+      m_linkStateIdv4(lsa.m_linkStateIdv4),
+      m_linkStateIdv6(lsa.m_linkStateIdv6),
       m_advertisingRtr(lsa.m_advertisingRtr),
       m_networkLSANetworkMask(lsa.m_networkLSANetworkMask),
+      m_networkLSANetworkPrefix(lsa.m_networkLSANetworkPrefix),
       m_status(lsa.m_status),
       m_node_id(lsa.m_node_id)
 {
@@ -261,7 +277,8 @@ GlobalRoutingLSA::operator=(const GlobalRoutingLSA& lsa)
 {
     NS_LOG_FUNCTION(this << &lsa);
     m_lsType = lsa.m_lsType;
-    m_linkStateId = lsa.m_linkStateId;
+    m_linkStateIdv4 = lsa.m_linkStateIdv4;
+    m_linkStateIdv6 = lsa.m_linkStateIdv6;
     m_advertisingRtr = lsa.m_advertisingRtr;
     m_networkLSANetworkMask = lsa.m_networkLSANetworkMask, m_status = lsa.m_status;
     m_node_id = lsa.m_node_id;
@@ -442,17 +459,37 @@ GlobalRoutingLSA::SetLSType(GlobalRoutingLSA::LSType typ)
 }
 
 Ipv4Address
-GlobalRoutingLSA::GetLinkStateId() const
+GlobalRoutingLSA::GetLinkStateIdv4() const
 {
     NS_LOG_FUNCTION(this);
-    return m_linkStateId;
+    if (m_linkStateIdv4.has_value())
+    {
+        return m_linkStateIdv4.value();
+    }
+}
+
+Ipv6Address
+GlobalRoutingLSA::GetLinkStateIdv6() const
+{
+    NS_LOG_FUNCTION(this);
+    if (m_linkStateIdv6.has_value())
+    {
+        return m_linkStateIdv6.value();
+    }
 }
 
 void
 GlobalRoutingLSA::SetLinkStateId(Ipv4Address addr)
 {
     NS_LOG_FUNCTION(this << addr);
-    m_linkStateId = addr;
+    m_linkStateIdv4 = addr;
+}
+
+void
+GlobalRoutingLSA::SetLinkStateId(Ipv6Address addr)
+{
+    NS_LOG_FUNCTION(this << addr);
+    m_linkStateIdv6 = addr;
 }
 
 Ipv4Address
@@ -621,7 +658,14 @@ GlobalRoutingLSA::Print(std::ostream& os) const
     }
     os << std::endl;
 
-    os << "m_linkStateId = " << m_linkStateId << " (Router ID)" << std::endl;
+    if (m_linkStateIdv4.has_value())
+    {
+        os << "m_linkStateId = " << m_linkStateIdv4.value() << " (Router ID)" << std::endl;
+    }
+    else if (m_linkStateIdv6.has_value())
+    {
+        os << "m_linkStateId = " << m_linkStateIdv6.value() << " (Router ID)" << std::endl;
+    }
     os << "m_advertisingRtr = " << m_advertisingRtr << " (Router ID)" << std::endl;
 
     if (m_lsType == GlobalRoutingLSA::RouterLSA)
@@ -735,7 +779,15 @@ GlobalRoutingLSA::Print(std::ostream& os) const
     else if (m_lsType == GlobalRoutingLSA::ASExternalLSAs)
     {
         os << "---------- ASExternalLSA Link Record --------" << std::endl;
-        os << "m_linkStateId = " << m_linkStateId << std::endl;
+        if (m_linkStateIdv4.has_value())
+        {
+            os << "m_linkStateId = " << m_linkStateIdv4.value() << std::endl;
+        }
+        else if (m_linkStateIdv6.has_value())
+        {
+            os << "m_linkStateId = " << m_linkStateIdv6.value() << std::endl;
+        }
+
         if (m_networkLSANetworkMask.has_value())
         {
             os << "m_networkLSANetworkMask = " << m_networkLSANetworkMask.value() << std::endl;
@@ -750,46 +802,6 @@ GlobalRoutingLSA::Print(std::ostream& os) const
         NS_ASSERT_MSG(0, "Illegal LSA LSType: " << m_lsType);
     }
     os << "========== End Global Routing LSA ==========" << std::endl;
-}
-
-Ipv4Address
-GlobalRoutingLSA::GetInjectedRouteIdv4() const
-{
-    NS_LOG_FUNCTION(this);
-    if (m_injectedRouteIdv4.has_value())
-    {
-        return m_injectedRouteIdv4.value();
-    }
-
-    NS_LOG_WARN("Injected route Id not set. Returning empty Ipv4Address");
-    return Ipv4Address();
-}
-
-Ipv6Address
-GlobalRoutingLSA::GetInjectedRouteIdv6() const
-{
-    NS_LOG_FUNCTION(this);
-    if (m_injectedRouteIdv6.has_value())
-    {
-        return m_injectedRouteIdv6.value();
-    }
-
-    NS_LOG_WARN("Injected route Id not set. Returning empty Ipv6Address");
-    return Ipv6Address();
-}
-
-void
-GlobalRoutingLSA::SetInjectedRouteId(Ipv4Address addr)
-{
-    NS_LOG_FUNCTION(this);
-    m_injectedRouteIdv4 = addr;
-}
-
-void
-GlobalRoutingLSA::SetInjectedRouteId(Ipv6Address addr)
-{
-    NS_LOG_FUNCTION(this);
-    m_injectedRouteIdv6 = addr;
 }
 
 std::ostream&
@@ -1095,7 +1107,7 @@ GlobalRouter::DiscoverLSAs()
         {
             auto pLSA = new GlobalRoutingLSA;
             pLSA->SetLSType(GlobalRoutingLSA::ASExternalLSAs);
-            pLSA->SetInjectedRouteId((*i)->GetDestNetwork());
+            pLSA->SetLinkStateId((*i)->GetDestNetwork());
             pLSA->SetAdvertisingRouter(m_routerId);
             pLSA->SetNetworkLSANetworkMask((*i)->GetDestNetworkMask());
             pLSA->SetStatus(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED);
@@ -1108,7 +1120,7 @@ GlobalRouter::DiscoverLSAs()
         {
             auto pLSA = new GlobalRoutingLSA;
             pLSA->SetLSType(GlobalRoutingLSA::ASExternalLSAs);
-            pLSA->SetInjectedRouteId((*i)->GetDestNetwork());
+            pLSA->SetLinkStateId((*i)->GetDestNetwork());
             pLSA->SetAdvertisingRouter(m_routerId);
             pLSA->SetNetworkLSANetworkPrefix((*i)->GetDestNetworkPrefix());
             pLSA->SetStatus(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED);

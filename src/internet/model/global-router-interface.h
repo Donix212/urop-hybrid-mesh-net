@@ -374,7 +374,7 @@ class GlobalRoutingLSA
      * @param linkStateId The Ipv4Address for the link state ID field.
      * @param advertisingRtr The Ipv4Address for the advertising router field.
      */
-    GlobalRoutingLSA(SPFStatus status, Ipv6Address linkStateId, Ipv6Address advertisingRtr);
+    GlobalRoutingLSA(SPFStatus status, Ipv6Address linkStateId, Ipv4Address advertisingRtr);
 
     /**
      * @brief Copy constructor for a Global Routing Link State Advertisement.
@@ -525,21 +525,17 @@ class GlobalRoutingLSA
      * @see GlobalRouting::GetRouterId ()
      * @returns The Ipv4Address stored as the link state ID.
      */
-    Ipv4Address GetLinkStateId() const;
+    Ipv4Address GetLinkStateIdv4() const;
 
     /**
-     *  @brief Get the InjectedRouteId.  We always set it to the destination Network of the injected
-     * route this LSA is exporting as ExternalRoutes
-     * @returns The Ipv4Address stored as the injected route Id.
+     * @brief Get the Link State ID as defined by the OSPF spec.  We always set it
+     * to the router ID of the router making the advertisement.
+     *
+     * @see RoutingEnvironment::AllocateRouterId ()
+     * @see GlobalRouting::GetRouterId ()
+     * @returns The Ipv4Address stored as the link state ID.
      */
-    Ipv4Address GetInjectedRouteIdv4() const;
-
-    /**
-     *  @brief Get the InjectedRouteId.  We always set it to the destination Network of the injected
-     * route this LSA is exporting as ExternalRoutes
-     * @returns The Ipv6Address stored as the injected route Id.
-     */
-    Ipv6Address GetInjectedRouteIdv6() const;
+    Ipv6Address GetLinkStateIdv6() const;
 
     /**
      * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
@@ -551,18 +547,13 @@ class GlobalRoutingLSA
     void SetLinkStateId(Ipv4Address addr);
 
     /**
-     * @brief Set the Injected Route Id. we always set it to the destination Network of the injected
-     * route this LSA is exporting as ExternalRoutes
-     * @param addr Ipv4Address of the destination network of the injected route
+     * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
+     * to the router ID of the router making the advertisement.
+     * @param addr IPv4 address which will act as ID
+     * @see RoutingEnvironment::AllocateRouterId ()
+     * @see GlobalRouting::GetRouterId ()
      */
-    void SetInjectedRouteId(Ipv4Address addr);
-
-    /**
-     * @brief Set the Injected Route Id. we always set it to the destination Network of the injected
-     * route this LSA is exporting as ExternalRoutes
-     * @param addr Ipv6Address of the destination network of the injected route
-     */
-    void SetInjectedRouteId(Ipv6Address addr);
+    void SetLinkStateId(Ipv6Address addr);
 
     /**
      * @brief Get the Advertising Router as defined by the OSPF spec.  We always
@@ -701,24 +692,11 @@ class GlobalRoutingLSA
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    Ipv4Address m_linkStateId; // this is same for ipv4 and ipv6 both because OSPFv2 and OSPFv3 both
-                               // use the same Ipv4Address to represent RouterIds
+    std::optional<Ipv4Address>
+        m_linkStateIdv4; // this is same for ipv4 and ipv6 both because OSPFv2 and OSPFv3 both
+                         // use the same Ipv4Address to represent RouterIds
 
-    /**
-     *
-     * The injected Route Id is set to the destination Network of the  injected route this LSA is
-     * exporting as ExternalRoutes
-     * @see DiscoverLSAs()
-     */
-    std::optional<Ipv4Address> m_injectedRouteIdv4;
-
-    /**
-     *
-     * The injected Route Id is set to the destination Network of the  injected route this LSA is
-     * exporting as ExternalRoutes
-     * @see DiscoverLSAs()
-     */
-    std::optional<Ipv6Address> m_injectedRouteIdv6;
+    std::optional<Ipv6Address> m_linkStateIdv6;
 
     /**
      * The Advertising Router is defined by the OSPF spec.  We always set it to
