@@ -8,9 +8,9 @@
 using namespace ns3;
 
 int main(int argc, char *argv[]) {
-    uint32_t u_radialNodes = 128;
+    uint32_t u_radialNodes = 4;
     uint32_t u_centralNodes = 1;
-    uint32_t u_clusters = 8;
+    uint32_t u_clusters = 2;
 
     NodeContainer centralNodes;
     centralNodes.Create(u_centralNodes);
@@ -118,6 +118,18 @@ int main(int argc, char *argv[]) {
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
+    std::ofstream out("routing.txt");
+    Ipv4GlobalRoutingHelper::PrintRoutingTableAllAt(
+        Seconds(0.5),
+        Create<OutputStreamWrapper>(&out)
+    );
+
+
+    std::vector<Ipv4Address> peerList;
+    for (const auto &[node, ip] : nodeToFirstIp) {
+        peerList.push_back(ip);
+    }
+
     std::cout << "\n=== Clustered Mesh Topology ===\n";
     uint32_t clusterId = 0;
     for (auto &[central, radials] : clusters) {
@@ -136,7 +148,27 @@ int main(int argc, char *argv[]) {
         std::cout << "Node IP[" << idx++ << "]: " << ip << "\n";
     }
 
-    Simulator::Stop(Seconds(1.0));
+    // // Install SwitchApp on central nodes
+    // for (uint32_t i = 0; i < centralNodes.GetN(); ++i) {
+    //     Ptr<Node> node = centralNodes.Get(i);
+    //     Ptr<SwitchApp> app = CreateObject<SwitchApp>();
+    //     node->AddApplication(app);
+    //     app->SetPeerList(peerList);
+    //     app->SetStartTime(Seconds(1.0));
+    //     app->SetStopTime(Seconds(10.0));
+    // }
+
+    // // Install RadialApp on radial nodes
+    // for (uint32_t i = 0; i < allRadialNodes.GetN(); ++i) {
+    //     Ptr<Node> node = allRadialNodes.Get(i);
+    //     Ptr<RadialApp> app = CreateObject<RadialApp>();
+    //     node->AddApplication(app);
+    //     app->SetPeerList(peerList);
+    //     app->SetStartTime(Seconds(1.0));
+    //     app->SetStopTime(Seconds(10.0));
+    // }
+
+    Simulator::Stop(Seconds(11.0));
     Simulator::Run();
     Simulator::Destroy();
     return 0;

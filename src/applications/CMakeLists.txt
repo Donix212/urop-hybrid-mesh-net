@@ -9,13 +9,9 @@ build_lib(
     helper/udp-echo-helper.cc
     model/application-packet-probe.cc
     model/bulk-send-application.cc
-    model/central-client.cc
-    model/central-server.cc
     model/onoff-application.cc
     model/packet-loss-counter.cc
     model/packet-sink.cc
-    model/radial-client.cc
-    model/radial-server.cc
     model/seq-ts-echo-header.cc
     model/seq-ts-header.cc
     model/seq-ts-size-header.cc
@@ -30,6 +26,9 @@ build_lib(
     model/udp-echo-server.cc
     model/udp-server.cc
     model/udp-trace-client.cc
+    model/switch-application.cc
+    model/radial-application.cc
+    model/cluster-packet-header.cc
   HEADER_FILES
     helper/bulk-send-helper.h
     helper/on-off-helper.h
@@ -39,13 +38,9 @@ build_lib(
     helper/udp-echo-helper.h
     model/application-packet-probe.h
     model/bulk-send-application.h
-    model/central-client.h
-    model/central-server.h
     model/onoff-application.h
     model/packet-loss-counter.h
     model/packet-sink.h
-    model/radial-client.h
-    model/radial-server.h
     model/seq-ts-echo-header.h
     model/seq-ts-header.h
     model/seq-ts-size-header.h
@@ -60,6 +55,9 @@ build_lib(
     model/udp-echo-server.h
     model/udp-server.h
     model/udp-trace-client.h
+    model/switch-application.h
+    model/radial-application.h
+    model/cluster-packet-header.h
   LIBRARIES_TO_LINK ${libinternet}
   TEST_SOURCES
     test/three-gpp-http-client-server-test.cc
