@@ -165,7 +165,8 @@ UanExperiment::PrintReceivedPacket(Ptr<Socket> socket)
 
         if (Inet6SocketAddress::IsMatchingType(srcAddress))
         {
-            NS_LOG_UNCOND("Time: " << Simulator::Now().GetHours() << "h" << " | Node: "
+            NS_LOG_UNCOND("Time: " << Simulator::Now().GetHours() << "h"
+                                   << " | Node: "
                                    << Inet6SocketAddress::ConvertFrom(srcAddress).GetIpv6()
                                    << " | Energy: " << +energyReading << "%");
         }

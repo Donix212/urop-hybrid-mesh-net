@@ -169,8 +169,10 @@ main(int argc, char** argv)
     cmd.Parse(argc, argv);
 
     std::ofstream out(CSVfileName);
-    out << "SimulationSecond," << "ReceiveRate," << "PacketsReceived," << "NumberOfSinks,"
-        << std::endl;
+    out << "SimulationSecond,"
+        << "ReceiveRate,"
+        << "PacketsReceived,"
+        << "NumberOfSinks," << std::endl;
     out.close();
 
     SeedManager::SetSeed(12345);

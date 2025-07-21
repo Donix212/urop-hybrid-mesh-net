@@ -156,7 +156,8 @@ UanExperiment::PrintReceivedPacket(Ptr<Socket> socket)
 
         if (InetSocketAddress::IsMatchingType(srcAddress))
         {
-            NS_LOG_UNCOND("Time: " << Simulator::Now().GetHours() << "h" << " | Node: "
+            NS_LOG_UNCOND("Time: " << Simulator::Now().GetHours() << "h"
+                                   << " | Node: "
                                    << InetSocketAddress::ConvertFrom(srcAddress).GetIpv4()
                                    << " | Energy: " << +energyReading << "%");
         }
