@@ -134,8 +134,24 @@ class CandidateQueue
      */
     SPFVertex* Find(const Ipv4Address addr) const;
 
+       /**
+     * @brief Searches the Candidate Queue for a Shortest Path First Vertex
+     * pointer that points to a vertex having the given IP address.
+     *
+     * @see SPFVertex
+     * @param addr The IP address to search for.
+     * @returns The SPFVertex* pointer corresponding to the given IP address.
+     */
     SPFVertex* Find(const Ipv6Address addr) const;
 
+       /**
+     * @brief Searches the Candidate Queue for a Shortest Path First Vertex
+     * pointer that points to a vertex having the given IP address.
+     *
+     * @see SPFVertex
+     * @param addr The IP address to search for.
+     * @returns The SPFVertex* pointer corresponding to the given IP address.
+     */
     SPFVertex* Find(const Address addr) const;
 
     /**

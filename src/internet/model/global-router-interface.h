@@ -165,8 +165,31 @@ class GlobalRoutingLinkRecord
      */
     void SetLinkId(Ipv4Address addr);
 
+      /**
+     * @brief Set the Link ID field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link ID must be the Router ID
+     * of the neighboring router.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link ID must be the adjacent
+     * neighbor's IP address
+     *
+     * @param addr An Ipv6Address to store in the Link ID field of the record.
+     */
     void SetLinkId(Ipv6Address addr);
 
+
+    /**
+     * @brief Set the Link ID field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link ID must be the Router ID
+     * of the neighboring router.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link ID must be the adjacent
+     * neighbor's IP address
+     *
+     * @param addr An Ipv6Address to store in the Link ID field of the record.
+     */
     void SetLinkId(Address addr);
 
     /**
@@ -294,6 +317,16 @@ class GlobalRoutingLinkRecord
      * For Type 3 link (Stub), set m_linkId to neighbor's IP address
      */
     std::optional<Ipv4Address> m_linkIdv4;
+      /**
+     * m_linkId and m_linkData are defined by OSPF to have different meanings
+     * depending on the type of link a given link records represents.  They work
+     * together.
+     *
+     * For Type 1 link (PointToPoint), set m_linkId to Router ID of
+     * neighboring router.
+     *
+     * For Type 3 link (Stub), set m_linkId to neighbor's IP address
+     */
     std::optional<Ipv6Address> m_linkIdv6;
 
     /**
@@ -306,6 +339,16 @@ class GlobalRoutingLinkRecord
      * For Type 3 link (Stub), set m_linkData to mask
      */
     std::optional<Ipv4Address> m_linkDatav4; // for links to RouterLSA,
+
+      /**
+     * m_linkId and m_linkData are defined by OSPF to have different meanings
+     * depending on the type of link a given link records represents.  They work
+     * together.
+     *
+     * For Type 1 link (PointToPoint), set m_linkData to local IP address
+     *
+     * For Type 3 link (Stub), set m_linkData to mask
+     */
     std::optional<Ipv6Address> m_linkDatav6; // for links to RouterLSA,
     /**
      * The type of the Global Routing Link Record.  Defined in the OSPF spec.
@@ -726,6 +769,16 @@ class GlobalRoutingLSA
      */
     ListOfLinkRecords_t m_linkRecordsv4;
 
+    /**
+     * Each Link State Advertisement contains a number of Link Records that
+     * describe the kinds of links that are attached to a given node.  We
+     * consider PointToPoint and StubNetwork links.
+     *
+     * m_linkRecords is an STL list container to hold the Link Records that have
+     * been discovered and prepared for the advertisement.
+     *
+     * @see GlobalRouting::DiscoverLSAs ()
+     */
     ListOfLinkRecords_t m_linkRecordsv6;
 
     /**
@@ -743,6 +796,10 @@ class GlobalRoutingLSA
      */
     typedef std::list<Ipv4Address> ListOfAttachedRouters_tv4;
 
+
+    /**
+     * A convenience typedef to avoid too much writers cramp.
+     */
     typedef std::list<Ipv6Address> ListOfAttachedRouters_tv6;
 
     /**
