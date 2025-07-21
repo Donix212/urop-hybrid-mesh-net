@@ -156,6 +156,17 @@ class SixLowPanHelper
     Ipv6InterfaceContainer InstallSixLowPanNdNode(NetDeviceContainer c);
 
     /**
+     * @brief Install the SixLoWPAN-ND stack, associate it with a NetDevice, and set it as a 6LN
+     * that wants to become a 6LR.
+     * @note IPv6 stack must NOT be installed \a after this function, because it has been already
+     * set up.
+     *
+     * @param [in] c The NetDevice container.
+     * @return A container of the addresses assigned to the NetDevices.
+     */
+    Ipv6InterfaceContainer InstallSixLowPanNdRouter(NetDeviceContainer c);
+
+    /**
      * @brief Add a new prefix to be advertised by 6LoWPAN-ND.
      * @param [in] nd The NetDevice.
      * @param prefix announced IPv6 prefix

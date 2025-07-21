@@ -72,6 +72,21 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     };
 
     /**
+     *  Role of the node: 6LN, 6LR, 6LBR
+     *
+     *  A Node starts either as a 6LN or as a 6LBR.
+     *  A 6LN can become a 6LR.
+     *
+     */
+    enum SixLowPanNodeStatus_e
+    {
+        SixLowPanNodeOnly,    //!< a 6LN that can not become a 6LR
+        SixLowPanNode,        //!< a 6LN that can (and want to) become a 6LR
+        SixLowPanRouter,      //!< a 6LR
+        SixLowPanBorderRouter //!< a 6LBR
+    };
+
+    /**
      * @brief 6LBR constants : min context change delay.
      */
     static const uint16_t MIN_CONTEXT_CHANGE_DELAY;
@@ -214,6 +229,12 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     //  void SendSixLowPanDAR (Ipv6Address src, Ipv6Address dst, uint16_t time, Mac64Address eui,
     //                         Ipv6Address registered);
+
+    /**
+     * @brief Set node role for 6LoWPAN-ND.
+     * @param
+     */
+    void SetNodeRole(SixLowPanNdProtocol::SixLowPanNodeStatus_e role);
 
     /**
      * @brief Set an interface to be used as a 6LBR
@@ -527,21 +548,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
          * Pair of Ipv6Address of the neighbor, Time of the last RA received
          */
         std::map<Ipv6Address, Time> m_neighbors;
-    };
-
-    /**
-     *  Role of the node: 6LN, 6LR, 6LBR
-     *
-     *  A Node starts either as a 6LN or as a 6LBR.
-     *  A 6LN can become a 6LR.
-     *
-     */
-    enum SixLowPanNodeStatus_e
-    {
-        SixLowPanNodeOnly,    //!< a 6LN that can not become a 6LR
-        SixLowPanNode,        //!< a 6LN that can (and want to) become a 6LR
-        SixLowPanRouter,      //!< a 6LR
-        SixLowPanBorderRouter //!< a 6LBR
     };
 
     /**

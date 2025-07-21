@@ -63,8 +63,6 @@ SixLowPanNdProtocol::SixLowPanNdProtocol()
     : Icmpv6L4Protocol()
 {
     NS_LOG_FUNCTION(this);
-
-    m_nodeRole = SixLowPanNode;
 }
 
 SixLowPanNdProtocol::~SixLowPanNdProtocol()
@@ -156,11 +154,6 @@ SixLowPanNdProtocol::AssignStreams(int64_t stream)
 void
 SixLowPanNdProtocol::DoInitialize()
 {
-    if (!m_raEntries.empty())
-    {
-        m_nodeRole = SixLowPanBorderRouter;
-    }
-
     m_addrPendingReg.isValid = false;
 
     Icmpv6L4Protocol::DoInitialize();
@@ -1167,6 +1160,21 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
         // If we don't have any address anyomore, start sending RS (again).
         // For now since we only have 1 6LBR we are registering with, we just stop trying to
         // register with it
+    }
+}
+
+void
+SixLowPanNdProtocol::SetNodeRole(SixLowPanNodeStatus_e role)
+{
+    NS_LOG_FUNCTION(this << role);
+    m_nodeRole = role;
+
+    if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
+    {
+        NS_LOG_INFO("Setting node role to Node or NodeOnly, clearing pending RAs");
+        m_pendingRas.clear();
+        m_addressRegistrationCounter = 0;
+        m_addrPendingReg.isValid = false;
     }
 }
 

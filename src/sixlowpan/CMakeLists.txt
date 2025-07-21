@@ -36,4 +36,5 @@ build_lib(
     test/sixlowpan-nd-packet-test.cc
     test/sixlowpan-nd-reg-test.cc
     test/sixlowpan-nd-rovr-test.cc
+    test/sixlowpan-nd-multihop-test.cc
 )

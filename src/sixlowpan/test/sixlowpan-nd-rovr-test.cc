@@ -31,7 +31,8 @@ namespace ns3
 /**
  * @ingroup sixlowpan-nd-rovr-tests
  *
- * @brief Test successful registration of varying numbers of 6LNs with 1 6LBR
+ * @brief Test that ROVR validation works when 2 6LNs with different ROVR attempt to register the
+ * same address
  */
 class SixLowPanNdRovrTest : public TestCase
 {

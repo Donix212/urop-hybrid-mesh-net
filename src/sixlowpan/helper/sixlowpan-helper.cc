@@ -169,6 +169,10 @@ SixLowPanHelper::InstallSixLowPanNdBorderRouter(NetDeviceContainer c, Ipv6Addres
 
         Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(c.Get(index));
         Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+
+        sixLowPanNdProtocol->SetNodeRole(
+            SixLowPanNdProtocol::SixLowPanNodeStatus_e::SixLowPanBorderRouter);
+
         if (sixLowPanNdProtocol->IsBorderRouterOnInterface(sixLowPanNetDevice))
         {
             NS_ABORT_MSG("Interface " << sixLowPanNetDevice
@@ -189,26 +193,72 @@ SixLowPanHelper::InstallSixLowPanNdNode(NetDeviceContainer c)
     deviceInterfaces = ipv6.AssignWithoutAddress(c);
 
     // Initialize ROVR for each node
-    for (uint32_t i = 0; i < c.GetN(); ++i)
-    {
-        Ptr<NetDevice> dev = c.Get(i);
-        Ptr<Node> node = dev->GetNode();
-        InitializeRovr(node);
-    }
+    // for (uint32_t i = 0; i < c.GetN(); ++i)
+    // {
+    //     Ptr<NetDevice> dev = c.Get(i);
+    //     Ptr<Node> node = dev->GetNode();
+    //     InitializeRovr(node);
+    // }
 
-    // Schedule Multicast RS here
-    for (uint32_t i = 0; i < deviceInterfaces.GetN(); ++i)
+    // Initialise ROVR, schedule Multicast RS and set node role here
+    for (uint32_t i = 0; i < c.GetN(); ++i)
     {
         Ipv6Address linkLocalAddr = deviceInterfaces.GetLinkLocalAddress(i);
 
         Ptr<NetDevice> dev = c.Get(i);
         Ptr<Node> node = dev->GetNode();
 
-        Ptr<SixLowPanNdProtocol> icmpv6 = node->GetObject<SixLowPanNdProtocol>();
+        InitializeRovr(node);
+
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+
+        sixLowPanNdProtocol->SetNodeRole(
+            SixLowPanNdProtocol::SixLowPanNodeStatus_e::SixLowPanNodeOnly);
 
         Simulator::Schedule(Seconds(0),
                             &SixLowPanNdProtocol::SendSixLowPanMulticastRS,
-                            icmpv6,
+                            sixLowPanNdProtocol,
+                            linkLocalAddr,
+                            dev->GetAddress());
+    }
+
+    return deviceInterfaces;
+}
+
+Ipv6InterfaceContainer
+SixLowPanHelper::InstallSixLowPanNdRouter(NetDeviceContainer c)
+{
+    InstallSixLowPanNd(c, false);
+
+    Ipv6AddressHelper ipv6;
+    Ipv6InterfaceContainer deviceInterfaces;
+    deviceInterfaces = ipv6.AssignWithoutAddress(c);
+
+    // Initialize ROVR for each node
+    // for (uint32_t i = 0; i < c.GetN(); ++i)
+    // {
+    //     Ptr<NetDevice> dev = c.Get(i);
+    //     Ptr<Node> node = dev->GetNode();
+    //     InitializeRovr(node);
+    // }
+
+    // Initialise ROVR, schedule Multicast RS and set node role here
+    for (uint32_t i = 0; i < c.GetN(); ++i)
+    {
+        Ipv6Address linkLocalAddr = deviceInterfaces.GetLinkLocalAddress(i);
+
+        Ptr<NetDevice> dev = c.Get(i);
+        Ptr<Node> node = dev->GetNode();
+
+        InitializeRovr(node);
+
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+
+        sixLowPanNdProtocol->SetNodeRole(SixLowPanNdProtocol::SixLowPanNodeStatus_e::SixLowPanNode);
+
+        Simulator::Schedule(Seconds(0),
+                            &SixLowPanNdProtocol::SendSixLowPanMulticastRS,
+                            sixLowPanNdProtocol,
                             linkLocalAddr,
                             dev->GetAddress());
     }
@@ -248,9 +298,6 @@ SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
         {
             ipv6->SetForwarding(interfaceId, true);
         }
-        // bool isForwarding = ipv6->IsForwarding(interfaceId);
-        // NS_LOG_INFO("Node " << node->GetId() << ", Interface " << interfaceId
-        //                     << " forwarding: " << (isForwarding ? "true" : "false"));
     }
     return;
 }
