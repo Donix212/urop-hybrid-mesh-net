@@ -765,7 +765,7 @@ GlobalRoutingLSA::Print(std::ostream& os) const
         }
         for (auto i = m_attachedRoutersv4.begin(); i != m_attachedRoutersv4.end(); i++)
         {
-            Ipv4Address p = *i;
+            const Ipv4Address& p = *i;
             os << "attachedRouter = " << p << std::endl;
         }
         os << "---------- NetworkLSA Link Record Ipv6 ----------" << std::endl;
@@ -775,7 +775,7 @@ GlobalRoutingLSA::Print(std::ostream& os) const
         }
         for (auto i = m_attachedRoutersv6.begin(); i != m_attachedRoutersv6.end(); i++)
         {
-            Ipv6Address p = *i;
+            const Ipv6Address& p = *i;
             os << "attachedRouter = " << p << std::endl;
         }
         os << "---------- End NetworkLSA Link Record ----------" << std::endl;
@@ -1966,6 +1966,7 @@ GlobalRouter::FindDesignatedRouterForLinkv4(
                 }
                 else
                 {
+                    NS_ASSERT("Expected ipv4/6 address in addressLocal");
                     // assert if a different address is found
                 }
             }

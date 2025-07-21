@@ -1046,15 +1046,8 @@ GlobalRouteManagerImpl::SPFNext(SPFVertex* v, CandidateQueue& candidate)
                 // the link state database.
                 //
 
-                if (m_isIpv4)
-                {
-                    w_lsa = m_lsdb->GetLSA(l->GetLinkIdv4());
-                }
-                else
-                {
-                    w_lsa = m_lsdb->GetLSA(
-                        l->GetLinkIdv4()); // no change since linkID for P2p is always v4
-                }
+                w_lsa =
+                    m_lsdb->GetLSA(l->GetLinkIdv4()); // no change since linkID for P2P is always v4
 
                 NS_ASSERT(w_lsa);
                 NS_LOG_LOGIC("Found a P2P record from " << v->GetVertexId() << " to "

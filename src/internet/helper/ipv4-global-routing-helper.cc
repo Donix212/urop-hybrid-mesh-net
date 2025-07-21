@@ -35,12 +35,10 @@ Ptr<Ipv4RoutingProtocol>
 Ipv4GlobalRoutingHelper::Create(Ptr<Node> node) const
 {
     NS_LOG_LOGIC("Adding GlobalRouter interface to node " << node->GetId());
-    bool IsIpv4 = true;
     Ptr<GlobalRouter> globalRouter;
     if (!node->GetObject<GlobalRouter>())
     {
         globalRouter = CreateObject<GlobalRouter>();
-        globalRouter->SetAddressType(IsIpv4);
         node->AggregateObject(globalRouter);
     }
     else
