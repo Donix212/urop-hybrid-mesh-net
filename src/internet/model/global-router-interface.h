@@ -104,6 +104,22 @@ class GlobalRoutingLinkRecord
                             uint16_t metric);
 
     /**
+     * Construct an initialized Global Routing Link Record.
+     *
+     * @param linkType The type of link record to construct.
+     * @param linkId The link ID for the record.
+     * @param linkData The link data field for the record.
+     * @param metric The metric field for the record.
+     * @see LinkType
+     * @see SetLinkId
+     * @see SetLinkData
+     */
+    GlobalRoutingLinkRecord(LinkType linkType,
+                            Ipv4Address linkId,
+                            Ipv6Address linkData,
+                            uint16_t metric);
+
+    /**
      * @brief Destroy a Global Routing Link Record.
      *
      * Currently does nothing.  Here as a placeholder only.

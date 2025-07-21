@@ -10,6 +10,7 @@
 #define CANDIDATE_QUEUE_H
 
 #include "ns3/ipv4-address.h"
+#include "ns3/ipv6-address.h"
 
 #include <list>
 #include <stdint.h>
@@ -132,6 +133,10 @@ class CandidateQueue
      * @returns The SPFVertex* pointer corresponding to the given IP address.
      */
     SPFVertex* Find(const Ipv4Address addr) const;
+
+    SPFVertex* Find(const Ipv6Address addr) const;
+
+    SPFVertex* Find(const Address addr) const;
 
     /**
      * @brief Reorders the Candidate Queue according to the priority scheme.

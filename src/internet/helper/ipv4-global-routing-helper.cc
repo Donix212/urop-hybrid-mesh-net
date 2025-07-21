@@ -60,16 +60,16 @@ Ipv4GlobalRoutingHelper::PopulateRoutingTables()
 {
     bool IsIpv4 = true;
     GlobalRouter::SetAddressType(IsIpv4);
-    GlobalRouteManager::BuildGlobalRoutingDatabase();
-    GlobalRouteManager::InitializeRoutes();
+    GlobalRouteManager::BuildGlobalRoutingDatabasev4();
+    GlobalRouteManager::InitializeRoutesv4();
 }
 
 void
 Ipv4GlobalRoutingHelper::RecomputeRoutingTables()
 {
-    GlobalRouteManager::DeleteGlobalRoutes();
-    GlobalRouteManager::BuildGlobalRoutingDatabase();
-    GlobalRouteManager::InitializeRoutes();
+    GlobalRouteManager::DeleteGlobalRoutesv4();
+    GlobalRouteManager::BuildGlobalRoutingDatabasev4();
+    GlobalRouteManager::InitializeRoutesv4();
 }
 
 } // namespace ns3

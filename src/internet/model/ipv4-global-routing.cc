@@ -521,9 +521,9 @@ Ipv4GlobalRouting::NotifyInterfaceUp(uint32_t i)
     NS_LOG_FUNCTION(this << i);
     if (m_respondToInterfaceEvents && Simulator::Now().GetSeconds() > 0) // avoid startup events
     {
-        GlobalRouteManager::DeleteGlobalRoutes();
-        GlobalRouteManager::BuildGlobalRoutingDatabase();
-        GlobalRouteManager::InitializeRoutes();
+        GlobalRouteManager::DeleteGlobalRoutesv4();
+        GlobalRouteManager::BuildGlobalRoutingDatabasev4();
+        GlobalRouteManager::InitializeRoutesv4();
     }
 }
 
@@ -533,9 +533,9 @@ Ipv4GlobalRouting::NotifyInterfaceDown(uint32_t i)
     NS_LOG_FUNCTION(this << i);
     if (m_respondToInterfaceEvents && Simulator::Now().GetSeconds() > 0) // avoid startup events
     {
-        GlobalRouteManager::DeleteGlobalRoutes();
-        GlobalRouteManager::BuildGlobalRoutingDatabase();
-        GlobalRouteManager::InitializeRoutes();
+        GlobalRouteManager::DeleteGlobalRoutesv4();
+        GlobalRouteManager::BuildGlobalRoutingDatabasev4();
+        GlobalRouteManager::InitializeRoutesv4();
     }
 }
 
@@ -545,9 +545,9 @@ Ipv4GlobalRouting::NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress add
     NS_LOG_FUNCTION(this << interface << address);
     if (m_respondToInterfaceEvents && Simulator::Now().GetSeconds() > 0) // avoid startup events
     {
-        GlobalRouteManager::DeleteGlobalRoutes();
-        GlobalRouteManager::BuildGlobalRoutingDatabase();
-        GlobalRouteManager::InitializeRoutes();
+        GlobalRouteManager::DeleteGlobalRoutesv4();
+        GlobalRouteManager::BuildGlobalRoutingDatabasev4();
+        GlobalRouteManager::InitializeRoutesv4();
     }
 }
 
@@ -557,9 +557,9 @@ Ipv4GlobalRouting::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress 
     NS_LOG_FUNCTION(this << interface << address);
     if (m_respondToInterfaceEvents && Simulator::Now().GetSeconds() > 0) // avoid startup events
     {
-        GlobalRouteManager::DeleteGlobalRoutes();
-        GlobalRouteManager::BuildGlobalRoutingDatabase();
-        GlobalRouteManager::InitializeRoutes();
+        GlobalRouteManager::DeleteGlobalRoutesv4();
+        GlobalRouteManager::BuildGlobalRoutingDatabasev4();
+        GlobalRouteManager::InitializeRoutesv4();
     }
 }
 

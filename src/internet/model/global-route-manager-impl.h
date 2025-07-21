@@ -153,7 +153,7 @@ class SPFVertex
      *
      * @returns The Ipv4Address Vertex ID of the current SPFVertex object.
      */
-    Ipv4Address GetVertexId() const;
+    Address GetVertexId() const;
 
     /**
      * @brief Set the Vertex ID field of a SPFVertex object.
@@ -170,6 +170,38 @@ class SPFVertex
      * @param id The new Ipv4Address Vertex ID for the current SPFVertex object.
      */
     void SetVertexId(Ipv4Address id);
+
+    /**
+     * @brief Set the Vertex ID field of a SPFVertex object.
+     *
+     * The Vertex ID uniquely identifies the simulation object a given SPFVertex
+     * represents.  Typically, this is the Router ID for SPFVertex objects
+     * representing routers, and comes from the Link State Advertisement of a
+     * router aggregated to a node in the simulation.  These IDs are allocated
+     * automatically by the routing environment and look like IP addresses
+     * beginning at 0.0.0.0 and monotonically increase as new routers are
+     * instantiated.  This method is an explicit override of the automatically
+     * generated value.
+     *
+     * @param id The new Ipv4Address Vertex ID for the current SPFVertex object.
+     */
+    void SetVertexId(Ipv6Address id);
+
+    /**
+     * @brief Set the Vertex ID field of a SPFVertex object.
+     *
+     * The Vertex ID uniquely identifies the simulation object a given SPFVertex
+     * represents.  Typically, this is the Router ID for SPFVertex objects
+     * representing routers, and comes from the Link State Advertisement of a
+     * router aggregated to a node in the simulation.  These IDs are allocated
+     * automatically by the routing environment and look like IP addresses
+     * beginning at 0.0.0.0 and monotonically increase as new routers are
+     * instantiated.  This method is an explicit override of the automatically
+     * generated value.
+     *
+     * @param id The new Ipv4Address Vertex ID for the current SPFVertex object.
+     */
+    void SetVertexId(Address id);
 
     /**
      * @brief Get the Global Router Link State Advertisement returned by the
@@ -581,7 +613,7 @@ class SPFVertex
 
   private:
     VertexType m_vertexType;                            //!< Vertex type
-    Ipv4Address m_vertexId;                             //!< Vertex ID
+    Address m_vertexId;                                 //!< Vertex ID
     GlobalRoutingLSA* m_lsa;                            //!< Link State Advertisement
     uint32_t m_distanceFromRoot;                        //!< Distance from root node
     int32_t m_rootOif;                                  //!< root Output Interface
@@ -662,6 +694,36 @@ class GlobalRouteManagerLSDB
     void Insert(Ipv4Address addr, GlobalRoutingLSA* lsa);
 
     /**
+     * @brief Insert an IP address / Link State Advertisement pair into the Link
+     * State Database.
+     *
+     * The IPV4 address and the GlobalRoutingLSA given as parameters are converted
+     * to an STL pair and are inserted into the database map.
+     *
+     * @see GlobalRoutingLSA
+     * @see Ipv4Address
+     * @param addr The IP address associated with the LSA.  Typically the Router
+     * ID.
+     * @param lsa A pointer to the Link State Advertisement for the router.
+     */
+    void Insert(Ipv6Address addr, GlobalRoutingLSA* lsa);
+
+    /**
+     * @brief Insert an IP address / Link State Advertisement pair into the Link
+     * State Database.
+     *
+     * The IPV4 address and the GlobalRoutingLSA given as parameters are converted
+     * to an STL pair and are inserted into the database map.
+     *
+     * @see GlobalRoutingLSA
+     * @see Ipv4Address
+     * @param addr The IP address associated with the LSA.  Typically the Router
+     * ID.
+     * @param lsa A pointer to the Link State Advertisement for the router.
+     */
+    void Insert(Address addr, GlobalRoutingLSA* lsa);
+
+    /**
      * @brief Look up the Link State Advertisement associated with the given
      * link state ID (address).
      *
@@ -676,6 +738,39 @@ class GlobalRouteManagerLSDB
      * by the IP address addr.
      */
     GlobalRoutingLSA* GetLSA(Ipv4Address addr) const;
+
+    /**
+     * @brief Look up the Link State Advertisement associated with the given
+     * link state ID (address).
+     *
+     * The database map is searched for the given IPV4 address and corresponding
+     * GlobalRoutingLSA is returned.
+     *
+     * @see GlobalRoutingLSA
+     * @see Ipv4Address
+     * @param addr The IP address associated with the LSA.  Typically the Router
+     * ID.
+     * @returns A pointer to the Link State Advertisement for the router specified
+     * by the IP address addr.
+     */
+    GlobalRoutingLSA* GetLSA(Ipv6Address addr) const;
+
+    /**
+     * @brief Look up the Link State Advertisement associated with the given
+     * link state ID (address).
+     *
+     * The database map is searched for the given IPV4 address and corresponding
+     * GlobalRoutingLSA is returned.
+     *
+     * @see GlobalRoutingLSA
+     * @see Ipv4Address
+     * @param addr The IP address associated with the LSA.  Typically the Router
+     * ID.
+     * @returns A pointer to the Link State Advertisement for the router specified
+     * by the IP address addr.
+     */
+    GlobalRoutingLSA* GetLSA(Address addr) const;
+
     /**
      * @brief Look up the Link State Advertisement associated with the given
      * link state ID (address).  This is a variation of the GetLSA call
@@ -689,6 +784,8 @@ class GlobalRouteManagerLSDB
      * ID.
      */
     GlobalRoutingLSA* GetLSAByLinkData(Ipv4Address addr) const;
+
+    GlobalRoutingLSA* GetLSAByLinkData(Ipv6Address addr) const;
 
     /**
      * @brief Set all LSA flags to an initialized state, for SPF computation
@@ -723,14 +820,15 @@ class GlobalRouteManagerLSDB
      */
     uint32_t GetNumExtLSAs() const;
 
-    bool GlobalRouteManagerLSDB::GetAddressType();
+    bool GetAddressType() const;
 
-    void GlobalRouteManagerLSDB::SetAddressType(bool IsIpv4);
+    void SetAddressType(bool IsIpv4);
 
   private:
-    typedef std::map<Ipv4Address, GlobalRoutingLSA*>
+    typedef std::map<Address, GlobalRoutingLSA*>
         LSDBMap_t; //!< container of IPv4 addresses / Link State Advertisements
-    typedef std::pair<Ipv4Address, GlobalRoutingLSA*>
+
+    typedef std::pair<Address, GlobalRoutingLSA*>
         LSDBPair_t; //!< pair of IPv4 addresses / Link State Advertisements
 
     LSDBMap_t m_database; //!< database of IPv4 addresses / Link State Advertisements
@@ -977,6 +1075,15 @@ class GlobalRouteManagerImpl
      * @return the outgoing interface number
      */
     int32_t FindOutgoingInterfaceId(Ipv4Address a, Ipv4Mask amask = Ipv4Mask("255.255.255.255"));
+
+    int32_t FindOutgoingInterfaceId(Ipv6Address a, Ipv6Prefix aprefix = Ipv6Prefix::GetOnes());
+
+    bool GetAddressType() const;
+
+    void SetAddressType(bool IsIpv4);
+
+  private:
+    static bool m_isIpv4;
 };
 
 } // namespace ns3

@@ -47,7 +47,35 @@ GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
                                                  Ipv4Address linkData,
                                                  uint16_t metric)
     : m_linkType(linkType),
-      m_metric(metric)
+      m_metric(metric),
+      m_linkIdv4(linkId),
+      m_linkDatav4(linkData)
+
+{
+    NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
+}
+
+GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
+                                                 Ipv6Address linkId,
+                                                 Ipv6Address linkData,
+                                                 uint16_t metric)
+    : m_linkType(linkType),
+      m_metric(metric),
+      m_linkIdv6(linkId),
+      m_linkDatav6(linkData)
+{
+    NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
+}
+
+GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
+                                                 Ipv4Address linkId,
+                                                 Ipv6Address linkData,
+                                                 uint16_t metric)
+    : m_linkType(linkType),
+      m_metric(metric),
+      m_linkIdv4(linkId),
+      m_linkDatav6(linkData)
+
 {
     NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
 }
@@ -233,8 +261,7 @@ GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA::SPFStatus status,
       m_linkRecordsv6(),
       m_networkLSANetworkMask("0.0.0.0"),
       m_status(status),
-      m_node_id(0),
-      m_isIpv4(true)
+      m_node_id(0)
 {
     NS_LOG_FUNCTION(this << status << linkStateId << advertisingRtr);
 }
@@ -558,6 +585,13 @@ GlobalRoutingLSA::GetNAttachedRoutersv4() const
     return m_attachedRoutersv4.size();
 }
 
+uint32_t
+GlobalRoutingLSA::GetNAttachedRoutersv6() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_attachedRoutersv6.size();
+}
+
 Ipv4Address
 GlobalRoutingLSA::GetAttachedRouterv4(uint32_t n) const
 {
@@ -782,6 +816,8 @@ operator<<(std::ostream& os, GlobalRoutingLSA& lsa)
 // ---------------------------------------------------------------------------
 
 NS_OBJECT_ENSURE_REGISTERED(GlobalRouter);
+
+bool GlobalRouter::m_isIpv4 = true;
 
 TypeId
 GlobalRouter::GetTypeId()
