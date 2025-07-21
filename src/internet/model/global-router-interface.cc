@@ -46,11 +46,10 @@ GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
                                                  Ipv4Address linkId,
                                                  Ipv4Address linkData,
                                                  uint16_t metric)
-    : m_linkType(linkType),
-      m_metric(metric),
-      m_linkIdv4(linkId),
-      m_linkDatav4(linkData)
-
+    : m_linkIdv4(linkId),
+      m_linkDatav4(linkData),
+      m_linkType(linkType),
+      m_metric(metric)
 {
     NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
 }
@@ -59,10 +58,10 @@ GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
                                                  Ipv6Address linkId,
                                                  Ipv6Address linkData,
                                                  uint16_t metric)
-    : m_linkType(linkType),
-      m_metric(metric),
-      m_linkIdv6(linkId),
-      m_linkDatav6(linkData)
+    : m_linkIdv6(linkId),
+      m_linkDatav6(linkData),
+      m_linkType(linkType),
+      m_metric(metric)
 {
     NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
 }
@@ -71,10 +70,10 @@ GlobalRoutingLinkRecord::GlobalRoutingLinkRecord(LinkType linkType,
                                                  Ipv4Address linkId,
                                                  Ipv6Address linkData,
                                                  uint16_t metric)
-    : m_linkType(linkType),
-      m_metric(metric),
-      m_linkIdv4(linkId),
-      m_linkDatav6(linkData)
+    : m_linkIdv4(linkId),
+      m_linkDatav6(linkData),
+      m_linkType(linkType),
+      m_metric(metric)
 
 {
     NS_LOG_FUNCTION(this << linkType << linkId << linkData << metric);
@@ -255,7 +254,7 @@ GlobalRoutingLSA::GlobalRoutingLSA(GlobalRoutingLSA::SPFStatus status,
                                    Address linkStateId,
                                    Ipv4Address advertisingRtr)
     : m_lsType(GlobalRoutingLSA::Unknown),
-      m_linkStateId(m_linkStateId),
+      m_linkStateId(linkStateId),
       m_advertisingRtr(advertisingRtr),
       m_linkRecordsv4(),
       m_linkRecordsv6(),
@@ -1504,7 +1503,7 @@ GlobalRouter::ProcessPointToPointLink(Ptr<NetDevice> ndLocal, GlobalRoutingLSA* 
     //
     Ptr<Node> nodeLocal = ndLocal->GetNode();
 
-    uint16_t metricLocal;
+    uint16_t metricLocal = 1; // initialize to 1 to avoid compiler warning
     Address addressLocal;
 
     if (m_isIpv4)
