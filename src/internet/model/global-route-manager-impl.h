@@ -406,7 +406,6 @@ class SPFVertex
      */
     void SetRootExitDirection(SPFVertex::NodeExitv4_t exit);
 
-
     /**
      * @brief Set the IP address and outgoing interface index that should be used
      * to begin forwarding packets from the root SPFVertex to "this" SPFVertex.
@@ -458,7 +457,7 @@ class SPFVertex
      */
     NodeExitv4_t GetRootExitDirectionv4(uint32_t i) const;
 
-      /**
+    /**
      * @brief Obtain a pair indicating the exit direction from the root
      *
      * @param i An index to a pair
@@ -479,7 +478,7 @@ class SPFVertex
      */
     NodeExitv4_t GetRootExitDirectionv4() const;
 
-        /**
+    /**
      * @brief Obtain a pair indicating the exit direction from the root
      *
      * This method assumes there is only a single exit direction from the root.
@@ -514,7 +513,7 @@ class SPFVertex
      */
     uint32_t GetNRootExitDirectionsv4() const;
 
-      /**
+    /**
      * @brief Get the number of exit directions from root for reaching 'this' vertex
      * @return The number of exit directions from root
      */
@@ -846,7 +845,7 @@ class GlobalRouteManagerLSDB
      */
     GlobalRoutingLSA* GetLSAByLinkData(Ipv4Address addr) const;
 
-        /**
+    /**
      * @brief Look up the Link State Advertisement associated with the given
      * link state ID (address).  This is a variation of the GetLSA call
      * to allow the LSA to be found by matching addr with the LinkData field
@@ -902,7 +901,7 @@ class GlobalRouteManagerLSDB
     /**
      * @brief Set the type of address we are doing route computation for
      * @param IsIpv4 true if Ipv4 is exported, false if Ipv6 is exported
-    */
+     */
     void SetAddressType(bool IsIpv4);
 
   private:
@@ -1157,7 +1156,7 @@ class GlobalRouteManagerImpl
      */
     int32_t FindOutgoingInterfaceId(Ipv4Address a, Ipv4Mask amask = Ipv4Mask("255.255.255.255"));
 
-       /**
+    /**
      * @brief Return the interface number corresponding to a given IP address and mask
      *
      * This is a wrapper around GetInterfaceForPrefix(), but we first
@@ -1171,17 +1170,16 @@ class GlobalRouteManagerImpl
      */
     int32_t FindOutgoingInterfaceId(Ipv6Address a, Ipv6Prefix aprefix = Ipv6Prefix::GetOnes());
 
-
     /**
      * @brief Get the type of address we are doing route computation for
      * @returns true if Ipv4  false if Ipv6
      */
     bool GetAddressType() const;
 
-      /**
+    /**
      * @brief Set the type of address we are doing route computation for
      * @param IsIpv4 true if Ipv4 is exported, false if Ipv6 is exported
-    */
+     */
     void SetAddressType(bool IsIpv4);
 
   private:

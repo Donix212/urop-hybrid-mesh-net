@@ -165,7 +165,7 @@ class GlobalRoutingLinkRecord
      */
     void SetLinkId(Ipv4Address addr);
 
-      /**
+    /**
      * @brief Set the Link ID field of the Global Routing Link Record.
      *
      * For an OSPF type 1 link (PointToPoint) the Link ID must be the Router ID
@@ -177,7 +177,6 @@ class GlobalRoutingLinkRecord
      * @param addr An Ipv6Address to store in the Link ID field of the record.
      */
     void SetLinkId(Ipv6Address addr);
-
 
     /**
      * @brief Set the Link ID field of the Global Routing Link Record.
@@ -317,7 +316,7 @@ class GlobalRoutingLinkRecord
      * For Type 3 link (Stub), set m_linkId to neighbor's IP address
      */
     std::optional<Ipv4Address> m_linkIdv4;
-      /**
+    /**
      * m_linkId and m_linkData are defined by OSPF to have different meanings
      * depending on the type of link a given link records represents.  They work
      * together.
@@ -340,7 +339,7 @@ class GlobalRoutingLinkRecord
      */
     std::optional<Ipv4Address> m_linkDatav4; // for links to RouterLSA,
 
-      /**
+    /**
      * m_linkId and m_linkData are defined by OSPF to have different meanings
      * depending on the type of link a given link records represents.  They work
      * together.
@@ -795,7 +794,6 @@ class GlobalRoutingLSA
      * A convenience typedef to avoid too much writers cramp.
      */
     typedef std::list<Ipv4Address> ListOfAttachedRouters_tv4;
-
 
     /**
      * A convenience typedef to avoid too much writers cramp.
