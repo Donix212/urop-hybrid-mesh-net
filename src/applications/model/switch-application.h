@@ -1,34 +1,32 @@
-#ifndef SWITCH_APP_H
-#define SWITCH_APP_H
+#ifndef SWITCH_APPLICATION_H
+#define SWITCH_APPLICATION_H
 
 #include "ns3/application.h"
 #include "ns3/socket.h"
 #include "ns3/ipv4-address.h"
 #include "cluster-packet-header.h"
-#include <vector>
 
 namespace ns3 {
 
-class SwitchApp : public Application {
+class SwitchApp : public Application
+{
 public:
-  static TypeId GetTypeId();
   SwitchApp();
   virtual ~SwitchApp();
 
-  void SetPeerList(const std::vector<Ipv4Address> &peers);
+  void Setup(Ipv4Address selfAddress, uint16_t port = 9000);
 
-protected:
+private:
   virtual void StartApplication() override;
   virtual void StopApplication() override;
 
-private:
   void HandleRead(Ptr<Socket> socket);
-  Ipv4Address DetermineNextHop(Ipv4Address dst);
 
   Ptr<Socket> m_socket;
-  std::vector<Ipv4Address> m_peerList;
+  Ipv4Address m_selfAddress;
+  uint16_t m_listenPort;
 };
 
 } // namespace ns3
 
-#endif /* SWITCH_APP_H */
+#endif // SWITCH_APPLICATION_H

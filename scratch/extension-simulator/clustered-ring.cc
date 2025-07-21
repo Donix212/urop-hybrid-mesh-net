@@ -2,8 +2,9 @@
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/csma-module.h"
-#include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/flow-monitor-helper.h"
+#include "ns3/ipv4.h"
 
 #include <vector>
 #include <sstream>
@@ -12,9 +13,9 @@ using namespace ns3;
 
 int main()
 {
-    uint32_t u_centralNodes = 1;        // example: 2 central nodes
-    uint32_t u_Nclusters = 2;           // example: 4 clusters
-    uint32_t u_nodesPerCluster = 2;     // example: 3 radial nodes per cluster
+    uint32_t u_centralNodes = 1;        // number of central nodes
+    uint32_t u_Nclusters = 2;           // number of clusters
+    uint32_t u_nodesPerCluster = 2;     // radial nodes per cluster
 
     // Create central nodes
     NodeContainer centralNodes;
@@ -29,14 +30,9 @@ int main()
         clusters.push_back(cluster);
     }
 
-    // Setup helpers
     CsmaHelper csma;
     csma.SetChannelAttribute("DataRate", StringValue("100Mbps"));
     csma.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
-
-    PointToPointHelper p2p;
-    p2p.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    p2p.SetChannelAttribute("Delay", StringValue("2ms"));
 
     InternetStackHelper internet;
     Ipv4AddressHelper ipv4;
@@ -48,54 +44,7 @@ int main()
         internet.Install(cluster);
     }
 
-    // Mesh the central nodes with P2P if more than 1 central node
-    NetDeviceContainer centralDevices;
-    if (u_centralNodes > 1)
-    {
-        for (uint32_t i = 0; i < u_centralNodes; ++i)
-        {
-            for (uint32_t j = i + 1; j < u_centralNodes; ++j)
-            {
-                NodeContainer pair;
-                pair.Add(centralNodes.Get(i));
-                pair.Add(centralNodes.Get(j));
-                NetDeviceContainer link = p2p.Install(pair);
-                centralDevices.Add(link);
-            }
-        }
-
-        ipv4.SetBase("10.0.0.0", "255.255.255.0");
-        Ipv4InterfaceContainer centralInterfaces = ipv4.Assign(centralDevices);
-
-        for (uint32_t i = 0; i < u_centralNodes; ++i)
-        {
-            // Note: central node may have multiple devices if connected to multiple others;
-            // we print the first interface assigned here (adjust as needed).
-            std::cout << "Central Node " << i << " IP(s): ";
-            for (uint32_t d = 0; d < centralNodes.Get(i)->GetNDevices(); ++d)
-            {
-                Ptr<NetDevice> dev = centralNodes.Get(i)->GetDevice(d);
-                Ptr<Ipv4> ipv4 = centralNodes.Get(i)->GetObject<Ipv4>();
-                if (ipv4)
-                {
-                    Ipv4InterfaceAddress addr = ipv4->GetAddress(d, 0);
-                    std::cout << addr.GetLocal() << " ";
-                }
-            }
-            std::cout << std::endl;
-        }
-    }
-    else if (u_centralNodes == 1)
-    {
-        // Single central node, no mesh needed
-        internet.Install(centralNodes);
-        std::cout << "Central Node 0 (single node), no extra IPs assigned here." << std::endl;
-    }
-
-    // For each cluster, create one CSMA LAN including:
-    // - all radial nodes in cluster
-    // - the assigned central node
-    // Assign IPs once per node in this LAN.
+    // Now build one CSMA LAN per cluster including the assigned central node
     std::vector<Ipv4InterfaceContainer> clusterInterfaces;
     std::vector<Ipv4Address> peerList;
 
@@ -104,8 +53,8 @@ int main()
         uint32_t centralIdx = c % u_centralNodes;
 
         NodeContainer lanNodes;
-        lanNodes.Add(centralNodes.Get(centralIdx));
-        lanNodes.Add(clusters[c]);
+        lanNodes.Add(centralNodes.Get(centralIdx));  // Add central node
+        lanNodes.Add(clusters[c]);                     // Add radial nodes of cluster
 
         NetDeviceContainer devices = csma.Install(lanNodes);
 
@@ -117,46 +66,55 @@ int main()
         clusterInterfaces.push_back(interfaces);
 
         std::cout << "Cluster " << c << ", Central Node " << centralIdx
-                << ", IP: " << interfaces.GetAddress(0) << std::endl;
+                  << ", IP: " << interfaces.GetAddress(0) << std::endl;
 
         for (uint32_t i = 0; i < u_nodesPerCluster; ++i)
         {
-            Ipv4Address radialIp = interfaces.GetAddress(i + 1); // radial node IP
-            peerList.push_back(radialIp);  // Collect radial node IPs
-
+            Ipv4Address radialIp = interfaces.GetAddress(i + 1); // radial nodes start at index 1
+            peerList.push_back(radialIp);
             std::cout << "Cluster " << c << ", Radial Node " << i
-                    << ", IP: " << radialIp << std::endl;
+                      << ", IP: " << radialIp << std::endl;
         }
     }
 
-    // Populate routing tables
+    // Routing: use global routing to automatically handle routes between clusters
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
-    // Create ASCII trace helper and file stream for routing tables
-    AsciiTraceHelper ascii;
-    Ptr<OutputStreamWrapper> routingStream = ascii.CreateFileStream("scratch/extension-simulator/routing-tables.log");
-
-    // Schedule printing routing tables at 1 second
-    Ipv4GlobalRoutingHelper::PrintRoutingTableAllAt(Seconds(1.0), routingStream);
-
-    // Application containers and app installation (as before)
+    // Install applications on central nodes
     ApplicationContainer apps;
-
     for (uint32_t i = 0; i < u_centralNodes; ++i)
     {
+        Ipv4Address centralIp;
+        for (uint32_t c = 0; c < u_Nclusters; ++c)
+        {
+            if ((c % u_centralNodes) == i)
+            {
+                centralIp = clusterInterfaces[c].GetAddress(0);
+                break;
+            }
+        }
+        if (centralIp == Ipv4Address::GetAny())
+        {
+            std::cerr << "[SwitchApp Setup] No IP found for central node " << i << std::endl;
+            continue;
+        }
         Ptr<SwitchApp> peer = CreateObject<SwitchApp>();
+        peer->Setup(centralIp, 9000);
         Ptr<Node> node = centralNodes.Get(i);
         node->AddApplication(peer);
         apps.Add(peer);
+
+        std::cout << "[SwitchApp Setup] Installed on Central Node " << i << " with IP " << centralIp << std::endl;
     }
 
+    // Install applications on radial nodes
     for (uint32_t c = 0; c < u_Nclusters; ++c)
     {
         for (uint32_t i = 0; i < u_nodesPerCluster; ++i)
         {
             Ptr<RadialApp> peer = CreateObject<RadialApp>();
             peer->SetPeerList(peerList);
-            Ipv4Address selfIp = clusterInterfaces[c].GetAddress(i + 1); // +1 because 0 is central node IP
+            Ipv4Address selfIp = clusterInterfaces[c].GetAddress(i + 1);
             peer->Setup(selfIp);
             Ptr<Node> node = clusters[c].Get(i);
             node->AddApplication(peer);
@@ -167,8 +125,18 @@ int main()
     apps.Start(Seconds(0.0));
     apps.Stop(Seconds(10.0));
 
+    AsciiTraceHelper ascii;
+    csma.EnableAsciiAll(ascii.CreateFileStream("scratch/extension-simulator/csma-routing.tr"));
+    csma.EnablePcapAll("scratch/extension-simulator/csma-trace", true);
+
+    // Flow Monitor
+    FlowMonitorHelper flowmonHelper;
+    flowmonHelper.InstallAll();
+
     Simulator::Run();
     Simulator::Destroy();
+
+    flowmonHelper.SerializeToXmlFile("scratch/extension-simulator/extension-routing.flowmon", false, false);
 
     return 0;
 }

@@ -1,96 +1,92 @@
 #include "switch-application.h"
 #include "ns3/log.h"
-#include "ns3/udp-socket-factory.h"
 #include "ns3/inet-socket-address.h"
+#include "ns3/udp-socket-factory.h"
 #include "ns3/packet.h"
-#include "ns3/random-variable-stream.h"  // for UniformRandomVariable
-#include "ns3/simulator.h"              // for Simulator::Schedule
-#include "ns3/ipv4.h"
-#include <ctime>
+
+#include <iostream>
 
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("SwitchApp");
-NS_OBJECT_ENSURE_REGISTERED(SwitchApp);
 
-TypeId SwitchApp::GetTypeId() {
-  static TypeId tid = TypeId("ns3::SwitchApp")
-                          .SetParent<Application>()
-                          .SetGroupName("Applications")
-                          .AddConstructor<SwitchApp>();
-  return tid;
+SwitchApp::SwitchApp()
+  : m_socket(0),
+    m_listenPort(9000)
+{
 }
 
-SwitchApp::SwitchApp() : m_socket(nullptr) {}
-
-SwitchApp::~SwitchApp() {
-  if (m_socket) {
-    m_socket->Close();
-    m_socket = nullptr;
-  }
+SwitchApp::~SwitchApp()
+{
+  m_socket = 0;
 }
 
-void SwitchApp::SetPeerList(const std::vector<Ipv4Address> &peers) {
-  m_peerList = peers;
+void SwitchApp::Setup(Ipv4Address selfAddress, uint16_t port)
+{
+  m_selfAddress = selfAddress;
+  m_listenPort = port;
 }
 
-void SwitchApp::StartApplication() {
-  m_socket = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
-  m_socket->Bind(InetSocketAddress(Ipv4Address::GetAny(), 9999));
-  m_socket->SetRecvCallback(MakeCallback(&SwitchApp::HandleRead, this));
-  NS_LOG_INFO("SwitchApp started on node " << GetNode()->GetId());
-}
-
-void SwitchApp::StopApplication() {
-  if (m_socket) {
-    m_socket->Close();
-    m_socket = nullptr;
-  }
-}
-
-Ipv4Address SwitchApp::DetermineNextHop(Ipv4Address dst) {
-  // Simple logic: Forward to the destination directly if in peerList
-  for (const auto &peer : m_peerList) {
-    if (peer == dst) {
-      return dst;
+void SwitchApp::StartApplication()
+{
+  if (!m_socket)
+  {
+    m_socket = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
+    InetSocketAddress local = InetSocketAddress(m_selfAddress, m_listenPort);
+    if (m_socket->Bind(local) != 0)
+    {
+      std::cerr << "[SwitchApp] Failed to bind socket to " << m_selfAddress << ":" << m_listenPort << std::endl;
     }
+    else
+    {
+      std::cout << "[SwitchApp] Bound socket on " << m_selfAddress << ":" << m_listenPort << std::endl;
+    }
+
+    m_socket->SetRecvCallback(MakeCallback(&SwitchApp::HandleRead, this));
   }
-  // Otherwise, pick random peer (could be extended)
-  if (!m_peerList.empty()) {
-    return m_peerList[0]; // fallback
-  }
-  return Ipv4Address::GetZero();
 }
 
-void SwitchApp::HandleRead(Ptr<Socket> socket) {
+void SwitchApp::StopApplication()
+{
+  if (m_socket)
+  {
+    m_socket->Close();
+    m_socket = 0;
+  }
+}
+
+void SwitchApp::HandleRead(Ptr<Socket> socket)
+{
   Address from;
   Ptr<Packet> packet = socket->RecvFrom(from);
-  InetSocketAddress srcAddr = InetSocketAddress::ConvertFrom(from);
+
+  std::cout << "[SwitchApp] Packet received on central node " << m_selfAddress << std::endl;
 
   ClusterPacketHeader header;
-  if (!packet->RemoveHeader(header)) {
-    NS_LOG_WARN("SwitchApp: Failed to remove header");
+  if (!packet->PeekHeader(header))
+  {
+    std::cerr << "[SwitchApp] Failed to parse ClusterPacketHeader" << std::endl;
     return;
   }
 
-  // Log metadata to stdout
-  std::time_t now = std::time(nullptr);
-  NS_LOG_UNCOND("[" << std::ctime(&now) << "] Central Node " << GetNode()->GetId()
-                   << " forwarding packet: " << header
-                   << " received from " << srcAddr.GetIpv4());
+  packet->RemoveHeader(header);
 
-  // Increment hop count and re-attach header
+  std::cout << "HOP, " << header.GetSource()
+            << ", " << header.GetDestination()
+            << ", Seq=" << header.GetSequenceNumber()
+            << ", Hop=" << header.GetHopCount() << std::endl;
+
+  // Increment hop count
   header.IncrementHopCount();
+
+  // Add the header back
   packet->AddHeader(header);
 
-  Ipv4Address nextHop = DetermineNextHop(header.GetDestination());
+  // Forward the packet
+  InetSocketAddress remote = InetSocketAddress(header.GetDestination(), m_listenPort);
+  m_socket->SendTo(packet, 0, remote);
 
-  if (nextHop == Ipv4Address::GetZero()) {
-    NS_LOG_WARN("SwitchApp: No valid next hop for destination " << header.GetDestination());
-    return;
-  }
-
-  m_socket->SendTo(packet, 0, InetSocketAddress(nextHop, 9999));
+  std::cout << "[SwitchApp] Forwarded packet to " << header.GetDestination() << std::endl;
 }
 
 } // namespace ns3

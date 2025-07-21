@@ -93,22 +93,26 @@ void RadialApp::SendPacket()
 }
 
 
-void RadialApp::HandleRead(Ptr<Socket> socket) {
+void RadialApp::HandleRead(Ptr<Socket> socket)
+{
     Address from;
-    Ptr<Packet> packet;
-    while ((packet = socket->RecvFrom(from)) != nullptr) {
-        InetSocketAddress address = InetSocketAddress::ConvertFrom(from);
-
-        ClusterPacketHeader header;
-        if (!packet->RemoveHeader(header)) {
-            NS_LOG_ERROR("Packet received without ClusterPacketHeader, dropping");
-            continue;
-        }
-
-        NS_LOG_INFO("RECV, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber());
-        std::cout << "RECV, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber() << std::endl;
+    Ptr<Packet> packet = socket->RecvFrom(from);
+    if (packet == nullptr) {
+        NS_LOG_WARN("Received null packet");
+        return;
     }
+
+    ClusterPacketHeader header;
+    bool success = packet->RemoveHeader(header);
+    if (!success) {
+        NS_LOG_WARN("Failed to remove ClusterPacketHeader");
+        return;
+    }
+
+    NS_LOG_INFO("RECV, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber());
+    std::cout << "RECV, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber() << std::endl;
 }
+
 
 
 } // namespace ns3
