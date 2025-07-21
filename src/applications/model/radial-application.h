@@ -1,22 +1,21 @@
-#ifndef RADIAL_APP_H
-#define RADIAL_APP_H
+#ifndef RADIAL_APPLICATION_H
+#define RADIAL_APPLICATION_H
 
 #include "ns3/application.h"
 #include "ns3/socket.h"
 #include "ns3/ipv4-address.h"
-#include "cluster-packet-header.h"
 #include <vector>
 
 namespace ns3 {
 
-class RadialApp : public Application {
+class RadialApp : public Application
+{
 public:
-  static TypeId GetTypeId();
   RadialApp();
   virtual ~RadialApp();
 
-  void SetPeerList(const std::vector<Ipv4Address> &peers);
-  void SetCentralNodeIp(Ipv4Address centralIp);
+  void SetPeerList(const std::vector<Ipv4Address>& peers);
+  void Setup(Ipv4Address selfAddr);
 
 protected:
   virtual void StartApplication() override;
@@ -27,11 +26,12 @@ private:
   void HandleRead(Ptr<Socket> socket);
 
   Ptr<Socket> m_socket;
+  uint16_t m_peerPort;
+  Ipv4Address m_selfAddress;
   std::vector<Ipv4Address> m_peerList;
-  Ipv4Address m_centralIp;
-  bool m_running;
+  uint32_t m_seq; // sequence number for packets
 };
 
 } // namespace ns3
 
-#endif /* RADIAL_APP_H */
+#endif // RADIAL_APPLICATION_H

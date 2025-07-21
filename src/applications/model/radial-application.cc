@@ -1,101 +1,114 @@
 #include "radial-application.h"
+#include "cluster-packet-header.h" // <-- Include your custom header
 #include "ns3/log.h"
-#include "ns3/udp-socket-factory.h"
 #include "ns3/inet-socket-address.h"
 #include "ns3/packet.h"
-#include "ns3/random-variable-stream.h"  // for UniformRandomVariable
-#include "ns3/simulator.h"              // for Simulator::Schedule
-#include "ns3/ipv4.h"
-#include <ctime>
+#include "ns3/uinteger.h"
+#include "ns3/simulator.h"
+#include "ns3/random-variable-stream.h"
+#include "ns3/udp-socket-factory.h"
+
+#include <iostream>
 
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("RadialApp");
-NS_OBJECT_ENSURE_REGISTERED(RadialApp);
 
-TypeId RadialApp::GetTypeId() {
-  static TypeId tid = TypeId("ns3::RadialApp")
-                          .SetParent<Application>()
-                          .SetGroupName("Applications")
-                          .AddConstructor<RadialApp>();
-  return tid;
+RadialApp::RadialApp()
+  : m_socket(0),
+    m_peerPort(9000),
+    m_seq(0) // Initialize sequence number
+{
 }
 
-RadialApp::RadialApp() : m_socket(nullptr), m_running(false) {}
-
-RadialApp::~RadialApp() {
-  if (m_socket) {
-    m_socket->Close();
-    m_socket = nullptr;
-  }
+RadialApp::~RadialApp()
+{
+  m_socket = 0;
 }
 
-void RadialApp::SetPeerList(const std::vector<Ipv4Address> &peers) {
+void RadialApp::SetPeerList(const std::vector<Ipv4Address>& peers)
+{
   m_peerList = peers;
 }
 
-void RadialApp::SetCentralNodeIp(Ipv4Address centralIp) {
-  m_centralIp = centralIp;
+void RadialApp::Setup(Ipv4Address selfAddr)
+{
+  m_selfAddress = selfAddr;
 }
 
-void RadialApp::StartApplication() {
-  m_socket = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
-  m_socket->Bind(InetSocketAddress(Ipv4Address::GetAny(), 9999));
-  m_socket->SetRecvCallback(MakeCallback(&RadialApp::HandleRead, this));
-  m_running = true;
+void RadialApp::StartApplication()
+{
+  if (!m_socket)
+  {
+    m_socket = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
+    InetSocketAddress local = InetSocketAddress(m_selfAddress, m_peerPort);
+    m_socket->Bind(local);
+    m_socket->SetRecvCallback(MakeCallback(&RadialApp::HandleRead, this));
+  }
 
-  // Schedule first send after 1 second
-  Simulator::Schedule(Seconds(1.0), &RadialApp::SendPacket, this);
-  NS_LOG_INFO("RadialApp started on node " << GetNode()->GetId());
+  Simulator::ScheduleNow(&RadialApp::SendPacket, this);
 }
 
-void RadialApp::StopApplication() {
-  m_running = false;
-  if (m_socket) {
+void RadialApp::StopApplication()
+{
+  if (m_socket)
+  {
     m_socket->Close();
-    m_socket = nullptr;
+    m_socket = 0;
   }
 }
 
-void RadialApp::SendPacket() {
-  if (m_peerList.size() < 2) return;
+void RadialApp::SendPacket()
+{
+  if (m_peerList.empty())
+    return;
 
   Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable>();
-  Ipv4Address dst;
-  Ipv4Address selfIp = GetNode()->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
+  Ipv4Address target;
 
   do {
-    dst = m_peerList[uv->GetInteger(0, m_peerList.size() - 1)];
-  } while (dst == selfIp);
+    target = m_peerList[uv->GetValue(0, m_peerList.size() - 1)];
+  } while (target == m_selfAddress);
 
-  std::ostringstream msgStream;
-  msgStream << "Hello from node " << GetNode()->GetId() << " to " << dst;
-  std::string msg = msgStream.str();
+  Ptr<Packet> packet = Create<Packet>();
 
-  Ptr<Packet> packet = Create<Packet>((uint8_t*)msg.c_str(), msg.size());
-  m_socket->SendTo(packet, 0, InetSocketAddress(dst, 9999));
+  // Create and set cluster header
+  ClusterPacketHeader header;
+  header.SetSource(m_selfAddress);
+  header.SetDestination(target);
+  header.SetSequenceNumber(m_seq++);
 
-  NS_LOG_UNCOND("RadialApp: Node " << GetNode()->GetId()
-                                   << " sent packet to " << dst
-                                   << " | Size: " << msg.size());
+  packet->AddHeader(header);
 
-  Simulator::Schedule(Seconds(1.0), &RadialApp::SendPacket, this);
+  InetSocketAddress remote = InetSocketAddress(target, m_peerPort);
+  m_socket->SendTo(packet, 0, remote);
+
+  // Print full header info instead of just IPs
+  NS_LOG_INFO("SEND, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber());
+  std::cout << "SEND, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber() << std::endl;
+
+  Ptr<UniformRandomVariable> delay = CreateObject<UniformRandomVariable>();
+  double interval = delay->GetValue(1.0, 5.0);
+  Simulator::Schedule(Seconds(interval), &RadialApp::SendPacket, this);
 }
 
 
 void RadialApp::HandleRead(Ptr<Socket> socket) {
-  Address from;
-  Ptr<Packet> packet = socket->RecvFrom(from);
-  InetSocketAddress srcAddr = InetSocketAddress::ConvertFrom(from);
+    Address from;
+    Ptr<Packet> packet;
+    while ((packet = socket->RecvFrom(from)) != nullptr) {
+        InetSocketAddress address = InetSocketAddress::ConvertFrom(from);
 
-  uint8_t buffer[1024];
-  packet->CopyData(buffer, 1024);
-  std::string msg(reinterpret_cast<char *>(buffer), packet->GetSize());
+        ClusterPacketHeader header;
+        if (!packet->RemoveHeader(header)) {
+            NS_LOG_ERROR("Packet received without ClusterPacketHeader, dropping");
+            continue;
+        }
 
-  std::time_t now = std::time(nullptr);
-  NS_LOG_UNCOND("[" << std::ctime(&now) << "] Radial node " << GetNode()->GetId()
-                   << " received message from " << srcAddr.GetIpv4()
-                   << ": " << msg);
+        NS_LOG_INFO("RECV, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber());
+        std::cout << "RECV, " << header.GetSource() << ", " << header.GetDestination() << ", Seq=" << header.GetSequenceNumber() << std::endl;
+    }
 }
+
 
 } // namespace ns3
