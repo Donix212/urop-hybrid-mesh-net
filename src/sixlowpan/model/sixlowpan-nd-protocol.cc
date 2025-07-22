@@ -370,6 +370,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     }
 
     Ptr<Packet> packet = pkt->Copy();
+    // std::cout << *packet << "\n";
 
     Icmpv6NS nsHdr;
     Icmpv6OptionLinkLayerAddress sllaoHdr(true);              /* SLLAO */
@@ -390,6 +391,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     {
         // Let the "normal" Icmpv6L4Protocol handle it.
         HandleNS(pkt, src, dst, interface);
+        return;
     }
 
     // NS (EARO)
@@ -714,7 +716,6 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         }
     }
 
-    m_addressRegistrationCounter = 0;
     AddressRegistration();
     // if (!IsAddressRegistrationInProgress())
     // {
@@ -901,6 +902,8 @@ SixLowPanNdProtocol::AddressRegistration()
 {
     NS_LOG_FUNCTION(this);
     NS_LOG_INFO("AddressRegistration");
+    NS_LOG_INFO("Node " << m_node->GetId() << " initial m_addressRegistrationCounter = "
+                        << static_cast<int>(m_addressRegistrationCounter));
 
     Ipv6Address addressToRegister;
     LollipopCounter8 tid;
@@ -962,13 +965,15 @@ SixLowPanNdProtocol::AddressRegistration()
                 Ipv6InterfaceAddress ifaddr = iface->GetAddress(0); // typically link-local
                 Ipv6Address lla = ifaddr.GetAddress();
 
-                Simulator::Schedule(Seconds(0),
+                Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
                                     &Icmpv6L4Protocol::SendRS,
                                     this, // or icmpv6 ptr
                                     lla,
                                     Ipv6Address::GetAllRoutersMulticast(),
                                     iface->GetDevice()->GetAddress());
             }
+            // We can't try to register anything, so return
+            return;
         }
     }
 
@@ -985,13 +990,19 @@ SixLowPanNdProtocol::AddressRegistration()
     // }
     // tid = m_tidContainer[std::make_pair(addressToRegister, registeringAddressNodeAddr)];
 
-    SendSixLowPanNsWithEaro(m_addrPendingReg.addressPendingRegistration,
-                            m_addrPendingReg.registrar,
-                            m_addrPendingReg.registrarMacAddr,
-                            m_regTime,
-                            m_rovrContainer[m_addrPendingReg.sixDevice],
-                            tid.GetValue(),
-                            m_addrPendingReg.sixDevice);
+    m_addressRegistrationCounter++;
+    Time jitter = MilliSeconds(m_addressRegistrationJitter->GetValue());
+
+    Simulator::Schedule(jitter,
+                        &SixLowPanNdProtocol::SendSixLowPanNsWithEaro,
+                        this,
+                        m_addrPendingReg.addressPendingRegistration,
+                        m_addrPendingReg.registrar,
+                        m_addrPendingReg.registrarMacAddr,
+                        m_regTime,
+                        m_rovrContainer[m_addrPendingReg.sixDevice],
+                        tid.GetValue(),
+                        m_addrPendingReg.sixDevice);
 
     m_addressRegistrationTimeoutEvent =
         Simulator::Schedule(m_retransmissionTime,
@@ -1003,14 +1014,11 @@ void
 SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid)
 {
     NS_LOG_FUNCTION(this << registrar << tid);
-    NS_LOG_INFO("AddressRegistrationSuccess");
+    NS_LOG_INFO("AddressRegistrationSuccess: " << m_addrPendingReg.addressPendingRegistration);
 
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
                         << registrar << "  vs expected " << m_addrPendingReg.registrar);
-
-    std::cout << "Successfully registered an address: "
-              << m_addrPendingReg.addressPendingRegistration << "\n";
 
     if (m_addressRegistrationTimeoutEvent.IsPending())
     {
@@ -1076,6 +1084,13 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
         Icmpv6OptionPrefixInformation prefixHdr = m_addrPendingReg.pioHdr;
         // m_pendingRas.front().prefixForAddress[m_addrPendingReg.addressPendingRegistration];
 
+        // NS_LOG_INFO("Calling AddAutoconfiguredAddress with:");
+        // NS_LOG_INFO("  Addr: " << m_addrPendingReg.addressPendingRegistration);
+        // NS_LOG_INFO("  Prefix: " << prefixHdr.GetPrefix() << "/"
+        //                          << (uint32_t)prefixHdr.GetPrefixLength());
+        // NS_LOG_INFO("  Flags: " << prefixHdr.GetFlags());
+        // NS_LOG_INFO("  Interface Index: "
+        //             << ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice()));
         ipv6->AddAutoconfiguredAddress(
             ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice()),
             prefixHdr.GetPrefix(),
@@ -1116,14 +1131,16 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
 
     if (m_addressRegistrationCounter < m_maxUnicastSolicit)
     {
-        m_addressRegistrationCounter++;
-
         AddressRegistration();
     }
     else
     {
         // we shouldn't even get to this point
-        NS_ABORT_MSG("I'm giving up, bye");
+        NS_ABORT_MSG("Address registration failed for node "
+                     << m_node->GetId()
+                     << ", address: " << m_addrPendingReg.addressPendingRegistration
+                     << ", registrar: " << m_addrPendingReg.registrar
+                     << ", retries: " << static_cast<int>(m_addressRegistrationCounter));
 
         // bool isInRegisteredAddresses = false;
         // // Check if address exists in m_registeredAddresses
