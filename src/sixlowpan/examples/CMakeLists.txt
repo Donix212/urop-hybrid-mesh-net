@@ -53,3 +53,14 @@ build_lib_example(
     ${liblr-wpan}
     ${libinternet-apps}
 )
+
+build_lib_example(
+  NAME sixlownd-basic-test
+  SOURCE_FILES sixlownd-basic-test.cc
+  LIBRARIES_TO_LINK
+    ${libnetwork}
+    ${libsixlowpan}
+    ${libinternet}
+    ${liblr-wpan}
+    ${libinternet-apps}
+)
