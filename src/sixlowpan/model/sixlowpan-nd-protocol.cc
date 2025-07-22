@@ -134,33 +134,6 @@ SixLowPanNdProtocol::GetTypeId()
     return tid;
 }
 
-void
-SixLowPanNdProtocol::LogConfiguration() const
-{
-    NS_LOG_INFO("SixLowPanNdProtocol Configuration for Node " << m_node->GetId());
-
-    NS_LOG_INFO("  m_alwaysDad: " << m_alwaysDad);
-    NS_LOG_INFO("  m_maxMulticastSolicit: " << static_cast<uint32_t>(m_maxMulticastSolicit));
-    NS_LOG_INFO("  m_maxUnicastSolicit: " << static_cast<uint32_t>(m_maxUnicastSolicit));
-    NS_LOG_INFO("  m_rsInitialRetransmissionTime: " << m_rsInitialRetransmissionTime);
-    NS_LOG_INFO("  m_rsMaxRetransmissionTime: " << m_rsMaxRetransmissionTime);
-    NS_LOG_INFO("  m_rsMaxRetransmissionCount: " << m_rsMaxRetransmissionCount);
-    NS_LOG_INFO("  m_rsMaxRetransmissionDuration: " << m_rsMaxRetransmissionDuration);
-    NS_LOG_INFO("  m_rsRetransmissionCount: " << m_rsRetransmissionCount);
-    NS_LOG_INFO("  m_rsPrevRetransmissionTimeout: " << m_rsPrevRetransmissionTimeout);
-    NS_LOG_INFO("  m_rsFirstTransmissionTime: " << m_rsFirstTransmissionTime);
-    NS_LOG_INFO("  m_reachableTime: " << m_reachableTime);
-    NS_LOG_INFO("  m_retransmissionTime: " << m_retransmissionTime);
-    NS_LOG_INFO("  m_delayFirstProbe: " << m_delayFirstProbe);
-    NS_LOG_INFO("  m_dadTimeout: " << m_dadTimeout);
-    NS_LOG_INFO("  m_routerLifeTime: " << m_routerLifeTime);
-    NS_LOG_INFO("  m_pioPreferredLifeTime: " << m_pioPreferredLifeTime);
-    NS_LOG_INFO("  m_pioValidLifeTime: " << m_pioValidLifeTime);
-    NS_LOG_INFO("  m_contextValidLifeTime: " << m_contextValidLifeTime);
-    NS_LOG_INFO("  m_abroValidLifeTime: " << m_abroValidLifeTime);
-    NS_LOG_INFO("  m_maxRtrSolicitationInterval: " << m_maxRtrSolicitationInterval);
-}
-
 int64_t
 SixLowPanNdProtocol::AssignStreams(int64_t stream)
 {

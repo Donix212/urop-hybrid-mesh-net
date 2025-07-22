@@ -117,8 +117,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     static TypeId GetTypeId();
 
-    void LogConfiguration() const;
-
     void DoInitialize() override;
     void NotifyNewAggregate() override;
 
