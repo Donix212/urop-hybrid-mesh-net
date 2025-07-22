@@ -90,6 +90,25 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetTransactionId(), 5, "Transaction ID should match");
 
         NS_TEST_EXPECT_MSG_EQ(hasEaro, 1, "hasEaro should be true");
+
+        Ipv6Address target("fe80::1");
+
+        // Create a bare NS (no options)
+        p = Create<Packet>();
+        p->AddHeader(nsHdr);
+
+        // Run parser
+        result = SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(p,
+                                                                   parsedNs,
+                                                                   parsedSlla,
+                                                                   parsedTlla,
+                                                                   parsedEaro,
+                                                                   hasEaro);
+
+        // Expectations
+        NS_TEST_EXPECT_MSG_EQ(result, true, "Bare NS should be parsed successfully");
+        NS_TEST_EXPECT_MSG_EQ(parsedNs.GetIpv6Target(), target, "NS target should match");
+        NS_TEST_EXPECT_MSG_EQ(hasEaro, 0, "hasEaro should be false");
     }
 };
 
