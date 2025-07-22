@@ -157,8 +157,9 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
         LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
         LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
+        // LogComponentEnable("Icmpv6L4Protocol", LOG_LEVEL_INFO);
 
-        constexpr uint32_t numLns = 8;
+        constexpr uint32_t numLns = 15;
 
         NodeContainer nodes;
         nodes.Create(1 + numLns); // 1 LBR + 10 LNs
@@ -193,11 +194,11 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         std::ostringstream ndiscStream;
         Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
 
-        Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(20), outputNdiscStream);
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
 
         lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
 
-        Simulator::Stop(Seconds(10.0));
+        Simulator::Stop(Seconds(5));
         Simulator::Run();
         Simulator::Destroy();
 
