@@ -53,6 +53,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     friend class SixLowPanNdNaEaroPacketTest;
     friend class SixLowPanNdRaPacketTest;
     friend class SixLowPanNdRsPacketTest;
+    friend class SixLowPanNdNsNaTest;
 public:
     /**
      * 6LoWPAN-ND EARO registration status codes
