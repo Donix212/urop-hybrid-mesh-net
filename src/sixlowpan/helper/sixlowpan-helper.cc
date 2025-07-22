@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
+ *         Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
 #include "sixlowpan-helper.h"

@@ -7,6 +7,7 @@
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  *         Adnan Rashid <adnanrashidpk@gmail.com>
+ *         Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
 #include "sixlowpan-nd-protocol.h"
