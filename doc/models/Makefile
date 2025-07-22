@@ -93,7 +93,6 @@ SOURCES = \
 	$(SRC)/netanim/doc/animation.rst \
 	$(SRC)/flow-monitor/doc/flow-monitor.rst \
 	$(SRC)/sixlowpan/doc/sixlowpan.rst \
-	$(SRC)/sixlowpan/doc/sixlowpan-nd.rst \
 	$(SRC)/lr-wpan/doc/lr-wpan.rst \
 	$(SRC)/zigbee/doc/zigbee.rst \
 
@@ -379,7 +378,8 @@ SOURCEFIGS = \
 	$(SRC)/zigbee/doc/figures/manyToOne.dia \
 	$(SRC)/zigbee/doc/figures/mesh.dia \
 	$(SRC)/internet-apps/doc/figures/dhcpv6-message-exchange.dia \
-	$(SRC)/internet-apps/doc/figures/stateful-dhcpv6-format.dia
+	$(SRC)/internet-apps/doc/figures/stateful-dhcpv6-format.dia \
+	$(SRC)/sixlowpan/doc/figures/sixlowpanndprotocolstack.png
 
 # specify figures from which .png and .pdf figures need to be
 # generated (all dia and eps figures)
