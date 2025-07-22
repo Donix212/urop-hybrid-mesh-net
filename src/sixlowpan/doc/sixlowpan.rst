@@ -98,14 +98,9 @@ Scope and Limitations
 Context-based compression
 #########################
 
-IPHC sateful (context-based) compression is supported but, since :rfc:`6775`
+IPHC stateful (context-based) compression is supported but, since :rfc:`6775`
 ("Neighbor Discovery Optimization for IPv6 over Low-Power Wireless Personal Area Networks (6LoWPANs)")
 is not yet implemented, it is necessary to add the context to the nodes manually.
-
-6LoWPAM-ND
-##########
-
-Future versions of this module will support :rfc:`6775`, however no timeframe is guaranteed.
 
 Mesh-under routing
 ##################
