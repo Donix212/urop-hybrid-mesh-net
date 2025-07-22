@@ -14,6 +14,7 @@
 #ifndef SIXLOWPAN_ND_PROTOCOL_H
 #define SIXLOWPAN_ND_PROTOCOL_H
 
+#include "sixlowpan-header.h"
 #include "sixlowpan-nd-header.h"
 
 #include "ns3/icmpv6-l4-protocol.h"
@@ -807,6 +808,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     static Ptr<Packet> MakeRaPacket(Ipv6Address src,
                                     Ipv6Address dst,
                                     Icmpv6OptionLinkLayerAddress& slla,
+                                    Icmpv6OptionSixLowPanCapabilityIndication& cio,
                                     Ptr<SixLowPanRaEntry> raEntry);
 
     /**
@@ -849,7 +851,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     static bool ParseAndValidateRsPacket(Ptr<Packet> p,
                                          Icmpv6RS& rsHdr,
-                                         Icmpv6OptionLinkLayerAddress& slla);
+                                         Icmpv6OptionLinkLayerAddress& slla,
+                                         Icmpv6OptionSixLowPanCapabilityIndication& cio);
 
     /**
      * @brief Parses RA packet and populates params, returning true if packet is valid
@@ -866,6 +869,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                          std::list<Icmpv6OptionPrefixInformation>& pios,
                                          Icmpv6OptionSixLowPanAuthoritativeBorderRouter& abro,
                                          Icmpv6OptionLinkLayerAddress& slla,
+                                         Icmpv6OptionSixLowPanCapabilityIndication& cio,
                                          std::list<Icmpv6OptionSixLowPanContext>& contexts);
 };
 
