@@ -159,7 +159,7 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
         // LogComponentEnable("Icmpv6L4Protocol", LOG_LEVEL_INFO);
 
-        constexpr uint32_t numLns = 15;
+        constexpr uint32_t numLns = 20;
 
         NodeContainer nodes;
         nodes.Create(1 + numLns); // 1 LBR + 10 LNs
