@@ -905,7 +905,7 @@ SixLowPanNdProtocol::AddressRegistration()
     Ipv6Address addressToRegister;
     LollipopCounter8 tid;
 
-    if (m_addressRegistrationTimeoutEvent.IsPending())
+    if (m_addressRegistrationTimeoutEvent.IsPending() || m_addressRegistrationEvent.IsPending())
     {
         return;
     }
@@ -1099,7 +1099,9 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
         }
     }
 
-    AddressRegistration();
+    Time jitter = MilliSeconds(m_addressRegistrationJitter->GetValue());
+    m_addressRegistrationEvent =
+        Simulator::Schedule(jitter, &SixLowPanNdProtocol::AddressRegistration, this);
 }
 
 void
