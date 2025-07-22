@@ -32,9 +32,9 @@ namespace ns3
  *
  * @brief 6LoWPAN-ND test case for helper functions
  */
-class NsEaroPacketTest : public TestCase {
+class SixLowPanNdNsEaroPacketTest : public TestCase {
 public:
-    NsEaroPacketTest() : TestCase("Make and Parse NS(EARO) Packet") {}
+    SixLowPanNdNsEaroPacketTest() : TestCase("Make and Parse NS(EARO) Packet") {}
     void DoRun() override {
         Ipv6Address src("fe80::1"), dst("fe80::2");
 
@@ -74,9 +74,9 @@ public:
     }
 };
 
-class NaEaroPacketTest : public TestCase {
+class SixLowPanNdNaEaroPacketTest : public TestCase {
 public:
-    NaEaroPacketTest() : TestCase("Make and Parse NA(EARO) Packet") {}
+    SixLowPanNdNaEaroPacketTest() : TestCase("Make and Parse NA(EARO) Packet") {}
     void DoRun() override {
         Ipv6Address src("fe80::1"), dst("fe80::2"), target("fe80::ff:fe00:2");
         Icmpv6NA naHdr;
@@ -112,9 +112,9 @@ public:
     }
 };
 
-class RaPacketTest : public TestCase {
+class SixLowPanNdRaPacketTest : public TestCase {
 public:
-    RaPacketTest() : TestCase("Make and Parse RA Packet") {}
+    SixLowPanNdRaPacketTest() : TestCase("Make and Parse RA Packet") {}
     void DoRun() override {
         Ipv6Address src("fe80::1"), dst("fe80::2");
 
@@ -153,9 +153,9 @@ public:
     }
 };
 
-class RsPacketTest : public TestCase {
+class SixLowPanNdRsPacketTest : public TestCase {
 public:
-    RsPacketTest() : TestCase("Make and Parse RS Packet") {}
+    SixLowPanNdRsPacketTest() : TestCase("Make and Parse RS Packet") {}
     void DoRun() override {
         Ipv6Address src("fe80::1"), dst("ff02::2");
         Icmpv6RS rs;
@@ -187,10 +187,10 @@ public:
     SixlowpanNdTestSuite()
         : TestSuite("sixlowpan-nd-test", Type::UNIT) // test.py -s sixlowpan-nd
     {
-        AddTestCase(new NsEaroPacketTest(), TestCase::Duration::QUICK);
-        AddTestCase(new NaEaroPacketTest(), TestCase::Duration::QUICK);
-        AddTestCase(new RaPacketTest(), TestCase::Duration::QUICK);
-        AddTestCase(new RsPacketTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdNsEaroPacketTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdNaEaroPacketTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdRaPacketTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdRsPacketTest(), TestCase::Duration::QUICK);
     }
 };
 
