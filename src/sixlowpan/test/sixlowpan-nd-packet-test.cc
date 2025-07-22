@@ -16,6 +16,7 @@
 #include "ns3/simple-channel.h"
 #include "ns3/simple-net-device.h"
 #include "ns3/simulator.h"
+#include "ns3/sixlowpan-header.h"
 #include "ns3/sixlowpan-nd-prefix.h"
 #include "ns3/sixlowpan-nd-protocol.h"
 #include "ns3/sixlowpan-net-device.h"
@@ -196,18 +197,38 @@ class SixLowPanNdRaPacketTest : public TestCase
 
         Icmpv6OptionLinkLayerAddress slla(1, Mac64Address("00:11:22:33:44:55:66:77"));
 
-        Ptr<Packet> p = SixLowPanNdProtocol::MakeRaPacket(src, dst, slla, raEntry);
+        Icmpv6OptionSixLowPanCapabilityIndication cio;
+        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
+        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E);
+
+        Ptr<Packet> p = SixLowPanNdProtocol::MakeRaPacket(src, dst, slla, cio, raEntry);
 
         Icmpv6RA ra;
         Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro;
         Icmpv6OptionLinkLayerAddress parsedSlla(true);
+        Icmpv6OptionSixLowPanCapabilityIndication parsedCio;
         std::list<Icmpv6OptionPrefixInformation> pios;
         std::list<Icmpv6OptionSixLowPanContext> contexts;
 
-        bool result =
-            SixLowPanNdProtocol::ParseAndValidateRaPacket(p, ra, pios, abro, parsedSlla, contexts);
+        bool result = SixLowPanNdProtocol::ParseAndValidateRaPacket(p,
+                                                                    ra,
+                                                                    pios,
+                                                                    abro,
+                                                                    parsedSlla,
+                                                                    parsedCio,
+                                                                    contexts);
         NS_TEST_EXPECT_MSG_EQ(result, true, "RA packet should be parsed successfully");
         NS_TEST_EXPECT_MSG_EQ(abro.GetVersion(), 0x66, "ABRO version should match");
+        // Validate specific bits
+        NS_TEST_EXPECT_MSG_EQ(parsedCio.CheckOption(Icmpv6OptionSixLowPanCapabilityIndication::E),
+                              true,
+                              "E bit should be set");
+        NS_TEST_EXPECT_MSG_EQ(parsedCio.CheckOption(Icmpv6OptionSixLowPanCapabilityIndication::B),
+                              true,
+                              "B bit should be set");
+        NS_TEST_EXPECT_MSG_EQ(parsedCio.CheckOption(Icmpv6OptionSixLowPanCapabilityIndication::L),
+                              false,
+                              "L bit should not be set");
     }
 };
 
@@ -224,21 +245,38 @@ class SixLowPanNdRsPacketTest : public TestCase
         Ipv6Address src("fe80::1"), dst("ff02::2");
         Icmpv6RS rs;
         Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
+        Icmpv6OptionSixLowPanCapabilityIndication cio;
+        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E);
+        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
 
         Ptr<Packet> p = Create<Packet>();
+        p->AddHeader(cio);
         p->AddHeader(slla);
         p->AddHeader(rs);
 
         Icmpv6RS parsedRs;
         Icmpv6OptionLinkLayerAddress parsedSlla(true);
+        Icmpv6OptionSixLowPanCapabilityIndication parsedCio;
 
-        bool result = SixLowPanNdProtocol::ParseAndValidateRsPacket(p, parsedRs, parsedSlla);
+        bool result =
+            SixLowPanNdProtocol::ParseAndValidateRsPacket(p, parsedRs, parsedSlla, parsedCio);
         NS_TEST_EXPECT_MSG_EQ(result, true, "RS packet should be parsed successfully");
 
         // Validate parsed SLLAO
         NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetType(),
                               Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE,
                               "SLLAO type should be source");
+
+        // Validate specific bits
+        NS_TEST_EXPECT_MSG_EQ(parsedCio.CheckOption(Icmpv6OptionSixLowPanCapabilityIndication::E),
+                              true,
+                              "E bit should be set");
+        NS_TEST_EXPECT_MSG_EQ(parsedCio.CheckOption(Icmpv6OptionSixLowPanCapabilityIndication::B),
+                              true,
+                              "B bit should be set");
+        NS_TEST_EXPECT_MSG_EQ(parsedCio.CheckOption(Icmpv6OptionSixLowPanCapabilityIndication::L),
+                              false,
+                              "L bit should not be set");
     }
 };
 
