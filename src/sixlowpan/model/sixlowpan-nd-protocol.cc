@@ -360,6 +360,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanNS");
 
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
@@ -478,6 +479,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanNA");
 
     Ptr<Packet> p = packet->Copy();
 
@@ -577,6 +579,7 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanRS");
 
     if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
     {
@@ -632,6 +635,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanRA");
 
     if (m_handleRsTimeoutEvent.IsPending())
     {
@@ -1037,6 +1041,7 @@ void
 SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid)
 {
     NS_LOG_FUNCTION(this << registrar << tid);
+    NS_LOG_INFO("AddressRegistrationSuccess");
 
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
