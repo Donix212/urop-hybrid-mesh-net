@@ -5,7 +5,7 @@
 6LoWPAN-ND: Optimised Neighbour Discovery Protocol
 -----------------------------------------------------------------
 
-This chapter describes the implementation of |ns3| model for optimised neighbour discovery in 6LoWPAN 
+This chapter describes the implementation of |ns3| model for optimised neighbour discovery in 6LoWPAN
 as specified by :rfc:`8505` ("Registration Extensions for IPv6 over Low-Power Wireless Personal Area Network (6LoWPAN) Neighbor Discovery")
 and :rfc:`6775` ("Neighbor Discovery Optimization for IPv6 over Low-Power Wireless Personal Area Networks (6LoWPANs)").
 
@@ -29,13 +29,13 @@ In this setup:
 
 - Router Advertisements (RAs) and Neighbor Solicitations (NS) are exchanged directly between 6LNs and the 6LR/LBR.
 
-- The registration cache is maintained at the 6LBR. 
+- The registration cache is maintained at the 6LBR.
 
 Address Registration
 ====================
 Address registration state is maintained according to the guidelines specified in Section 6 of :rfc:`6775`, which specifies how 6LoWPAN Neighbor Cache Entries (NCEs) should be retained. The registration process also partially adheres to Sections 5.5 through 5.7 of :rfc:`8505`, which define the structure and required options (e.g., EARO and optionally SLLAO) for registration-related NS and NA messages.
 
-The current implementation adopts a simplified address registration scheduler and timeout recovery mechanism. 
+The current implementation adopts a simplified address registration scheduler and timeout recovery mechanism.
 These are not explicitly defined in the RFCs and have therefore been implemented according to a custom strategy.
 
 Registration Ownership Verifier (ROVR)
@@ -53,13 +53,13 @@ Scope and Limitations
 Lack of support for multi-hop DAD exchanges
 ===========================================
 
-At present, the sixlowpan-nd module in ns-3 does not support multi-hop Duplicate Address Detection (DAD) as specified in Section 8 of :rfc:`6775`. 
-In particular, the implementation omits the use of Duplicate Address Request (DAR) and Duplicate Address Confirmation (DAC) messages between 6LRs 
-and the 6LBR. This means that address uniqueness is only enforced within the local link, and global address registration across multiple hops is 
+At present, the sixlowpan-nd module in ns-3 does not support multi-hop Duplicate Address Detection (DAD) as specified in Section 8 of :rfc:`6775`.
+In particular, the implementation omits the use of Duplicate Address Request (DAR) and Duplicate Address Confirmation (DAC) messages between 6LRs
+and the 6LBR. This means that address uniqueness is only enforced within the local link, and global address registration across multiple hops is
 not yet possible.
 
-As a result, 6LoWPAN nodes (6LNs) relying on this implementation are unable to ensure address uniqueness in a multi-hop topology, 
-which limits the scalability and standards compliance of the current model. This functionality is planned for future phases of development, 
+As a result, 6LoWPAN nodes (6LNs) relying on this implementation are unable to ensure address uniqueness in a multi-hop topology,
+which limits the scalability and standards compliance of the current model. This functionality is planned for future phases of development,
 alongside proper Transaction ID validation and state tracking per :rfc:`8505`.
 
 Lacking NS (EARO) errors
