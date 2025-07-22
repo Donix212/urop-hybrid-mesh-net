@@ -115,6 +115,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     static TypeId GetTypeId();
 
+    void LogConfiguration() const;
+
     void DoInitialize() override;
     void NotifyNewAggregate() override;
 
@@ -180,9 +182,15 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                  uint8_t tid,
                                  Ptr<NetDevice> sixDevice,
                                  uint8_t status);
+    /**
+     * @brief Send a Multicast RS (+ 6CIO).
+     * @param dst destination IPv6 address
+     * @param interface the interface from which the packet will be sent
+     */
+    void SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareAddress);
 
     /**
-     * @brief Send a RA for 6LoWPAN ND (+ PIO, 6CO, ABRO, SLLAO).
+     * @brief Send a RA for 6LoWPAN ND (+ PIO, 6CO, 6CIO, ABRO, SLLAO).
      * @param src source IPv6 address
      * @param dst destination IPv6 address
      * @param interface the interface from which the packet will be sent
