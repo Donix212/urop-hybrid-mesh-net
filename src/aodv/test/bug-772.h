@@ -43,7 +43,6 @@ class Bug772ChainTest : public TestCase
     /// @internal It is important to have pointers here
     NodeContainer* m_nodes;
 
-    /// PCAP file names prefix
     const std::string m_prefix;
     /// Socket factory TID
     const std::string m_proto;

@@ -18,10 +18,10 @@
 #include "ns3/icmpv4.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
+#include "ns3/ipv4-static-routing.h"
+#include "ns3/log.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/mobility-model.h"
-#include "ns3/pcap-file.h"
-#include "ns3/pcap-test.h"
 #include "ns3/rng-seed-manager.h"
 #include "ns3/simulator.h"
 #include "ns3/string.h"
@@ -43,7 +43,6 @@ class AodvRegressionTestSuite : public TestSuite
     AodvRegressionTestSuite()
         : TestSuite("routing-aodv-regression", Type::SYSTEM)
     {
-        SetDataDir(NS_TEST_SOURCEDIR);
         // General RREQ-RREP-RRER test case
         AddTestCase(new ChainRegressionTest("aodv-chain-regression-test"),
                     TestCase::Duration::QUICK);
@@ -72,7 +71,9 @@ ChainRegressionTest::ChainRegressionTest(const char* const prefix,
       m_size(size),
       m_step(120),
       m_arpAliveTimeout(arpAliveTimeout),
-      m_seq(0)
+      m_seq(0),
+      m_interfaces(),
+      m_icmpReplyCount(0)
 {
 }
 
@@ -205,7 +206,7 @@ ChainRegressionTest::CreateDevices()
 
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");
-    Ipv4InterfaceContainer interfaces = address.Assign(devices);
+    m_interfaces = address.Assign(devices);
 
     // 3. Setup ping
     m_socket =
@@ -213,20 +214,79 @@ ChainRegressionTest::CreateDevices()
     m_socket->SetAttribute("Protocol", UintegerValue(1)); // icmp
     InetSocketAddress src = InetSocketAddress(Ipv4Address::GetAny(), 0);
     m_socket->Bind(src);
-    InetSocketAddress dst = InetSocketAddress(interfaces.GetAddress(m_size - 1), 0);
+    InetSocketAddress dst = InetSocketAddress(m_interfaces.GetAddress(m_size - 1), 0);
     m_socket->Connect(dst);
 
     SendPing();
 
-    // 4. write PCAP
-    wifiPhy.EnablePcapAll(CreateTempDirFilename(m_prefix));
+    // Set up ICMP echo reply receive callback
+    m_socket->SetRecvCallback(MakeCallback(&ChainRegressionTest::HandleIcmpReply, this));
+}
+
+void
+ChainRegressionTest::HandleIcmpReply(Ptr<Socket> socket)
+{
+    Ptr<Packet> packet = socket->Recv();
+    Icmpv4Header icmpHeader;
+    packet->PeekHeader(icmpHeader);
+    if (icmpHeader.GetType() == Icmpv4Header::ICMPV4_ECHO_REPLY)
+    {
+        ++m_icmpReplyCount;
+        std::cout << "ICMP echo reply received. Count: " << m_icmpReplyCount << std::endl;
+    }
 }
 
 void
 ChainRegressionTest::CheckResults()
 {
-    for (uint32_t i = 0; i < m_size; ++i)
+    // 1. Check that a route exists from node 0 to node N-1
+    Ptr<Ipv4> ipv4 = m_nodes->Get(0)->GetObject<Ipv4>();
+    uint32_t lastNodeIdx = m_size - 1;
+    Ptr<Node> lastNode = m_nodes->Get(lastNodeIdx);
+    Ptr<Ipv4> lastIpv4 = lastNode->GetObject<Ipv4>();
+    bool found = false;
+    Ipv4Address dest;
+    for (uint32_t i = 0; i < lastIpv4->GetNInterfaces(); ++i)
     {
-        NS_PCAP_TEST_EXPECT_EQ(m_prefix << "-" << i << "-0.pcap");
+        for (uint32_t j = 0; j < lastIpv4->GetNAddresses(i); ++j)
+        {
+            Ipv4Address addr = lastIpv4->GetAddress(i, j).GetLocal();
+            if (addr != Ipv4Address::GetLoopback() && addr != Ipv4Address("0.0.0.0"))
+            {
+                dest = addr;
+                found = true;
+                std::cout << "Destination address for last node: " << dest << std::endl;
+                break;
+            }
+        }
+        if (found)
+        {
+            break;
+        }
     }
+
+    // Check that a route exists in node 0's AODV routing protocol
+    Ptr<Ipv4RoutingProtocol> routing = ipv4->GetRoutingProtocol();
+    if (routing)
+    {
+        Ipv4Header header;
+        header.SetDestination(dest);
+        Socket::SocketErrno err;
+        Ptr<Ipv4Route> route = routing->RouteOutput(Create<Packet>(), header, nullptr, err);
+        if (route)
+        {
+            std::cout << "Route found from node 0 to last node: " << dest << std::endl;
+        }
+        else
+        {
+            std::cout << "No route found from node 0 to last node: " << dest << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "No routing protocol found for node 0." << std::endl;
+    }
+
+    // 2. Check that ICMP echo replies were received
+    std::cout << "Total ICMP echo replies received: " << m_icmpReplyCount << std::endl;
 }

@@ -1,3 +1,4 @@
+#include "ns3/ipv4-interface-container.h"
 /*
  * Copyright (c) 2009 IITP RAS
  *
@@ -170,21 +171,16 @@ class ChainRegressionTest : public TestCase
   private:
     /// \internal It is important to have pointers here
     NodeContainer* m_nodes;
-
-    /// PCAP file names prefix
-    const std::string m_prefix;
-    /// Total simulation time
-    const Time m_time;
-    /// Chain size
-    const uint32_t m_size;
-    /// Chain step, meters
-    const double m_step;
-    /// ARP alive timeout
-    const Time m_arpAliveTimeout;
-    /// Socket
-    Ptr<Socket> m_socket;
-    /// Sequence number
+    std::string m_prefix;
+    Time m_time;
+    uint32_t m_size;
+    double m_step;
+    Time m_arpAliveTimeout;
     uint16_t m_seq;
+    Ipv4InterfaceContainer m_interfaces;
+    Ptr<Socket> m_socket;
+    uint32_t m_icmpReplyCount;
+    void HandleIcmpReply(Ptr<Socket> socket);
 
     /// Create test topology
     void CreateNodes();
