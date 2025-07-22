@@ -657,11 +657,6 @@ public:
     bool ScreeningRas(Ptr<SixLowPanRaEntry> ra);
 
     /**
-     * Address re-registration procedure
-     */
-    void AddressReRegistration();
-
-    /**
      * Address registration procedure
      */
     void AddressRegistration();
@@ -684,8 +679,6 @@ public:
     std::map<Ptr<NetDevice>, std::vector<uint8_t>> m_rovrContainer; //!< Container of ROVRs
 
     EventId m_addressRegistrationTimeoutEvent; //!< Address Registration timeout event.
-    EventId m_addressRegistrationEvent;        //!< Address Registration event.
-    EventId m_addressReRegistrationEvent;      //!< Address ReRegistration event.
 
     /**
      * Container of TIDs for each pair <Registered LinkLocal Address, Registrar address>
