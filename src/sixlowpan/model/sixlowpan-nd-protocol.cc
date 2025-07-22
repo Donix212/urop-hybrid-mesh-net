@@ -627,7 +627,12 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
         return;
     }
 
-    // todo: Check that it matches with current address registration
+    // Check that it matches with current address registration
+    if (!m_addrPendingReg.isValid ||
+        m_addrPendingReg.addressPendingRegistration != naHdr.GetIpv6Target())
+    {
+        return;
+    }
 
     // switch statement on EARO status
     if (earo.GetStatus() == SUCCESS) /* status=0, success! */
