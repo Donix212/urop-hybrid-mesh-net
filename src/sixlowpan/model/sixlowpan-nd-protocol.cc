@@ -41,6 +41,7 @@
 #include "ns3/uinteger.h"
 
 #include <cmath>
+#include <iomanip>
 
 namespace ns3
 {
@@ -519,6 +520,14 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
             }
             else if (entry->GetRovr() != earoHdr.GetRovr())
             {
+                SendSixLowPanNaWithEaro(&dst,
+                                        &src,
+                                        target,
+                                        earoHdr.GetRegTime(),
+                                        earoHdr.GetRovr(),
+                                        earoHdr.GetTransactionId(),
+                                        sixDevice,
+                                        1);
                 return; // discard the packet since the rovr doesn't match
             }
         }
@@ -545,6 +554,14 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         {
             if (entry->GetRovr() != earoHdr.GetRovr())
             {
+                SendSixLowPanNaWithEaro(&dst,
+                                        &src,
+                                        target,
+                                        earoHdr.GetRegTime(),
+                                        earoHdr.GetRovr(),
+                                        earoHdr.GetTransactionId(),
+                                        sixDevice,
+                                        1);
                 return; // discard the packet since the rovr doesn't match
             }
             cache->Remove(entry);
@@ -648,9 +665,9 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     }
 
     // Check if EARO ROVR matches 6LN's ROVR
-    if (earo.GetRovr() != m_rovrContainer[interface->GetDevice()])
+    if (earo.GetRovr() != m_rovr)
     {
-        NS_ABORT_MSG(" Received ROVR mismatch... discard.");
+        NS_LOG_INFO(" Received ROVR mismatch... discard.");
         return;
     }
 
@@ -899,8 +916,6 @@ SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> inter
     }
     m_cacheList.push_back(cache);
 
-    BuildRovrForDevice(device);
-
     return cache;
 }
 
@@ -938,39 +953,9 @@ SixLowPanNdProtocol::FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address ad
 }
 
 void
-SixLowPanNdProtocol::BuildRovrForDevice(Ptr<NetDevice> device)
+SixLowPanNdProtocol::SetRovr(std::vector<uint8_t> rovr)
 {
-    // Address netDeviceMacAddress = device->GetAddress();
-
-    // uint8_t buffer[Address::MAX_SIZE + 2];
-    // uint32_t addrLength = netDeviceMacAddress.CopyAllTo(buffer, Address::MAX_SIZE + 2);
-
-    // // We use a 128-bit (16 bytes) ROVR (this is arbitrary).
-    // addrLength = std::min(addrLength, (uint32_t)16);
-
-    // // We write the type, length, and MAC address.
-    // for (uint32_t index = 0; index < addrLength; index++)
-    // {
-    //     m_rovrContainer[device].push_back(buffer[index]);
-    // }
-    // // The most normal case is to have a Mac48, so 6+2 bytes are filled. The remaining 8 are
-    // filled
-    // // with a hash.
-
-    // uint32_t bytesLeft = 16 - addrLength;
-    // if (bytesLeft != 0)
-    // {
-    //     uint64_t addrHash = Hash64((char*)buffer, addrLength);
-
-    //     for (uint32_t index = 0; index < bytesLeft; index++)
-    //     {
-    //         uint8_t val = addrHash & 0xff;
-    //         m_rovrContainer[device].push_back(val);
-    //         addrHash >>= 8;
-    //     }
-    // }
-    // Set ROVR to 16 zero bytes
-    m_rovrContainer[device] = std::vector<uint8_t>(16, 0);
+    m_rovr = rovr;
 }
 
 bool
@@ -1106,7 +1091,7 @@ SixLowPanNdProtocol::AddressRegistration()
                         m_addrPendingReg.registrar,
                         m_addrPendingReg.registrarMacAddr,
                         m_regTime,
-                        m_rovrContainer[m_addrPendingReg.sixDevice],
+                        m_rovr,
                         tid.GetValue(),
                         m_addrPendingReg.sixDevice);
 

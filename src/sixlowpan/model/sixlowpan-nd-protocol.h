@@ -148,6 +148,13 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     void FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr) override;
 
     /**
+     * Creates a ROVR for the node
+     *
+     * @param rovr rovr to set for this node
+     */
+    void SetRovr(const std::vector<uint8_t> rovr);
+
+    /**
      * @brief Send a NS for 6LoWPAN ND (+ EARO, SLLAO).
      * @param addrToRegister source IPv6 address
      * @param dst destination IPv6 address
@@ -645,13 +652,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     //                         Ptr<Ipv6Interface> interface);
 
     /**
-     * Creates a ROVR for the NetDevice
-     *
-     * @param device device to create the ROVR for
-     */
-    void BuildRovrForDevice(Ptr<NetDevice> device);
-
-    /**
      * Check an RA for consistency with the ones in the RA cache
      * @param ra the RA to check
      * @return true if the RA is not consistent (must be discarded)
@@ -678,7 +678,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
 
     uint8_t m_addressRegistrationCounter = 0; //!< Number of retries of an address registration.
 
-    std::map<Ptr<NetDevice>, std::vector<uint8_t>> m_rovrContainer; //!< Container of ROVRs
+    std::vector<uint8_t> m_rovr; //!< Node ROVR
 
     EventId m_addressRegistrationTimeoutEvent; //!< Address Registration timeout event.
     EventId m_addressRegistrationEvent;        //!< Address Registration event.
