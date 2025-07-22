@@ -314,10 +314,6 @@ SixLowPanNdProtocol::Receive(Ptr<Packet> packet,
 {
     NS_LOG_FUNCTION(this << packet << header.GetSource() << header.GetDestination() << interface);
     Ptr<Ipv6> ipv6 = GetNode()->GetObject<Ipv6>();
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
-    NS_ASSERT_MSG(
-        sixDevice,
-        "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
     uint8_t type;
     packet->CopyData(&type, sizeof(type));
@@ -605,11 +601,8 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     {
         sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Add(src));
         sixEntry->SetRouter(false);
-        //      std::cout <<" ******* - Before - ******* "<< *sixEntry<< std::endl;
         sixEntry->MarkStale(slla.GetAddress());
         sixEntry->MarkTentative();
-        //      std::cout <<" ******* - After - ******* "<< *sixEntry<< std::endl;
-        //       std::cout <<" "<<Now()<<" "<< *sixEntry << std::endl;
         NS_LOG_LOGIC("Tentative entry created from RS");
     }
     else if (sixEntry->GetMacAddress() != slla.GetAddress())
@@ -626,9 +619,6 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
                                        const Ipv6Address& dst,
                                        Ptr<Ipv6Interface> interface)
 {
-    //  std::cout << Now ().As (Time::S) << " ***src*** " << src << " ***dst*** " << dst
-    //             << "***Node ID=***" << m_node->GetId () << std::endl;
-
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
 
     if (m_handleRsTimeoutEvent.IsPending())
@@ -641,276 +631,78 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         sixDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
-    Address macAddr = sixDevice->GetAddress();
+    // Address macAddr = sixDevice->GetAddress();
+    //
+    // Ptr<Ipv6L3Protocol> ipv6 = GetNode()->GetObject<Ipv6L3Protocol>();
 
-    Icmpv6RA raHeader;
-    Ptr<Ipv6L3Protocol> ipv6 = GetNode()->GetObject<Ipv6L3Protocol>();
-
-    bool next = true;
-    Ptr<SixLowPanNdiscCache> sixCache = DynamicCast<SixLowPanNdiscCache>(FindCache(sixDevice));
-    NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
-
-    Ipv6Address sixLowBorderRouterAddr = Ipv6Address::GetAny();
-
-    packet->RemoveHeader(raHeader);
-
-    Ipv6Address sixLowRouterAddr = Ipv6Address::GetZero();
-    if (raHeader.GetLifeTime())
+    // Decode the RA
+    Icmpv6RA raHdr;
+    Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro; /* ABRO  */
+    Icmpv6OptionLinkLayerAddress slla(1);                 /* SLLAO */
+    std::list<Icmpv6OptionPrefixInformation> pios;    /* PIO   */
+    std::list<Icmpv6OptionSixLowPanContext> contexts;    /* 6CO   */
+    bool isValid = ParseAndValidateRaPacket(packet, raHdr, pios, abro, slla, contexts);
+    if (!isValid)
     {
-        sixLowRouterAddr = src;
-    }
-
-    // Decode the RA options
-
-    Icmpv6OptionSixLowPanAuthoritativeBorderRouter abroHdr; /* ABRO  */
-    Icmpv6OptionLinkLayerAddress llaHdr(1);                 /* SLLAO */
-    std::list<Icmpv6OptionPrefixInformation> prefixList;    /* PIO   */
-    std::list<Icmpv6OptionSixLowPanContext> contextList;    /* 6CO   */
-    //  Icmpv6OptionSixLowPanCapabilityIndication  capIn;     /* 6CIO  */
-
-    uint32_t version = abroHdr.GetVersion();
-    bool hasAbro = false;
-    bool hasOptLinkLayerSource = false;
-
-    while (next == true)
-    {
-        uint8_t type = 0;
-        packet->CopyData(&type, sizeof(type));
-        Icmpv6OptionPrefixInformation prefixHdr;
-        Icmpv6OptionSixLowPanContext contextHdr;
-
-        switch (type)
-        {
-        case Icmpv6Header::ICMPV6_OPT_PREFIX:
-            packet->RemoveHeader(prefixHdr);
-            prefixList.push_back(prefixHdr);
-            break;
-        case Icmpv6Header::ICMPV6_OPT_SIXLOWPAN_CONTEXT:
-            packet->RemoveHeader(contextHdr);
-            contextList.push_back(contextHdr);
-            break;
-        case Icmpv6Header::ICMPV6_OPT_AUTHORITATIVE_BORDER_ROUTER:
-            packet->RemoveHeader(abroHdr);
-            sixLowBorderRouterAddr = abroHdr.GetRouterAddress();
-            hasAbro = true;
-            break;
-        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
-            packet->RemoveHeader(llaHdr);
-            //           generates an entry in NDISC table with m_router = true
-            //           Deferred to when we receive the address registration confirmation
-            //          std::cout << "I want this: " << llaHdr.GetAddress() << std::endl;
-            //           ReceiveLLA (llaHdr, src, dst, interface);
-            hasOptLinkLayerSource = true;
-            break;
-            //        case Icmpv6Header::ICMPV6_OPT_CAPABILITY_INDICATION:
-            //          packet->RemoveHeader (capIn);
-            //          capIn = true;
-            //          break;
-        default:
-            /*RA message includes unknown option, stop processing*/
-            NS_ABORT_MSG("RA message includes unknown option, stop processing");
-            next = false;
-            break;
-        }
-        if (packet->GetSize() == 0)
-        {
-            next = false;
-        }
-    }
-
-    // Basic checks common to any RA.
-    if (hasOptLinkLayerSource == false)
-    {
-        // RAs must contain one (and only one) LLA
-        NS_LOG_LOGIC(
-            "SixLowPanNdProtocol::HandleSixLowPanRA - no Option LinkLayerSource - ignoring RA");
-        return;
-    }
-    if (hasAbro == false)
-    {
-        // RAs MUST contain one (and only one) ABRO
-        NS_LOG_LOGIC("SixLowPanNdProtocol::HandleSixLowPanRA - no ABRO - ignoring RA");
         return;
     }
 
-    SixLowPanRaEntry ver;
-    if (ver.GetAbroVersion() == abroHdr.GetVersion())
-    {
-        NS_LOG_LOGIC("SixLowPanNdProtocol::HandleSixLowPanRA - ABRO Version is same - ignoring RA");
-    }
+    auto it = m_raCache.find(abro.GetRouterAddress());
 
-    if (sixLowBorderRouterAddr == Ipv6Address::GetAny())
-    {
-        NS_LOG_LOGIC("SixLowPanNdProtocol::HandleSixLowPanRA - border router address is set to Any "
-                     "- ignoring RA");
-        return;
-    }
-
-    // This is not necessary - it could be a refresh for other params
-    /*
-  if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
-    {
-      if (prefixList.empty ())
-        {
-          NS_LOG_LOGIC ("SixLowPanNdProtocol::HandleSixLowPanRA - no PIO and the node is a 6LN -
-  ignoring RA"); return;
-        }
-    }
-     */
-
-    // Processing - depending on if it's a 6LN or a 6LR
-
-    /**
-     * Pseudo code:
-     *
-     * If I am a 6LN and I need a GAddr, then process the RA
-     *
-     * If I am a 6L[N,R] and I receive a RA, process it:
-     *  - store all RA in m_pendingRas list ( std::list<SixLowPanPendingRa> m_pendingRas;)
-     *  - if it is already known (check the ra_Cache), if there's something different and/or update
-     * the params
-     *  - if it is not known, process it.
-     */
-
-    // Both 6LNs and 6LR have a RA cache
-
-    auto it = m_raCache.find(sixLowBorderRouterAddr); // Check 6LBR address in the m_raCache if
-                                                      // found
     if (it == m_raCache.end())
     {
-        NS_LOG_LOGIC("SixLowPanNdProtocol - new RA, adding it to the cache");
-
-        if (prefixList.empty())
-        {
-            NS_LOG_LOGIC("SixLowPanNdProtocol::HandleSixLowPanRA - no PIO in a previously unknown "
-                         "RA - ignoring RA");
-            return;
-        }
-
-        // Create a RA entry for all received RA's and push them into m_pendingRas
-        // Register the link-local with the sender
-        // Create a Global Address
-        // Register the Global address
-        // Add the RA to the cache
-
+        // New RA, add it to the m_raCache
         Ptr<SixLowPanRaEntry> ra =
-            Create<SixLowPanRaEntry>(raHeader, abroHdr, contextList, prefixList);
+            Create<SixLowPanRaEntry>(raHdr, abro, contexts, pios);
+        m_raCache[abro.GetRouterAddress()] = ra;
+
+        // Whether it is a new or existing updated RA, we create a SixLowPendingRa and push to
+        // m_pendingRas
+        // Ptr<SixLowPanRaEntry> ra =
+        //     Create<SixLowPanRaEntry>(raHdr, abro, contexts, pios);
 
         SixLowPanPendingRa pending;
         pending.pendingRa = ra;
         pending.source = src;
         pending.incomingIf = interface;
-        pending.llaHdr = llaHdr;
+        pending.llaHdr = slla;
         pending.addressesToBeregistered.push_back(interface->GetLinkLocalAddress().GetAddress());
 
-        for (const auto& iter : prefixList)
+        for (const auto& iter : pios)
         {
-            Ipv6Address gaddr = Ipv6Address::MakeAutoconfiguredAddress(macAddr, iter.GetPrefix());
+            Ipv6Address gaddr = Ipv6Address::MakeAutoconfiguredAddress(sixDevice->GetAddress(), iter.GetPrefix());
             pending.addressesToBeregistered.push_back(gaddr);
             pending.prefixForAddress[gaddr] = iter;
         }
         m_pendingRas.push_back(pending);
-
-        // \TODO
-        // The address is not even registered in the interface - any packet sent to it will be
-        // discarded. We now need to prepare for a registration result (any result) and to
-        // retransmit the registration. m_addressRegistrationEvent is doing the registration.
     }
     else // found a 6LBR entry (sixLowBorderRouterAddr), try to update it.
     {
-        Ptr<SixLowPanRaEntry> ra = it->second;
+        Ptr<SixLowPanRaEntry> existingRa = it->second;
 
-        if (version >
-            (it->second->GetAbroVersion())) // Update existing entry from 6LBR with new information
+        if (abro.GetVersion() >
+            (existingRa->GetAbroVersion())) // Update existing entry from 6LBR with new information
         {
-            std::cout << "*********This piece of code should run when timeout of any (RA,PIO,6CO "
-                         "and ABRO)**********"
-                      << std::endl;
-            it->second->SetManagedFlag(raHeader.GetFlagM());
-            it->second->SetOtherConfigFlag(raHeader.GetFlagO());
-            it->second->SetHomeAgentFlag(raHeader.GetFlagH());
-            it->second->SetReachableTime(raHeader.GetReachableTime());
-            it->second->SetRouterLifeTime(raHeader.GetLifeTime());
-            it->second->SetRetransTimer(raHeader.GetRetransmissionTime());
-            it->second->SetCurHopLimit(raHeader.GetCurHopLimit());
-            it->second->ParseAbro(abroHdr);
-
-            for (std::list<Icmpv6OptionSixLowPanContext>::iterator jt = contextList.begin();
-                 jt != contextList.end();
-                 jt++)
-            {
-                if (ra->GetContexts().find((*jt).GetCid()) ==
-                    ra->GetContexts().end()) /* context NOT found */
-                {
-                    Ptr<SixLowPanNdContext> context = new SixLowPanNdContext;
-                    context->SetCid((*jt).GetCid());
-                    context->SetFlagC((*jt).IsFlagC());
-                    context->SetValidTime(Minutes((*jt).GetValidTime()));
-                    context->SetContextPrefix((*jt).GetContextPrefix());
-                    context->SetLastUpdateTime(Simulator::Now());
-
-                    ra->AddContext(context);
-                }
-                else
-                {
-                    Ptr<SixLowPanNdContext> context =
-                        (ra->GetContexts().find((*jt).GetCid()))->second;
-
-                    context->SetFlagC((*jt).IsFlagC());
-                    context->SetValidTime(Minutes((*jt).GetValidTime()));
-                    context->SetContextPrefix((*jt).GetContextPrefix());
-                    context->SetLastUpdateTime(Simulator::Now());
-                }
-            }
-
-            // this is to update the address timers.
-            //          ipv6->AddAutoconfiguredAddress (ipv6->GetInterfaceForDevice (sixDevice),
-            //                                          prefixHdr.GetPrefix (),
-            //                                          prefixHdr.GetPrefixLength (),
-            //                                          prefixHdr.GetFlags (),
-            //                                          prefixHdr.GetValidTime (),
-            //                                          prefixHdr.GetPreferredTime (),
-            //                                          sixLowRouterAddr);
+            existingRa->SetManagedFlag(raHdr.GetFlagM());
+            existingRa->SetOtherConfigFlag(raHdr.GetFlagO());
+            existingRa->SetHomeAgentFlag(raHdr.GetFlagH());
+            existingRa->SetReachableTime(raHdr.GetReachableTime());
+            existingRa->SetRouterLifeTime(raHdr.GetLifeTime());
+            existingRa->SetRetransTimer(raHdr.GetRetransmissionTime());
+            existingRa->SetCurHopLimit(raHdr.GetCurHopLimit());
+            existingRa->ParseAbro(abro);
+        } else
+        {
+            // Existing but outdated RA, so drop it
+            return;
         }
     }
 
-    // \todo Da cambiare di brutto
-
-    //  uint32_t t = raHeader.GetLifeTime ();
-    //
-    //  for (std::list<Icmpv6OptionPrefixInformation>::iterator it = prefixList.begin ();
-    //       it != prefixList.end (); it++)
-    //    {
-    //      t = t < ((*it).GetValidTime ()) ? t : ((*it).GetValidTime ());
-    //    }
-    //  for (std::list<Icmpv6OptionSixLowPanContext>::iterator jt = contextList.begin ();
-    //       jt != contextList.end (); jt++)
-    //    {
-    //      t = (60 * ((*jt).GetValidTime ())) < t ? (60 * ((*jt).GetValidTime ())) : t;
-    //    }
-    //
-    //  t -= (60 * m_advance);
-    //
-    //  m_retransmitRsEvent.Cancel ();
-    //  m_retransmitRsEvent = Simulator::Schedule (Time (Seconds (t)),
-    //  &SixLowPanNdProtocol::RetransmitRS, this,
-    //                                             interface->GetLinkLocalAddress ().GetAddress (),
-    //                                             src, macAddr, 1, m_rtrSolicitationInterval);
-
-    // if (m_addressRegistrationTimeoutEvent.IsPending ())
-    //   {
-    //     return;
-    //   }
 
     if (!IsAddressRegistrationInProgress())
     {
         m_addressRegistrationCounter = 0;
         Time delay = MilliSeconds(m_addressRegistrationJitter->GetValue());
-        // std::cout << m_node->GetId() << " " << Now ().As (Time::S) <<  " Scheduled address
-        // registration in " << delay.As (Time::S) << std::endl;
-
-        // std::cout << Simulator::Now ().As (Time::MS) << " - " << m_node->GetId () << " - calling
-        // AddressRegistration (0)" << std::endl;
         m_addressRegistrationEvent =
             Simulator::Schedule(delay, &SixLowPanNdProtocol::AddressRegistration, this);
     }
@@ -2268,7 +2060,14 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
     if (!hasAbro)
     {
         // RAs MUST contain one (and only one) ABRO
-        NS_LOG_LOGIC("SixLowPanNdProtocol::HandleSixLowPanRA - no ABRO - ignoring RA");
+        NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - no ABRO - ignoring RA");
+        return false;
+    }
+
+    if (abro.GetRouterAddress() == Ipv6Address::GetAny())
+    {
+        NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - border router address is set to Any "
+                     "- ignoring RA");
         return false;
     }
 
@@ -2276,7 +2075,7 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
     {
         // RAs must contain one (and only one) LLA
         NS_LOG_LOGIC(
-            "SixLowPanNdProtocol::HandleSixLowPanRA - no Option LinkLayerSource - ignoring RA");
+            "SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option LinkLayerSource - ignoring RA");
         return false;
     }
 
