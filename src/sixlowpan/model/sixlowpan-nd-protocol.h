@@ -38,6 +38,10 @@ class SixLowPanNdiscCache;
 class SixLowPanNdPrefix;
 class SixLowPanNdContext;
 class SixLowPanNetDevice;
+class NsEaroPacketTest;
+class NaEaroPacketTest;
+class RaPacketTest;
+class RsPacketTest;
 
 /**
  * @ingroup sixlowpan
@@ -45,7 +49,11 @@ class SixLowPanNetDevice;
  */
 class SixLowPanNdProtocol : public Icmpv6L4Protocol
 {
-  public:
+    friend class NsEaroPacketTest;
+    friend class NaEaroPacketTest;
+    friend class RaPacketTest;
+    friend class RsPacketTest;
+public:
     /**
      * 6LoWPAN-ND EARO registration status codes
      */
@@ -761,20 +769,19 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param tlla
      * @return NS Packet
      */
-    Ptr<Packet>
+    static Ptr<Packet>
     MakeNsEaroPacket(Ipv6Address src,
                       Ipv6Address dst,
                       Icmpv6NS& nsHdr,
-                      Icmpv6OptionLinkLayerAddress slla,
-                      Icmpv6OptionLinkLayerAddress tlla,
+                      Icmpv6OptionLinkLayerAddress& slla,
+                      Icmpv6OptionLinkLayerAddress& tlla,
                       Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
 
-    Ptr<Packet>
+    static Ptr<Packet>
     MakeNaEaroPacket(Ipv6Address src,
                       Ipv6Address dst,
                       Icmpv6NA& naHdr,
                       Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
-
 
     /**
      * @brief Constructs a RA packet (raEntry contains info for pios, abro and contexts)
@@ -784,7 +791,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param raEntry
      * @return True if packet is valid, false otherwise
      */
-    Ptr<Packet>
+    static Ptr<Packet>
     MakeRaPacket(Ipv6Address src,
                   Ipv6Address dst,
                   Icmpv6OptionLinkLayerAddress& slla,
@@ -799,7 +806,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param earo
      * @return True if packet is valid, false otherwise
      */
-    bool
+    static bool
     ParseAndValidateNsEaroPacket(Ptr<Packet> p,
                                 Icmpv6NS& nsHdr,
                                 Icmpv6OptionLinkLayerAddress& slla,
@@ -813,7 +820,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param earo
      * @return True if packet is valid, false otherwise
      */
-    bool
+    static bool
     ParseAndValidateNaEaroPacket(Ptr<Packet> p,
                                 Icmpv6NA& naHdr,
                                 Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
@@ -825,7 +832,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param slla
      * @return True if packet is valid, false otherwise
      */
-    bool
+    static bool
     ParseAndValidateRsPacket(Ptr<Packet> p,
                             Icmpv6RS& rsHdr,
                             Icmpv6OptionLinkLayerAddress& slla);
@@ -840,7 +847,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param contexts
      * @return True if packet is valid, false otherwise
      */
-    bool
+    static bool
     ParseAndValidateRaPacket(Ptr<Packet> p,
                             Icmpv6RA& raHdr,
                             std::list<Icmpv6OptionPrefixInformation>& pios,
