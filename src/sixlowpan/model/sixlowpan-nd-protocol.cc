@@ -2227,4 +2227,273 @@ SixLowPanNdProtocol::IsAddressRegistrationInProgress() const
     return m_addressRegistrationEvent.IsPending() || m_addressRegistrationTimeoutEvent.IsPending();
 }
 
+Ptr<Packet>
+SixLowPanNdProtocol::MakeNsEaroPacket(Ipv6Address src,
+                                      Ipv6Address dst,
+                                      Icmpv6NS& nsHdr,
+                                      Icmpv6OptionLinkLayerAddress slla,
+                                      Icmpv6OptionLinkLayerAddress tlla,
+                                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo)
+{
+    Ptr<Packet> p = Create<Packet>();
+
+    p->AddHeader(earo);
+    p->AddHeader(tlla);
+    p->AddHeader(slla);
+
+    nsHdr.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + nsHdr.GetSerializedSize(), PROT_NUMBER);
+    p->AddHeader(nsHdr);
+
+    return p;
+}
+
+Ptr<Packet>
+SixLowPanNdProtocol::MakeNaEaroPacket(Ipv6Address src,
+                                      Ipv6Address dst,
+                                      Icmpv6NA& naHdr,
+                                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo)
+{
+    Ptr<Packet> p = Create<Packet>();
+    p->AddHeader(earo);
+
+    naHdr.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + naHdr.GetSerializedSize(), PROT_NUMBER);
+    p->AddHeader(naHdr);
+
+    return p;
+}
+
+
+Ptr<Packet>
+SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
+                                  Ipv6Address dst,
+                                  Icmpv6OptionLinkLayerAddress& slla,
+                                  Ptr<SixLowPanRaEntry> raEntry)
+{
+    Ptr<Packet> p = Create<Packet>();
+
+    // Build RA Hdr
+    Icmpv6RA ra = raEntry->BuildRouterAdvertisementHeader();
+    ra.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + ra.GetSerializedSize(), PROT_NUMBER);
+    p->AddHeader(ra);
+
+    // PIO
+    for (const auto& pio : raEntry->BuildPrefixInformationOptions())
+    {
+        p->AddHeader(pio);
+    }
+
+    // ABRO
+    p->AddHeader(raEntry->MakeAbro());
+
+    // SLLAO
+    p->AddHeader(slla);
+
+    // 6CO
+    std::map<uint8_t, Ptr<SixLowPanNdContext>> contexts = raEntry->GetContexts();
+    for (std::map<uint8_t, Ptr<SixLowPanNdContext>>::iterator i = contexts.begin();
+         i != contexts.end();
+         i++)
+    {
+        Icmpv6OptionSixLowPanContext sixHdr;
+        sixHdr.SetContextPrefix(i->second->GetContextPrefix());
+        sixHdr.SetFlagC(i->second->IsFlagC());
+        sixHdr.SetCid(i->second->GetCid());
+
+        Time difference = Simulator::Now() - i->second->GetLastUpdateTime();
+        double updatedValidTime =
+            i->second->GetValidTime().GetMinutes() - std::floor(difference.GetMinutes());
+
+        // we want to advertise only contexts with a remaining validity time greater than 1
+        // minute.
+        if (updatedValidTime > 1)
+        {
+            sixHdr.SetValidTime(updatedValidTime);
+            p->AddHeader(sixHdr);
+        }
+    }
+
+    return p;
+}
+
+bool
+SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
+    Ptr<Packet> p,
+    Icmpv6NS& nsHdr,
+    Icmpv6OptionLinkLayerAddress& slla,
+    Icmpv6OptionLinkLayerAddress& tlla,
+    Icmpv6OptionSixLowPanExtendedAddressRegistration& earo
+    )
+{
+    p->RemoveHeader(nsHdr);
+    bool hasSllao = false;
+    bool hasTllao = false;
+    bool hasEaro = false;
+    bool next = true;
+
+    while (next && p->GetSize() > 0)
+    {
+        uint8_t type;
+        p->CopyData(&type, sizeof(type));
+
+        switch (type)
+        {
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
+            if (!hasSllao) { p->RemoveHeader(slla); hasSllao = true; }
+            break;
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET:
+            if (!hasTllao) { p->RemoveHeader(tlla); hasTllao = true; }
+            break;
+        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION:
+            if (!hasEaro) { p->RemoveHeader(earo); hasEaro = true; }
+            break;
+        default:
+            next = false;
+        }
+    }
+
+    if (!(hasSllao && hasTllao)) /* error! */
+    {
+        // We don't support yet address registration proxy.
+        NS_LOG_WARN(
+            "NS(EARO) message MUST have both source and target link layer options. Ignoring.");
+        return false;
+    }
+    if (slla.GetAddress() != tlla.GetAddress())
+    {
+        NS_LOG_LOGIC("Discarding NS(EARO) with different target and source addresses: TLLAO ("
+                     << tlla.GetAddress() << "), SLLAO (" << slla.GetAddress() << ")");
+        return false;
+    }
+
+    return true;
+}
+
+bool
+SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
+    Ptr<Packet> p,
+    Icmpv6NA& naHdr,
+    Icmpv6OptionSixLowPanExtendedAddressRegistration& earo)
+{
+    p->RemoveHeader(naHdr);
+    bool hasEaro = false;
+    bool next = true;
+
+    /* search all options following the NS header */
+    while (next == true)
+    {
+        uint8_t type;
+        p->CopyData(&type, sizeof(type));
+
+        switch (type)
+        {
+        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION: /* NA + EARO + TLLAO */
+            p->RemoveHeader(earo);
+            hasEaro = true;
+            break;
+        default:
+            /* unknown option, quit */
+            next = false;
+        }
+        if (p->GetSize() == 0)
+        {
+            next = false;
+        }
+    }
+
+    return hasEaro;
+}
+
+bool
+SixLowPanNdProtocol::ParseAndValidateRsPacket(Ptr<Packet> p,
+                                              Icmpv6RS& rsHdr,
+                                              Icmpv6OptionLinkLayerAddress& slla)
+{
+    p->RemoveHeader(rsHdr);
+    uint8_t type;
+    p->CopyData(&type, sizeof(type));
+    if (type != Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE)
+    {
+        return false;
+    }
+
+    if (type != Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE)
+    {
+        NS_LOG_LOGIC("RS message MUST have source link layer option, discarding it.");
+        return false;
+    }
+
+    p->RemoveHeader(slla);
+    return true;
+}
+
+bool
+SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
+                                              Icmpv6RA& raHdr,
+                                              std::list<Icmpv6OptionPrefixInformation>& pios,
+                                              Icmpv6OptionSixLowPanAuthoritativeBorderRouter& abro,
+                                              Icmpv6OptionLinkLayerAddress& slla,
+                                              std::list<Icmpv6OptionSixLowPanContext>& contexts)
+{
+    // Remove the RA header first
+    p->RemoveHeader(raHdr);
+
+    bool hasAbro = false;
+    bool hasSlla = false;
+
+    bool next = true;
+    while (next == true)
+    {
+        uint8_t type = 0;
+        p->CopyData(&type, sizeof(type));
+
+        Icmpv6OptionPrefixInformation prefix;
+        Icmpv6OptionSixLowPanContext context;
+
+        switch (type)
+        {
+        case Icmpv6Header::ICMPV6_OPT_PREFIX:
+            p->RemoveHeader(prefix);
+            pios.push_back(prefix);
+            break;
+        case Icmpv6Header::ICMPV6_OPT_SIXLOWPAN_CONTEXT:
+            p->RemoveHeader(context);
+            contexts.push_back(context);
+            break;
+        case Icmpv6Header::ICMPV6_OPT_AUTHORITATIVE_BORDER_ROUTER:
+            p->RemoveHeader(abro);
+            hasAbro = true;
+            break;
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
+            p->RemoveHeader(slla);
+            hasSlla = true;
+            break;
+        default:
+            /*RA message includes unknown option, stop processing*/
+            NS_ABORT_MSG("RA message includes unknown option, stop processing");
+            next = false;
+            break;
+        }
+        if (p->GetSize() == 0)
+        {
+            next = false;
+        }
+    }
+
+    if (!hasAbro)
+    {
+        // RAs MUST contain one (and only one) ABRO
+        NS_LOG_LOGIC("SixLowPanNdProtocol::HandleSixLowPanRA - no ABRO - ignoring RA");
+        return false;
+    }
+
+    if (!hasSlla)
+    {
+        // RAs must contain one (and only one) LLA
+        NS_LOG_LOGIC(
+            "SixLowPanNdProtocol::HandleSixLowPanRA - no Option LinkLayerSource - ignoring RA");
+        return false;
+    }
+
+    return true;
+}
 } /* namespace ns3 */
