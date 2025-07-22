@@ -295,8 +295,10 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
     Ptr<Packet> p = Create<Packet>();
     Icmpv6RS rs;
 
-    Icmpv6OptionLinkLayerAddress llOption(true, hardwareAddress);
-    p->AddHeader(llOption);
+    Icmpv6OptionLinkLayerAddress slla(true, hardwareAddress);
+    Icmpv6OptionSixLowPanCapabilityIndication cio;
+    p->AddHeader(slla);
+    p->AddHeader(cio);
 
     Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
     if (ipv6->GetInterfaceForAddress(src) == -1)
@@ -371,8 +373,14 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
         // Build SLLA Option
         Icmpv6OptionLinkLayerAddress slla(true, interface->GetDevice()->GetAddress());
 
+        // Build 6CIO Option
+        Icmpv6OptionSixLowPanCapabilityIndication cio;
+        // cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::D); // no EDAR EDAC support yet
+        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
+        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E);
+
         // Build RA Packet
-        Ptr<Packet> p = MakeRaPacket(src, dst, slla, raEntry);
+        Ptr<Packet> p = MakeRaPacket(src, dst, slla, cio, raEntry);
 
         // Build Ipv6 Header manually
         Ipv6Header ipHeader;
@@ -697,8 +705,9 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
 
     Icmpv6RS rsHdr;
     Icmpv6OptionLinkLayerAddress slla(true);
+    Icmpv6OptionSixLowPanCapabilityIndication cio;
 
-    bool isValid = ParseAndValidateRsPacket(packet, rsHdr, slla);
+    bool isValid = ParseAndValidateRsPacket(packet, rsHdr, slla, cio);
     if (!isValid)
     {
         return;
@@ -753,9 +762,10 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     Icmpv6RA raHdr;
     Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro; /* ABRO  */
     Icmpv6OptionLinkLayerAddress slla(1);                /* SLLAO */
-    std::list<Icmpv6OptionPrefixInformation> pios;       /* PIO   */
-    std::list<Icmpv6OptionSixLowPanContext> contexts;    /* 6CO   */
-    bool isValid = ParseAndValidateRaPacket(packet, raHdr, pios, abro, slla, contexts);
+    Icmpv6OptionSixLowPanCapabilityIndication cio;       /* 6CIO */
+    std::list<Icmpv6OptionPrefixInformation> pios;       /* PIO */
+    std::list<Icmpv6OptionSixLowPanContext> contexts;    /* 6CO */
+    bool isValid = ParseAndValidateRaPacket(packet, raHdr, pios, abro, slla, cio, contexts);
     if (!isValid)
     {
         return;
@@ -1821,6 +1831,7 @@ Ptr<Packet>
 SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
                                   Ipv6Address dst,
                                   Icmpv6OptionLinkLayerAddress& slla,
+                                  Icmpv6OptionSixLowPanCapabilityIndication& cio,
                                   Ptr<SixLowPanRaEntry> raEntry)
 {
     Ptr<Packet> p = Create<Packet>();
@@ -1839,6 +1850,9 @@ SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
 
     // SLLAO
     p->AddHeader(slla);
+
+    // 6CIO
+    p->AddHeader(cio);
 
     // 6CO
     std::map<uint8_t, Ptr<SixLowPanNdContext>> contexts = raEntry->GetContexts();
@@ -1989,19 +2003,50 @@ SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
 bool
 SixLowPanNdProtocol::ParseAndValidateRsPacket(Ptr<Packet> p,
                                               Icmpv6RS& rsHdr,
-                                              Icmpv6OptionLinkLayerAddress& slla)
+                                              Icmpv6OptionLinkLayerAddress& slla,
+                                              Icmpv6OptionSixLowPanCapabilityIndication& cio)
 {
     p->RemoveHeader(rsHdr);
-    uint8_t type;
-    p->CopyData(&type, sizeof(type));
+    bool hasSlla = false;
+    bool hasCio = false;
+    bool next = true;
 
-    if (type != Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE)
+    while (next == true)
     {
-        NS_LOG_LOGIC("RS message MUST have source link layer option, discarding it.");
+        uint8_t type;
+        p->CopyData(&type, sizeof(type));
+
+        switch (type)
+        {
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
+            p->RemoveHeader(slla);
+            hasSlla = true;
+            break;
+        case Icmpv6Header::ICMPV6_OPT_CAPABILITY_INDICATION:
+            p->RemoveHeader(cio);
+            hasCio = true;
+            break;
+        default:
+            next = false; // Stop if unknown option
+        }
+        if (p->GetSize() == 0)
+        {
+            next = false;
+        }
+    }
+
+    if (!hasSlla)
+    {
+        NS_LOG_LOGIC("RS message MUST have source link-layer option, discarding it.");
         return false;
     }
 
-    p->RemoveHeader(slla);
+    if (!hasCio)
+    {
+        NS_LOG_LOGIC("RS message MUST have sixlowpan capability indication option, discarding it.");
+        return false;
+    }
+
     return true;
 }
 
@@ -2011,6 +2056,7 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
                                               std::list<Icmpv6OptionPrefixInformation>& pios,
                                               Icmpv6OptionSixLowPanAuthoritativeBorderRouter& abro,
                                               Icmpv6OptionLinkLayerAddress& slla,
+                                              Icmpv6OptionSixLowPanCapabilityIndication& cio,
                                               std::list<Icmpv6OptionSixLowPanContext>& contexts)
 {
     // Remove the RA header first
@@ -2018,6 +2064,7 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
 
     bool hasAbro = false;
     bool hasSlla = false;
+    bool hasCio = false;
 
     bool next = true;
     while (next == true)
@@ -2050,10 +2097,10 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
             p->RemoveHeader(slla);
             hasSlla = true;
             break;
-        //        case Icmpv6Header::ICMPV6_OPT_CAPABILITY_INDICATION:
-        //          packet->RemoveHeader (capIn);
-        //          capIn = true;
-        //          break;
+        case Icmpv6Header::ICMPV6_OPT_CAPABILITY_INDICATION:
+            p->RemoveHeader(cio);
+            hasCio = true;
+            break;
         default:
             /*RA message includes unknown option, stop processing*/
             NS_ABORT_MSG("RA message includes unknown option, stop processing");
@@ -2086,6 +2133,14 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
         // RAs must contain one (and only one) LLA
         NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option LinkLayerSource - "
                      "ignoring RA");
+        return false;
+    }
+
+    if (!hasCio)
+    {
+        // RAs must contain one (and only one) LLA
+        NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option SixLowPan "
+                     "Capability Indication Option- ignoring RA");
         return false;
     }
 

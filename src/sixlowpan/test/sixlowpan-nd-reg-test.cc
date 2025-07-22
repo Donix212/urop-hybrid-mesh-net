@@ -48,7 +48,7 @@ class SixLowPanNdOneLNRegTest : public TestCase
     void DoRun() override
     {
         // LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_FUNCTION);
-        // LogComponentEnable ("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
+        // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
         // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
 
         // 6LBR - node 0
@@ -106,6 +106,8 @@ class SixLowPanNdOneLNRegTest : public TestCase
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), outputRoutingTableStream);
 
+        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
+
         Simulator::Stop(Seconds(5.0));
         Simulator::Run();
         Simulator::Destroy();
@@ -153,7 +155,7 @@ class SixLowPanNdFiveLNRegTest : public TestCase
     {
         // LogComponentEnable("SixLowPanNetDevice", LOG_LEVEL_FUNCTION);
         // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
-        // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
+        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
         // LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
         // LogComponentEnable("Icmpv6L4Protocol", LOG_LEVEL_INFO);
         Time duration = Time("50s");
@@ -204,6 +206,9 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         Simulator::Stop(duration);
         Simulator::Run();
         Simulator::Destroy();
+
+        std::cout << ndiscStream.str() << "\n";
+        std::cout << routingTableStream.str() << "\n";
     }
 };
 
