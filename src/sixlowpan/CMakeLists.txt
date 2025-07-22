@@ -33,6 +33,6 @@ build_lib(
     test/sixlowpan-hc1-test.cc
     test/sixlowpan-iphc-stateful-test.cc
     test/sixlowpan-iphc-test.cc
-    test/sixlowpan-nd-test.cc
+    test/sixlowpan-nd-packet-test.cc
     test/sixlowpan-nd-reg-test.cc
 )
