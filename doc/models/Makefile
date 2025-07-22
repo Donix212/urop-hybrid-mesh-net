@@ -94,6 +94,7 @@ SOURCES = \
 	$(SRC)/netanim/doc/animation.rst \
 	$(SRC)/flow-monitor/doc/flow-monitor.rst \
 	$(SRC)/sixlowpan/doc/sixlowpan.rst \
+	$(SRC)/sixlowpan/doc/sixlowpan-nd.rst \
 	$(SRC)/lr-wpan/doc/lr-wpan.rst \
 	$(SRC)/zigbee/doc/zigbee.rst \
 
