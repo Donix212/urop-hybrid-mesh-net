@@ -747,9 +747,107 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     // RS retry backoff
     //  Time m_rtrSolicitationInterval;         //!< RS Retransmission interval
     Time m_maxRtrSolicitationInterval; //!< Maximum RS Retransmission interval
+
     //  Time m_currentRtrSolicitationInterval;  //!< Current RS Retransmission interval
     //  Ptr<UniformRandomVariable> m_rsRetransmissionDelay; //!< Random variable for RS
     //  retransmissions.
+
+    /**
+     * @brief Construct NS packet.
+     * @param src source address
+     * @param dst destination address
+     * @param nsHdr
+     * @param slla
+     * @param tlla
+     * @return NS Packet
+     */
+    Ptr<Packet>
+    MakeNsEaroPacket(Ipv6Address src,
+                      Ipv6Address dst,
+                      Icmpv6NS& nsHdr,
+                      Icmpv6OptionLinkLayerAddress slla,
+                      Icmpv6OptionLinkLayerAddress tlla,
+                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+
+    Ptr<Packet>
+    MakeNaEaroPacket(Ipv6Address src,
+                      Ipv6Address dst,
+                      Icmpv6NA& naHdr,
+                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+
+
+    /**
+     * @brief Constructs a RA packet (raEntry contains info for pios, abro and contexts)
+     * @param src
+     * @param dst
+     * @param slla
+     * @param raEntry
+     * @return True if packet is valid, false otherwise
+     */
+    Ptr<Packet>
+    MakeRaPacket(Ipv6Address src,
+                  Ipv6Address dst,
+                  Icmpv6OptionLinkLayerAddress& slla,
+                  Ptr<SixLowPanRaEntry> raEntry);
+
+    /**
+     * @brief Parses NS packet and populates params, returning true if packet is valid
+     * @param p Packet to be parsed
+     * @param nsHdr
+     * @param slla
+     * @param tlla
+     * @param earo
+     * @return True if packet is valid, false otherwise
+     */
+    bool
+    ParseAndValidateNsEaroPacket(Ptr<Packet> p,
+                                Icmpv6NS& nsHdr,
+                                Icmpv6OptionLinkLayerAddress& slla,
+                                Icmpv6OptionLinkLayerAddress& tlla,
+                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+
+    /**
+     * @brief Parses NA packet and populates params, returning true if packet is valid
+     * @param p Packet to be parsed
+     * @param naHdr
+     * @param earo
+     * @return True if packet is valid, false otherwise
+     */
+    bool
+    ParseAndValidateNaEaroPacket(Ptr<Packet> p,
+                                Icmpv6NA& naHdr,
+                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+
+    /**
+     * @brief Parses RS packet and populates params, returning true if packet is valid
+     * @param p Packet to be parsed
+     * @param rsHdr
+     * @param slla
+     * @return True if packet is valid, false otherwise
+     */
+    bool
+    ParseAndValidateRsPacket(Ptr<Packet> p,
+                            Icmpv6RS& rsHdr,
+                            Icmpv6OptionLinkLayerAddress& slla);
+
+    /**
+     * @brief Parses RA packet and populates params, returning true if packet is valid
+     * @param p Packet to be parsed
+     * @param raHdr
+     * @param pios
+     * @param abro
+     * @param slla
+     * @param contexts
+     * @return True if packet is valid, false otherwise
+     */
+    bool
+    ParseAndValidateRaPacket(Ptr<Packet> p,
+                            Icmpv6RA& raHdr,
+                            std::list<Icmpv6OptionPrefixInformation>& pios,
+                            Icmpv6OptionSixLowPanAuthoritativeBorderRouter& abro,
+                            Icmpv6OptionLinkLayerAddress& slla,
+                            std::list<Icmpv6OptionSixLowPanContext>& contexts);
+
 };
 
 } /* namespace ns3 */
