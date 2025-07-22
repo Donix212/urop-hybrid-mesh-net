@@ -184,7 +184,7 @@ main(int argc, char** argv)
   LogComponentEnable ("LrWpanNetDevice", LOG_LEVEL_ALL);
   LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
 #endif
-    //  LogComponentEnable ("OnOffApplication", LOG_LEVEL_ALL);
+    LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
 
     NodeContainer lo_nodes;
     lo_nodes.Create(numberOfNodes);
