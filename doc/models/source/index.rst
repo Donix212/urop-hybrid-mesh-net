@@ -57,6 +57,7 @@ from the ``doc/`` directory of each module.  Source file column width is 100 col
    propagation
    spectrum
    sixlowpan
+   sixlowpan-nd
    topology
    traffic-control
    uan
