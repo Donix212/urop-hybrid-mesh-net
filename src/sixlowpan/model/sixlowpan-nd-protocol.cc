@@ -582,53 +582,6 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
         return; // note that currently it will always return valid
     }
 
-    //-----------------
-    // do we need to use the switch or use if else conditions for the statuses
-    //  while (next == true)
-    //    {
-    //      uint8_t status;
-    //      switch (status)
-    //      {
-    //        case SixLowPanNdProtocol::SUCCESS:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::DUPLICATE_ADDRESS:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::NEIGHBOR_CACHE_FULL:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::MOVED:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::REMOVED:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::VALIDATION_REQUEST:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::DUPLICATE_SOURCE_ADDRESS:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::INVALID_SOURCE_ADDRESS:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::REGISTERED_ADDRESS_TOPOLOGICALLY_INCORRECT:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::SIXLBR_REGISTRY_SATURATED:
-    //
-    //          break;
-    //        case SixLowPanNdProtocol::VALIDATION_FAILED:
-    //
-    //          break;
-    //        default:
-    //          /* unknown option, quit */
-    //          next = false;
-    //      }
-    //    }
-    //-----------------
-
     // Check if it has EARO
     if (!hasEaro)
     {
@@ -1145,17 +1098,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     else
     {
         Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
-        // Ptr<Ipv6Interface> incomingIf = m_pendingRas.front().incomingIf;
         Icmpv6OptionPrefixInformation prefixHdr = m_addrPendingReg.pioHdr;
-        // m_pendingRas.front().prefixForAddress[m_addrPendingReg.addressPendingRegistration];
-
-        // NS_LOG_INFO("Calling AddAutoconfiguredAddress with:");
-        // NS_LOG_INFO("  Addr: " << m_addrPendingReg.addressPendingRegistration);
-        // NS_LOG_INFO("  Prefix: " << prefixHdr.GetPrefix() << "/"
-        //                          << (uint32_t)prefixHdr.GetPrefixLength());
-        // NS_LOG_INFO("  Flags: " << prefixHdr.GetFlags());
-        // NS_LOG_INFO("  Interface Index: "
-        //             << ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice()));
         ipv6->AddAutoconfiguredAddress(
             ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice()),
             prefixHdr.GetPrefix(),
