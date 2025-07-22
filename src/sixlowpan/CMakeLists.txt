@@ -35,4 +35,5 @@ build_lib(
     test/sixlowpan-iphc-test.cc
     test/sixlowpan-nd-packet-test.cc
     test/sixlowpan-nd-reg-test.cc
+    test/sixlowpan-nd-rovr-test.cc
 )
