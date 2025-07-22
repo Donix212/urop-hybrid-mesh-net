@@ -286,9 +286,11 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
 void
 SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareAddress)
 {
+    // Behaviour follows RFC6775 5.3
+    // Interval between RSes: 10s, 10s, 20s, 40s, 60s, 60s, ...
     NS_LOG_FUNCTION(this << src << hardwareAddress);
-
-    // Todo: Add support for incrementing and checking max router solicitations
+    // NS_LOG_INFO("SendSixLowPanMulticastRS called at time " << Simulator::Now().GetSeconds() <<
+    // "s");
 
     Ptr<Packet> p = Create<Packet>();
     Icmpv6RS rs;
@@ -312,7 +314,23 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
                                      PROT_NUMBER);
     p->AddHeader(rs);
 
-    Simulator::Schedule(Time(m_rsRetransmissionJitter->GetValue()),
+    m_rsRetransmissionCount++;
+    Time delay = Time("10s");
+    if (m_rsRetransmissionCount >= m_rsMaxRetransmissionCount)
+    {
+        if (m_rsRetransmissionCount >= 5)
+        {
+            delay = Time("60s");
+        }
+        else
+        {
+            delay =
+                std::min(delay * pow(2, 1 + m_rsRetransmissionCount - m_rsMaxRetransmissionCount),
+                         m_maxRtrSolicitationInterval);
+        }
+    }
+
+    Simulator::Schedule(MilliSeconds(m_rsRetransmissionJitter->GetValue()),
                         &Icmpv6L4Protocol::DelayedSendMessage,
                         this,
                         p,
@@ -321,7 +339,7 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
                         255);
 
     m_handleRsTimeoutEvent =
-        Simulator::Schedule(Time(m_rsRetransmissionJitter->GetValue()) + Time("1s"),
+        Simulator::Schedule(delay + MilliSeconds(m_rsRetransmissionJitter->GetValue()),
                             &SixLowPanNdProtocol::SendSixLowPanMulticastRS,
                             this,
                             src,
@@ -719,6 +737,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     if (m_handleRsTimeoutEvent.IsPending())
     {
         m_handleRsTimeoutEvent.Cancel();
+        m_rsRetransmissionCount = 0;
     }
 
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
@@ -795,13 +814,6 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     }
 
     AddressRegistration();
-    // if (!IsAddressRegistrationInProgress())
-    // {
-    //     m_addressRegistrationCounter = 0;
-    //     Time delay = MilliSeconds(m_addressRegistrationJitter->GetValue());
-    //     m_addressRegistrationEvent =
-    //         Simulator::Schedule(delay, &SixLowPanNdProtocol::AddressRegistration, this);
-    // }
 }
 
 /*
@@ -912,16 +924,7 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
 void
 SixLowPanNdProtocol::FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr)
 {
-    // We actually want to override the immediate send of an RS.
-    // NS_LOG_INFO("DAD timeout at " << Simulator::Now().GetSeconds() << "s for address " << addr);
     return;
-    // Icmpv6L4Protocol::FunctionDadTimeout(interface, addr);
-    // Simulator::Schedule(Seconds(0),
-    //                     &Icmpv6L4Protocol::SendRS,
-    //                     this, // or icmpv6 ptr
-    //                     addr,
-    //                     Ipv6Address::GetAllRoutersMulticast(),
-    //                     interface->GetDevice()->GetAddress());
 }
 
 void
@@ -1085,9 +1088,8 @@ SixLowPanNdProtocol::AddressRegistration()
     // tid = m_tidContainer[std::make_pair(addressToRegister, registeringAddressNodeAddr)];
 
     m_addressRegistrationCounter++;
-    Time jitter = MilliSeconds(m_addressRegistrationJitter->GetValue());
 
-    Simulator::Schedule(additionalDelay + jitter,
+    Simulator::Schedule(additionalDelay + MilliSeconds(m_addressRegistrationJitter->GetValue()),
                         &SixLowPanNdProtocol::SendSixLowPanNsWithEaro,
                         this,
                         m_addrPendingReg.addressPendingRegistration,
@@ -1099,7 +1101,8 @@ SixLowPanNdProtocol::AddressRegistration()
                         m_addrPendingReg.sixDevice);
 
     m_addressRegistrationTimeoutEvent =
-        Simulator::Schedule(additionalDelay + m_retransmissionTime,
+        Simulator::Schedule(additionalDelay + m_retransmissionTime +
+                                MilliSeconds(m_addressRegistrationJitter->GetValue()),
                             &SixLowPanNdProtocol::AddressRegistrationTimeout,
                             this);
 }
@@ -1208,9 +1211,10 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
         }
     }
 
-    Time jitter = MilliSeconds(m_addressRegistrationJitter->GetValue());
     m_addressRegistrationEvent =
-        Simulator::Schedule(jitter, &SixLowPanNdProtocol::AddressRegistration, this);
+        Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
+                            &SixLowPanNdProtocol::AddressRegistration,
+                            this);
 }
 
 void

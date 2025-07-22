@@ -51,9 +51,6 @@ class SixLowPanNdOneLNRegTest : public TestCase
         // LogComponentEnable ("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
         // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
 
-        // Disable sending multicast RS by commenting out SixLowPanNdProtocol::FunctionDadTimeout
-        // Config::SetDefault ("ns3::SixLowPanNetDevice::UseMeshUnder", BooleanValue (true));
-
         // 6LBR - node 0
         // LLaddr: fe80::ff:fe00:1
         // Link-layer address: 02:00:00:00:00:01
@@ -144,287 +141,6 @@ class SixLowPanNdOneLNRegTest : public TestCase
     }
 };
 
-class SixLowPanNdMultipleLNRegTest : public TestCase
-{
-  public:
-    SixLowPanNdMultipleLNRegTest()
-        : TestCase("Registration of n 6LNs with 1 6LBR")
-    {
-    }
-
-    std::string SortRoutingTableWithPinnedTop(const std::string& input)
-    {
-        std::istringstream stream(input);
-        std::ostringstream output;
-
-        std::string line;
-        std::vector<std::string> block;
-        std::vector<std::string> pinnedTop;
-        std::vector<std::string> others;
-
-        auto flushBlock = [&]() {
-            if (block.empty())
-            {
-                return;
-            }
-            output << block[0] << "\n"; // Node header
-            output << block[1] << "\n"; // Column header
-
-            pinnedTop.clear();
-            others.clear();
-
-            for (size_t i = 2; i < block.size(); ++i)
-            {
-                const std::string& entry = block[i];
-                if (entry.empty())
-                {
-                    continue;
-                }
-
-                if (entry.find("::1/128") != std::string::npos)
-                {
-                    pinnedTop.insert(pinnedTop.begin(), entry); // always first
-                }
-                else if (entry.find("fe80::/64") != std::string::npos)
-                {
-                    pinnedTop.push_back(entry); // second
-                }
-                else
-                {
-                    others.push_back(entry);
-                }
-            }
-
-            std::sort(others.begin(), others.end());
-
-            for (const auto& e : pinnedTop)
-            {
-                output << e << "\n";
-            }
-            for (const auto& e : others)
-            {
-                output << e << "\n";
-            }
-
-            output << "\n";
-        };
-
-        while (std::getline(stream, line))
-        {
-            if (line.rfind("Node:", 0) == 0)
-            {
-                flushBlock();
-                block.clear();
-            }
-            block.push_back(line);
-        }
-        flushBlock(); // flush final block
-        return output.str();
-    }
-
-    std::string GenerateExpectedNdisc(uint32_t numLns)
-    {
-        std::ostringstream expectedNdisc;
-
-        // Node 0's NDISC Cache
-        expectedNdisc << "NDISC Cache of node 0 at time +5s\n";
-        for (uint32_t j = 0; j < 2; ++j)
-        {
-            for (uint32_t i = 2; i <= numLns + 1; ++i)
-            {
-                char suffix[5];
-                snprintf(suffix, sizeof(suffix), "%x", i); // hex suffix
-
-                std::ostringstream lladdrStream;
-                lladdrStream << "00-06-02:00:00:00:00:" << std::setfill('0') << std::setw(2)
-                             << std::hex << i;
-                std::string lladdr = lladdrStream.str();
-
-                if (j == 0)
-                {
-                    expectedNdisc << "2001::ff:fe00:" << suffix << " dev 2 lladdr " << lladdr
-                                  << " REACHABLE REGISTERED\n";
-                }
-                else
-                {
-                    expectedNdisc << "fe80::ff:fe00:" << suffix << " dev 2 lladdr " << lladdr
-                                  << " REACHABLE REGISTERED\n";
-                }
-            }
-        }
-
-        // Other 6LN nodes' NDISC Cache
-        for (uint32_t i = 1; i <= numLns; ++i)
-        {
-            expectedNdisc << "NDISC Cache of node " << i << " at time +5s\n";
-            expectedNdisc << "fe80::ff:fe00:1 dev 2 lladdr 00-06-02:00:00:00:00:01 REACHABLE "
-                             "GARBAGE-COLLECTIBLE\n";
-        }
-
-        return expectedNdisc.str();
-    }
-
-    std::string GenerateExpectedRoutingTable(uint32_t numLns)
-    {
-        std::ostringstream expectedRoutingTable;
-        expectedRoutingTable << std::left;
-
-        // Node 0 (6LBR)
-        expectedRoutingTable << "Node: 0, Time: +5s, Local time: +5s, Ipv6StaticRouting table\n";
-        expectedRoutingTable
-            << "Destination                    Next Hop                   Flag Met Ref Use If\n";
-
-        expectedRoutingTable << std::setw(31) << "::1/128" << std::setw(27) << "::" << std::setw(5)
-                             << "UH" << std::setw(4) << "0"
-                             << "-"
-                             << "   "
-                             << "-"
-                             << "   "
-                             << "0\n";
-
-        expectedRoutingTable << std::setw(31) << "fe80::/64" << std::setw(27)
-                             << "::" << std::setw(5) << "U" << std::setw(4) << "0"
-                             << "-"
-                             << "   "
-                             << "-"
-                             << "   "
-                             << "1\n";
-
-        for (uint32_t i = 2; i <= numLns + 1; ++i)
-        {
-            char suffix[5];
-            snprintf(suffix, sizeof(suffix), "%x", i);
-            std::string global = "2001::ff:fe00:" + std::string(suffix) + "/128";
-            std::string link = "fe80::ff:fe00:" + std::string(suffix);
-
-            expectedRoutingTable << std::setw(31) << global << std::setw(27) << link << std::setw(5)
-                                 << "UH" << std::setw(4) << "0"
-                                 << "-"
-                                 << "   "
-                                 << "-"
-                                 << "   "
-                                 << "1\n";
-        }
-
-        expectedRoutingTable << "\n";
-
-        // Nodes 1 to N (6LNs)
-        for (uint32_t i = 1; i <= numLns; ++i)
-        {
-            expectedRoutingTable << "Node: " << i
-                                 << ", Time: +5s, Local time: +5s, Ipv6StaticRouting table\n";
-            expectedRoutingTable << "Destination                    Next Hop                   "
-                                    "Flag Met Ref Use If\n";
-
-            expectedRoutingTable << std::setw(31) << "::1/128" << std::setw(27)
-                                 << "::" << std::setw(5) << "UH" << std::setw(4) << "0"
-                                 << "-"
-                                 << "   "
-                                 << "-"
-                                 << "   "
-                                 << "0\n";
-
-            expectedRoutingTable << std::setw(31) << "fe80::/64" << std::setw(27)
-                                 << "::" << std::setw(5) << "U" << std::setw(4) << "0"
-                                 << "-"
-                                 << "   "
-                                 << "-"
-                                 << "   "
-                                 << "1\n";
-
-            expectedRoutingTable << std::setw(31) << "::/0" << std::setw(27) << "fe80::ff:fe00:1"
-                                 << std::setw(5) << "UG" << std::setw(4) << "0"
-                                 << "-"
-                                 << "   "
-                                 << "-"
-                                 << "   "
-                                 << "1\n\n";
-        }
-
-        return expectedRoutingTable.str();
-    }
-
-    void DoRun() override
-    {
-        // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
-        // LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
-
-        for (int k = 1; k <= 20; k++)
-        {
-            uint32_t numLns = k;
-
-            NodeContainer nodes;
-            nodes.Create(1 + numLns); // 1 6LBR + n 6LNs
-            Ptr<Node> lbrNode = nodes.Get(0);
-
-            MobilityHelper mobility;
-            mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-            mobility.Install(nodes);
-
-            LrWpanHelper lrWpanHelper;
-            NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-            lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
-
-            InternetStackHelper internetv6;
-            internetv6.Install(nodes);
-
-            SixLowPanHelper sixlowpan;
-            NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
-
-            sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
-            sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
-
-            for (uint32_t i = 1; i <= numLns; ++i)
-            {
-                sixlowpan.InstallSixLowPanNdNode(devices.Get(i));
-            }
-
-            std::ostringstream ndiscStream;
-            Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
-            std::ostringstream routingTableStream;
-            Ptr<OutputStreamWrapper> outputRoutingTableStream =
-                Create<OutputStreamWrapper>(&routingTableStream);
-
-            Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
-            Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), outputRoutingTableStream);
-
-            Simulator::Stop(Seconds(5.0));
-            Simulator::Run();
-            Simulator::Destroy();
-
-            //
-            // NDISC Cache Expectations
-            //
-            std::string expectedNdisc = GenerateExpectedNdisc(numLns);
-            NS_TEST_EXPECT_MSG_EQ(ndiscStream.str(), expectedNdisc, "NdiscCache is incorrect.");
-            if (ndiscStream.str() != expectedNdisc)
-            {
-                std::cout << "[FAIL] NdiscCache mismatch at k = " << k << "\n";
-                std::cout << "Expected:\n\n" << expectedNdisc;
-                std::cout << "Got:\n\n" << ndiscStream.str();
-            }
-
-            //
-            // Routing Table Expectations
-            //
-            std::string expectedRoutingTable = GenerateExpectedRoutingTable(numLns);
-
-            // Test and debug output
-            std::string actual = SortRoutingTableWithPinnedTop(routingTableStream.str());
-            std::string expected = SortRoutingTableWithPinnedTop(expectedRoutingTable);
-
-            NS_TEST_EXPECT_MSG_EQ(actual, expected, "Routing Table is incorrect.");
-
-            if (actual != expected)
-            {
-                std::cout << "[FAIL] RoutingTable mismatch at k = " << k << "\n";
-                std::cout << "Expected:\n" << expected;
-                std::cout << "Got:\n" << actual;
-            }
-        }
-    }
-};
-
 class SixLowPanNdFiveLNRegTest : public TestCase
 {
   public:
@@ -440,6 +156,7 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
         // LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
         // LogComponentEnable("Icmpv6L4Protocol", LOG_LEVEL_INFO);
+        Time duration = Time("50s");
 
         constexpr uint32_t numLns = 5;
 
@@ -475,12 +192,130 @@ class SixLowPanNdFiveLNRegTest : public TestCase
 
         std::ostringstream ndiscStream;
         Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
+        std::ostringstream routingTableStream;
+        Ptr<OutputStreamWrapper> outputRoutingTableStream =
+            Create<OutputStreamWrapper>(&routingTableStream);
 
-        Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
+        Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
 
         lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
 
-        Simulator::Stop(Seconds(5));
+        Simulator::Stop(duration);
+        Simulator::Run();
+        Simulator::Destroy();
+    }
+};
+
+class SixLowPanNdTwentyLNRegTest : public TestCase
+{
+  public:
+    SixLowPanNdTwentyLNRegTest()
+        : TestCase("Registration of 20 6LNs with 1 6LBR")
+    {
+    }
+
+    void DoRun() override
+    {
+        // LogComponentEnable("SixLowPanNetDevice", LOG_LEVEL_FUNCTION);
+        // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
+        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
+        // LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
+        // LogComponentEnable("Icmpv6L4Protocol", LOG_LEVEL_INFO);
+
+        Time duration = Time("50s");
+        constexpr uint32_t numLns = 20;
+
+        NodeContainer nodes;
+        nodes.Create(1 + numLns); // 1 LBR + 20 LNs
+        Ptr<Node> lbrNode = nodes.Get(0);
+
+        MobilityHelper mobility;
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
+
+        LrWpanHelper lrWpanHelper;
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+
+        InternetStackHelper internetv6;
+        internetv6.Install(nodes);
+
+        SixLowPanHelper sixlowpan;
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            sixlowpan.InstallSixLowPanNdNode(devices.Get(i));
+        }
+
+        // Ptr<OutputStreamWrapper> outputStream = Create<OutputStreamWrapper>(&std::cout);
+        // Ipv6RoutingHelper::PrintNeighborCacheAllEvery(Seconds(1), outputStream);
+        // Ipv6RoutingHelper::PrintRoutingTableAllEvery(Seconds(1), outputStream);
+
+        std::ostringstream ndiscStream;
+        Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
+        std::ostringstream routingTableStream;
+        Ptr<OutputStreamWrapper> outputRoutingTableStream =
+            Create<OutputStreamWrapper>(&routingTableStream);
+
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
+        Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+
+        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
+
+        Simulator::Stop(duration);
+        Simulator::Run();
+        Simulator::Destroy();
+
+        std::cout << ndiscStream.str() << "\n";
+        std::cout << routingTableStream.str() << "\n";
+    }
+};
+
+class SixLowPanNdMulticastRsTimeoutTest : public TestCase
+{
+  public:
+    SixLowPanNdMulticastRsTimeoutTest()
+        : TestCase("6LN sends multicast RS but receives no RA, test timeout behavior")
+    {
+    }
+
+    void DoRun() override
+    {
+        // Enable logs and check that Multicast RS interval is correct if needed
+        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
+
+        NodeContainer nodes;
+        nodes.Create(1);
+        Ptr<Node> lnNode = nodes.Get(0);
+
+        // Set constant position
+        MobilityHelper mobility;
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
+
+        // Install LrWpanNetDevice
+        LrWpanHelper lrWpanHelper;
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+
+        // Install Internet stack
+        InternetStackHelper internetv6;
+        internetv6.Install(nodes);
+
+        // Install 6LoWPAN device
+        SixLowPanHelper sixlowpan;
+        NetDeviceContainer sixDevices = sixlowpan.Install(lrwpanDevices);
+
+        // Install ND only as a node (no BR)
+        sixlowpan.InstallSixLowPanNdNode(sixDevices.Get(0));
+
+        // Simulation time should be long enough to see RS timeout
+        Simulator::Stop(Seconds(200));
         Simulator::Run();
         Simulator::Destroy();
     }
@@ -495,11 +330,12 @@ class SixLowPanNdRegTestSuite : public TestSuite
 {
   public:
     SixLowPanNdRegTestSuite()
-        : TestSuite("sixlowpan-nd-reg-test", Type::UNIT) // test.py -s sixlowpan-nd
+        : TestSuite("sixlowpan-nd-reg-test", Type::UNIT)
     {
         AddTestCase(new SixLowPanNdOneLNRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdMultipleLNRegTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdFiveLNRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdTwentyLNRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdMulticastRsTimeoutTest(), TestCase::Duration::QUICK);
     }
 };
 

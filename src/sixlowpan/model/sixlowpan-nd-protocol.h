@@ -184,7 +184,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                  Ptr<NetDevice> sixDevice,
                                  uint8_t status);
     /**
-     * @brief Send a Multicast RS (+ 6CIO).
+     * @brief Send a Multicast RS (+ 6CIO) (RFC6775 5.3)
      * @param dst destination IPv6 address
      * @param interface the interface from which the packet will be sent
      */
