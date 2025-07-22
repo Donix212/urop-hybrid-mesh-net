@@ -8,6 +8,7 @@
  * Author: Alessio Bonadio <alessio.bonadio@gmail.com>
  *         Tommaso Pecorella <tommaso.pecorella@unifi.it>
  *         Adnan Rashid <adnanrashidpk@gmail.com>
+ *         Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
 #ifndef SIXLOWPAN_ND_PROTOCOL_H

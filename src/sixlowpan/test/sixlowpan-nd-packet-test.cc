@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  *
- * Author: JieQi Boh <jieqiboh5836@gmail.com>
+ * Author: Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
 #include "../../core/model/test.h"
