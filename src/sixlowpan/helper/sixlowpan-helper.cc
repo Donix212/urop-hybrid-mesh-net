@@ -8,17 +8,17 @@
 
 #include "sixlowpan-helper.h"
 
+#include "ns3/boolean.h"
+#include "ns3/ipv6-address-helper.h"
+#include "ns3/ipv6-interface-container.h"
+#include "ns3/ipv6-l3-protocol.h"
 #include "ns3/log.h"
 #include "ns3/names.h"
 #include "ns3/net-device.h"
 #include "ns3/node.h"
-#include "ns3/sixlowpan-net-device.h"
-#include "ns3/ipv6-interface-container.h"
-#include "ns3/ipv6-address-helper.h"
-#include "ns3/ipv6-l3-protocol.h"
-#include "ns3/boolean.h"
-#include "ns3/uinteger.h"
 #include "ns3/sixlowpan-nd-protocol.h"
+#include "ns3/sixlowpan-net-device.h"
+#include "ns3/uinteger.h"
 
 namespace ns3
 {
@@ -147,147 +147,153 @@ SixLowPanHelper::AssignStreams(NetDeviceContainer c, int64_t stream)
     return (currentStream - stream);
 }
 
-
-Ipv6InterfaceContainer SixLowPanHelper::InstallSixLowPanNdBorderRouter (NetDeviceContainer c, Ipv6Address baseAddr)
+Ipv6InterfaceContainer
+SixLowPanHelper::InstallSixLowPanNdBorderRouter(NetDeviceContainer c, Ipv6Address baseAddr)
 {
-  InstallSixLowPanNd (c, true);
+    InstallSixLowPanNd(c, true);
 
-  Ipv6AddressHelper ipv6;
-  ipv6.SetBase (baseAddr, Ipv6Prefix (64));
-  Ipv6InterfaceContainer deviceInterfaces;
-  deviceInterfaces = ipv6.AssignWithoutOnLink (c);
+    Ipv6AddressHelper ipv6;
+    ipv6.SetBase(baseAddr, Ipv6Prefix(64));
+    Ipv6InterfaceContainer deviceInterfaces;
+    deviceInterfaces = ipv6.AssignWithoutOnLink(c);
 
-  for (uint32_t index = 0; index < c.GetN (); index++)
+    for (uint32_t index = 0; index < c.GetN(); index++)
     {
-      Ptr<Node> node = c.Get (index)->GetNode ();
-      Ptr<Ipv6L3Protocol> ipv6l3 = node->GetObject<Ipv6L3Protocol> ();
-      ipv6l3->SetAttribute ("SendIcmpv6Redirect", BooleanValue (false));
+        Ptr<Node> node = c.Get(index)->GetNode();
+        Ptr<Ipv6L3Protocol> ipv6l3 = node->GetObject<Ipv6L3Protocol>();
+        ipv6l3->SetAttribute("SendIcmpv6Redirect", BooleanValue(false));
 
-      Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice> (c.Get (index));
-      Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol> ();
-      if (sixLowPanNdProtocol->IsBorderRouterOnInterface (sixLowPanNetDevice))
+        Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(c.Get(index));
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+        if (sixLowPanNdProtocol->IsBorderRouterOnInterface(sixLowPanNetDevice))
         {
-          NS_ABORT_MSG ("Interface " << sixLowPanNetDevice << " has been already initialized, aborting.");
+            NS_ABORT_MSG("Interface " << sixLowPanNetDevice
+                                      << " has been already initialized, aborting.");
         }
-      sixLowPanNdProtocol->SetInterfaceAs6lbr (sixLowPanNetDevice);
+        sixLowPanNdProtocol->SetInterfaceAs6lbr(sixLowPanNetDevice);
     }
-  return deviceInterfaces;
-
+    return deviceInterfaces;
 }
 
-Ipv6InterfaceContainer SixLowPanHelper::InstallSixLowPanNdNode (NetDeviceContainer c)
+Ipv6InterfaceContainer
+SixLowPanHelper::InstallSixLowPanNdNode(NetDeviceContainer c)
 {
-  InstallSixLowPanNd (c, false);
+    InstallSixLowPanNd(c, false);
 
-  Ipv6AddressHelper ipv6;
-  Ipv6InterfaceContainer deviceInterfaces;
-  deviceInterfaces = ipv6.AssignWithoutAddress (c);
+    Ipv6AddressHelper ipv6;
+    Ipv6InterfaceContainer deviceInterfaces;
+    deviceInterfaces = ipv6.AssignWithoutAddress(c);
 
-  return deviceInterfaces;
+    return deviceInterfaces;
 }
 
-void SixLowPanHelper::InstallSixLowPanNd (NetDeviceContainer c, bool borderRouter)
+void
+SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
 {
-  for (uint32_t i = 0; i < c.GetN (); ++i)
+    for (uint32_t i = 0; i < c.GetN(); ++i)
     {
-      Ptr<NetDevice> device = c.Get (i);
-      Ptr<Node> node = device->GetNode ();
-      Ptr<SixLowPanNetDevice> dev = DynamicCast<SixLowPanNetDevice> (device);
-      Ptr<Ipv6L3Protocol> ipv6 = node->GetObject<Ipv6L3Protocol> ();
-      int32_t interfaceId = ipv6->GetInterfaceForDevice (dev);
+        Ptr<NetDevice> device = c.Get(i);
+        Ptr<Node> node = device->GetNode();
+        Ptr<SixLowPanNetDevice> dev = DynamicCast<SixLowPanNetDevice>(device);
+        Ptr<Ipv6L3Protocol> ipv6 = node->GetObject<Ipv6L3Protocol>();
+        int32_t interfaceId = ipv6->GetInterfaceForDevice(dev);
 
-      if (interfaceId == -1)
+        if (interfaceId == -1)
         {
-          interfaceId = ipv6->AddInterface (dev);
+            interfaceId = ipv6->AddInterface(dev);
         }
 
-      Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol> ();
-      if (!sixLowPanNdProtocol)
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+        if (!sixLowPanNdProtocol)
         {
-          sixLowPanNdProtocol = CreateObject<SixLowPanNdProtocol> ();
-          sixLowPanNdProtocol->SetAttribute ("DAD", BooleanValue (false));
-          sixLowPanNdProtocol->SetAttribute ("RsMaxRetransmissionCount", UintegerValue (3));
-          // sixLowPanNdProtocol->SetAttribute ("RtrSolicitationInterval", TimeValue (Seconds (10)));
-          node->AggregateObject (sixLowPanNdProtocol);
+            sixLowPanNdProtocol = CreateObject<SixLowPanNdProtocol>();
+            sixLowPanNdProtocol->SetAttribute("DAD", BooleanValue(false));
+            sixLowPanNdProtocol->SetAttribute("RsMaxRetransmissionCount", UintegerValue(3));
+            // sixLowPanNdProtocol->SetAttribute ("RtrSolicitationInterval", TimeValue (Seconds
+            // (10)));
+            node->AggregateObject(sixLowPanNdProtocol);
         }
-      ipv6->Insert (sixLowPanNdProtocol, interfaceId);
+        ipv6->Insert(sixLowPanNdProtocol, interfaceId);
 
-      if (borderRouter)
+        if (borderRouter)
         {
-          ipv6->SetForwarding (interfaceId, true);
+            ipv6->SetForwarding(interfaceId, true);
         }
     }
-  return;
+    return;
 }
 
-
-void SixLowPanHelper::SetAdvertisedPrefix (const Ptr<NetDevice> nd, Ipv6Prefix prefix)
+void
+SixLowPanHelper::SetAdvertisedPrefix(const Ptr<NetDevice> nd, Ipv6Prefix prefix)
 {
-  NS_LOG_FUNCTION (this << nd << prefix.ConvertToIpv6Address () << prefix);
+    NS_LOG_FUNCTION(this << nd << prefix.ConvertToIpv6Address() << prefix);
 
-  Ptr<Node> node = nd->GetNode ();
+    Ptr<Node> node = nd->GetNode();
 
-  Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice> (nd);
-  if (sixLowPanNetDevice)
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(nd);
+    if (sixLowPanNetDevice)
     {
-      Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol> ();
-      if (!sixLowPanNdProtocol)
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+        if (!sixLowPanNdProtocol)
         {
-          NS_ABORT_MSG ("Can not add a Prefix to a 6LBR on a node because I can not find 6LoWPAN-ND protocol");
+            NS_ABORT_MSG("Can not add a Prefix to a 6LBR on a node because I can not find "
+                         "6LoWPAN-ND protocol");
         }
-      sixLowPanNdProtocol->SetAdvertisedPrefix (sixLowPanNetDevice, prefix);
+        sixLowPanNdProtocol->SetAdvertisedPrefix(sixLowPanNetDevice, prefix);
     }
-  else
+    else
     {
-      NS_LOG_WARN ("Not a SixLowPan NetDevice - doing nothing");
-    }
-}
-
-void SixLowPanHelper::AddAdvertisedContext (const Ptr<NetDevice> nd, Ipv6Prefix context)
-{
-  NS_LOG_FUNCTION (this << nd << context.ConvertToIpv6Address () << context);
-
-  Ptr<Node> node = nd->GetNode ();
-
-  Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice> (nd);
-  if (sixLowPanNetDevice)
-    {
-
-      Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol> ();
-      if (!sixLowPanNdProtocol)
-        {
-          NS_ABORT_MSG ("Can not add a Context to a 6LBR on a node because I can not find 6LoWPAN-ND protocol");
-        }
-
-      sixLowPanNdProtocol->AddAdvertisedContext (sixLowPanNetDevice, context);
-    }
-  else
-    {
-      NS_LOG_WARN ("Not a SixLowPan NetDevice - doing nothing");
+        NS_LOG_WARN("Not a SixLowPan NetDevice - doing nothing");
     }
 }
 
-void SixLowPanHelper::RemoveAdvertisedContext (const Ptr<NetDevice> nd, Ipv6Prefix context)
+void
+SixLowPanHelper::AddAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix context)
 {
-  NS_LOG_FUNCTION (this << nd << context.ConvertToIpv6Address () << context);
+    NS_LOG_FUNCTION(this << nd << context.ConvertToIpv6Address() << context);
 
-  Ptr<Node> node = nd->GetNode ();
+    Ptr<Node> node = nd->GetNode();
 
-  Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice> (nd);
-  if (sixLowPanNetDevice)
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(nd);
+    if (sixLowPanNetDevice)
     {
-
-      Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol> ();
-      if (!sixLowPanNdProtocol)
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+        if (!sixLowPanNdProtocol)
         {
-          NS_ABORT_MSG ("Can not remove a Context from a 6LBR on a node because I can not find 6LoWPAN-ND protocol");
+            NS_ABORT_MSG("Can not add a Context to a 6LBR on a node because I can not find "
+                         "6LoWPAN-ND protocol");
         }
 
-      sixLowPanNdProtocol->RemoveAdvertisedContext (sixLowPanNetDevice, context);
+        sixLowPanNdProtocol->AddAdvertisedContext(sixLowPanNetDevice, context);
     }
-  else
+    else
     {
-      NS_LOG_WARN ("Not a SixLowPan NetDevice - doing nothing");
+        NS_LOG_WARN("Not a SixLowPan NetDevice - doing nothing");
+    }
+}
+
+void
+SixLowPanHelper::RemoveAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix context)
+{
+    NS_LOG_FUNCTION(this << nd << context.ConvertToIpv6Address() << context);
+
+    Ptr<Node> node = nd->GetNode();
+
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(nd);
+    if (sixLowPanNetDevice)
+    {
+        Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+        if (!sixLowPanNdProtocol)
+        {
+            NS_ABORT_MSG("Can not remove a Context from a 6LBR on a node because I can not find "
+                         "6LoWPAN-ND protocol");
+        }
+
+        sixLowPanNdProtocol->RemoveAdvertisedContext(sixLowPanNetDevice, context);
+    }
+    else
+    {
+        NS_LOG_WARN("Not a SixLowPan NetDevice - doing nothing");
     }
 }
 

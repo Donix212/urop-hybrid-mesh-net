@@ -1,18 +1,9 @@
 /*
  * Copyright (c) 2020 Università di Firenze, Italy
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ * SPDX-License-Identifier: GPL-2.0-only
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Alessio Bonadio <alessio.bonadio@gmail.com>
  *         Tommaso Pecorella <tommaso.pecorella@unifi.it>
@@ -54,7 +45,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     friend class SixLowPanNdRaPacketTest;
     friend class SixLowPanNdRsPacketTest;
     friend class SixLowPanNdNsNaTest;
-public:
+
+  public:
     /**
      * 6LoWPAN-ND EARO registration status codes
      */
@@ -723,10 +715,12 @@ public:
         Ipv6Address abroAddress;    //!< Address of the ABRO (always global)
         Ipv6Address registrar; //!< Registering node (lladdr of 6LR or 6LBR for a lladdr, gaddr of
                                //!< 6LBR for gaddr)
-        Address registrarMacAddr;     //!< Registering node MAC address
-        Icmpv6OptionLinkLayerAddress llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
+        Address registrarMacAddr; //!< Registering node MAC address
+        Icmpv6OptionLinkLayerAddress
+            llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
         Ptr<Ipv6Interface> interface; //!< Interface used for the registration
-        Icmpv6OptionPrefixInformation pioHdr; //! Prefix Information Option for the address being registered
+        Icmpv6OptionPrefixInformation
+            pioHdr; //! Prefix Information Option for the address being registered
     } SixLowPanRegisteredAddress;
 
     std::list<SixLowPanRegisteredAddress>
@@ -744,9 +738,12 @@ public:
         Address registrarMacAddr;               //!< Registering node MAC address
         bool newRegistration;     //!< new registration (true) or re-registration (false)
         Ptr<NetDevice> sixDevice; //!< The SixLowPanNetDevice to use for the registration
-        Icmpv6OptionLinkLayerAddress llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
-        Ptr<Ipv6Interface> interface; //! Interface that did receive the RA that this address is taken from
-        Icmpv6OptionPrefixInformation pioHdr; //! Prefix Information Option for the address being registered
+        Icmpv6OptionLinkLayerAddress
+            llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
+        Ptr<Ipv6Interface>
+            interface; //! Interface that did receive the RA that this address is taken from
+        Icmpv6OptionPrefixInformation
+            pioHdr; //! Prefix Information Option for the address being registered
     } AddressPendingRegistration;
 
     AddressPendingRegistration m_addrPendingReg; //!< Address being Registered
@@ -769,44 +766,42 @@ public:
      * @param earo
      * @return NS (EARO) Packet
      */
-    static Ptr<Packet>
-    MakeNsEaroPacket(Ipv6Address src,
-                      Ipv6Address dst,
-                      Icmpv6NS& nsHdr,
-                      Icmpv6OptionLinkLayerAddress& slla,
-                      Icmpv6OptionLinkLayerAddress& tlla,
-                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+    static Ptr<Packet> MakeNsEaroPacket(Ipv6Address src,
+                                        Ipv6Address dst,
+                                        Icmpv6NS& nsHdr,
+                                        Icmpv6OptionLinkLayerAddress& slla,
+                                        Icmpv6OptionLinkLayerAddress& tlla,
+                                        Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
 
     /**
      * @brief Construct NA (EARO) packet.
      * @param src source address
      * @param dst destination address
-     * @param naHdr 
+     * @param naHdr
      * @param earo
      * @return NA (EARO) Packet
      */
-    static Ptr<Packet>
-    MakeNaEaroPacket(Ipv6Address src,
-                      Ipv6Address dst,
-                      Icmpv6NA& naHdr,
-                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+    static Ptr<Packet> MakeNaEaroPacket(Ipv6Address src,
+                                        Ipv6Address dst,
+                                        Icmpv6NA& naHdr,
+                                        Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
 
     /**
      * @brief Constructs a RA packet (raEntry contains info for raHdr, pios, abro and contexts)
      * @param src source address
      * @param dst destination address
-     * @param slla 
+     * @param slla
      * @param raEntry
      * @return RA Packet
      */
-    static Ptr<Packet>
-    MakeRaPacket(Ipv6Address src,
-                  Ipv6Address dst,
-                  Icmpv6OptionLinkLayerAddress& slla,
-                  Ptr<SixLowPanRaEntry> raEntry);
+    static Ptr<Packet> MakeRaPacket(Ipv6Address src,
+                                    Ipv6Address dst,
+                                    Icmpv6OptionLinkLayerAddress& slla,
+                                    Ptr<SixLowPanRaEntry> raEntry);
 
     /**
-     * @brief Parses NS packet and populates params, returning true if packet is a valid NS/NS(EARO) packet
+     * @brief Parses NS packet and populates params, returning true if packet is a valid NS/NS(EARO)
+     * packet
      * @param p Packet to be parsed
      * @param nsHdr populated with packet nsHdr
      * @param slla populated with packet SLLAO if present
@@ -815,13 +810,12 @@ public:
      * @param hasEaro true if NS packet contains an EARO option
      * @return True if packet is valid, false otherwise
      */
-    static bool
-    ParseAndValidateNsEaroPacket(Ptr<Packet> p,
-                                Icmpv6NS& nsHdr,
-                                Icmpv6OptionLinkLayerAddress& slla,
-                                Icmpv6OptionLinkLayerAddress& tlla,
-                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
-                                bool& hasEaro);
+    static bool ParseAndValidateNsEaroPacket(Ptr<Packet> p,
+                                             Icmpv6NS& nsHdr,
+                                             Icmpv6OptionLinkLayerAddress& slla,
+                                             Icmpv6OptionLinkLayerAddress& tlla,
+                                             Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
+                                             bool& hasEaro);
 
     /**
      * @brief Parses NA packet and populates params, returning true if packet is valid
@@ -830,12 +824,11 @@ public:
      * @param earo
      * @return True if packet is valid, false otherwise
      */
-    static bool
-    ParseAndValidateNaEaroPacket(Ptr<Packet> p,
-                                Icmpv6NA& naHdr,
-                                Icmpv6OptionLinkLayerAddress& tlla,
-                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
-                                bool& hasEaro);
+    static bool ParseAndValidateNaEaroPacket(Ptr<Packet> p,
+                                             Icmpv6NA& naHdr,
+                                             Icmpv6OptionLinkLayerAddress& tlla,
+                                             Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
+                                             bool& hasEaro);
 
     /**
      * @brief Parses RS packet and populates params, returning true if packet is valid
@@ -844,10 +837,9 @@ public:
      * @param slla
      * @return True if packet is valid, false otherwise
      */
-    static bool
-    ParseAndValidateRsPacket(Ptr<Packet> p,
-                            Icmpv6RS& rsHdr,
-                            Icmpv6OptionLinkLayerAddress& slla);
+    static bool ParseAndValidateRsPacket(Ptr<Packet> p,
+                                         Icmpv6RS& rsHdr,
+                                         Icmpv6OptionLinkLayerAddress& slla);
 
     /**
      * @brief Parses RA packet and populates params, returning true if packet is valid
@@ -859,14 +851,12 @@ public:
      * @param contexts
      * @return True if packet is valid, false otherwise
      */
-    static bool
-    ParseAndValidateRaPacket(Ptr<Packet> p,
-                            Icmpv6RA& raHdr,
-                            std::list<Icmpv6OptionPrefixInformation>& pios,
-                            Icmpv6OptionSixLowPanAuthoritativeBorderRouter& abro,
-                            Icmpv6OptionLinkLayerAddress& slla,
-                            std::list<Icmpv6OptionSixLowPanContext>& contexts);
-
+    static bool ParseAndValidateRaPacket(Ptr<Packet> p,
+                                         Icmpv6RA& raHdr,
+                                         std::list<Icmpv6OptionPrefixInformation>& pios,
+                                         Icmpv6OptionSixLowPanAuthoritativeBorderRouter& abro,
+                                         Icmpv6OptionLinkLayerAddress& slla,
+                                         std::list<Icmpv6OptionSixLowPanContext>& contexts);
 };
 
 } /* namespace ns3 */
