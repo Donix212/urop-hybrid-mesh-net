@@ -671,6 +671,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     std::map<Ptr<NetDevice>, std::vector<uint8_t>> m_rovrContainer; //!< Container of ROVRs
 
     EventId m_addressRegistrationTimeoutEvent; //!< Address Registration timeout event.
+    EventId m_addressRegistrationEvent;        //!< Address Registration event.
 
     /**
      * Container of TIDs for each pair <Registered LinkLocal Address, Registrar address>
