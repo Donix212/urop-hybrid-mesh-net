@@ -111,7 +111,7 @@
         <mxCell id="cDoMD8alcIel7bPr7G09-13" value="&lt;font style=&quot;color: light-dark(rgb(255, 102, 102), rgb(255, 102, 102));&quot;&gt;Check that the ROVR matches the node&#39;s ROVR&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="340" y="560" width="285" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="cDoMD8alcIel7bPr7G09-15" value="Discard Packet, skip the address being registered, blacklist 6LBR" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="cDoMD8alcIel7bPr7G09-15" value="Discard the packet and return" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="460" y="950" width="210" height="60" as="geometry" />
         </mxCell>
         <mxCell id="cDoMD8alcIel7bPr7G09-19" value="not 0" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
