@@ -611,10 +611,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     }
     else /* status NOT 0, fail! */
     {
-        // \todo Add logic for re-registration failure.
-        NS_LOG_LOGIC("EARO status is NOT 0, registration failed!");
-        m_pendingRas.pop_front();
-        m_neighborBlacklist[src] = Simulator::Now();
+        // for now we just let the timeout occur, and retry until max retries
         return;
     }
 }
