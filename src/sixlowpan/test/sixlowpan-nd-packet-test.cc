@@ -30,7 +30,7 @@
 namespace ns3
 {
 /**
- * @ingroup sixlowpan-nd-tests
+ * @ingroup sixlowpan-nd-packet-tests
  *
  * @brief 6LoWPAN-ND test case for helper functions
  */
@@ -243,7 +243,7 @@ class SixLowPanNdRsPacketTest : public TestCase
 };
 
 /**
- * @ingroup sixlowpan-nd-tests
+ * @ingroup sixlowpan-nd-packet-tests
  *
  * @brief 6LoWPAN-ND TestSuite
  */
@@ -251,7 +251,7 @@ class SixlowpanNdTestSuite : public TestSuite
 {
   public:
     SixlowpanNdTestSuite()
-        : TestSuite("sixlowpan-nd-test", Type::UNIT) // test.py -s sixlowpan-nd
+        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT) // test.py -s sixlowpan-nd
     {
         AddTestCase(new SixLowPanNdNsEaroPacketTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdNaEaroPacketTest(), TestCase::Duration::QUICK);
