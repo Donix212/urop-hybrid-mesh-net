@@ -141,12 +141,6 @@ SixLowPanNdProtocol::GetTypeId()
     return tid;
 }
 
-TypeId
-SixLowPanNdProtocol::GetInstanceTypeId() const
-{
-    return SixLowPanNdProtocol::GetTypeId();
-}
-
 int64_t
 SixLowPanNdProtocol::AssignStreams(int64_t stream)
 {
