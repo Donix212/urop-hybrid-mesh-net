@@ -731,7 +731,9 @@ public:
         Ipv6Address registrar; //!< Registering node (lladdr of 6LR or 6LBR for a lladdr, gaddr of
                                //!< 6LBR for gaddr)
         Address registrarMacAddr;     //!< Registering node MAC address
+        Icmpv6OptionLinkLayerAddress llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
         Ptr<Ipv6Interface> interface; //!< Interface used for the registration
+        Icmpv6OptionPrefixInformation pioHdr; //! Prefix Information Option for the address being registered
     } SixLowPanRegisteredAddress;
 
     std::list<SixLowPanRegisteredAddress>
@@ -749,6 +751,9 @@ public:
         Address registrarMacAddr;               //!< Registering node MAC address
         bool newRegistration;     //!< new registration (true) or re-registration (false)
         Ptr<NetDevice> sixDevice; //!< The SixLowPanNetDevice to use for the registration
+        Icmpv6OptionLinkLayerAddress llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
+        Ptr<Ipv6Interface> interface; //! Interface that did receive the RA that this address is taken from
+        Icmpv6OptionPrefixInformation pioHdr; //! Prefix Information Option for the address being registered
     } AddressPendingRegistration;
 
     AddressPendingRegistration m_addrPendingReg; //!< Address being Registered
