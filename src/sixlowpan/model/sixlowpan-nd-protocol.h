@@ -38,10 +38,10 @@ class SixLowPanNdiscCache;
 class SixLowPanNdPrefix;
 class SixLowPanNdContext;
 class SixLowPanNetDevice;
-class NsEaroPacketTest;
-class NaEaroPacketTest;
-class RaPacketTest;
-class RsPacketTest;
+class SixLowPanNdNsEaroPacketTest;
+class SixLowPanNdNaEaroPacketTest;
+class SixLowPanNdRaPacketTest;
+class SixLowPanNdRsPacketTest;
 
 /**
  * @ingroup sixlowpan
@@ -49,10 +49,10 @@ class RsPacketTest;
  */
 class SixLowPanNdProtocol : public Icmpv6L4Protocol
 {
-    friend class NsEaroPacketTest;
-    friend class NaEaroPacketTest;
-    friend class RaPacketTest;
-    friend class RsPacketTest;
+    friend class SixLowPanNdNsEaroPacketTest;
+    friend class SixLowPanNdNaEaroPacketTest;
+    friend class SixLowPanNdRaPacketTest;
+    friend class SixLowPanNdRsPacketTest;
 public:
     /**
      * 6LoWPAN-ND EARO registration status codes
