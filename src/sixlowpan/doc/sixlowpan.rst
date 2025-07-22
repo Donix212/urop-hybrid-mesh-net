@@ -223,6 +223,13 @@ In this setup:
 
 - The registration cache is maintained at the 6LBR.
 
+.. _fig-sixlowpanndtopology:
+
+.. figure:: figures/sixlowpanndtopology.*
+    :width: 200
+
+    Example topology of a 6LoWPAN-ND network
+
 Usage (6LoWPAN-ND)
 ~~~~~~~~~~~~~~~~~~
 
