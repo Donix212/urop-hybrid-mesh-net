@@ -135,60 +135,63 @@ class SixLowPanHelper
     /**
      * @brief Install the SixLoWPAN-ND stack, associate it with a NetDevice, and set it as a 6LBR.
      *
-     * @note IPv6 stack must NOT be installed \a after this function, because it has been already set up.
+     * @note IPv6 stack must NOT be installed \a after this function, because it has been already
+     * set up.
      *
      * @param [in] c The NetDevice container.
      * @param [in] baseAddr The prefix to be announced by the 6LBR.
      * @return A container of the addresses assigned to the NetDevices.
      */
-    Ipv6InterfaceContainer InstallSixLowPanNdBorderRouter (NetDeviceContainer c, Ipv6Address baseAddr);
+    Ipv6InterfaceContainer InstallSixLowPanNdBorderRouter(NetDeviceContainer c,
+                                                          Ipv6Address baseAddr);
 
     /**
      * @brief Install the SixLoWPAN-ND stack, associate it with a NetDevice, and set it as a 6LN.
-     * @note IPv6 stack must NOT be installed \a after this function, because it has been already set up.
+     * @note IPv6 stack must NOT be installed \a after this function, because it has been already
+     * set up.
      *
      * @param [in] c The NetDevice container.
      * @return A container of the addresses assigned to the NetDevices.
      */
-    Ipv6InterfaceContainer InstallSixLowPanNdNode (NetDeviceContainer c);
+    Ipv6InterfaceContainer InstallSixLowPanNdNode(NetDeviceContainer c);
 
     /**
      * @brief Add a new prefix to be advertised by 6LoWPAN-ND.
      * @param [in] nd The NetDevice.
      * @param prefix announced IPv6 prefix
      */
-    void SetAdvertisedPrefix (const Ptr<NetDevice> nd, Ipv6Prefix prefix);
+    void SetAdvertisedPrefix(const Ptr<NetDevice> nd, Ipv6Prefix prefix);
 
     /**
      * @brief Add a new context to be advertised by 6LoWPAN-ND.
      * @param [in] nd The NetDevice.
      * @param context announced IPv6 context
      */
-    void AddAdvertisedContext (const Ptr<NetDevice> nd, Ipv6Prefix context);
+    void AddAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix context);
 
     /**
      * @brief Remove a context advertised by 6LoWPAN-ND.
      * @param [in] nd The NetDevice.
      * @param context announced IPv6 context
      */
-    void RemoveAdvertisedContext (const Ptr<NetDevice> nd, Ipv6Prefix context);
+    void RemoveAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix context);
 
     /**
      * @brief Add a Capability Indication to be advertised by 6LoWPAN-ND.
      * @param [in] nd The NetDevice.
      * @param capability announced Node capability
      */
-    void SetCapabilityIndication(const Ptr<NetDevice> nd, Icmpv6OptionSixLowPanCapabilityIndication capability);
+    void SetCapabilityIndication(const Ptr<NetDevice> nd,
+                                 Icmpv6OptionSixLowPanCapabilityIndication capability);
 
   private:
-
     /**
      * @brief Install the SixLoWPAN-ND stack in the node and associates it with a NetDevice.
      *
      * @param [in] c The NetDevice container.
      * @param [in] borderRouter Set the NetDevices to work as 6LBRs.
      */
-    void InstallSixLowPanNd (NetDeviceContainer c, bool borderRouter);
+    void InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter);
 
     ObjectFactory m_deviceFactory; //!< Object factory.
 };

@@ -1,18 +1,9 @@
 /*
  * Copyright (c) 2020 Università di Firenze, Italy
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ * SPDX-License-Identifier: GPL-2.0-only
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  *         Adnan Rashid <adnanrashidpk@gmail.com>
@@ -247,7 +238,7 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
     NS_LOG_FUNCTION(this << src << dst << static_cast<uint32_t>(status) << time);
 
     NS_LOG_LOGIC("Send NA ( from " << src << " to " << dst << ")");
-    
+
     // Build the NA Header
     Icmpv6NA naHdr;
     naHdr.SetIpv6Target(target);
@@ -289,7 +280,7 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
         // Build SLLA Option
         Icmpv6OptionLinkLayerAddress slla(true, interface->GetDevice()->GetAddress());
 
-        // Build RA Packet 
+        // Build RA Packet
         Ptr<Packet> p = MakeRaPacket(src, dst, slla, raEntry);
 
         // Build Ipv6 Header manually
@@ -386,7 +377,8 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     Icmpv6OptionSixLowPanExtendedAddressRegistration earoHdr; /* EARO */
     bool hasEaro = false;
 
-    bool isValid = ParseAndValidateNsEaroPacket(packet, nsHdr, sllaoHdr, tllaoHdr, earoHdr, hasEaro);
+    bool isValid =
+        ParseAndValidateNsEaroPacket(packet, nsHdr, sllaoHdr, tllaoHdr, earoHdr, hasEaro);
     if (!isValid)
     {
         return; // NS With EARO that is invalid
@@ -416,13 +408,15 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         {
             entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
             entry->SetRovr(earoHdr.GetRovr());
-        } else
+        }
+        else
         {
             // Check if the ROVR is empty (Only), and set it if so
             if (entry->GetRovr().empty())
             {
                 entry->SetRovr(earoHdr.GetRovr());
-            } else if (entry->GetRovr() != earoHdr.GetRovr())
+            }
+            else if (entry->GetRovr() != earoHdr.GetRovr())
             {
                 return; // discard the packet since the rovr doesn't match
             }
@@ -492,7 +486,8 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
 
     bool hasEaro = false;
     bool isValid = ParseAndValidateNaEaroPacket(packet, naHdr, tlla, earo, hasEaro);
-    if (!isValid) {
+    if (!isValid)
+    {
         return; // note that currently it will always return valid
     }
 
@@ -606,7 +601,8 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     Icmpv6OptionLinkLayerAddress slla(true);
 
     bool isValid = ParseAndValidateRsPacket(packet, rsHdr, slla);
-    if (!isValid) {
+    if (!isValid)
+    {
         return;
     }
 
@@ -657,8 +653,8 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     // Decode the RA
     Icmpv6RA raHdr;
     Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro; /* ABRO  */
-    Icmpv6OptionLinkLayerAddress slla(1);                 /* SLLAO */
-    std::list<Icmpv6OptionPrefixInformation> pios;    /* PIO   */
+    Icmpv6OptionLinkLayerAddress slla(1);                /* SLLAO */
+    std::list<Icmpv6OptionPrefixInformation> pios;       /* PIO   */
     std::list<Icmpv6OptionSixLowPanContext> contexts;    /* 6CO   */
     bool isValid = ParseAndValidateRaPacket(packet, raHdr, pios, abro, slla, contexts);
     if (!isValid)
@@ -671,8 +667,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     if (it == m_raCache.end())
     {
         // New RA, add it to the m_raCache
-        Ptr<SixLowPanRaEntry> ra =
-            Create<SixLowPanRaEntry>(raHdr, abro, contexts, pios);
+        Ptr<SixLowPanRaEntry> ra = Create<SixLowPanRaEntry>(raHdr, abro, contexts, pios);
         m_raCache[abro.GetRouterAddress()] = ra;
 
         // Whether it is a new or existing updated RA, we create a SixLowPendingRa and push to
@@ -689,7 +684,8 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
 
         for (const auto& iter : pios)
         {
-            Ipv6Address gaddr = Ipv6Address::MakeAutoconfiguredAddress(sixDevice->GetAddress(), iter.GetPrefix());
+            Ipv6Address gaddr =
+                Ipv6Address::MakeAutoconfiguredAddress(sixDevice->GetAddress(), iter.GetPrefix());
             pending.addressesToBeregistered.push_back(gaddr);
             pending.prefixForAddress[gaddr] = iter;
         }
@@ -710,13 +706,13 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
             existingRa->SetRetransTimer(raHdr.GetRetransmissionTime());
             existingRa->SetCurHopLimit(raHdr.GetCurHopLimit());
             existingRa->ParseAbro(abro);
-        } else
+        }
+        else
         {
             // Existing but outdated RA, so drop it
             return;
         }
     }
-
 
     m_addressRegistrationCounter = 0;
     AddressRegistration();
@@ -857,7 +853,8 @@ SixLowPanNdProtocol::BuildRovrForDevice(Ptr<NetDevice> device)
     // {
     //     m_rovrContainer[device].push_back(buffer[index]);
     // }
-    // // The most normal case is to have a Mac48, so 6+2 bytes are filled. The remaining 8 are filled
+    // // The most normal case is to have a Mac48, so 6+2 bytes are filled. The remaining 8 are
+    // filled
     // // with a hash.
 
     // uint32_t bytesLeft = 16 - addrLength;
@@ -930,8 +927,8 @@ SixLowPanNdProtocol::AddressRegistration()
             m_addrPendingReg.interface = m_pendingRas.front().incomingIf;
             m_addrPendingReg.pioHdr =
                 m_pendingRas.front().prefixForAddress[m_addrPendingReg.addressPendingRegistration];
-
-        } else if (!m_registeredAddresses.empty())
+        }
+        else if (!m_registeredAddresses.empty())
         {
             // No pendingRAs, move data from SixLowPanRegisteredAddress list to addrPendingReg
             m_addrPendingReg.isValid = true;
@@ -945,7 +942,8 @@ SixLowPanNdProtocol::AddressRegistration()
             m_addrPendingReg.llaHdr = m_registeredAddresses.front().llaHdr;
             m_addrPendingReg.interface = m_registeredAddresses.front().interface;
             m_addrPendingReg.pioHdr = m_registeredAddresses.front().pioHdr;
-        } else
+        }
+        else
         {
             // Send a multicast RS to solicit RA from routers
             // NS_ABORT_MSG("SixLowPanNdProtocol::Address Registration called but no address to "
@@ -966,12 +964,11 @@ SixLowPanNdProtocol::AddressRegistration()
 
                 Simulator::Schedule(Seconds(0),
                                     &Icmpv6L4Protocol::SendRS,
-                                    this,                            // or icmpv6 ptr
+                                    this, // or icmpv6 ptr
                                     lla,
                                     Ipv6Address::GetAllRoutersMulticast(),
                                     iface->GetDevice()->GetAddress());
             }
-
         }
     }
 
@@ -1011,8 +1008,9 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
                         << registrar << "  vs expected " << m_addrPendingReg.registrar);
-    
-    std::cout << "Successfully registered an address: " << m_addrPendingReg.addressPendingRegistration << "\n";
+
+    std::cout << "Successfully registered an address: "
+              << m_addrPendingReg.addressPendingRegistration << "\n";
 
     if (m_addressRegistrationTimeoutEvent.IsPending())
     {
@@ -1063,10 +1061,10 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
         m_registeredAddresses.push_back(newRegisteredAddr);
     }
 
-    // update 
+    // update
     if (m_addrPendingReg.addressPendingRegistration.IsLinkLocal())
     {
-            ReceiveLLA(m_addrPendingReg.llaHdr,
+        ReceiveLLA(m_addrPendingReg.llaHdr,
                    m_addrPendingReg.registrar,
                    Ipv6Address::GetAny(),
                    m_addrPendingReg.interface);
@@ -1076,24 +1074,27 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
         Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
         // Ptr<Ipv6Interface> incomingIf = m_pendingRas.front().incomingIf;
         Icmpv6OptionPrefixInformation prefixHdr = m_addrPendingReg.pioHdr;
-            // m_pendingRas.front().prefixForAddress[m_addrPendingReg.addressPendingRegistration];
+        // m_pendingRas.front().prefixForAddress[m_addrPendingReg.addressPendingRegistration];
 
-        ipv6->AddAutoconfiguredAddress(ipv6->GetInterfaceForDevice(
-                                        m_addrPendingReg.interface->GetDevice()),
-                                       prefixHdr.GetPrefix(),
-                                       prefixHdr.GetPrefixLength(),
-                                       prefixHdr.GetFlags(),
-                                       prefixHdr.GetValidTime(),
-                                       prefixHdr.GetPreferredTime(),
-                                       registrar);
+        ipv6->AddAutoconfiguredAddress(
+            ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice()),
+            prefixHdr.GetPrefix(),
+            prefixHdr.GetPrefixLength(),
+            prefixHdr.GetFlags(),
+            prefixHdr.GetValidTime(),
+            prefixHdr.GetPreferredTime(),
+            registrar);
     }
 
-    // m_addrPendingReg.newRegistration denotes whether the current address being registered was taken from m_pendingRas
-    // remove the address from pendingRas if addrPendingReg.newRegistration, and drop pendingRas.front() if addressesToBeRegistered is empty 
-    if (m_addrPendingReg.newRegistration) {
+    // m_addrPendingReg.newRegistration denotes whether the current address being registered was
+    // taken from m_pendingRas remove the address from pendingRas if addrPendingReg.newRegistration,
+    // and drop pendingRas.front() if addressesToBeRegistered is empty
+    if (m_addrPendingReg.newRegistration)
+    {
         m_pendingRas.front().addressesToBeregistered.pop_front();
-        
-        if (m_pendingRas.front().addressesToBeregistered.empty()) {
+
+        if (m_pendingRas.front().addressesToBeregistered.empty())
+        {
             m_pendingRas.pop_front();
         }
     }
@@ -1119,7 +1120,6 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
     }
     else
     {
-
         // we shouldn't even get to this point
         NS_ABORT_MSG("I'm giving up, bye");
 
@@ -1161,10 +1161,12 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
         //                     "Can't find addresses to re-register (and there should be at least "
         //                     "one). Aborting.");
         //     Time reRegistrationTime =
-        //         m_registeredAddresses.front().registrationTimeout - Minutes(m_regTime) / 2 - Now();
+        //         m_registeredAddresses.front().registrationTimeout - Minutes(m_regTime) / 2 -
+        //         Now();
         //     if (reRegistrationTime.IsNegative())
         //     {
-        //         // std::cout << Simulator::Now ().As (Time::MS) << " - " << m_node->GetId () << " -
+        //         // std::cout << Simulator::Now ().As (Time::MS) << " - " << m_node->GetId () << "
+        //         -
         //         // calling AddressRegistration (5)" << std::endl;
         //         m_addressRegistrationEvent =
         //             Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
@@ -1663,14 +1665,18 @@ SixLowPanNdProtocol::MakeNsEaroPacket(Ipv6Address src,
                                       Icmpv6NS& nsHdr,
                                       Icmpv6OptionLinkLayerAddress& slla,
                                       Icmpv6OptionLinkLayerAddress& tlla,
-                                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo) {
+                                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo)
+{
     Ptr<Packet> p = Create<Packet>();
 
     p->AddHeader(earo);
     p->AddHeader(tlla);
     p->AddHeader(slla);
 
-    nsHdr.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + nsHdr.GetSerializedSize(), PROT_NUMBER);
+    nsHdr.CalculatePseudoHeaderChecksum(src,
+                                        dst,
+                                        p->GetSize() + nsHdr.GetSerializedSize(),
+                                        PROT_NUMBER);
     p->AddHeader(nsHdr);
 
     return p;
@@ -1685,12 +1691,14 @@ SixLowPanNdProtocol::MakeNaEaroPacket(Ipv6Address src,
     Ptr<Packet> p = Create<Packet>();
     p->AddHeader(earo);
 
-    naHdr.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + naHdr.GetSerializedSize(), PROT_NUMBER);
+    naHdr.CalculatePseudoHeaderChecksum(src,
+                                        dst,
+                                        p->GetSize() + naHdr.GetSerializedSize(),
+                                        PROT_NUMBER);
     p->AddHeader(naHdr);
 
     return p;
 }
-
 
 Ptr<Packet>
 SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
@@ -1753,8 +1761,7 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     Icmpv6OptionLinkLayerAddress& slla,
     Icmpv6OptionLinkLayerAddress& tlla,
     Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
-    bool& hasEaro
-    )
+    bool& hasEaro)
 {
     p->RemoveHeader(nsHdr);
     bool hasSllao = false;
@@ -1802,7 +1809,8 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     }
 
     // If it contains EARO, then it must have SLLAO and TLLAO, and SLLAO address == TLLAO address
-    if (hasEaro) {
+    if (hasEaro)
+    {
         if (!(hasSllao && hasTllao)) /* error! */
         {
             // We don't support yet address registration proxy.
@@ -1813,7 +1821,7 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
         if (slla.GetAddress() != tlla.GetAddress())
         {
             NS_LOG_LOGIC("Discarding NS(EARO) with different target and source addresses: TLLAO ("
-                        << tlla.GetAddress() << "), SLLAO (" << slla.GetAddress() << ")");
+                         << tlla.GetAddress() << "), SLLAO (" << slla.GetAddress() << ")");
             return false;
         }
     }
@@ -1950,16 +1958,17 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
 
     if (abro.GetRouterAddress() == Ipv6Address::GetAny())
     {
-        NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - border router address is set to Any "
-                     "- ignoring RA");
+        NS_LOG_LOGIC(
+            "SixLowPanNdProtocol::ParseAndValidateRaPacket - border router address is set to Any "
+            "- ignoring RA");
         return false;
     }
 
     if (!hasSlla)
     {
         // RAs must contain one (and only one) LLA
-        NS_LOG_LOGIC(
-            "SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option LinkLayerSource - ignoring RA");
+        NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option LinkLayerSource - "
+                     "ignoring RA");
         return false;
     }
 
