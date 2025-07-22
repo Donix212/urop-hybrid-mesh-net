@@ -89,7 +89,7 @@ SixLowPanNdProtocol::GetTypeId()
             .AddAttribute("RegistrationLifeTime",
                           "The amount of time (units of 60 seconds) that the router should retain "
                           "the NCE for the node.",
-                          UintegerValue(20),
+                          UintegerValue(65535),
                           MakeUintegerAccessor(&SixLowPanNdProtocol::m_regTime),
                           MakeUintegerChecker<uint16_t>())
             .AddAttribute(
@@ -993,6 +993,8 @@ SixLowPanNdProtocol::AddressRegistration()
         return;
     }
 
+    Time additionalDelay = Seconds(0);
+
     if (m_addrPendingReg.isValid == false)
     {
         if (!m_pendingRas.empty())
@@ -1025,6 +1027,13 @@ SixLowPanNdProtocol::AddressRegistration()
             m_addrPendingReg.llaHdr = m_registeredAddresses.front().llaHdr;
             m_addrPendingReg.interface = m_registeredAddresses.front().interface;
             m_addrPendingReg.pioHdr = m_registeredAddresses.front().pioHdr;
+
+            Time now = Simulator::Now();
+            if (m_registeredAddresses.front().registrationTimeout > now)
+            {
+                additionalDelay =
+                    m_registeredAddresses.front().registrationTimeout - now - Seconds(10);
+            }
         }
         else
         {
@@ -1072,7 +1081,7 @@ SixLowPanNdProtocol::AddressRegistration()
     m_addressRegistrationCounter++;
     Time jitter = MilliSeconds(m_addressRegistrationJitter->GetValue());
 
-    Simulator::Schedule(jitter,
+    Simulator::Schedule(additionalDelay + jitter,
                         &SixLowPanNdProtocol::SendSixLowPanNsWithEaro,
                         this,
                         m_addrPendingReg.addressPendingRegistration,
@@ -1084,7 +1093,7 @@ SixLowPanNdProtocol::AddressRegistration()
                         m_addrPendingReg.sixDevice);
 
     m_addressRegistrationTimeoutEvent =
-        Simulator::Schedule(m_retransmissionTime,
+        Simulator::Schedule(additionalDelay + m_retransmissionTime,
                             &SixLowPanNdProtocol::AddressRegistrationTimeout,
                             this);
 }
