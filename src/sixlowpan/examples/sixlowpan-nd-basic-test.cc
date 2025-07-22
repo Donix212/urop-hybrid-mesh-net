@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2025
+ *
+ * SPDX-License-Identifier: GPL-2.0-only
+ *
+ * Author: Boh Jie Qi <jieqiboh5836@gmail.com>
+ */
+
 #include "ns3/core-module.h"
 #include "ns3/internet-apps-module.h"
 #include "ns3/internet-module.h"
