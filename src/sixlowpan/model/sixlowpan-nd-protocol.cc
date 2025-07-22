@@ -202,25 +202,22 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
     NS_ASSERT_MSG(!dst.IsMulticast(),
                   "Destination address must not be a multicast address in EARO messages.");
 
-    Ptr<Packet> p = Create<Packet>();
-    Icmpv6NS ns(addrToRegister);
+    // Build NS Header
+    Icmpv6NS nsHdr(addrToRegister);
 
+    // Build EARO option
     /* EARO (request) + SLLAO + TLLAO (SLLAO and TLLAO must be identical, RFC 8505, section 5.6) */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration earOption(time, rovr, tid);
-    Icmpv6OptionLinkLayerAddress tllaOption(false, sixDevice->GetAddress());
-    Icmpv6OptionLinkLayerAddress sllaOption(true, sixDevice->GetAddress());
-
-    p->AddHeader(earOption);
-    p->AddHeader(tllaOption);
-    p->AddHeader(sllaOption);
+    Icmpv6OptionSixLowPanExtendedAddressRegistration earo(time, rovr, tid);
+    Icmpv6OptionLinkLayerAddress tlla(false, sixDevice->GetAddress());
+    Icmpv6OptionLinkLayerAddress slla(true, sixDevice->GetAddress());
 
     Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
-
     Ipv6Address src = ipv6->GetAddress(ipv6->GetInterfaceForDevice(sixDevice), 0).GetAddress();
 
-    ns.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + ns.GetSerializedSize(), PROT_NUMBER);
-    p->AddHeader(ns);
+    // Build NS EARO Packet
+    Ptr<Packet> p = MakeNsEaroPacket(src, dst, nsHdr, slla, tlla, earo);
 
+    // Build ipv6 header manually as neighbour cache is probably empty
     Ipv6Header hdr;
     hdr.SetSource(src);
     hdr.SetDestination(dst);
@@ -248,23 +245,21 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
     // std::endl;
 
     NS_LOG_FUNCTION(this << src << dst << static_cast<uint32_t>(status) << time);
-    Ptr<Packet> p = Create<Packet>();
-    Icmpv6NA na;
-
-    /* EARO (response) */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration earOption(status, time, rovr, tid);
 
     NS_LOG_LOGIC("Send NA ( from " << src << " to " << dst << ")");
+    
+    // Build the NA Header
+    Icmpv6NA naHdr;
+    naHdr.SetIpv6Target(target);
+    naHdr.SetFlagO(false);
+    naHdr.SetFlagS(true);
+    naHdr.SetFlagR(true);
 
-    //  na.SetIpv6Target (Ipv6Address::GetZero ());
-    na.SetIpv6Target(target);
-    na.SetFlagO(false);
-    na.SetFlagS(true);
-    na.SetFlagR(true);
+    // Build EARO Option
+    Icmpv6OptionSixLowPanExtendedAddressRegistration earo(status, time, rovr, tid);
 
-    p->AddHeader(earOption);
-    na.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + na.GetSerializedSize(), PROT_NUMBER);
-    p->AddHeader(na);
+    // Build NA EARO Packet
+    Ptr<Packet> p = MakeNaEaroPacket(src, dst, naHdr, earo);
 
     SendMessage(p, src, dst, 255);
 }
@@ -277,8 +272,6 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
     NS_LOG_FUNCTION(this << src << dst << interface);
 
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
-    NS_ABORT_MSG_IF(m_nodeRole == SixLowPanRouter && m_raCache.empty(),
-                    "6LR should never have its RA cache empty");
     NS_ABORT_MSG_IF(m_nodeRole == SixLowPanBorderRouter &&
                         m_raEntries.find(sixDevice) == m_raEntries.end(),
                     "6LBR not configured on the interface");
@@ -287,154 +280,20 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
         DynamicCast<SixLowPanNdiscCache>(FindCache(interface->GetDevice()));
     NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
 
-    //  Icmpv6OptionSixLowPanCapabilityIndication sixCapability;
-    //  sixCapability.SetOption
-    //  (Icmpv6OptionSixLowPanCapabilityIndication::SixLowPanCapability_e::D);
-    //  sixCapability.SetOption
-    //  (Icmpv6OptionSixLowPanCapabilityIndication::SixLowPanCapability_e::E);
-    //
-    //  if (m_nodeRole == SixLowPanRouter)
-    //    {
-    //      sixCapability.SetOption
-    //      (Icmpv6OptionSixLowPanCapabilityIndication::SixLowPanCapability_e::L);
-    //    }
-    //  else if (m_nodeRole == SixLowPanBorderRouter)
-    //    {
-    //      sixCapability.SetOption
-    //      (Icmpv6OptionSixLowPanCapabilityIndication::SixLowPanCapability_e::B);
-    //      sixCapability.SetOption
-    //      (Icmpv6OptionSixLowPanCapabilityIndication::SixLowPanCapability_e::P);
-    //    }
-    //  else
-    //    {
-    //      NS_LOG_LOGIC ("RA can not be sent by a node that is not a 6LBR or a 6LR.");
-    //      return;
-    //    }
-
-    // if the node is a 6LR, send out the Cached RA entries
-    for (auto iter = m_raCache.begin(); iter != m_raCache.end(); iter++)
-    {
-        Ptr<Packet> p = Create<Packet>();
-        Ipv6Header ipHeader;
-
-        // Add 6CO + SLLAO
-        //      p->AddHeader (sixCapability);
-        Icmpv6OptionLinkLayerAddress llaHdr(1, interface->GetDevice()->GetAddress());
-        p->AddHeader(llaHdr);
-
-        /* set RA header information */
-        Icmpv6RA raHdr = iter->second->BuildRouterAdvertisementHeader();
-
-        /* Add ABRO */
-        Icmpv6OptionSixLowPanAuthoritativeBorderRouter abroHdr = iter->second->MakeAbro();
-        p->AddHeader(abroHdr);
-
-        /* Add PIO(s) */
-        std::list<Icmpv6OptionPrefixInformation> prefixHdrs =
-            iter->second->BuildPrefixInformationOptions();
-        for (auto it = prefixHdrs.begin(); it != prefixHdrs.end(); it++)
-        {
-            p->AddHeader(*it);
-        }
-
-        /* Add 6COs */
-        std::map<uint8_t, Ptr<SixLowPanNdContext>> contexts = iter->second->GetContexts();
-        for (std::map<uint8_t, Ptr<SixLowPanNdContext>>::iterator i = contexts.begin();
-             i != contexts.end();
-             i++)
-        {
-            Icmpv6OptionSixLowPanContext sixHdr;
-            sixHdr.SetContextPrefix(i->second->GetContextPrefix());
-            sixHdr.SetFlagC(i->second->IsFlagC());
-            sixHdr.SetCid(i->second->GetCid());
-
-            Time difference = Simulator::Now() - i->second->GetLastUpdateTime();
-            double updatedValidTime =
-                i->second->GetValidTime().GetMinutes() - std::floor(difference.GetMinutes());
-
-            // we want to advertise only contexts with a remaining validity time greater than 1
-            // minute.
-            if (updatedValidTime > 1)
-            {
-                sixHdr.SetValidTime(updatedValidTime);
-                p->AddHeader(sixHdr);
-            }
-        }
-
-        raHdr.CalculatePseudoHeaderChecksum(src,
-                                            dst,
-                                            p->GetSize() + raHdr.GetSerializedSize(),
-                                            PROT_NUMBER);
-        p->AddHeader(raHdr);
-
-        ipHeader.SetSource(src);
-        ipHeader.SetDestination(dst);
-        ipHeader.SetNextHeader(PROT_NUMBER);
-        ipHeader.SetPayloadLength(p->GetSize());
-        ipHeader.SetHopLimit(255);
-
-        /* send RA */
-        NS_LOG_LOGIC("Send RA to " << dst);
-
-        interface->Send(p, ipHeader, dst);
-    }
-
     // if the node is a 6LBR, send out the RA entry for the interface
-    auto iter = m_raEntries.find(sixDevice);
+    auto it = m_raEntries.find(sixDevice);
     if (m_raEntries.find(sixDevice) != m_raEntries.end())
     {
-        Ptr<Packet> p = Create<Packet>();
+        Ptr<SixLowPanRaEntry> raEntry = it->second;
+
+        // Build SLLA Option
+        Icmpv6OptionLinkLayerAddress slla(true, interface->GetDevice()->GetAddress());
+
+        // Build RA Packet 
+        Ptr<Packet> p = MakeRaPacket(src, dst, slla, raEntry);
+
+        // Build Ipv6 Header manually
         Ipv6Header ipHeader;
-
-        // Add 6CO + SLLAO
-        //      p->AddHeader (sixCapability);
-        Icmpv6OptionLinkLayerAddress llaHdr(1, interface->GetDevice()->GetAddress());
-        p->AddHeader(llaHdr);
-
-        /* set RA header information */
-        Icmpv6RA raHdr = iter->second->BuildRouterAdvertisementHeader();
-
-        /* Add ABRO */
-        Icmpv6OptionSixLowPanAuthoritativeBorderRouter abroHdr = iter->second->MakeAbro();
-        p->AddHeader(abroHdr);
-
-        /* Add PIO(s) */
-        std::list<Icmpv6OptionPrefixInformation> prefixHdrs =
-            iter->second->BuildPrefixInformationOptions();
-        for (auto it = prefixHdrs.begin(); it != prefixHdrs.end(); it++)
-        {
-            p->AddHeader(*it);
-        }
-        /* Add 6COs */
-        std::map<uint8_t, Ptr<SixLowPanNdContext>> contexts = iter->second->GetContexts();
-        for (std::map<uint8_t, Ptr<SixLowPanNdContext>>::iterator i = contexts.begin();
-             i != contexts.end();
-             i++)
-        {
-            Icmpv6OptionSixLowPanContext sixHdr;
-            sixHdr.SetContextPrefix(i->second->GetContextPrefix());
-            sixHdr.SetFlagC(i->second->IsFlagC());
-            sixHdr.SetCid(i->second->GetCid());
-
-            Time difference = Simulator::Now() - i->second->GetLastUpdateTime();
-            double updatedValidTime =
-                i->second->GetValidTime().GetMinutes() - std::floor(difference.GetMinutes());
-
-            // we want to advertise only contexts with a remaining validity time greater than 1
-            // minute.
-            if (updatedValidTime > 1)
-            {
-                sixHdr.SetValidTime(updatedValidTime);
-                p->AddHeader(sixHdr);
-            }
-        }
-
-        raHdr.CalculatePseudoHeaderChecksum(src,
-                                            dst,
-                                            p->GetSize() + raHdr.GetSerializedSize(),
-                                            PROT_NUMBER);
-        p->AddHeader(raHdr);
-
         ipHeader.SetSource(src);
         ipHeader.SetDestination(dst);
         ipHeader.SetNextHeader(PROT_NUMBER);
@@ -447,23 +306,6 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
         interface->Send(p, ipHeader, dst);
     }
 }
-
-// void
-// SixLowPanNdProtocol::SendSixLowPanDAR (Ipv6Address src, Ipv6Address dst, uint16_t time,
-//                                        Mac64Address eui, Ipv6Address registered)
-//{
-//   NS_LOG_FUNCTION (this << src << dst << time << eui << registered);
-//   Ptr<Packet> p = Create<Packet> ();
-//   // Icmpv6ExtendedDuplicateAddressReqOrConf dar (time, eui, registered);
-//
-//   NS_LOG_LOGIC ("Send DAR ( from " << src << " to " << dst << ")");
-//
-//   // dar.CalculatePseudoHeaderChecksum (src, dst, p->GetSize () + dar.GetSerializedSize (),
-//   PROT_NUMBER);
-//   // p->AddHeader (dar);
-//
-//   SendMessage (p, src, dst, MULTIHOP_HOPLIMIT);
-// }
 
 enum IpL4Protocol::RxStatus
 SixLowPanNdProtocol::Receive(Ptr<Packet> packet,
@@ -523,14 +365,6 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
 {
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
 
-    // std::cout << Now ().As(Time::S) << " HandleSixLowPanNS " << *pkt << " " << src << " " << dst
-    // << " " << interface << std::endl;
-
-    Ptr<Packet> packet = pkt->Copy();
-    Icmpv6NS nsHdr;
-    packet->RemoveHeader(nsHdr);
-    Ipv6Address target = nsHdr.GetIpv6Target();
-
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
         sixDevice,
@@ -548,71 +382,24 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         return;
     }
 
+    Ptr<Packet> packet = pkt->Copy();
+
+    Icmpv6NS nsHdr;
     Icmpv6OptionLinkLayerAddress sllaoHdr(true);              /* SLLAO */
     Icmpv6OptionLinkLayerAddress tllaoHdr(false);             /* TLLAO */
     Icmpv6OptionSixLowPanExtendedAddressRegistration earoHdr; /* EARO */
-
-    bool next = true;
-    bool hasSllao = false;
-    bool hasTllao = false;
     bool hasEaro = false;
 
-    /* search all options following the NS header */
-    while (next == true)
+    bool isValid = ParseAndValidateNsEaroPacket(packet, nsHdr, sllaoHdr, tllaoHdr, earoHdr, hasEaro);
+    if (!isValid)
     {
-        uint8_t type;
-        packet->CopyData(&type, sizeof(type));
-
-        switch (type)
-        {
-        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
-            if (!hasSllao)
-            {
-                packet->RemoveHeader(sllaoHdr);
-                hasSllao = true;
-            }
-            break;
-        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET:
-            if (!hasTllao)
-            {
-                packet->RemoveHeader(tllaoHdr);
-                hasTllao = true;
-            }
-            break;
-        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION:
-            if (!hasEaro)
-            {
-                packet->RemoveHeader(earoHdr);
-                hasEaro = true;
-            }
-            break;
-        default:
-            /* unknown option, quit */
-            next = false;
-        }
-        if (packet->GetSize() == 0)
-        {
-            next = false;
-        }
+        return; // NS With EARO that is invalid
     }
+    Ipv6Address target = nsHdr.GetIpv6Target();
 
     // NS (EARO)
     if (hasEaro)
     {
-        if (!(hasSllao && hasTllao)) /* error! */
-        {
-            // We don't support yet address registration proxy.
-            NS_LOG_WARN(
-                "NS(EARO) message MUST have both source and target link layer options. Ignoring.");
-            return;
-        }
-        if (sllaoHdr.GetAddress() != tllaoHdr.GetAddress())
-        {
-            NS_LOG_LOGIC("Discarding NS(EARO) with different target and source addresses: TLLAO ("
-                         << tllaoHdr.GetAddress() << "), SLLAO (" << sllaoHdr.GetAddress() << ")");
-            return;
-        }
-
         /* Update NDISC table with information of src */
         Ptr<NdiscCache> cache = FindCache(sixDevice);
 
@@ -691,39 +478,15 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
 
     Ptr<Packet> p = packet->Copy();
+
     Icmpv6NA naHdr;
-    packet->RemoveHeader(naHdr);
-    Ipv6Address target = naHdr.GetIpv6Target();
+    Icmpv6OptionLinkLayerAddress tlla(false); /* TLLAO */
+    Icmpv6OptionSixLowPanExtendedAddressRegistration earo;
 
-    Icmpv6OptionLinkLayerAddress targetLlaHdr(0); /* TLLAO */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration earoHdr;
-
-    bool next = true;
     bool hasEaro = false;
-
-    /* search all options following the NS header */
-    while (next == true)
-    {
-        uint8_t type;
-        packet->CopyData(&type, sizeof(type));
-
-        switch (type)
-        {
-        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET: /* NA + TLLAO */
-            packet->RemoveHeader(targetLlaHdr);
-            break;
-        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION: /* NA + EARO + TLLAO */
-            packet->RemoveHeader(earoHdr);
-            hasEaro = true;
-            break;
-        default:
-            /* unknown option, quit */
-            next = false;
-        }
-        if (packet->GetSize() == 0)
-        {
-            next = false;
-        }
+    bool isValid = ParseAndValidateNaEaroPacket(packet, naHdr, tlla, earo, hasEaro);
+    if (!isValid) {
+        return; // note that currently it will always return valid
     }
 
     //-----------------
@@ -774,14 +537,14 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     //-----------------
     if (hasEaro)
     {
-        if (earoHdr.GetStatus() == SUCCESS) /* status=0, success! */
+        if (earo.GetStatus() == SUCCESS) /* status=0, success! */
         {
-            if (earoHdr.GetRovr() != m_rovrContainer[interface->GetDevice()])
+            if (earo.GetRovr() != m_rovrContainer[interface->GetDevice()])
             {
                 NS_ABORT_MSG(" Received ROVR mismatch... discard.");
                 return;
             }
-            AddressRegistrationSuccess(src, earoHdr.GetTransactionId());
+            AddressRegistrationSuccess(src, earo.GetTransactionId());
         }
         else /* status NOT 0, fail! */
         {
@@ -794,6 +557,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     }
     else
     {
+        Ipv6Address target = naHdr.GetIpv6Target();
         HandleNA(p, target, dst, interface); /* Handle response of Address Resolution */
     }
 }
@@ -804,8 +568,6 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
                                        const Ipv6Address& dst,
                                        Ptr<Ipv6Interface> interface)
 {
-    // std::cout << Now ().As (Time::S) << " ***src*** " << src << " ***dst*** " << dst <<
-    // "***Node ID=***" << m_node->GetId () <<std::endl;
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
 
     if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
@@ -819,11 +581,6 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
         sixDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
-    Icmpv6RS rsHeader;
-    Icmpv6OptionLinkLayerAddress lla(1);
-
-    packet->RemoveHeader(rsHeader);
-
     if (src == Ipv6Address::GetAny())
     {
         NS_LOG_LOGIC("Discarding a RS from unspecified source address (" << Ipv6Address::GetAny()
@@ -831,16 +588,13 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
         return;
     }
 
-    uint8_t type;
-    packet->CopyData(&type, sizeof(type));
+    Icmpv6RS rsHdr;
+    Icmpv6OptionLinkLayerAddress slla(true);
 
-    if (type != Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE)
-    {
-        NS_LOG_LOGIC("RS message MUST have source link layer option, discarding it.");
+    bool isValid = ParseAndValidateRsPacket(packet, rsHdr, slla);
+    if (!isValid) {
         return;
     }
-
-    packet->RemoveHeader(lla);
 
     /* Update Neighbor Cache */
     Ptr<SixLowPanNdiscCache> sixCache = DynamicCast<SixLowPanNdiscCache>(FindCache(sixDevice));
@@ -852,15 +606,15 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
         sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Add(src));
         sixEntry->SetRouter(false);
         //      std::cout <<" ******* - Before - ******* "<< *sixEntry<< std::endl;
-        sixEntry->MarkStale(lla.GetAddress());
+        sixEntry->MarkStale(slla.GetAddress());
         sixEntry->MarkTentative();
         //      std::cout <<" ******* - After - ******* "<< *sixEntry<< std::endl;
         //       std::cout <<" "<<Now()<<" "<< *sixEntry << std::endl;
         NS_LOG_LOGIC("Tentative entry created from RS");
     }
-    else if (sixEntry->GetMacAddress() != lla.GetAddress())
+    else if (sixEntry->GetMacAddress() != slla.GetAddress())
     {
-        sixEntry->MarkStale(lla.GetAddress());
+        sixEntry->MarkStale(slla.GetAddress());
     }
 
     SendSixLowPanRA(interface->GetLinkLocalAddress().GetAddress(), src, interface);
@@ -2322,13 +2076,14 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     Icmpv6NS& nsHdr,
     Icmpv6OptionLinkLayerAddress& slla,
     Icmpv6OptionLinkLayerAddress& tlla,
-    Icmpv6OptionSixLowPanExtendedAddressRegistration& earo
+    Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
+    bool& hasEaro
     )
 {
     p->RemoveHeader(nsHdr);
     bool hasSllao = false;
     bool hasTllao = false;
-    bool hasEaro = false;
+    hasEaro = false;
     bool next = true;
 
     /* search all options following the NS header */
@@ -2370,34 +2125,39 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
         }
     }
 
-    if (!(hasSllao && hasTllao)) /* error! */
-    {
-        // We don't support yet address registration proxy.
-        NS_LOG_WARN(
-            "NS(EARO) message MUST have both source and target link layer options. Ignoring.");
-        return false;
-    }
-    if (slla.GetAddress() != tlla.GetAddress())
-    {
-        NS_LOG_LOGIC("Discarding NS(EARO) with different target and source addresses: TLLAO ("
-                     << tlla.GetAddress() << "), SLLAO (" << slla.GetAddress() << ")");
-        return false;
+    // If it contains EARO, then it must have SLLAO and TLLAO, and SLLAO address == TLLAO address
+    if (hasEaro) {
+        if (!(hasSllao && hasTllao)) /* error! */
+        {
+            // We don't support yet address registration proxy.
+            NS_LOG_WARN(
+                "NS(EARO) message MUST have both source and target link layer options. Ignoring.");
+            return false;
+        }
+        if (slla.GetAddress() != tlla.GetAddress())
+        {
+            NS_LOG_LOGIC("Discarding NS(EARO) with different target and source addresses: TLLAO ("
+                        << tlla.GetAddress() << "), SLLAO (" << slla.GetAddress() << ")");
+            return false;
+        }
     }
 
-    return true;
+    return true; // Valid NS (May or may not contain EARO)
 }
 
 bool
 SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
     Ptr<Packet> p,
     Icmpv6NA& naHdr,
-    Icmpv6OptionSixLowPanExtendedAddressRegistration& earo)
+    Icmpv6OptionLinkLayerAddress& tlla,
+    Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
+    bool& hasEaro)
 {
     p->RemoveHeader(naHdr);
-    bool hasEaro = false;
+    hasEaro = false;
     bool next = true;
 
-    /* search all options following the NS header */
+    /* search all options following the NA header */
     while (next == true)
     {
         uint8_t type;
@@ -2405,7 +2165,10 @@ SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
 
         switch (type)
         {
-        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION: /* NA + EARO + TLLAO */
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET: /* NA + EARO + TLLAO */
+            p->RemoveHeader(tlla);
+            break;
+        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION: /* NA + EARO */
             p->RemoveHeader(earo);
             hasEaro = true;
             break;
@@ -2419,7 +2182,7 @@ SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
         }
     }
 
-    return hasEaro;
+    return true;
 }
 
 bool
@@ -2430,10 +2193,6 @@ SixLowPanNdProtocol::ParseAndValidateRsPacket(Ptr<Packet> p,
     p->RemoveHeader(rsHdr);
     uint8_t type;
     p->CopyData(&type, sizeof(type));
-    if (type != Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE)
-    {
-        return false;
-    }
 
     if (type != Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE)
     {
@@ -2483,9 +2242,17 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
             hasAbro = true;
             break;
         case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
+            //           generates an entry in NDISC table with m_router = true
+            //           Deferred to when we receive the address registration confirmation
+            //          std::cout << "I want this: " << llaHdr.GetAddress() << std::endl;
+            //           ReceiveLLA (llaHdr, src, dst, interface);
             p->RemoveHeader(slla);
             hasSlla = true;
             break;
+        //        case Icmpv6Header::ICMPV6_OPT_CAPABILITY_INDICATION:
+        //          packet->RemoveHeader (capIn);
+        //          capIn = true;
+        //          break;
         default:
             /*RA message includes unknown option, stop processing*/
             NS_ABORT_MSG("RA message includes unknown option, stop processing");

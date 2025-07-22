@@ -761,13 +761,14 @@ public:
     //  retransmissions.
 
     /**
-     * @brief Construct NS packet.
+     * @brief Construct NS (EARO) packet.
      * @param src source address
      * @param dst destination address
      * @param nsHdr
      * @param slla
      * @param tlla
-     * @return NS Packet
+     * @param earo
+     * @return NS (EARO) Packet
      */
     static Ptr<Packet>
     MakeNsEaroPacket(Ipv6Address src,
@@ -777,6 +778,14 @@ public:
                       Icmpv6OptionLinkLayerAddress& tlla,
                       Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
 
+    /**
+     * @brief Construct NA (EARO) packet.
+     * @param src source address
+     * @param dst destination address
+     * @param naHdr 
+     * @param earo
+     * @return NA (EARO) Packet
+     */
     static Ptr<Packet>
     MakeNaEaroPacket(Ipv6Address src,
                       Ipv6Address dst,
@@ -784,12 +793,12 @@ public:
                       Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
 
     /**
-     * @brief Constructs a RA packet (raEntry contains info for pios, abro and contexts)
-     * @param src
-     * @param dst
-     * @param slla
+     * @brief Constructs a RA packet (raEntry contains info for raHdr, pios, abro and contexts)
+     * @param src source address
+     * @param dst destination address
+     * @param slla 
      * @param raEntry
-     * @return True if packet is valid, false otherwise
+     * @return RA Packet
      */
     static Ptr<Packet>
     MakeRaPacket(Ipv6Address src,
@@ -798,12 +807,13 @@ public:
                   Ptr<SixLowPanRaEntry> raEntry);
 
     /**
-     * @brief Parses NS packet and populates params, returning true if packet is valid
+     * @brief Parses NS packet and populates params, returning true if packet is a valid NS/NS(EARO) packet
      * @param p Packet to be parsed
-     * @param nsHdr
-     * @param slla
-     * @param tlla
-     * @param earo
+     * @param nsHdr populated with packet nsHdr
+     * @param slla populated with packet SLLAO if present
+     * @param tlla populated with packet TLLAO if present
+     * @param earo populated with packet EARO if present
+     * @param hasEaro true if NS packet contains an EARO option
      * @return True if packet is valid, false otherwise
      */
     static bool
@@ -811,7 +821,8 @@ public:
                                 Icmpv6NS& nsHdr,
                                 Icmpv6OptionLinkLayerAddress& slla,
                                 Icmpv6OptionLinkLayerAddress& tlla,
-                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
+                                bool& hasEaro);
 
     /**
      * @brief Parses NA packet and populates params, returning true if packet is valid
@@ -823,7 +834,9 @@ public:
     static bool
     ParseAndValidateNaEaroPacket(Ptr<Packet> p,
                                 Icmpv6NA& naHdr,
-                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo);
+                                Icmpv6OptionLinkLayerAddress& tlla,
+                                Icmpv6OptionSixLowPanExtendedAddressRegistration& earo,
+                                bool& hasEaro);
 
     /**
      * @brief Parses RS packet and populates params, returning true if packet is valid
