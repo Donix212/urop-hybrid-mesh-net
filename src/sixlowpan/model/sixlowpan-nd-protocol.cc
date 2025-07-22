@@ -132,6 +132,33 @@ SixLowPanNdProtocol::GetTypeId()
     return tid;
 }
 
+void
+SixLowPanNdProtocol::LogConfiguration() const
+{
+    NS_LOG_INFO("SixLowPanNdProtocol Configuration for Node " << m_node->GetId());
+
+    NS_LOG_INFO("  m_alwaysDad: " << m_alwaysDad);
+    NS_LOG_INFO("  m_maxMulticastSolicit: " << static_cast<uint32_t>(m_maxMulticastSolicit));
+    NS_LOG_INFO("  m_maxUnicastSolicit: " << static_cast<uint32_t>(m_maxUnicastSolicit));
+    NS_LOG_INFO("  m_rsInitialRetransmissionTime: " << m_rsInitialRetransmissionTime);
+    NS_LOG_INFO("  m_rsMaxRetransmissionTime: " << m_rsMaxRetransmissionTime);
+    NS_LOG_INFO("  m_rsMaxRetransmissionCount: " << m_rsMaxRetransmissionCount);
+    NS_LOG_INFO("  m_rsMaxRetransmissionDuration: " << m_rsMaxRetransmissionDuration);
+    NS_LOG_INFO("  m_rsRetransmissionCount: " << m_rsRetransmissionCount);
+    NS_LOG_INFO("  m_rsPrevRetransmissionTimeout: " << m_rsPrevRetransmissionTimeout);
+    NS_LOG_INFO("  m_rsFirstTransmissionTime: " << m_rsFirstTransmissionTime);
+    NS_LOG_INFO("  m_reachableTime: " << m_reachableTime);
+    NS_LOG_INFO("  m_retransmissionTime: " << m_retransmissionTime);
+    NS_LOG_INFO("  m_delayFirstProbe: " << m_delayFirstProbe);
+    NS_LOG_INFO("  m_dadTimeout: " << m_dadTimeout);
+    NS_LOG_INFO("  m_routerLifeTime: " << m_routerLifeTime);
+    NS_LOG_INFO("  m_pioPreferredLifeTime: " << m_pioPreferredLifeTime);
+    NS_LOG_INFO("  m_pioValidLifeTime: " << m_pioValidLifeTime);
+    NS_LOG_INFO("  m_contextValidLifeTime: " << m_contextValidLifeTime);
+    NS_LOG_INFO("  m_abroValidLifeTime: " << m_abroValidLifeTime);
+    NS_LOG_INFO("  m_maxRtrSolicitationInterval: " << m_maxRtrSolicitationInterval);
+}
+
 int64_t
 SixLowPanNdProtocol::AssignStreams(int64_t stream)
 {
@@ -253,6 +280,51 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
     Ptr<Packet> p = MakeNaEaroPacket(src, dst, naHdr, earo);
 
     SendMessage(p, src, dst, 255);
+}
+
+void
+SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareAddress)
+{
+    NS_LOG_FUNCTION(this << src << hardwareAddress);
+
+    // Todo: Add support for incrementing and checking max router solicitations
+
+    Ptr<Packet> p = Create<Packet>();
+    Icmpv6RS rs;
+
+    Icmpv6OptionLinkLayerAddress llOption(true, hardwareAddress);
+    p->AddHeader(llOption);
+
+    Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
+    if (ipv6->GetInterfaceForAddress(src) == -1)
+    {
+        NS_LOG_INFO("Preventing RS from being sent or rescheduled because the source address "
+                    << src << " has been removed");
+        return;
+    }
+
+    NS_LOG_INFO("Send RS (from " << src << " to AllRouters multicast address)");
+
+    rs.CalculatePseudoHeaderChecksum(src,
+                                     Ipv6Address::GetAllRoutersMulticast(),
+                                     p->GetSize() + rs.GetSerializedSize(),
+                                     PROT_NUMBER);
+    p->AddHeader(rs);
+
+    Simulator::Schedule(Time(m_rsRetransmissionJitter->GetValue()),
+                        &Icmpv6L4Protocol::DelayedSendMessage,
+                        this,
+                        p,
+                        src,
+                        Ipv6Address::GetAllRoutersMulticast(),
+                        255);
+
+    m_handleRsTimeoutEvent =
+        Simulator::Schedule(Time(m_rsRetransmissionJitter->GetValue()) + Time("1s"),
+                            &SixLowPanNdProtocol::SendSixLowPanMulticastRS,
+                            this,
+                            src,
+                            hardwareAddress);
 }
 
 void
@@ -579,7 +651,6 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
-    NS_LOG_INFO("HandleSixLowPanRS");
 
     NS_LOG_INFO("HandleSixLowPanRS: " << m_node->GetId() << " Received RS from " << src);
     if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
@@ -910,9 +981,9 @@ void
 SixLowPanNdProtocol::AddressRegistration()
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_INFO("AddressRegistration");
-    NS_LOG_INFO("Node " << m_node->GetId() << " initial m_addressRegistrationCounter = "
-                        << static_cast<int>(m_addressRegistrationCounter));
+    NS_LOG_INFO("AddressRegistration for node: " << m_node->GetId());
+    // NS_LOG_INFO("Node " << m_node->GetId() << " initial m_addressRegistrationCounter = "
+    //                     << static_cast<int>(m_addressRegistrationCounter));
 
     Ipv6Address addressToRegister;
     LollipopCounter8 tid;
@@ -975,10 +1046,9 @@ SixLowPanNdProtocol::AddressRegistration()
                 Ipv6Address lla = ifaddr.GetAddress();
 
                 Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
-                                    &Icmpv6L4Protocol::SendRS,
-                                    this, // or icmpv6 ptr
+                                    &SixLowPanNdProtocol::SendSixLowPanMulticastRS,
+                                    this,
                                     lla,
-                                    Ipv6Address::GetAllRoutersMulticast(),
                                     iface->GetDevice()->GetAddress());
             }
             // We can't try to register anything, so return
