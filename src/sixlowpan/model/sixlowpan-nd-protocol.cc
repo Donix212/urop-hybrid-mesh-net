@@ -911,7 +911,7 @@ SixLowPanNdProtocol::AddressRegistration()
         else if (m_pendingRas.empty() && !m_registeredAddresses.empty()) // address ReRistration?
         {
             addressPendingRegistrationIsNew = false;
-            SixLowPanNdProtocol::AddressReRegistration();
+            AddressReRegistration();
         }
         else if (!m_pendingRas.empty() && !m_registeredAddresses.empty())
         {
@@ -921,7 +921,7 @@ SixLowPanNdProtocol::AddressRegistration()
                 NS_LOG_LOGIC(
                     "Address Registration: found an address that needs urgently a re-registration");
                 addressPendingRegistrationIsNew = false;
-                SixLowPanNdProtocol::AddressReRegistration();
+                AddressReRegistration();
             }
             else
             {
@@ -1024,26 +1024,11 @@ SixLowPanNdProtocol::AddressRegistration()
 void
 SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid)
 {
-    // std::cout << "Address Registration Success Called for m_node= " << m_node->GetId () << "
-    // m_regTime = " << m_regTime
-    // << " Current time = " << Simulator::Now () << " tid = " << tid << std::endl;
-
     NS_LOG_FUNCTION(this << registrar << tid);
 
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
                         << registrar << "  vs expected " << m_addrPendingReg.registrar);
-
-    // NS_ABORT_MSG_IF (m_addressRegistrationEvent.IsPending (), "Address registration success but
-    // another AddressRegistration has been scheduled already - error."); NS_ABORT_MSG_IF
-    // (!m_addrPendingReg.isValid, "AddressRegistrationSuccess, address pending registration is not
-    // valid");
-
-    //  if (!m_addrPendingReg.isValid)
-    //    {
-    //      NS_LOG_LOGIC ("Received a successful address registration for an address but we did not
-    //      expect any registration"); return;
-    //    }
 
     if (m_addrPendingReg.newRegistration)
     {
@@ -1054,8 +1039,6 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
             {
                 NS_LOG_LOGIC("Received a successful address registration for an address that we "
                              "did already register. Increase the registration timeout");
-                // std::cout << "Received a successful address registration for an address that we
-                // did already register. Increase the registration timeout" << std::endl;
                 return;
             }
         }
@@ -1064,16 +1047,6 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     // *** \todo This have to go
     if (m_addressRegistrationTimeoutEvent.IsPending())
     {
-        // std::cout << "WARNING - we are skipping something because
-        // m_addressRegistrationTimeoutEvent is in progress - details are:" << std::endl; std::cout
-        // << "  m_addrPendingReg.newRegistration is " << m_addrPendingReg.newRegistration <<
-        // std::endl; std::cout << "  m_addrPendingReg.addressPendingRegistration is " <<
-        // m_addrPendingReg.addressPendingRegistration << std::endl; std::cout << "  registrar is "
-        // << registrar << std::endl; std::cout << " the list of this is:" << std::endl;
-        for (auto& i : m_registeredAddresses)
-        {
-            std::cout << "    " << i.registeredAddr << " - " << i.registrar << std::endl;
-        }
         m_addressRegistrationTimeoutEvent.Cancel();
         // return;
     }
