@@ -97,9 +97,7 @@ Examples
 
 The following example can be found in ``src/sixlowpan/examples/``
 
-* ``sixlowpan-nd-basic-test.cc``: A simple example showing a 6LN registering with and pinging a 6LBR node once.
-
-* ``sixlowpan-nd-ping-test.cc``: An extended version of sixlowpan-nd-basic-test, with multiple 6LNs registering with and pinging a 6LBR node.
+* ``sixlowpan-nd-basic-test.cc``: A simple example showing a 4 6LNs registering with and pinging a 6LBR node once.
 
 Tests
 =====

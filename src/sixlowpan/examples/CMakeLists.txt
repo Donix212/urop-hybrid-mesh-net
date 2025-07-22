@@ -44,17 +44,6 @@ build_lib_example(
 )
 
 build_lib_example(
-  NAME sixlowpan-nd-ping-test
-  SOURCE_FILES sixlowpan-nd-ping-test.cc
-  LIBRARIES_TO_LINK
-    ${libnetwork}
-    ${libsixlowpan}
-    ${libinternet}
-    ${liblr-wpan}
-    ${libinternet-apps}
-)
-
-build_lib_example(
   NAME sixlowpan-nd-basic-test
   SOURCE_FILES sixlowpan-nd-basic-test.cc
   LIBRARIES_TO_LINK
