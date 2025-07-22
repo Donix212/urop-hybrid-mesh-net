@@ -7,24 +7,25 @@
  */
 
 #include "../../core/model/test.h"
+
+#include "ns3/core-module.h"
+#include "ns3/csma-helper.h"
+#include "ns3/inet6-socket-address.h"
+#include "ns3/internet-apps-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/internet-stack-helper.h"
+#include "ns3/lr-wpan-module.h"
+#include "ns3/mobility-module.h"
+#include "ns3/simple-net-device.h"
+#include "ns3/sixlowpan-module.h"
 #include "ns3/sixlowpan-nd-prefix.h"
 #include "ns3/sixlowpan-nd-protocol.h"
-#include "ns3/simple-net-device.h"
-#include "ns3/inet6-socket-address.h"
-#include "ns3/internet-stack-helper.h"
-#include <fstream>
-#include "ns3/core-module.h"
-#include "ns3/internet-module.h"
-#include "ns3/internet-apps-module.h"
-#include "ns3/mobility-module.h"
-#include "ns3/spectrum-module.h"
-#include "ns3/sixlowpan-module.h"
-#include "ns3/lr-wpan-module.h"
 #include "ns3/socket.h"
+#include "ns3/spectrum-module.h"
 #include "ns3/test.h"
 #include "ns3/udp-socket-factory.h"
-#include "ns3/csma-helper.h"
-#include "ns3/csma-helper.h"
+
+#include <fstream>
 #include <limits>
 #include <string>
 
@@ -35,11 +36,16 @@ namespace ns3
  *
  * @brief Test exchange of NS (EARO) and NA (EARO) messages
  */
-class SixLowPanNdNsNaTest : public TestCase {
-public:
-    SixLowPanNdNsNaTest() : TestCase("Test exchange of NS (EARO) and NA (EARO) messages") {}
+class SixLowPanNdNsNaTest : public TestCase
+{
+  public:
+    SixLowPanNdNsNaTest()
+        : TestCase("Test exchange of NS (EARO) and NA (EARO) messages")
+    {
+    }
 
-    struct SixLowPanPair {
+    struct SixLowPanPair
+    {
         Ptr<Node> lbrNode;
         Ptr<Node> lnNode;
         Ptr<SixLowPanNetDevice> lbrDevice;
@@ -48,7 +54,8 @@ public:
         Ptr<SixLowPanNdProtocol> lnNd;
     };
 
-    SixLowPanPair SetupBasic6Ln6LbrPair() {
+    SixLowPanPair SetupBasic6Ln6LbrPair()
+    {
         SixLowPanPair result;
 
         // Create nodes
@@ -59,28 +66,28 @@ public:
 
         // Set constant positions
         MobilityHelper mobility;
-        mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-        mobility.Install (nodes);
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
 
         // Install LrWpanNetDevices
         LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install (nodes);
-        lrWpanHelper.CreateAssociatedPan (lrwpanDevices, 0);
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
 
         // Install Internet stack
         InternetStackHelper internetv6;
-        internetv6.Install (nodes);
+        internetv6.Install(nodes);
 
         // Install 6LoWPAN on top of LrWpan
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install (lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
 
         // Configure 6LoWPAN ND
         // Node 0 = 6LBR
-        sixlowpan.InstallSixLowPanNdBorderRouter (devices.Get (0), "2001::");
-        sixlowpan.SetAdvertisedPrefix (devices.Get (0), Ipv6Prefix ("2001::", 64));
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
         // Node 1 = 6LN
-        sixlowpan.InstallSixLowPanNdNode (devices.Get (1));
+        sixlowpan.InstallSixLowPanNdNode(devices.Get(1));
 
         // Output
         result.lbrDevice = DynamicCast<SixLowPanNetDevice>(devices.Get(0));
@@ -91,10 +98,11 @@ public:
         return result;
     }
 
-    void DoRun() override {
+    void DoRun() override
+    {
         // LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_FUNCTION);
         // LogComponentEnable ("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
-        LogComponentEnable ("SixLowPanNdProtocol", LOG_LEVEL_INFO);
+        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
 
         // Disable sending multicast RS by commenting out SixLowPanNdProtocol::FunctionDadTimeout
         // Config::SetDefault ("ns3::SixLowPanNetDevice::UseMeshUnder", BooleanValue (true));
@@ -118,42 +126,42 @@ public:
 
         // Set constant positions
         MobilityHelper mobility;
-        mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-        mobility.Install (nodes);
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
 
         // Install LrWpanNetDevices
         LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install (nodes);
-        lrWpanHelper.CreateAssociatedPan (lrwpanDevices, 0);
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
 
         // Install Internet stack
         InternetStackHelper internetv6;
-        internetv6.Install (nodes);
+        internetv6.Install(nodes);
 
         // Install 6LoWPAN on top of LrWpan
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install (lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
 
         // Configure 6LoWPAN ND
         // Node 0 = 6LBR
-        sixlowpan.InstallSixLowPanNdBorderRouter (devices.Get (0), "2001::");
-        sixlowpan.SetAdvertisedPrefix (devices.Get (0), Ipv6Prefix ("2001::", 64));
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
         // Node 1 = 6LN
-        sixlowpan.InstallSixLowPanNdNode (devices.Get (1));
+        sixlowpan.InstallSixLowPanNdNode(devices.Get(1));
 
         // std::ostringstream stringStream1v6;
         // Ptr<OutputStreamWrapper> ndiscStream = Create<OutputStreamWrapper>(&stringStream1v6);
 
         // Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(50), std::cout);
         // Ipv6RoutingHelper::PrintRoutingTableAllAt
-        Ptr<OutputStreamWrapper> neighborStream = Create<OutputStreamWrapper> (&std::cout);
+        Ptr<OutputStreamWrapper> neighborStream = Create<OutputStreamWrapper>(&std::cout);
 
-        // Print 
-        Ipv6RoutingHelper::PrintNeighborCacheAllEvery (Seconds (1), neighborStream);
-        // Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds (1), neighborStream);
-        Simulator::Stop (Seconds (50.0));
-        Simulator::Run ();
-        Simulator::Destroy ();
+        // Print
+        Ipv6RoutingHelper::PrintNeighborCacheAllEvery(Seconds(1), neighborStream);
+        Ipv6RoutingHelper::PrintRoutingTableAllEvery(Seconds(1), neighborStream);
+        Simulator::Stop(Seconds(50.0));
+        Simulator::Run();
+        Simulator::Destroy();
 
         // std::cout << stringStream1v6.str();
     }
@@ -166,7 +174,7 @@ public:
  */
 class SixLowPanNdNsNaTestSuite : public TestSuite
 {
-public:
+  public:
     SixLowPanNdNsNaTestSuite()
         : TestSuite("sixlowpan-nd-nsna-test", Type::UNIT) // test.py -s sixlowpan-nd
     {
@@ -176,4 +184,4 @@ public:
 
 // Register the test suite
 static SixLowPanNdNsNaTestSuite g_sixlowpanndnsnaTestSuite;
-}
+} // namespace ns3

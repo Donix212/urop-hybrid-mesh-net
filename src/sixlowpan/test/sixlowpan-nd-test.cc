@@ -7,8 +7,7 @@
  */
 
 #include "../../core/model/test.h"
-#include "ns3/sixlowpan-nd-prefix.h"
-#include "ns3/sixlowpan-nd-protocol.h"
+
 #include "ns3/boolean.h"
 #include "ns3/inet6-socket-address.h"
 #include "ns3/internet-stack-helper.h"
@@ -17,11 +16,14 @@
 #include "ns3/simple-channel.h"
 #include "ns3/simple-net-device.h"
 #include "ns3/simulator.h"
+#include "ns3/sixlowpan-nd-prefix.h"
+#include "ns3/sixlowpan-nd-protocol.h"
 #include "ns3/sixlowpan-net-device.h"
 #include "ns3/socket-factory.h"
 #include "ns3/socket.h"
 #include "ns3/test.h"
 #include "ns3/udp-socket-factory.h"
+
 #include <limits>
 #include <string>
 
@@ -32,10 +34,16 @@ namespace ns3
  *
  * @brief 6LoWPAN-ND test case for helper functions
  */
-class SixLowPanNdNsEaroPacketTest : public TestCase {
-public:
-    SixLowPanNdNsEaroPacketTest() : TestCase("Make and Parse NS(EARO) Packet") {}
-    void DoRun() override {
+class SixLowPanNdNsEaroPacketTest : public TestCase
+{
+  public:
+    SixLowPanNdNsEaroPacketTest()
+        : TestCase("Make and Parse NS(EARO) Packet")
+    {
+    }
+
+    void DoRun() override
+    {
         Ipv6Address src("fe80::1"), dst("fe80::2");
 
         Icmpv6NS nsHdr(src);
@@ -53,18 +61,29 @@ public:
         Icmpv6OptionSixLowPanExtendedAddressRegistration parsedEaro;
         bool hasEaro = false;
 
-        bool result = SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(p, parsedNs, parsedSlla, parsedTlla, parsedEaro, hasEaro);
+        bool result = SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(p,
+                                                                        parsedNs,
+                                                                        parsedSlla,
+                                                                        parsedTlla,
+                                                                        parsedEaro,
+                                                                        hasEaro);
 
         NS_TEST_EXPECT_MSG_EQ(result, true, "NS(EARO) should be parsed successfully");
         // Validate parsed NS header
         NS_TEST_EXPECT_MSG_EQ(parsedNs.GetIpv6Target(), src, "Target address in NS should match");
 
         // Validate parsed SLLAO
-        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetType(), Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE, "SLLAO type should be source");
-        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetAddress(), parsedTlla.GetAddress(), "SLLAO MAC should match TLLAO MAC");
+        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetType(),
+                              Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE,
+                              "SLLAO type should be source");
+        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetAddress(),
+                              parsedTlla.GetAddress(),
+                              "SLLAO MAC should match TLLAO MAC");
 
         // Validate parsed TLLAO
-        NS_TEST_EXPECT_MSG_EQ(parsedTlla.GetType(), Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET, "TLLAO type should be target");
+        NS_TEST_EXPECT_MSG_EQ(parsedTlla.GetType(),
+                              Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET,
+                              "TLLAO type should be target");
 
         // Validate parsed EARO
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetRegTime(), 20, "EARO lifetime should match");
@@ -74,10 +93,16 @@ public:
     }
 };
 
-class SixLowPanNdNaEaroPacketTest : public TestCase {
-public:
-    SixLowPanNdNaEaroPacketTest() : TestCase("Make and Parse NA(EARO) Packet") {}
-    void DoRun() override {
+class SixLowPanNdNaEaroPacketTest : public TestCase
+{
+  public:
+    SixLowPanNdNaEaroPacketTest()
+        : TestCase("Make and Parse NA(EARO) Packet")
+    {
+    }
+
+    void DoRun() override
+    {
         Ipv6Address src("fe80::1"), dst("fe80::2"), target("fe80::ff:fe00:2");
         Icmpv6NA naHdr;
         naHdr.SetIpv6Target(target);
@@ -86,19 +111,25 @@ public:
         naHdr.SetFlagO(false);
         std::vector<uint8_t> rovr(16, 0xCD);
         Icmpv6OptionSixLowPanExtendedAddressRegistration earo(0, 20, rovr, 7);
-        
+
         Ptr<Packet> p = SixLowPanNdProtocol::MakeNaEaroPacket(src, dst, naHdr, earo);
-        
+
         Icmpv6NA parsedNa;
         Icmpv6OptionLinkLayerAddress parsedTlla(false);
         Icmpv6OptionSixLowPanExtendedAddressRegistration parsedEaro;
         bool hasEaro = false;
-        bool result = SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(p, parsedNa, parsedTlla, parsedEaro, hasEaro);
-        
+        bool result = SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(p,
+                                                                        parsedNa,
+                                                                        parsedTlla,
+                                                                        parsedEaro,
+                                                                        hasEaro);
+
         NS_TEST_EXPECT_MSG_EQ(result, true, "NA(EARO) should be parsed successfully");
 
         // Validate parsed NA header
-        NS_TEST_EXPECT_MSG_EQ(parsedNa.GetIpv6Target(), target, "Target address in NA should match");
+        NS_TEST_EXPECT_MSG_EQ(parsedNa.GetIpv6Target(),
+                              target,
+                              "Target address in NA should match");
         NS_TEST_EXPECT_MSG_EQ(parsedNa.GetFlagR(), true, "Solicited flag should match");
         NS_TEST_EXPECT_MSG_EQ(parsedNa.GetFlagS(), true, "Solicited flag should match");
         NS_TEST_EXPECT_MSG_EQ(parsedNa.GetFlagO(), false, "Override flag should match");
@@ -112,19 +143,26 @@ public:
     }
 };
 
-class SixLowPanNdRaPacketTest : public TestCase {
-public:
-    SixLowPanNdRaPacketTest() : TestCase("Make and Parse RA Packet") {}
-    void DoRun() override {
+class SixLowPanNdRaPacketTest : public TestCase
+{
+  public:
+    SixLowPanNdRaPacketTest()
+        : TestCase("Make and Parse RA Packet")
+    {
+    }
+
+    void DoRun() override
+    {
         Ipv6Address src("fe80::1"), dst("fe80::2");
 
-        Ptr<SixLowPanNdProtocol::SixLowPanRaEntry> raEntry = Create<SixLowPanNdProtocol::SixLowPanRaEntry>();
+        Ptr<SixLowPanNdProtocol::SixLowPanRaEntry> raEntry =
+            Create<SixLowPanNdProtocol::SixLowPanRaEntry>();
         raEntry->SetManagedFlag(false);
         raEntry->SetHomeAgentFlag(false);
         raEntry->SetOtherConfigFlag(false);
         raEntry->SetOtherConfigFlag(false);
-        raEntry->SetCurHopLimit(0);  // unspecified by this router
-        raEntry->SetRetransTimer(0); // unspecified by this router
+        raEntry->SetCurHopLimit(0);   // unspecified by this router
+        raEntry->SetRetransTimer(0);  // unspecified by this router
         raEntry->SetReachableTime(0); // unspecified by this router
         raEntry->SetRouterLifeTime(60);
         raEntry->SetAbroBorderRouterAddress("2001::ff:fe00:1");
@@ -132,47 +170,56 @@ public:
         raEntry->SetAbroValidLifeTime(600);
         Ipv6Prefix prefix = Ipv6Prefix("2001::", 64);
         Ptr<SixLowPanNdPrefix> newPrefix = Create<SixLowPanNdPrefix>(prefix.ConvertToIpv6Address(),
-                                                                 prefix.GetPrefixLength(),
-                                                                 Time("10min"),
-                                                                 Time("10min"));
+                                                                     prefix.GetPrefixLength(),
+                                                                     Time("10min"),
+                                                                     Time("10min"));
         raEntry->AddPrefix(newPrefix);
-        
+
         Icmpv6OptionLinkLayerAddress slla(1, Mac64Address("00:11:22:33:44:55:66:77"));
-        
+
         Ptr<Packet> p = SixLowPanNdProtocol::MakeRaPacket(src, dst, slla, raEntry);
-        
+
         Icmpv6RA ra;
         Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro;
         Icmpv6OptionLinkLayerAddress parsedSlla(true);
         std::list<Icmpv6OptionPrefixInformation> pios;
         std::list<Icmpv6OptionSixLowPanContext> contexts;
-        
-        bool result = SixLowPanNdProtocol::ParseAndValidateRaPacket(p, ra, pios, abro, parsedSlla, contexts);
+
+        bool result =
+            SixLowPanNdProtocol::ParseAndValidateRaPacket(p, ra, pios, abro, parsedSlla, contexts);
         NS_TEST_EXPECT_MSG_EQ(result, true, "RA packet should be parsed successfully");
         NS_TEST_EXPECT_MSG_EQ(abro.GetVersion(), 0x66, "ABRO version should match");
     }
 };
 
-class SixLowPanNdRsPacketTest : public TestCase {
-public:
-    SixLowPanNdRsPacketTest() : TestCase("Make and Parse RS Packet") {}
-    void DoRun() override {
+class SixLowPanNdRsPacketTest : public TestCase
+{
+  public:
+    SixLowPanNdRsPacketTest()
+        : TestCase("Make and Parse RS Packet")
+    {
+    }
+
+    void DoRun() override
+    {
         Ipv6Address src("fe80::1"), dst("ff02::2");
         Icmpv6RS rs;
         Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
-        
+
         Ptr<Packet> p = Create<Packet>();
         p->AddHeader(slla);
         p->AddHeader(rs);
-        
+
         Icmpv6RS parsedRs;
         Icmpv6OptionLinkLayerAddress parsedSlla(true);
-        
+
         bool result = SixLowPanNdProtocol::ParseAndValidateRsPacket(p, parsedRs, parsedSlla);
         NS_TEST_EXPECT_MSG_EQ(result, true, "RS packet should be parsed successfully");
 
         // Validate parsed SLLAO
-        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetType(), Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE, "SLLAO type should be source");
+        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetType(),
+                              Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE,
+                              "SLLAO type should be source");
     }
 };
 
@@ -183,7 +230,7 @@ public:
  */
 class SixlowpanNdTestSuite : public TestSuite
 {
-public:
+  public:
     SixlowpanNdTestSuite()
         : TestSuite("sixlowpan-nd-test", Type::UNIT) // test.py -s sixlowpan-nd
     {
@@ -196,4 +243,4 @@ public:
 
 // Register the test suite
 static SixlowpanNdTestSuite g_sixlowpanNdTestSuite;
-}
+} // namespace ns3
