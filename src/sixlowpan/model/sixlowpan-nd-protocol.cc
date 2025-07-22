@@ -393,76 +393,82 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     }
     Ipv6Address target = nsHdr.GetIpv6Target();
 
-    // NS (EARO)
-    if (hasEaro)
-    {
-        /* Update NDISC table with information of src */
-        Ptr<NdiscCache> cache = FindCache(sixDevice);
-
-        SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
-        entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
-
-        // \todo double check the NCE statuses.
-        // \todo set the registered status.
-
-        if (earoHdr.GetRegTime() > 0)
-        {
-            if (!entry)
-            {
-                entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
-            }
-            //          std::cout <<" Before MarkRegistered" << target << std::endl;
-            //          std::cout <<" "<<Now()<<" "<< *entry<< std::endl;
-            entry->SetRouter(false);
-            entry->SetMacAddress(sllaoHdr.GetAddress());
-            entry->MarkReachable();
-            entry->StartReachableTimer();
-            entry->MarkRegistered(earoHdr.GetRegTime());
-            //          std::cout <<" After MarkRegistered"<< target<<std::endl;
-            //          std::cout <<" "<<Now()<<" "<< *entry << std::endl;
-            if (!target.IsLinkLocal())
-            {
-                Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-                ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
-                    target,
-                    Ipv6Prefix(128),
-                    src,
-                    ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-                // Forward the registration to the 6LBR.
-                // Unless we're the 6LBR, of course.
-            }
-        }
-        else // Remove the entry (if any) and remove the RT entry (if any)
-        {
-            if (entry)
-            {
-                cache->Remove(entry);
-            }
-            if (!target.IsLinkLocal())
-            {
-                Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-                ipv6l3Protocol->GetRoutingProtocol()->NotifyRemoveRoute(
-                    target,
-                    Ipv6Prefix(128),
-                    src,
-                    ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-            }
-        }
-
-        SendSixLowPanNaWithEaro(&dst,
-                                &src,
-                                target,
-                                earoHdr.GetRegTime(),
-                                earoHdr.GetRovr(),
-                                earoHdr.GetTransactionId(),
-                                sixDevice,
-                                earoHdr.GetStatus());
-    }
-    else /* NS + TLLAO */
+    // Check if hasEaro
+    if (!hasEaro)
     {
         // Let the "normal" Icmpv6L4Protocol handle it.
         HandleNS(pkt, src, dst, interface);
     }
+
+    // NS (EARO)
+    /* Update NDISC table with information of src */
+    Ptr<NdiscCache> cache = FindCache(sixDevice);
+
+    SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
+    entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
+
+    // \todo double check the NCE statuses.
+    // \todo set the registered status.
+
+    if (earoHdr.GetRegTime() > 0)
+    {
+        if (!entry)
+        {
+            entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
+            entry->SetRovr(earoHdr.GetRovr());
+        } else
+        {
+            if (entry->GetRovr() != earoHdr.GetRovr())
+            {
+                return; // discard the packet since the rovr doesn't match
+            }
+        }
+        entry->SetRouter(false);
+        entry->SetMacAddress(sllaoHdr.GetAddress());
+        entry->MarkReachable();
+        entry->StartReachableTimer();
+        entry->MarkRegistered(earoHdr.GetRegTime());
+        if (!target.IsLinkLocal())
+        {
+            Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
+            ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
+                target,
+                Ipv6Prefix(128),
+                src,
+                ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
+            // Forward the registration to the 6LBR.
+            // Unless we're the 6LBR, of course.
+        }
+    }
+    else // Remove the entry (if any) and remove the RT entry (if any)
+    {
+        if (entry)
+        {
+            if (entry->GetRovr() != earoHdr.GetRovr())
+            {
+                return; // discard the packet since the rovr doesn't match
+            }
+            cache->Remove(entry);
+        }
+        if (!target.IsLinkLocal())
+        {
+            Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
+            ipv6l3Protocol->GetRoutingProtocol()->NotifyRemoveRoute(
+                target,
+                Ipv6Prefix(128),
+                src,
+                ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
+        }
+    }
+
+    SendSixLowPanNaWithEaro(&dst,
+                            &src,
+                            target,
+                            earoHdr.GetRegTime(),
+                            earoHdr.GetRovr(),
+                            earoHdr.GetTransactionId(),
+                            sixDevice,
+                            earoHdr.GetStatus());
 }
 
 void
@@ -531,30 +537,36 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     //      }
     //    }
     //-----------------
-    if (hasEaro)
-    {
-        if (earo.GetStatus() == SUCCESS) /* status=0, success! */
-        {
-            if (earo.GetRovr() != m_rovrContainer[interface->GetDevice()])
-            {
-                NS_ABORT_MSG(" Received ROVR mismatch... discard.");
-                return;
-            }
-            AddressRegistrationSuccess(src, earo.GetTransactionId());
-        }
-        else /* status NOT 0, fail! */
-        {
-            // \todo Add logic for re-registration failure.
-            NS_LOG_LOGIC("EARO status is NOT 0, registration failed!");
-            m_pendingRas.pop_front();
-            m_neighborBlacklist[src] = Simulator::Now();
-            return;
-        }
-    }
-    else
+
+    // Check if it has EARO
+    if (!hasEaro)
     {
         Ipv6Address target = naHdr.GetIpv6Target();
         HandleNA(p, target, dst, interface); /* Handle response of Address Resolution */
+        return;
+    }
+
+    // Check if EARO ROVR matches 6LN's ROVR
+    if (earo.GetRovr() != m_rovrContainer[interface->GetDevice()])
+    {
+        NS_ABORT_MSG(" Received ROVR mismatch... discard.");
+        return;
+    }
+
+    // todo: Check that it matches with current address registration
+
+    // switch statement on EARO status
+    if (earo.GetStatus() == SUCCESS) /* status=0, success! */
+    {
+        AddressRegistrationSuccess(src, earo.GetTransactionId());
+    }
+    else /* status NOT 0, fail! */
+    {
+        // \todo Add logic for re-registration failure.
+        NS_LOG_LOGIC("EARO status is NOT 0, registration failed!");
+        m_pendingRas.pop_front();
+        m_neighborBlacklist[src] = Simulator::Now();
+        return;
     }
 }
 
