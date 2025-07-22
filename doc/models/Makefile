@@ -379,7 +379,8 @@ SOURCEFIGS = \
 	$(SRC)/zigbee/doc/figures/mesh.dia \
 	$(SRC)/internet-apps/doc/figures/dhcpv6-message-exchange.dia \
 	$(SRC)/internet-apps/doc/figures/stateful-dhcpv6-format.dia \
-	$(SRC)/sixlowpan/doc/figures/sixlowpanndprotocolstack.png
+	$(SRC)/sixlowpan/doc/figures/sixlowpanndprotocolstack.png \
+	$(SRC)/sixlowpan/doc/figures/sixlowpanndtopology.png \
 
 # specify figures from which .png and .pdf figures need to be
 # generated (all dia and eps figures)
