@@ -97,16 +97,16 @@ Examples
 
 The following example can be found in ``src/sixlowpan/examples/``
 
-* ``sixlownd-basic-test.cc``: A simple example showing a 6LN registering with and pinging a 6LBR node once.
+* ``sixlowpan-nd-basic-test.cc``: A simple example showing a 6LN registering with and pinging a 6LBR node once.
 
-* ``sixlownd-ping-test.cc``: An extended version of sixlownd-basic-test, with multiple 6LNs registering with and pinging a 6LBR node.
+* ``sixlowpan-nd-ping-test.cc``: An extended version of sixlowpan-nd-basic-test, with multiple 6LNs registering with and pinging a 6LBR node.
 
 Tests
 =====
 
 The following tests are implemented under src/sixlowpan/test/:
 
-``sixlowpan-nd-test.cc``
+``sixlowpan-nd-packet-test.cc``
 Contains unit tests that validate helper methods for parsing and validating 6LoWPAN-ND packets, including NS(EARO) and NA(EARO) formats.
 
 ``sixlowpan-nd-reg-test.cc``
