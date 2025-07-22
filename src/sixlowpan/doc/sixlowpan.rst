@@ -237,7 +237,7 @@ As mentioned in the documentation for 6LoWPAN, 6LoWPAN-ND can handle only IPv6 p
 
 To enable sixlowpan, add ``sixlowpan`` to the list of modules built with |ns3|.
 
-Helper 
+Helper
 ^^^^^^
 
 The helper is patterned after other device helpers. It contains additional methods such as ``SixLowPanHelper::InstallSixLowPanNd`` which assist in the initialisation of 6LN, 6LR and 6LBR. nodes.
