@@ -11,7 +11,12 @@
 #define GLOBAL_ROUTER_INTERFACE_H
 
 #include "global-route-manager.h"
+#include "ipv4-routing-protocol.h"
 #include "ipv4-routing-table-entry.h"
+#include "ipv6-l3-protocol.h"
+#include "ipv6-routing-protocol.h"
+#include "ipv6-routing-table-entry.h"
+#include "ipv6.h"
 
 #include "ns3/bridge-net-device.h"
 #include "ns3/channel.h"
@@ -26,9 +31,10 @@
 
 namespace ns3
 {
-
+template <typename T>
 class GlobalRouter;
-class Ipv4GlobalRouting;
+template <typename>
+class GlobalRouting;
 
 /**
  * @ingroup globalrouting
@@ -39,9 +45,43 @@ class Ipv4GlobalRouting;
  * a Link State Advertisement.  Right now we will only see two types of link
  * records corresponding to a stub network and a point-to-point link (channel).
  */
+template <typename T>
 class GlobalRoutingLinkRecord
 {
+    static_assert(
+        std::is_same_v<T, Ipv4Manager> || std::is_same_v<T, Ipv6Manager>,
+        "T must be either Ipv4Manager or Ipv6Manager when calling GlobalRoutingLinkRecord");
+    /// Alias for determining whether the parent is Ipv4RoutingProtocol or Ipv6RoutingProtocol
+    static constexpr bool IsIpv4 = std::is_same_v<Ipv4Manager, T>;
+
+    /// Alias for Ipv4 and Ipv6 classes
+    using Ip = typename std::conditional_t<IsIpv4, Ipv4, Ipv6>;
+
+    /// Alias for Ipv4Address and Ipv6Address classes
+    using IpAddress = typename std::conditional_t<IsIpv4, Ipv4Address, Ipv6Address>;
+
+    /// Alias for Ipv4Route and Ipv6Route classes
+    using IpRoute = typename std::conditional_t<IsIpv4, Ipv4Route, Ipv6Route>;
+
+    /// Alias for Ipv4AddressHash and Ipv6AddressHash classes
+    using IpAddressHash = typename std::conditional_t<IsIpv4, Ipv4AddressHash, Ipv6AddressHash>;
+
+    /// Alias for Ipv4Header and Ipv6Header classes
+    using IpHeader = typename std::conditional_t<IsIpv4, Ipv4Header, Ipv6Header>;
+
+    /// Alias for Ipv4InterfaceAddress and Ipv6InterfaceAddress classes
+    using IpInterfaceAddress =
+        typename std::conditional_t<IsIpv4, Ipv4InterfaceAddress, Ipv6InterfaceAddress>;
+
+    /// Alias for Ipv4RoutingTableEntry and Ipv6RoutingTableEntry classes
+    using IpRoutingTableEntry =
+        typename std::conditional_t<IsIpv4, Ipv4RoutingTableEntry, Ipv6RoutingTableEntry>;
+
+    /// Alias for Ipv4Mask And Ipv6Prefix
+    using IpMaskOrPrefix = typename std::conditional_t<IsIpv4, Ipv4Mask, Ipv6Prefix>;
+
   public:
+    template <typename>
     friend class GlobalRoutingLSA; //!< Friend class.
 
     /**
@@ -81,8 +121,8 @@ class GlobalRoutingLinkRecord
      * @see SetLinkData
      */
     GlobalRoutingLinkRecord(LinkType linkType,
-                            Ipv4Address linkId,
-                            Ipv4Address linkData,
+                            IpAddress linkId,
+                            IpAddress linkData,
                             uint16_t metric);
 
     /**
@@ -103,7 +143,7 @@ class GlobalRoutingLinkRecord
      *
      * @returns The Ipv4Address corresponding to the Link ID field of the record.
      */
-    Ipv4Address GetLinkId() const;
+    IpAddress GetLinkId() const;
 
     /**
      * @brief Set the Link ID field of the Global Routing Link Record.
@@ -116,7 +156,7 @@ class GlobalRoutingLinkRecord
      *
      * @param addr An Ipv4Address to store in the Link ID field of the record.
      */
-    void SetLinkId(Ipv4Address addr);
+    void SetLinkId(IpAddress addr);
 
     /**
      * @brief Get the Link Data field of the Global Routing Link Record.
@@ -129,7 +169,7 @@ class GlobalRoutingLinkRecord
      *
      * @returns The Ipv4Address corresponding to the Link Data field of the record.
      */
-    Ipv4Address GetLinkData() const;
+    IpAddress GetLinkData() const;
 
     /**
      * @brief Set the Link Data field of the Global Routing Link Record.
@@ -142,7 +182,7 @@ class GlobalRoutingLinkRecord
      *
      * @param addr An Ipv4Address to store in the Link Data field of the record.
      */
-    void SetLinkData(Ipv4Address addr);
+    void SetLinkData(IpAddress addr);
 
     /**
      * @brief Get the Link Type field of the Global Routing Link Record.
@@ -203,7 +243,7 @@ class GlobalRoutingLinkRecord
      *
      * For Type 3 link (Stub), set m_linkId to neighbor's IP address
      */
-    Ipv4Address m_linkId;
+    IpAddress m_linkId;
 
     /**
      * m_linkId and m_linkData are defined by OSPF to have different meanings
@@ -214,7 +254,7 @@ class GlobalRoutingLinkRecord
      *
      * For Type 3 link (Stub), set m_linkData to mask
      */
-    Ipv4Address m_linkData; // for links to RouterLSA,
+    IpAddress m_linkData; // for links to RouterLSA,
 
     /**
      * The type of the Global Routing Link Record.  Defined in the OSPF spec.
@@ -242,8 +282,40 @@ class GlobalRoutingLinkRecord
  * combined with a list of Link Records.  Since it's global, there's
  * no need for age or sequence number.  See \RFC{2328}, Appendix A.
  */
+template <typename T>
 class GlobalRoutingLSA
 {
+    static_assert(std::is_same_v<T, Ipv4Manager> || std::is_same_v<T, Ipv6Manager>,
+                  "T must be either Ipv4Manager or Ipv6Manager when calling GlobalRoutingLSA");
+    /// Alias for determining whether the parent is Ipv4RoutingProtocol or Ipv6RoutingProtocol
+    static constexpr bool IsIpv4 = std::is_same_v<Ipv4Manager, T>;
+
+    /// Alias for Ipv4 and Ipv6 classes
+    using Ip = typename std::conditional_t<IsIpv4, Ipv4, Ipv6>;
+
+    /// Alias for Ipv4Address and Ipv6Address classes
+    using IpAddress = typename std::conditional_t<IsIpv4, Ipv4Address, Ipv6Address>;
+
+    /// Alias for Ipv4Route and Ipv6Route classes
+    using IpRoute = typename std::conditional_t<IsIpv4, Ipv4Route, Ipv6Route>;
+
+    /// Alias for Ipv4AddressHash and Ipv6AddressHash classes
+    using IpAddressHash = typename std::conditional_t<IsIpv4, Ipv4AddressHash, Ipv6AddressHash>;
+
+    /// Alias for Ipv4Header and Ipv6Header classes
+    using IpHeader = typename std::conditional_t<IsIpv4, Ipv4Header, Ipv6Header>;
+
+    /// Alias for Ipv4InterfaceAddress and Ipv6InterfaceAddress classes
+    using IpInterfaceAddress =
+        typename std::conditional_t<IsIpv4, Ipv4InterfaceAddress, Ipv6InterfaceAddress>;
+
+    /// Alias for Ipv4RoutingTableEntry and Ipv6RoutingTableEntry classes
+    using IpRoutingTableEntry =
+        typename std::conditional_t<IsIpv4, Ipv4RoutingTableEntry, Ipv6RoutingTableEntry>;
+
+    /// Alias for Ipv4Mask And Ipv6Prefix
+    using IpMaskOrPrefix = typename std::conditional_t<IsIpv4, Ipv4Mask, Ipv6Prefix>;
+
   public:
     /**
      * @enum LSType
@@ -288,7 +360,7 @@ class GlobalRoutingLSA
      * @param linkStateId The Ipv4Address for the link state ID field.
      * @param advertisingRtr The Ipv4Address for the advertising router field.
      */
-    GlobalRoutingLSA(SPFStatus status, Ipv4Address linkStateId, Ipv4Address advertisingRtr);
+    GlobalRoutingLSA(SPFStatus status, IpAddress linkStateId, IpAddress advertisingRtr);
 
     /**
      * @brief Copy constructor for a Global Routing Link State Advertisement.
@@ -339,7 +411,7 @@ class GlobalRoutingLSA
      * @param lr The Global Routing Link Record to be added.
      * @returns The number of link records in the list.
      */
-    uint32_t AddLinkRecord(GlobalRoutingLinkRecord* lr);
+    uint32_t AddLinkRecord(GlobalRoutingLinkRecord<T>* lr);
 
     /**
      * @brief Return the number of Global Routing Link Records in the LSA.
@@ -354,7 +426,7 @@ class GlobalRoutingLSA
      * @param n The LSA number desired.
      * @returns The number of link records in the list.
      */
-    GlobalRoutingLinkRecord* GetLinkRecord(uint32_t n) const;
+    GlobalRoutingLinkRecord<T>* GetLinkRecord(uint32_t n) const;
 
     /**
      * @brief Release all of the Global Routing Link Records present in the Global
@@ -396,7 +468,7 @@ class GlobalRoutingLSA
      * @see GlobalRouting::GetRouterId ()
      * @returns The Ipv4Address stored as the link state ID.
      */
-    Ipv4Address GetLinkStateId() const;
+    IpAddress GetLinkStateId() const;
 
     /**
      * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
@@ -405,7 +477,7 @@ class GlobalRoutingLSA
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    void SetLinkStateId(Ipv4Address addr);
+    void SetLinkStateId(IpAddress addr);
 
     /**
      * @brief Get the Advertising Router as defined by the OSPF spec.  We always
@@ -415,7 +487,7 @@ class GlobalRoutingLSA
      * @see GlobalRouting::GetRouterId ()
      * @returns The Ipv4Address stored as the advertising router.
      */
-    Ipv4Address GetAdvertisingRouter() const;
+    IpAddress GetAdvertisingRouter() const;
 
     /**
      * @brief Set the Advertising Router as defined by the OSPF spec.  We always
@@ -425,14 +497,14 @@ class GlobalRoutingLSA
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    void SetAdvertisingRouter(Ipv4Address rtr);
+    void SetAdvertisingRouter(IpAddress rtr);
 
     /**
      * @brief For a Network LSA, set the Network Mask field that precedes
      * the list of attached routers.
      * @param mask the Network Mask field.
      */
-    void SetNetworkLSANetworkMask(Ipv4Mask mask);
+    void SetNetworkLSANetworkMask(IpMaskOrPrefix mask);
 
     /**
      * @brief For a Network LSA, get the Network Mask field that precedes
@@ -440,7 +512,7 @@ class GlobalRoutingLSA
      *
      * @returns the NetworkLSANetworkMask
      */
-    Ipv4Mask GetNetworkLSANetworkMask() const;
+    IpMaskOrPrefix GetNetworkLSANetworkMask() const;
 
     /**
      * @brief Add an attached router to the list in the NetworkLSA
@@ -448,7 +520,7 @@ class GlobalRoutingLSA
      * @param addr The Ipv4Address of the interface on the network link
      * @returns The number of addresses in the list.
      */
-    uint32_t AddAttachedRouter(Ipv4Address addr);
+    uint32_t AddAttachedRouter(IpAddress addr);
 
     /**
      * @brief Return the number of attached routers listed in the NetworkLSA
@@ -463,7 +535,7 @@ class GlobalRoutingLSA
      * @param n The attached router number desired (number in the list).
      * @returns The Ipv4Address of the requested router
      */
-    Ipv4Address GetAttachedRouter(uint32_t n) const;
+    IpAddress GetAttachedRouter(uint32_t n) const;
 
     /**
      * @brief Get the SPF status of the advertisement.
@@ -505,7 +577,7 @@ class GlobalRoutingLSA
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    Ipv4Address m_linkStateId;
+    IpAddress m_linkStateId;
 
     /**
      * The Advertising Router is defined by the OSPF spec.  We always set it to
@@ -514,12 +586,12 @@ class GlobalRoutingLSA
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    Ipv4Address m_advertisingRtr;
+    IpAddress m_advertisingRtr;
 
     /**
      * A convenience typedef to avoid too much writers cramp.
      */
-    typedef std::list<GlobalRoutingLinkRecord*> ListOfLinkRecords_t;
+    typedef std::list<GlobalRoutingLinkRecord<T>*> ListOfLinkRecords_t;
 
     /**
      * Each Link State Advertisement contains a number of Link Records that
@@ -536,12 +608,12 @@ class GlobalRoutingLSA
     /**
      * Each Network LSA contains the network mask of the attached network
      */
-    Ipv4Mask m_networkLSANetworkMask;
+    IpMaskOrPrefix m_networkLSANetworkMask;
 
     /**
      * A convenience typedef to avoid too much writers cramp.
      */
-    typedef std::list<Ipv4Address> ListOfAttachedRouters_t;
+    typedef std::list<IpAddress> ListOfAttachedRouters_t;
 
     /**
      * Each Network LSA contains a list of attached routers
@@ -570,7 +642,8 @@ class GlobalRoutingLSA
  * @param lsa the LSA
  * @returns the reference to the output stream
  */
-std::ostream& operator<<(std::ostream& os, GlobalRoutingLSA& lsa);
+template <typename T>
+std::ostream& operator<<(std::ostream& os, GlobalRoutingLSA<T>& lsa);
 
 /**
  * @brief An interface aggregated to a node to provide global routing info
@@ -581,8 +654,45 @@ std::ostream& operator<<(std::ostream& os, GlobalRoutingLSA& lsa);
  * advertises its connections to neighboring routers.  We're basically
  * allowing the route manager to query for link state advertisements.
  */
+template <typename T>
 class GlobalRouter : public Object
 {
+    static_assert(std::is_same_v<T, Ipv4Manager> || std::is_same_v<T, Ipv6Manager>,
+                  "T must be either Ipv4Manager or Ipv6Manager when calling GlobalRouter");
+
+    /// Alias for determining whether the parent is Ipv4RoutingProtocol or Ipv6RoutingProtocol
+    static constexpr bool IsIpv4 = std::is_same_v<Ipv4Manager, T>;
+
+    /// Alias for Ipv4 and Ipv6 classes
+    using Ip = typename std::conditional_t<IsIpv4, Ipv4, Ipv6>;
+
+    /// Alias for Ipv4Address and Ipv6Address classes
+    using IpAddress = typename std::conditional_t<IsIpv4, Ipv4Address, Ipv6Address>;
+
+    /// Alias for Ipv4Route and Ipv6Route classes
+    using IpRoute = typename std::conditional_t<IsIpv4, Ipv4Route, Ipv6Route>;
+
+    /// Alias for Ipv4AddressHash and Ipv6AddressHash classes
+    using IpAddressHash = typename std::conditional_t<IsIpv4, Ipv4AddressHash, Ipv6AddressHash>;
+
+    /// Alias for Ipv4Header and Ipv6Header classes
+    using IpHeader = typename std::conditional_t<IsIpv4, Ipv4Header, Ipv6Header>;
+
+    /// Alias for Ipv4InterfaceAddress and Ipv6InterfaceAddress classes
+    using IpInterfaceAddress =
+        typename std::conditional_t<IsIpv4, Ipv4InterfaceAddress, Ipv6InterfaceAddress>;
+
+    /// Alias for Ipv4RoutingTableEntry and Ipv6RoutingTableEntry classes
+    using IpRoutingTableEntry =
+        typename std::conditional_t<IsIpv4, Ipv4RoutingTableEntry, Ipv6RoutingTableEntry>;
+
+    /// Alias for Ipv4Mask And Ipv6Prefix
+    using IpMaskOrPrefix = typename std::conditional_t<IsIpv4, Ipv4Mask, Ipv6Prefix>;
+
+    /// Alias for Ipv4RoutingProtocol and Ipv6RoutingProtocol classes
+    using IpRoutingProtocol =
+        typename std::conditional_t<IsIpv4, Ipv4RoutingProtocol, Ipv6RoutingProtocol>;
+
   public:
     /**
      * @brief Get the type ID.
@@ -603,13 +713,13 @@ class GlobalRouter : public Object
      * @brief Set the specific Global Routing Protocol to be used
      * @param routing the routing protocol
      */
-    void SetRoutingProtocol(Ptr<Ipv4GlobalRouting> routing);
+    void SetRoutingProtocol(Ptr<GlobalRouting<IpRoutingProtocol>> routing);
 
     /**
      * @brief Get the specific Global Routing Protocol used
      * @returns the routing protocol
      */
-    Ptr<Ipv4GlobalRouting> GetRoutingProtocol();
+    Ptr<GlobalRouting<IpRoutingProtocol>> GetRoutingProtocol();
 
     /**
      * @brief Get the Router ID associated with this Global Router.
@@ -620,7 +730,7 @@ class GlobalRouter : public Object
      * @see RoutingEnvironment::AllocateRouterId ()
      * @returns The Router ID associated with the Global Router.
      */
-    Ipv4Address GetRouterId() const;
+    IpAddress GetRouterId() const;
 
     /**
      * @brief Walk the connected channels, discover the adjacent routers and build
@@ -676,7 +786,7 @@ class GlobalRouter : public Object
      * @param lsa The GlobalRoutingLSA class to receive the LSA information.
      * @returns The number of Global Router Link State Advertisements.
      */
-    bool GetLSA(uint32_t n, GlobalRoutingLSA& lsa) const;
+    bool GetLSA(uint32_t n, GlobalRoutingLSA<T>& lsa) const;
 
     /**
      * @brief Inject a route to be circulated to other routers as an external
@@ -685,7 +795,7 @@ class GlobalRouter : public Object
      * @param network The Network to inject
      * @param networkMask The Network Mask to inject
      */
-    void InjectRoute(Ipv4Address network, Ipv4Mask networkMask);
+    void InjectRoute(IpAddress network, IpMaskOrPrefix networkMask);
 
     /**
      * @brief Get the number of injected routes that have been added
@@ -700,7 +810,7 @@ class GlobalRouter : public Object
      * @return a pointer to that Ipv4RoutingTableEntry is returned
      *
      */
-    Ipv4RoutingTableEntry* GetInjectedRoute(uint32_t i);
+    IpRoutingTableEntry* GetInjectedRoute(uint32_t i);
 
     /**
      * @brief Withdraw a route from the global unicast routing table.
@@ -724,7 +834,7 @@ class GlobalRouter : public Object
      *
      * @see GlobalRouter::RemoveInjectedRoute ()
      */
-    bool WithdrawRoute(Ipv4Address network, Ipv4Mask networkMask);
+    bool WithdrawRoute(IpAddress network, IpMaskOrPrefix networkMask);
 
   private:
     ~GlobalRouter() override;
@@ -756,7 +866,7 @@ class GlobalRouter : public Object
      * @param ndLocal local NetDevice to scan
      * @returns the IP address of the designated router
      */
-    Ipv4Address FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const;
+    IpAddress FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const;
 
     /**
      * @brief Checks for the presence of another router on the NetDevice
@@ -777,7 +887,7 @@ class GlobalRouter : public Object
      * @param pLSA the Global LSA
      * @param c the returned NetDevice container
      */
-    void ProcessBroadcastLink(Ptr<NetDevice> nd, GlobalRoutingLSA* pLSA, NetDeviceContainer& c);
+    void ProcessBroadcastLink(Ptr<NetDevice> nd, GlobalRoutingLSA<T>* pLSA, NetDeviceContainer& c);
 
     /**
      * @brief Process a single broadcast link
@@ -787,7 +897,7 @@ class GlobalRouter : public Object
      * @param c the returned NetDevice container
      */
     void ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
-                                    GlobalRoutingLSA* pLSA,
+                                    GlobalRoutingLSA<T>* pLSA,
                                     NetDeviceContainer& c);
 
     /**
@@ -798,7 +908,7 @@ class GlobalRouter : public Object
      * @param c the returned NetDevice container
      */
     void ProcessBridgedBroadcastLink(Ptr<NetDevice> nd,
-                                     GlobalRoutingLSA* pLSA,
+                                     GlobalRoutingLSA<T>* pLSA,
                                      NetDeviceContainer& c);
 
     /**
@@ -807,7 +917,7 @@ class GlobalRouter : public Object
      * @param ndLocal the NetDevice
      * @param pLSA the Global LSA
      */
-    void ProcessPointToPointLink(Ptr<NetDevice> ndLocal, GlobalRoutingLSA* pLSA);
+    void ProcessPointToPointLink(Ptr<NetDevice> ndLocal, GlobalRoutingLSA<T>* pLSA);
 
     /**
      * @brief Build one NetworkLSA for each net device talking to a network that we are the
@@ -841,17 +951,16 @@ class GlobalRouter : public Object
      */
     Ptr<BridgeNetDevice> NetDeviceIsBridged(Ptr<NetDevice> nd) const;
 
-    typedef std::list<GlobalRoutingLSA*> ListOfLSAs_t; //!< container for the GlobalRoutingLSAs
-    ListOfLSAs_t m_LSAs;                               //!< database of GlobalRoutingLSAs
+    typedef std::list<GlobalRoutingLSA<T>*> ListOfLSAs_t; //!< container for the GlobalRoutingLSAs
+    ListOfLSAs_t m_LSAs;                                  //!< database of GlobalRoutingLSAs
 
-    Ipv4Address m_routerId;                   //!< router ID (its IPv4 address)
-    Ptr<Ipv4GlobalRouting> m_routingProtocol; //!< the Ipv4GlobalRouting in use
+    IpAddress m_routerId;                                    //!< router ID (its IPv4 address)
+    Ptr<GlobalRouting<IpRoutingProtocol>> m_routingProtocol; //!< the Ipv4GlobalRouting in use
 
-    typedef std::list<Ipv4RoutingTableEntry*>
-        InjectedRoutes; //!< container of Ipv4RoutingTableEntry
-    typedef std::list<Ipv4RoutingTableEntry*>::const_iterator
+    typedef std::list<IpRoutingTableEntry*> InjectedRoutes; //!< container of Ipv4RoutingTableEntry
+    typedef std::list<IpRoutingTableEntry*>::const_iterator
         InjectedRoutesCI; //!< Const Iterator to container of Ipv4RoutingTableEntry
-    typedef std::list<Ipv4RoutingTableEntry*>::iterator
+    typedef std::list<IpRoutingTableEntry*>::iterator
         InjectedRoutesI;             //!< Iterator to container of Ipv4RoutingTableEntry
     InjectedRoutes m_injectedRoutes; //!< Routes we are exporting
 
@@ -884,6 +993,12 @@ class GlobalRouter : public Object
     // inherited from Object
     void DoDispose() override;
 };
+
+/**
+ * @ingroup globalrouting
+ * Create the typedef Ipv4GlobalRouting with T as Ipv4RoutingProtocol
+ */
+typedef GlobalRouter<Ipv4Manager> Ipv4GlobalRouter;
 
 } // namespace ns3
 
