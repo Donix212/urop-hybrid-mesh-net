@@ -192,17 +192,12 @@ SixLowPanHelper::InstallSixLowPanNdNode(NetDeviceContainer c)
         Ptr<NetDevice> dev = c.Get(i);
         Ptr<Node> node = dev->GetNode();
 
-        Ptr<Icmpv6L4Protocol> icmpv6 = node->GetObject<Icmpv6L4Protocol>();
+        Ptr<SixLowPanNdProtocol> icmpv6 = node->GetObject<SixLowPanNdProtocol>();
 
-        NS_LOG_INFO("Scheduling multicast RS from node "
-                    << node->GetId() << " at time " << Simulator::Now().GetSeconds() << "s"
-                    << " with src=" << linkLocalAddr << ", dst="
-                    << Ipv6Address::GetAllRoutersMulticast() << ", mac=" << dev->GetAddress());
         Simulator::Schedule(Seconds(0),
-                            &Icmpv6L4Protocol::SendRS,
+                            &SixLowPanNdProtocol::SendSixLowPanMulticastRS,
                             icmpv6,
                             linkLocalAddr,
-                            Ipv6Address::GetAllRoutersMulticast(),
                             dev->GetAddress());
     }
 
