@@ -666,7 +666,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     void AddressRegistrationTimeout();
 
-    uint8_t m_addressRegistrationCounter; //!< Number of retries of an address registration.
+    uint8_t m_addressRegistrationCounter = 0; //!< Number of retries of an address registration.
 
     std::map<Ptr<NetDevice>, std::vector<uint8_t>> m_rovrContainer; //!< Container of ROVRs
 
