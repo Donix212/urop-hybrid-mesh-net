@@ -581,6 +581,7 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanRS");
 
+    NS_LOG_INFO("HandleSixLowPanRS: " << m_node->GetId() << " Received RS from " << src);
     if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
     {
         NS_LOG_LOGIC("Discarding a RS because I'm a simple node");
@@ -835,7 +836,15 @@ void
 SixLowPanNdProtocol::FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr)
 {
     // We actually want to override the immediate send of an RS.
-    Icmpv6L4Protocol::FunctionDadTimeout(interface, addr);
+    // NS_LOG_INFO("DAD timeout at " << Simulator::Now().GetSeconds() << "s for address " << addr);
+    return;
+    // Icmpv6L4Protocol::FunctionDadTimeout(interface, addr);
+    // Simulator::Schedule(Seconds(0),
+    //                     &Icmpv6L4Protocol::SendRS,
+    //                     this, // or icmpv6 ptr
+    //                     addr,
+    //                     Ipv6Address::GetAllRoutersMulticast(),
+    //                     interface->GetDevice()->GetAddress());
 }
 
 void

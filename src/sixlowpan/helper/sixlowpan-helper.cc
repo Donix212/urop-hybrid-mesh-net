@@ -184,6 +184,28 @@ SixLowPanHelper::InstallSixLowPanNdNode(NetDeviceContainer c)
     Ipv6InterfaceContainer deviceInterfaces;
     deviceInterfaces = ipv6.AssignWithoutAddress(c);
 
+    // Schedule Multicast RS here
+    for (uint32_t i = 0; i < deviceInterfaces.GetN(); ++i)
+    {
+        Ipv6Address linkLocalAddr = deviceInterfaces.GetLinkLocalAddress(i);
+
+        Ptr<NetDevice> dev = c.Get(i);
+        Ptr<Node> node = dev->GetNode();
+
+        Ptr<Icmpv6L4Protocol> icmpv6 = node->GetObject<Icmpv6L4Protocol>();
+
+        NS_LOG_INFO("Scheduling multicast RS from node "
+                    << node->GetId() << " at time " << Simulator::Now().GetSeconds() << "s"
+                    << " with src=" << linkLocalAddr << ", dst="
+                    << Ipv6Address::GetAllRoutersMulticast() << ", mac=" << dev->GetAddress());
+        Simulator::Schedule(Seconds(0),
+                            &Icmpv6L4Protocol::SendRS,
+                            icmpv6,
+                            linkLocalAddr,
+                            Ipv6Address::GetAllRoutersMulticast(),
+                            dev->GetAddress());
+    }
+
     return deviceInterfaces;
 }
 
@@ -219,6 +241,9 @@ SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
         {
             ipv6->SetForwarding(interfaceId, true);
         }
+        // bool isForwarding = ipv6->IsForwarding(interfaceId);
+        // NS_LOG_INFO("Node " << node->GetId() << ", Interface " << interfaceId
+        //                     << " forwarding: " << (isForwarding ? "true" : "false"));
     }
     return;
 }
