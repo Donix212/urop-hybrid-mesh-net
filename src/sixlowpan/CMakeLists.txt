@@ -34,5 +34,5 @@ build_lib(
     test/sixlowpan-iphc-stateful-test.cc
     test/sixlowpan-iphc-test.cc
     test/sixlowpan-nd-test.cc
-    test/sixlowpan-nd-nsna-test.cc
+    test/sixlowpan-nd-reg-test.cc
 )

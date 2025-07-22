@@ -32,15 +32,15 @@
 namespace ns3
 {
 /**
- * @ingroup sixlowpan-nd-nsna-tests
+ * @ingroup sixlowpan-nd-reg-tests
  *
- * @brief Test exchange of NS (EARO) and NA (EARO) messages
+ * @brief Test successful registration of varying numbers of 6LNs with 1 6LBR
  */
-class SixLowPanNdNsNaTest : public TestCase
+class SixLowPanNdOneLNRegTest : public TestCase
 {
   public:
-    SixLowPanNdNsNaTest()
-        : TestCase("Test exchange of NS (EARO) and NA (EARO) messages")
+    SixLowPanNdOneLNRegTest()
+        : TestCase("Registration of 1 6LN with 1 6LBR")
     {
     }
 
@@ -143,21 +143,83 @@ class SixLowPanNdNsNaTest : public TestCase
     }
 };
 
+class SixLowPanNdFiveLNRegTest : public TestCase
+{
+  public:
+    SixLowPanNdFiveLNRegTest()
+        : TestCase("Registration of 5 6LNs with 1 6LBR")
+    {
+    }
+
+    void DoRun() override
+    {
+        // LogComponentEnable("SixLowPanNetDevice", LOG_LEVEL_FUNCTION);
+        // LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
+        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
+
+        constexpr uint32_t numLns = 8;
+
+        NodeContainer nodes;
+        nodes.Create(1 + numLns); // 1 LBR + 10 LNs
+        Ptr<Node> lbrNode = nodes.Get(0);
+
+        MobilityHelper mobility;
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
+
+        LrWpanHelper lrWpanHelper;
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+
+        InternetStackHelper internetv6;
+        internetv6.Install(nodes);
+
+        SixLowPanHelper sixlowpan;
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            sixlowpan.InstallSixLowPanNdNode(devices.Get(i));
+        }
+
+        // Ptr<OutputStreamWrapper> outputStream = Create<OutputStreamWrapper>(&std::cout);
+        // Ipv6RoutingHelper::PrintNeighborCacheAllEvery(Seconds(1), outputStream);
+        // Ipv6RoutingHelper::PrintRoutingTableAllEvery(Seconds(1), outputStream);
+
+        std::ostringstream ndiscStream;
+        Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
+
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(20), outputNdiscStream);
+
+        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
+
+        Simulator::Stop(Seconds(10.0));
+        Simulator::Run();
+        Simulator::Destroy();
+
+        std::cout << "=== NDISC CACHE ===\n" << ndiscStream.str();
+    }
+};
+
 /**
- * @ingroup sixlowpan-nd-nsna-tests
+ * @ingroup sixlowpan-nd-reg-tests
  *
  * @brief 6LoWPAN-ND TestSuite
  */
-class SixLowPanNdNsNaTestSuite : public TestSuite
+class SixLowPanNdRegTestSuite : public TestSuite
 {
   public:
-    SixLowPanNdNsNaTestSuite()
-        : TestSuite("sixlowpan-nd-nsna-test", Type::UNIT) // test.py -s sixlowpan-nd
+    SixLowPanNdRegTestSuite()
+        : TestSuite("sixlowpan-nd-reg-test", Type::UNIT) // test.py -s sixlowpan-nd
     {
-        AddTestCase(new SixLowPanNdNsNaTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdOneLNRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdFiveLNRegTest(), TestCase::Duration::QUICK);
     }
 };
 
 // Register the test suite
-static SixLowPanNdNsNaTestSuite g_sixlowpanndnsnaTestSuite;
+static SixLowPanNdRegTestSuite g_sixlowpanndregTestSuite;
 } // namespace ns3
