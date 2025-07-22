@@ -45,8 +45,6 @@ class SixLowPanNdRovrTest : public TestCase
 
     void DoRun() override
     {
-        // LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_FUNCTION);
-        // LogComponentEnable ("SixLowPanNdProtocol", LOG_LEVEL_FUNCTION);
         LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
         // LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
 
