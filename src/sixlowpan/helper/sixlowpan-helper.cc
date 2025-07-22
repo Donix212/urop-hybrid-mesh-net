@@ -14,12 +14,15 @@
 #include "ns3/ipv6-interface-container.h"
 #include "ns3/ipv6-l3-protocol.h"
 #include "ns3/log.h"
+#include "ns3/loopback-net-device.h"
 #include "ns3/names.h"
 #include "ns3/net-device.h"
 #include "ns3/node.h"
 #include "ns3/sixlowpan-nd-protocol.h"
 #include "ns3/sixlowpan-net-device.h"
 #include "ns3/uinteger.h"
+
+#include <iomanip>
 
 namespace ns3
 {
@@ -185,6 +188,14 @@ SixLowPanHelper::InstallSixLowPanNdNode(NetDeviceContainer c)
     Ipv6InterfaceContainer deviceInterfaces;
     deviceInterfaces = ipv6.AssignWithoutAddress(c);
 
+    // Initialize ROVR for each node
+    for (uint32_t i = 0; i < c.GetN(); ++i)
+    {
+        Ptr<NetDevice> dev = c.Get(i);
+        Ptr<Node> node = dev->GetNode();
+        InitializeRovr(node);
+    }
+
     // Schedule Multicast RS here
     for (uint32_t i = 0; i < deviceInterfaces.GetN(); ++i)
     {
@@ -316,6 +327,43 @@ SixLowPanHelper::RemoveAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix con
     {
         NS_LOG_WARN("Not a SixLowPan NetDevice - doing nothing");
     }
+}
+
+void
+SixLowPanHelper::InitializeRovr(Ptr<Node> node)
+{
+    Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
+    NS_ASSERT_MSG(sixLowPanNdProtocol, "6LoWPAN ND protocol not found on node");
+
+    Address macAddress;
+    uint32_t maxLen = 0;
+
+    for (uint32_t i = 0; i < node->GetNDevices(); i++)
+    {
+        Ptr<NetDevice> dev = node->GetDevice(i);
+
+        // Skip loopback
+        if (DynamicCast<LoopbackNetDevice>(dev))
+        {
+            continue;
+        }
+
+        Address addr = dev->GetAddress();
+        if (addr.GetLength() > maxLen)
+        {
+            macAddress = addr;
+            maxLen = addr.GetLength();
+        }
+    }
+
+    NS_ASSERT_MSG(!macAddress.IsInvalid(), "No valid MAC address found for ROVR");
+
+    // Create ROVR vector (16 bytes, zero-padded)
+    std::vector<uint8_t> rovr(16, 0);
+    macAddress.CopyTo(rovr.data());
+
+    NS_LOG_INFO("ROVR for node " << node->GetId() << " set from MAC: " << macAddress);
+    sixLowPanNdProtocol->SetRovr(rovr);
 }
 
 } // namespace ns3
