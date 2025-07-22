@@ -178,3 +178,9 @@ Validation
 
 The model has been validated against WireShark, checking whatever the packets are correctly
 interpreted and validated.
+
+
+
+
+6LoWPAN Optimized ND
+====================
