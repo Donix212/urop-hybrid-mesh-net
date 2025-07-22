@@ -51,8 +51,9 @@ public:
         Icmpv6OptionLinkLayerAddress parsedSlla(true);
         Icmpv6OptionLinkLayerAddress parsedTlla(false);
         Icmpv6OptionSixLowPanExtendedAddressRegistration parsedEaro;
+        bool hasEaro = false;
 
-        bool result = SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(p, parsedNs, parsedSlla, parsedTlla, parsedEaro);
+        bool result = SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(p, parsedNs, parsedSlla, parsedTlla, parsedEaro, hasEaro);
 
         NS_TEST_EXPECT_MSG_EQ(result, true, "NS(EARO) should be parsed successfully");
         // Validate parsed NS header
@@ -68,6 +69,8 @@ public:
         // Validate parsed EARO
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetRegTime(), 20, "EARO lifetime should match");
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetTransactionId(), 5, "Transaction ID should match");
+
+        NS_TEST_EXPECT_MSG_EQ(hasEaro, 1, "hasEaro should be true");
     }
 };
 
@@ -87,8 +90,10 @@ public:
         Ptr<Packet> p = SixLowPanNdProtocol::MakeNaEaroPacket(src, dst, naHdr, earo);
         
         Icmpv6NA parsedNa;
+        Icmpv6OptionLinkLayerAddress parsedTlla(false);
         Icmpv6OptionSixLowPanExtendedAddressRegistration parsedEaro;
-        bool result = SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(p, parsedNa, parsedEaro);
+        bool hasEaro = false;
+        bool result = SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(p, parsedNa, parsedTlla, parsedEaro, hasEaro);
         
         NS_TEST_EXPECT_MSG_EQ(result, true, "NA(EARO) should be parsed successfully");
 
@@ -102,6 +107,8 @@ public:
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetStatus(), 0, "Status should match");
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetRegTime(), 20, "EARO lifetime should match");
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetTransactionId(), 7, "Transaction ID should match");
+
+        NS_TEST_EXPECT_MSG_EQ(hasEaro, 1, "hasEaro should be true");
     }
 };
 
