@@ -44,8 +44,8 @@ build_lib_example(
 )
 
 build_lib_example(
-  NAME sixlownd-ping-test
-  SOURCE_FILES sixlownd-ping-test.cc
+  NAME sixlowpan-nd-ping-test
+  SOURCE_FILES sixlowpan-nd-ping-test.cc
   LIBRARIES_TO_LINK
     ${libnetwork}
     ${libsixlowpan}
@@ -55,8 +55,8 @@ build_lib_example(
 )
 
 build_lib_example(
-  NAME sixlownd-basic-test
-  SOURCE_FILES sixlownd-basic-test.cc
+  NAME sixlowpan-nd-basic-test
+  SOURCE_FILES sixlowpan-nd-basic-test.cc
   LIBRARIES_TO_LINK
     ${libnetwork}
     ${libsixlowpan}
