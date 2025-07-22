@@ -2231,10 +2231,9 @@ Ptr<Packet>
 SixLowPanNdProtocol::MakeNsEaroPacket(Ipv6Address src,
                                       Ipv6Address dst,
                                       Icmpv6NS& nsHdr,
-                                      Icmpv6OptionLinkLayerAddress slla,
-                                      Icmpv6OptionLinkLayerAddress tlla,
-                                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo)
-{
+                                      Icmpv6OptionLinkLayerAddress& slla,
+                                      Icmpv6OptionLinkLayerAddress& tlla,
+                                      Icmpv6OptionSixLowPanExtendedAddressRegistration& earo) {
     Ptr<Packet> p = Create<Packet>();
 
     p->AddHeader(earo);
@@ -2273,8 +2272,6 @@ SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
 
     // Build RA Hdr
     Icmpv6RA ra = raEntry->BuildRouterAdvertisementHeader();
-    ra.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + ra.GetSerializedSize(), PROT_NUMBER);
-    p->AddHeader(ra);
 
     // PIO
     for (const auto& pio : raEntry->BuildPrefixInformationOptions())
@@ -2312,6 +2309,10 @@ SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
         }
     }
 
+    // Compute checksum after everything is added
+    ra.CalculatePseudoHeaderChecksum(src, dst, p->GetSize() + ra.GetSerializedSize(), PROT_NUMBER);
+    p->AddHeader(ra);
+
     return p;
 }
 
@@ -2330,7 +2331,8 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     bool hasEaro = false;
     bool next = true;
 
-    while (next && p->GetSize() > 0)
+    /* search all options following the NS header */
+    while (next == true)
     {
         uint8_t type;
         p->CopyData(&type, sizeof(type));
@@ -2338,15 +2340,32 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
         switch (type)
         {
         case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
-            if (!hasSllao) { p->RemoveHeader(slla); hasSllao = true; }
+            if (!hasSllao)
+            {
+                p->RemoveHeader(slla);
+                hasSllao = true;
+            }
             break;
         case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET:
-            if (!hasTllao) { p->RemoveHeader(tlla); hasTllao = true; }
+            if (!hasTllao)
+            {
+                p->RemoveHeader(tlla);
+                hasTllao = true;
+            }
             break;
         case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION:
-            if (!hasEaro) { p->RemoveHeader(earo); hasEaro = true; }
+            if (!hasEaro)
+            {
+                p->RemoveHeader(earo);
+                hasEaro = true;
+            }
             break;
         default:
+            /* unknown option, quit */
+            next = false;
+        }
+        if (p->GetSize() == 0)
+        {
             next = false;
         }
     }
