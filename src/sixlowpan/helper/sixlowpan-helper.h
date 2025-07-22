@@ -193,6 +193,12 @@ class SixLowPanHelper
      */
     void InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter);
 
+    void InitializeRovr(Ptr<Node> node);
+
+    std::vector<uint8_t> ConvertMacToRovr(const Address& mac);
+
+    std::string PrintRovr(const std::vector<uint8_t>& rovr);
+
     ObjectFactory m_deviceFactory; //!< Object factory.
 };
 
