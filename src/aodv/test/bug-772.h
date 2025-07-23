@@ -40,45 +40,84 @@ class Bug772ChainTest : public TestCase
     ~Bug772ChainTest() override;
 
   private:
-    /// @internal It is important to have pointers here
+    /**
+     * Pointer to the node container for the test topology.
+     */
     NodeContainer* m_nodes;
 
+    /**
+     * Unique file names prefix for the test case.
+     */
     const std::string m_prefix;
-    /// Socket factory TID
+
+    /**
+     * Socket factory TypeId string (e.g., ns3::UdpSocketFactory).
+     */
     const std::string m_proto;
-    /// Total simulation time
+
+    /**
+     * Total simulation time.
+     */
     const Time m_time;
-    /// Chain size
+
+    /**
+     * Number of nodes in the chain.
+     */
     const uint32_t m_size;
-    /// Chain step, meters
+
+    /**
+     * Step size for node placement in meters.
+     */
     const double m_step;
-    /// port number
+
+    /**
+     * Port number used for UDP/TCP communication.
+     */
     const uint16_t m_port;
 
-    /// Create test topology
-    void CreateNodes();
-    /// Create devices, install TCP/IP stack and applications
-    void CreateDevices();
-    /// Compare traces with reference ones
-    void CheckResults();
-    /// Go
-    void DoRun() override;
     /**
-     * Receive data function
+     * Create test topology.
+     */
+    void CreateNodes();
+
+    /**
+     * Create devices, install TCP/IP stack and applications.
+     */
+    void CreateDevices();
+
+    /**
+     * Compare traces with reference ones.
+     */
+    void CheckResults();
+
+    /**
+     * Run the test case.
+     */
+    void DoRun() override;
+
+    /**
+     * Receive data function.
      * @param socket the socket to receive from
      */
     void HandleRead(Ptr<Socket> socket);
 
-    /// Receiving socket
+    /**
+     * Receiving socket.
+     */
     Ptr<Socket> m_recvSocket;
-    /// Transmitting socket
+
+    /**
+     * Transmitting socket.
+     */
     Ptr<Socket> m_sendSocket;
 
-    /// Received packet count
+    /**
+     * Received packet count.
+     */
     uint32_t m_receivedPackets;
 
     /**
-     * Send data
+     * Send data.
      * @param socket the sending socket
      */
     void SendData(Ptr<Socket> socket);
