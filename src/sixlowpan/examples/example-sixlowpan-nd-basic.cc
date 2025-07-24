@@ -76,7 +76,7 @@ main()
     }
 
     AsciiTraceHelper ascii;
-    lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-basic-test"), true);
+    lrWpanHelper.EnablePcapAll(std::string("example-sixlowpan-nd-basic"), true);
 
     Simulator::Stop(Seconds(20.0));
     Simulator::Run();
