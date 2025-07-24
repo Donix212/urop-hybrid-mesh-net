@@ -129,7 +129,18 @@ SixLowPanNdProtocol::GetTypeId()
                           "Maximum Time between two RS (after the backoff).",
                           TimeValue(Seconds(60)),
                           MakeTimeAccessor(&SixLowPanNdProtocol::m_maxRtrSolicitationInterval),
-                          MakeTimeChecker());
+                          MakeTimeChecker())
+            .AddTraceSource(
+                "AddressRegistrationResult",
+                "Triggered when an address registration succeeds or fails."
+                "Callback signature is (Ipv6Address address, bool success).",
+                MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_addressRegistrationResultTrace),
+                "ns3::SixLowPanNdProtocol::AddressRegistrationCallback")
+            .AddTraceSource("MulticastRS",
+                            "Fired whenever this node sends a multicast Router Solicitation. "
+                            "Callback signature: (Ipv6Address src)",
+                            MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_multicastRsTrace),
+                            "ns3::SixLowPanNdProtocol::MulticastRsCallback");
 
     return tid;
 }
@@ -262,6 +273,7 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
 {
     // Behaviour follows RFC6775 5.3
     // Interval between RSes: 10s, 10s, 20s, 40s, 60s, 60s, ...
+    m_multicastRsTrace(src);
     NS_LOG_FUNCTION(this << src << hardwareAddress);
     // NS_LOG_INFO("SendSixLowPanMulticastRS called at time " << Simulator::Now().GetSeconds() <<
     // "s");
@@ -1030,6 +1042,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
 {
     NS_LOG_FUNCTION(this << registrar << tid);
     NS_LOG_INFO("AddressRegistrationSuccess: " << m_addrPendingReg.addressPendingRegistration);
+    m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration, true);
 
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
@@ -1141,12 +1154,12 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
     }
     else
     {
-        // we shouldn't even get to this point
-        NS_ABORT_MSG("Address registration failed for node "
-                     << m_node->GetId()
-                     << ", address: " << m_addrPendingReg.addressPendingRegistration
-                     << ", registrar: " << m_addrPendingReg.registrar
-                     << ", retries: " << static_cast<int>(m_addressRegistrationCounter));
+        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration, false);
+        NS_LOG_INFO("Address registration failed for node "
+                    << m_node->GetId()
+                    << ", address: " << m_addrPendingReg.addressPendingRegistration
+                    << ", registrar: " << m_addrPendingReg.registrar
+                    << ", retries: " << static_cast<int>(m_addressRegistrationCounter));
 
         // bool isInRegisteredAddresses = false;
         // // Check if address exists in m_registeredAddresses

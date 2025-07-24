@@ -679,7 +679,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     std::vector<uint8_t> m_rovr; //!< Node ROVR
 
     EventId m_addressRegistrationTimeoutEvent; //!< Address Registration timeout event.
-    EventId m_addressRegistrationEvent;        //!< Address Registration event.
+
+    EventId m_addressRegistrationEvent; //!< Address Registration event.
 
     /**
      * Container of TIDs for each pair <Registered LinkLocal Address, Registrar address>
@@ -695,6 +696,17 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
 
     std::map<Ptr<SixLowPanNetDevice>, Ptr<SixLowPanRaEntry>>
         m_raEntries; //!< Router Advertisement entries (if the node is a 6LBR).
+
+    TracedCallback<Ipv6Address, bool> m_addressRegistrationResultTrace;
+    //!< Traces a successful address registration (true = success, false = failure)
+
+    typedef Callback<void, Ipv6Address, bool> AddressRegistrationCallback;
+
+    /// Trace fired whenever we send a multicast RS
+    TracedCallback<Ipv6Address> m_multicastRsTrace;
+
+    // Trace sink signature for multicast RS sends:
+    typedef Callback<void, Ipv6Address /*src*/> MulticastRsCallback;
 
     /**
      * Structure holding data about a pending RA being processed
