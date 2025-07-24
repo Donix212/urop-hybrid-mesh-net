@@ -6,6 +6,19 @@
  * Author: Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
+// Network Topology:
+//
+//            +---------+
+//            |  6LBR   |  (Node 0)
+//            +----+----+
+//                 |
+//        +--------+-------- ... --------+
+//        |        |                     |
+//     +--+--+  +--+--+               +--+--+
+//     |6LN1 |  |6LN2 |               |6LNn |
+//     +-----+  +-----+               +-----+
+//     (Node 1) (Node 2)              (Node n)
+
 #include "ns3/core-module.h"
 #include "ns3/internet-apps-module.h"
 #include "ns3/internet-module.h"
@@ -19,11 +32,20 @@
 using namespace ns3;
 
 int
-main()
+main(int argc, char* argv[])
 {
-    // Create 1 6LBR and 4 6LNs
+    // Command‑line flags:
+    bool disablePcap = false;
+    uint32_t numLn = 4; // default number of 6LNs
+
+    CommandLine cmd(__FILE__);
+    cmd.AddValue("disable-pcap", "Disable PCAP generation on all LR‑WPAN devices", disablePcap);
+    cmd.AddValue("num-ln", "Number of 6LNs (in addition to the single 6LBR)", numLn);
+    cmd.Parse(argc, argv);
+
+    // Create 1 6LBR and numLn 6LNs
     NodeContainer nodes;
-    nodes.Create(5); // node 0 = 6LBR, node 1-4 = 6LNs
+    nodes.Create(1 + numLn); // node 0 = 6LBR, node 1-4 = 6LNs
 
     // Set constant positions
     MobilityHelper mobility;
@@ -49,13 +71,13 @@ main()
     sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
 
     // Nodes 1-4 = 6LNs
-    for (uint32_t i = 1; i <= 4; ++i)
+    for (uint32_t i = 1; i <= numLn; ++i)
     {
         sixlowpan.InstallSixLowPanNdNode(devices.Get(i));
     }
 
     // Set up ping from each 6LN to 6LBR (link-local address of 6LBR is fe80::ff:fe00:1)
-    for (uint32_t i = 1; i <= 4; ++i)
+    for (uint32_t i = 1; i <= numLn; ++i)
     {
         std::ostringstream oss;
         oss << "fe80::ff:fe00:" << std::hex << (i + 1); // 6LN link-local address
@@ -76,7 +98,10 @@ main()
     }
 
     AsciiTraceHelper ascii;
-    lrWpanHelper.EnablePcapAll(std::string("example-sixlowpan-nd-basic"), true);
+    if (!disablePcap)
+    {
+        lrWpanHelper.EnablePcapAll(std::string("example-sixlowpan-nd-basic"), true);
+    }
 
     Simulator::Stop(Seconds(20.0));
     Simulator::Run();
