@@ -249,12 +249,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     bool IsBorderRouterOnInterface(Ptr<SixLowPanNetDevice> device) const;
 
-    /**
-     * @brief Checks if an address registration is in progress
-     * @return true if an address registration is in progress
-     */
-    bool IsAddressRegistrationInProgress() const;
-
   protected:
     /**
      * @brief Dispose this object.
