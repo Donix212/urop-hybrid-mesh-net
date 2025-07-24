@@ -44,8 +44,8 @@ build_lib_example(
 )
 
 build_lib_example(
-  NAME sixlowpan-nd-basic-test
-  SOURCE_FILES sixlowpan-nd-basic-test.cc
+  NAME sixlowpan-nd-basic-example
+  SOURCE_FILES sixlowpan-nd-basic-example.cc
   LIBRARIES_TO_LINK
     ${libnetwork}
     ${libsixlowpan}
