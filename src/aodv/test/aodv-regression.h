@@ -169,55 +169,18 @@ class ChainRegressionTest : public TestCase
     ~ChainRegressionTest() override;
 
   private:
-    /**
-     * Pointer to the node container for the test topology.
-     */
-    NodeContainer* m_nodes;
 
-    /**
-     * Unique file names prefix for the test case.
-     */
-    std::string m_prefix;
-
-    /**
-     * Simulation time for the test.
-     */
-    Time m_time;
-
-    /**
-     * Number of nodes in the chain.
-     */
-    uint32_t m_size;
-
-    /**
-     * Step size for node placement in meters.
-     */
-    double m_step;
-
-    /**
-     * ARP cache alive timeout.
-     */
-    Time m_arpAliveTimeout;
-
-    /**
-     * ICMP sequence number.
-     */
-    uint16_t m_seq;
-
-    /**
-     * Assigned IP interfaces for the test nodes.
-     */
-    Ipv4InterfaceContainer m_interfaces;
-
-    /**
-     * Socket used for sending/receiving pings.
-     */
-    Ptr<Socket> m_socket;
-
-    /**
-     * Number of ICMP echo replies received.
-     */
-    uint32_t m_icmpReplyCount;
+    NodeContainer* m_nodes; //!< Pointer to the node container for the test topology.
+    std::string m_prefix; //!< Unique file names prefix for the test case.
+    Time m_time; //!< Simulation time for the test.
+    uint32_t m_size; //!< Number of nodes in the chain.
+    double m_step; //!< Step size for node placement in meters.
+    Time m_arpAliveTimeout; //!< ARP cache alive timeout.
+    uint16_t m_seq; //!< ICMP sequence number.
+    Ipv4InterfaceContainer m_interfaces; //!< Assigned IP interfaces for the test nodes.
+    Ipv4Address m_lastNodeAddress; //!< IPv4 address of the last node in the chain.
+    Ptr<Socket> m_socket; //!< Socket used for sending/receiving pings.
+    uint32_t m_icmpReplyCount; //!< Number of ICMP echo replies received.
 
     /**
      * Handle an incoming ICMP echo reply.

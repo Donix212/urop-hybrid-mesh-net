@@ -207,6 +207,7 @@ ChainRegressionTest::CreateDevices()
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");
     m_interfaces = address.Assign(devices);
+    m_lastNodeAddress = m_interfaces.GetAddress(m_size - 1, 0);
 
     // 3. Setup ping
     m_socket =
@@ -214,7 +215,7 @@ ChainRegressionTest::CreateDevices()
     m_socket->SetAttribute("Protocol", UintegerValue(1)); // icmp
     InetSocketAddress src = InetSocketAddress(Ipv4Address::GetAny(), 0);
     m_socket->Bind(src);
-    InetSocketAddress dst = InetSocketAddress(m_interfaces.GetAddress(m_size - 1), 0);
+    InetSocketAddress dst = InetSocketAddress(m_lastNodeAddress, 0);
     m_socket->Connect(dst);
 
     SendPing();
@@ -232,61 +233,22 @@ ChainRegressionTest::HandleIcmpReply(Ptr<Socket> socket)
     if (icmpHeader.GetType() == Icmpv4Header::ICMPV4_ECHO_REPLY)
     {
         ++m_icmpReplyCount;
-        std::cout << "ICMP echo reply received. Count: " << m_icmpReplyCount << std::endl;
     }
 }
 
 void
 ChainRegressionTest::CheckResults()
 {
-    // 1. Check that a route exists from node 0 to node N-1
+    // 1. Check that a route exists from node 0 to last node using m_lastNodeAddress
     Ptr<Ipv4> ipv4 = m_nodes->Get(0)->GetObject<Ipv4>();
-    uint32_t lastNodeIdx = m_size - 1;
-    Ptr<Node> lastNode = m_nodes->Get(lastNodeIdx);
-    Ptr<Ipv4> lastIpv4 = lastNode->GetObject<Ipv4>();
-    bool found = false;
-    Ipv4Address dest;
-    for (uint32_t i = 0; i < lastIpv4->GetNInterfaces(); ++i)
-    {
-        for (uint32_t j = 0; j < lastIpv4->GetNAddresses(i); ++j)
-        {
-            Ipv4Address addr = lastIpv4->GetAddress(i, j).GetLocal();
-            if (addr != Ipv4Address::GetLoopback() && addr != Ipv4Address("0.0.0.0"))
-            {
-                dest = addr;
-                found = true;
-                std::cout << "Destination address for last node: " << dest << std::endl;
-                break;
-            }
-        }
-        if (found)
-        {
-            break;
-        }
-    }
-
-    // Check that a route exists in node 0's AODV routing protocol
     Ptr<Ipv4RoutingProtocol> routing = ipv4->GetRoutingProtocol();
-    if (routing)
-    {
-        Ipv4Header header;
-        header.SetDestination(dest);
-        Socket::SocketErrno err;
-        Ptr<Ipv4Route> route = routing->RouteOutput(Create<Packet>(), header, nullptr, err);
-        if (route)
-        {
-            std::cout << "Route found from node 0 to last node: " << dest << std::endl;
-        }
-        else
-        {
-            std::cout << "No route found from node 0 to last node: " << dest << std::endl;
-        }
-    }
-    else
-    {
-        std::cout << "No routing protocol found for node 0." << std::endl;
-    }
+    NS_TEST_ASSERT_MSG_NE(routing, nullptr, "No routing protocol found for node 0");
+    Ipv4Header header;
+    header.SetDestination(m_lastNodeAddress);
+    Socket::SocketErrno err;
+    Ptr<Ipv4Route> route = routing->RouteOutput(Create<Packet>(), header, nullptr, err);
+    NS_TEST_ASSERT_MSG_NE(route, nullptr, "No AODV route from node 0 to last node");
 
     // 2. Check that ICMP echo replies were received
-    std::cout << "Total ICMP echo replies received: " << m_icmpReplyCount << std::endl;
+    NS_TEST_ASSERT_MSG_GT(m_icmpReplyCount, 0, "No ICMP echo replies received");
 }
