@@ -314,10 +314,6 @@ class SixLowPanNdOneLNRegTest : public TestCase
         // Node 1 = 6LN
         sixlowpan.InstallSixLowPanNdNode(devices.Get(1));
 
-        // Ptr<OutputStreamWrapper> outputStream = Create<OutputStreamWrapper>(&std::cout);
-        // Ipv6RoutingHelper::PrintNeighborCacheAllEvery(Seconds(1), outputStream);
-        // Ipv6RoutingHelper::PrintRoutingTableAllEvery(Seconds(1), outputStream);
-
         std::ostringstream ndiscStream;
         Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
         std::ostringstream routingTableStream;
@@ -329,15 +325,15 @@ class SixLowPanNdOneLNRegTest : public TestCase
 
         lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
 
+        Ptr<SixLowPanNdProtocol> nd = lnNode->GetObject<SixLowPanNdProtocol>();
+        nd->TraceConnectWithoutContext(
+            "AddressRegistrationResult",
+            MakeCallback(&SixLowPanNdOneLNRegTest::RegistrationResultSink, this));
+
         Simulator::Stop(Seconds(5.0));
         Simulator::Run();
         Simulator::Destroy();
 
-        // Print the streams to console
-        // std::cout << "=== NDISC CACHE ===\n" << ndiscStream.str();
-        // std::cout << "=== ROUTING TABLE ===\n" << routingTableStream.str();
-
-        // Check if arp caches are populated correctly in the first channel
         constexpr auto expectedNdiscStream =
             "NDISC Cache of node 0 at time +5s\n"
             "2001::ff:fe00:2 dev 2 lladdr 00-06-02:00:00:00:00:02 REACHABLE REGISTERED\n"
@@ -346,7 +342,6 @@ class SixLowPanNdOneLNRegTest : public TestCase
             "fe80::ff:fe00:1 dev 2 lladdr 00-06-02:00:00:00:00:01 REACHABLE GARBAGE-COLLECTIBLE\n";
         NS_TEST_EXPECT_MSG_EQ(ndiscStream.str(), expectedNdiscStream, "NdiscCache is incorrect.");
 
-        // Check if ndisc caches are populated correctly in the first channel
         constexpr auto expectedRoutingTableStream =
             "Node: 0, Time: +5s, Local time: +5s, Ipv6StaticRouting table\n"
             "Destination                    Next Hop                   Flag Met Ref Use If\n"
@@ -361,6 +356,22 @@ class SixLowPanNdOneLNRegTest : public TestCase
         NS_TEST_EXPECT_MSG_EQ(routingTableStream.str(),
                               expectedRoutingTableStream,
                               "Routing table does not match expected.");
+
+        NS_TEST_ASSERT_MSG_EQ(registeredAddress,
+                              Ipv6Address("2001::ff:fe00:2"),
+                              "Registered address does not match expected value.");
+    }
+
+  private:
+    Ipv6Address registeredAddress;
+
+    // Fired each time any LN fires AddressRegistrationResult(address, success)
+    void RegistrationResultSink(Ipv6Address address, bool success)
+    {
+        if (success)
+        {
+            registeredAddress = address;
+        }
     }
 };
 
@@ -567,9 +578,6 @@ class SixLowPanNdMulticastRsTimeoutTest : public TestCase
 
     void DoRun() override
     {
-        // Enable logs and check that Multicast RS interval is correct
-        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
-
         NodeContainer nodes;
         nodes.Create(1);
         Ptr<Node> lnNode = nodes.Get(0);
@@ -595,10 +603,31 @@ class SixLowPanNdMulticastRsTimeoutTest : public TestCase
         // Install ND only as a node (no BR)
         sixlowpan.InstallSixLowPanNdNode(sixDevices.Get(0));
 
+        // Set up trace to capture multicast RS events
+        Ptr<SixLowPanNdProtocol> nd = lnNode->GetObject<SixLowPanNdProtocol>();
+        NS_ASSERT_MSG(nd, "Failed to get SixLowPanNdProtocol");
+        nd->TraceConnectWithoutContext(
+            "MulticastRS",
+            MakeCallback(&SixLowPanNdMulticastRsTimeoutTest::MulticastRsSink, this));
+
         // Simulation time should be long enough to see RS timeout
-        Simulator::Stop(Seconds(200));
+        Simulator::Stop(Seconds(210));
         Simulator::Run();
         Simulator::Destroy();
+
+        NS_TEST_ASSERT_MSG_EQ(m_multicastRsEvents.size(),
+                              7,
+                              "Expected 7 multicast RS events, but got " +
+                                  std::to_string(m_multicastRsEvents.size()));
+    }
+
+  private:
+    std::vector<Ipv6Address> m_multicastRsEvents;
+
+    // this will be called for each RS we send
+    void MulticastRsSink(Ipv6Address src)
+    {
+        m_multicastRsEvents.push_back(src);
     }
 };
 
