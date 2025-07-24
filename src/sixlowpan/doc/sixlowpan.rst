@@ -214,7 +214,7 @@ The following shows 6lowPAN usage under |ns3|:
 
 The following examples have been created to show the 6lowPAN-ND usage:
 
-* ``sixlowpan-nd-basic-example.cc``: A simple example showing the setup of 4 6LNs registering with and pinging a 6LBR node once.
+* ``example-sixlowpan-nd-basic.cc``: A simple example showing the setup of 4 6LNs registering with and pinging a 6LBR node once.
 
 
 The following test have been created to verify the correct behavior of 6lowPAN-ND:
