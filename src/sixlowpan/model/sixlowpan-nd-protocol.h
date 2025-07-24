@@ -216,20 +216,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     //                         Ipv6Address registered);
 
     /**
-     * @brief Function called to send RS + SLLAO.
-     * @param src source IPv6 address
-     * @param dst destination IPv6 address
-     * @param linkAddr link-layer address (SLLAO)
-     * @param retransmission RS retransmission number
-     * @param retransmissionInterval RS retransmission interval
-     */
-    void RetransmitRS(Ipv6Address src,
-                      Ipv6Address dst,
-                      Address linkAddr,
-                      uint8_t retransmission,
-                      Time retransmissionInterval);
-
-    /**
      * @brief Set an interface to be used as a 6LBR
      * @param device device to be used for announcement
      */
