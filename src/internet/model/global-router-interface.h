@@ -12,6 +12,7 @@
 
 #include "global-route-manager.h"
 #include "ipv4-routing-table-entry.h"
+#include "ipv6-routing-table-entry.h"
 
 #include "ns3/bridge-net-device.h"
 #include "ns3/channel.h"
@@ -22,6 +23,7 @@
 #include "ns3/ptr.h"
 
 #include <list>
+#include <optional>
 #include <stdint.h>
 
 namespace ns3
@@ -86,6 +88,38 @@ class GlobalRoutingLinkRecord
                             uint16_t metric);
 
     /**
+     * Construct an initialized Global Routing Link Record.
+     *
+     * @param linkType The type of link record to construct.
+     * @param linkId The link ID for the record.
+     * @param linkData The link data field for the record.
+     * @param metric The metric field for the record.
+     * @see LinkType
+     * @see SetLinkId
+     * @see SetLinkData
+     */
+    GlobalRoutingLinkRecord(LinkType linkType,
+                            Ipv6Address linkId,
+                            Ipv6Address linkData,
+                            uint16_t metric);
+
+    /**
+     * Construct an initialized Global Routing Link Record.
+     *
+     * @param linkType The type of link record to construct.
+     * @param linkId The link ID for the record.
+     * @param linkData The link data field for the record.
+     * @param metric The metric field for the record.
+     * @see LinkType
+     * @see SetLinkId
+     * @see SetLinkData
+     */
+    GlobalRoutingLinkRecord(LinkType linkType,
+                            Ipv4Address linkId,
+                            Ipv6Address linkData,
+                            uint16_t metric);
+
+    /**
      * @brief Destroy a Global Routing Link Record.
      *
      * Currently does nothing.  Here as a placeholder only.
@@ -103,7 +137,20 @@ class GlobalRoutingLinkRecord
      *
      * @returns The Ipv4Address corresponding to the Link ID field of the record.
      */
-    Ipv4Address GetLinkId() const;
+    Ipv4Address GetLinkIdv4() const;
+
+    /**
+     * Get the Link ID field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link ID will be the Router ID
+     * of the neighboring router.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link ID will be the adjacent
+     * neighbor's IP address
+     *
+     * @returns The Ipv4Address corresponding to the Link ID field of the record.
+     */
+    Ipv6Address GetLinkIdv6() const;
 
     /**
      * @brief Set the Link ID field of the Global Routing Link Record.
@@ -119,6 +166,32 @@ class GlobalRoutingLinkRecord
     void SetLinkId(Ipv4Address addr);
 
     /**
+     * @brief Set the Link ID field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link ID must be the Router ID
+     * of the neighboring router.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link ID must be the adjacent
+     * neighbor's IP address
+     *
+     * @param addr An Ipv6Address to store in the Link ID field of the record.
+     */
+    void SetLinkId(Ipv6Address addr);
+
+    /**
+     * @brief Set the Link ID field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link ID must be the Router ID
+     * of the neighboring router.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link ID must be the adjacent
+     * neighbor's IP address
+     *
+     * @param addr An Ipv6Address to store in the Link ID field of the record.
+     */
+    void SetLinkId(Address addr);
+
+    /**
      * @brief Get the Link Data field of the Global Routing Link Record.
      *
      * For an OSPF type 1 link (PointToPoint) the Link Data will be the IP
@@ -129,7 +202,20 @@ class GlobalRoutingLinkRecord
      *
      * @returns The Ipv4Address corresponding to the Link Data field of the record.
      */
-    Ipv4Address GetLinkData() const;
+    Ipv4Address GetLinkDatav4() const;
+
+    /**
+     * @brief Get the Link Data field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link Data will be the IP
+     * address of the node of the local side of the link.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link Data will be the
+     * network mask
+     *
+     * @returns The Ipv4Address corresponding to the Link Data field of the record.
+     */
+    Ipv6Address GetLinkDatav6() const;
 
     /**
      * @brief Set the Link Data field of the Global Routing Link Record.
@@ -143,6 +229,32 @@ class GlobalRoutingLinkRecord
      * @param addr An Ipv4Address to store in the Link Data field of the record.
      */
     void SetLinkData(Ipv4Address addr);
+
+    /**
+     * @brief Set the Link Data field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link Data must be the IP
+     * address of the node of the local side of the link.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link Data must be set to the
+     * network mask
+     *
+     * @param addr An Ipv4Address to store in the Link Data field of the record.
+     */
+    void SetLinkData(Ipv6Address addr);
+
+    /**
+     * @brief Set the Link Data field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link Data must be the IP
+     * address of the node of the local side of the link.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link Data must be set to the
+     * network mask
+     *
+     * @param addr An Ipv4Address to store in the Link Data field of the record.
+     */
+    void SetLinkData(Address addr);
 
     /**
      * @brief Get the Link Type field of the Global Routing Link Record.
@@ -203,7 +315,18 @@ class GlobalRoutingLinkRecord
      *
      * For Type 3 link (Stub), set m_linkId to neighbor's IP address
      */
-    Ipv4Address m_linkId;
+    std::optional<Ipv4Address> m_linkIdv4;
+    /**
+     * m_linkId and m_linkData are defined by OSPF to have different meanings
+     * depending on the type of link a given link records represents.  They work
+     * together.
+     *
+     * For Type 1 link (PointToPoint), set m_linkId to Router ID of
+     * neighboring router.
+     *
+     * For Type 3 link (Stub), set m_linkId to neighbor's IP address
+     */
+    std::optional<Ipv6Address> m_linkIdv6;
 
     /**
      * m_linkId and m_linkData are defined by OSPF to have different meanings
@@ -214,8 +337,18 @@ class GlobalRoutingLinkRecord
      *
      * For Type 3 link (Stub), set m_linkData to mask
      */
-    Ipv4Address m_linkData; // for links to RouterLSA,
+    std::optional<Ipv4Address> m_linkDatav4; // for links to RouterLSA,
 
+    /**
+     * m_linkId and m_linkData are defined by OSPF to have different meanings
+     * depending on the type of link a given link records represents.  They work
+     * together.
+     *
+     * For Type 1 link (PointToPoint), set m_linkData to local IP address
+     *
+     * For Type 3 link (Stub), set m_linkData to mask
+     */
+    std::optional<Ipv6Address> m_linkDatav6; // for links to RouterLSA,
     /**
      * The type of the Global Routing Link Record.  Defined in the OSPF spec.
      * We currently only use PointToPoint and StubNetwork types.
@@ -288,7 +421,7 @@ class GlobalRoutingLSA
      * @param linkStateId The Ipv4Address for the link state ID field.
      * @param advertisingRtr The Ipv4Address for the advertising router field.
      */
-    GlobalRoutingLSA(SPFStatus status, Ipv4Address linkStateId, Ipv4Address advertisingRtr);
+    GlobalRoutingLSA(SPFStatus status, Address linkStateId, Ipv4Address advertisingRtr);
 
     /**
      * @brief Copy constructor for a Global Routing Link State Advertisement.
@@ -331,7 +464,19 @@ class GlobalRoutingLSA
      * @see ClearLinkRecords ()
      * @param lsa The LSA to copy the Link Records from.
      */
-    void CopyLinkRecords(const GlobalRoutingLSA& lsa);
+    void CopyLinkRecordsv4(const GlobalRoutingLSA& lsa);
+
+    /**
+     * @brief Copy any Global Routing Link Records in a given Global Routing Link
+     * State Advertisement to the current LSA.
+     *
+     * Existing Link Records are not deleted -- this is a concatenation of Link
+     * Records.
+     *
+     * @see ClearLinkRecords ()
+     * @param lsa The LSA to copy the Link Records from.
+     */
+    void CopyLinkRecordsv6(const GlobalRoutingLSA& lsa);
 
     /**
      * @brief Add a given Global Routing Link Record to the LSA.
@@ -339,14 +484,29 @@ class GlobalRoutingLSA
      * @param lr The Global Routing Link Record to be added.
      * @returns The number of link records in the list.
      */
-    uint32_t AddLinkRecord(GlobalRoutingLinkRecord* lr);
+    uint32_t AddLinkRecordv4(GlobalRoutingLinkRecord* lr);
+
+    /**
+     * @brief Add a given Global Routing Link Record to the LSA.
+     *
+     * @param lr The Global Routing Link Record to be added.
+     * @returns The number of link records in the list.
+     */
+    uint32_t AddLinkRecordv6(GlobalRoutingLinkRecord* lr);
 
     /**
      * @brief Return the number of Global Routing Link Records in the LSA.
      *
      * @returns The number of link records in the list.
      */
-    uint32_t GetNLinkRecords() const;
+    uint32_t GetNLinkRecordsv4() const;
+
+    /**
+     * @brief Return the number of Global Routing Link Records in the LSA.
+     *
+     * @returns The number of link records in the list.
+     */
+    uint32_t GetNLinkRecordsv6() const;
 
     /**
      * @brief Return a pointer to the specified Global Routing Link Record.
@@ -354,7 +514,15 @@ class GlobalRoutingLSA
      * @param n The LSA number desired.
      * @returns The number of link records in the list.
      */
-    GlobalRoutingLinkRecord* GetLinkRecord(uint32_t n) const;
+    GlobalRoutingLinkRecord* GetLinkRecordv4(uint32_t n) const;
+
+    /**
+     * @brief Return a pointer to the specified Global Routing Link Record.
+     *
+     * @param n The LSA number desired.
+     * @returns The number of link records in the list.
+     */
+    GlobalRoutingLinkRecord* GetLinkRecordv6(uint32_t n) const;
 
     /**
      * @brief Release all of the Global Routing Link Records present in the Global
@@ -368,7 +536,15 @@ class GlobalRoutingLSA
      *
      * @returns True if the list is empty, false otherwise.
      */
-    bool IsEmpty() const;
+    bool IsEmptyv4() const;
+
+    /**
+     * @brief Check to see if the list of Global Routing Link Records present in the
+     * Global Routing Link State Advertisement is empty.
+     *
+     * @returns True if the list is empty, false otherwise.
+     */
+    bool IsEmptyv6() const;
 
     /**
      * @brief Print the contents of the Global Routing Link State Advertisement and
@@ -396,7 +572,7 @@ class GlobalRoutingLSA
      * @see GlobalRouting::GetRouterId ()
      * @returns The Ipv4Address stored as the link state ID.
      */
-    Ipv4Address GetLinkStateId() const;
+    Address GetLinkStateId() const;
 
     /**
      * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
@@ -406,6 +582,24 @@ class GlobalRoutingLSA
      * @see GlobalRouting::GetRouterId ()
      */
     void SetLinkStateId(Ipv4Address addr);
+
+    /**
+     * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
+     * to the router ID of the router making the advertisement.
+     * @param addr IPv4 address which will act as ID
+     * @see RoutingEnvironment::AllocateRouterId ()
+     * @see GlobalRouting::GetRouterId ()
+     */
+    void SetLinkStateId(Ipv6Address addr);
+
+    /**
+     * @brief Set the Link State ID is defined by the OSPF spec.  We always set it
+     * to the router ID of the router making the advertisement.
+     * @param addr IPv4 address which will act as ID
+     * @see RoutingEnvironment::AllocateRouterId ()
+     * @see GlobalRouting::GetRouterId ()
+     */
+    void SetLinkStateId(Address addr);
 
     /**
      * @brief Get the Advertising Router as defined by the OSPF spec.  We always
@@ -435,12 +629,27 @@ class GlobalRoutingLSA
     void SetNetworkLSANetworkMask(Ipv4Mask mask);
 
     /**
+     * @brief For a Network LSA, set the Network prefix field that precedes
+     * the list of attached routers.
+     * @param prefix the Network prefix field.
+     */
+    void SetNetworkLSANetworkPrefix(Ipv6Prefix prefix);
+
+    /**
      * @brief For a Network LSA, get the Network Mask field that precedes
      * the list of attached routers.
      *
      * @returns the NetworkLSANetworkMask
      */
     Ipv4Mask GetNetworkLSANetworkMask() const;
+
+    /**
+     * @brief For a Network LSA, get the Network Mask field that precedes
+     * the list of attached routers.
+     *
+     * @returns the NetworkLSANetworkMask
+     */
+    Ipv6Prefix GetNetworkLSANetworkPrefix() const;
 
     /**
      * @brief Add an attached router to the list in the NetworkLSA
@@ -451,11 +660,26 @@ class GlobalRoutingLSA
     uint32_t AddAttachedRouter(Ipv4Address addr);
 
     /**
+     * @brief Add an attached router to the list in the NetworkLSA
+     *
+     * @param addr The Ipv6Address of the interface on the network link
+     * @returns The number of addresses in the list.
+     */
+    uint32_t AddAttachedRouter(Ipv6Address addr);
+
+    /**
      * @brief Return the number of attached routers listed in the NetworkLSA
      *
      * @returns The number of attached routers.
      */
-    uint32_t GetNAttachedRouters() const;
+    uint32_t GetNAttachedRoutersv4() const;
+
+    /**
+     * @brief Return the number of attached routers listed in the NetworkLSA
+     *
+     * @returns The number of attached routers.
+     */
+    uint32_t GetNAttachedRoutersv6() const;
 
     /**
      * @brief Return an Ipv4Address corresponding to the specified attached router
@@ -463,7 +687,15 @@ class GlobalRoutingLSA
      * @param n The attached router number desired (number in the list).
      * @returns The Ipv4Address of the requested router
      */
-    Ipv4Address GetAttachedRouter(uint32_t n) const;
+    Ipv4Address GetAttachedRouterv4(uint32_t n) const;
+
+    /**
+     * @brief Return an Ipv4Address corresponding to the specified attached router
+     *
+     * @param n The attached router number desired (number in the list).
+     * @returns The Ipv4Address of the requested router
+     */
+    Ipv6Address GetAttachedRouterv6(uint32_t n) const;
 
     /**
      * @brief Get the SPF status of the advertisement.
@@ -498,14 +730,16 @@ class GlobalRoutingLSA
      * format.
      */
     LSType m_lsType;
+
     /**
      * The Link State ID is defined by the OSPF spec.  We always set it to the
-     * router ID of the router making the advertisement.
+     * router ID of the router making the advertisement. NOTE!! WE DO NOT ALWAYS SET IT TO ROUTER ID
+     * IT IS SOMETIMES AN IP ADDRESS
      *
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    Ipv4Address m_linkStateId;
+    Address m_linkStateId;
 
     /**
      * The Advertising Router is defined by the OSPF spec.  We always set it to
@@ -514,7 +748,8 @@ class GlobalRoutingLSA
      * @see RoutingEnvironment::AllocateRouterId ()
      * @see GlobalRouting::GetRouterId ()
      */
-    Ipv4Address m_advertisingRtr;
+    Ipv4Address m_advertisingRtr; // this is same for ipv4 and ipv6 both because OSPFv2 and OSPFv3
+                                  // both use the same Ipv4Address to represent RouterIds
 
     /**
      * A convenience typedef to avoid too much writers cramp.
@@ -531,17 +766,39 @@ class GlobalRoutingLSA
      *
      * @see GlobalRouting::DiscoverLSAs ()
      */
-    ListOfLinkRecords_t m_linkRecords;
+    ListOfLinkRecords_t m_linkRecordsv4;
+
+    /**
+     * Each Link State Advertisement contains a number of Link Records that
+     * describe the kinds of links that are attached to a given node.  We
+     * consider PointToPoint and StubNetwork links.
+     *
+     * m_linkRecords is an STL list container to hold the Link Records that have
+     * been discovered and prepared for the advertisement.
+     *
+     * @see GlobalRouting::DiscoverLSAs ()
+     */
+    ListOfLinkRecords_t m_linkRecordsv6;
 
     /**
      * Each Network LSA contains the network mask of the attached network
      */
-    Ipv4Mask m_networkLSANetworkMask;
+    std::optional<Ipv4Mask> m_networkLSANetworkMask;
+
+    /**
+     * Each Network LSA contains the network mask of the attached network
+     */
+    std::optional<Ipv6Prefix> m_networkLSANetworkPrefix;
 
     /**
      * A convenience typedef to avoid too much writers cramp.
      */
-    typedef std::list<Ipv4Address> ListOfAttachedRouters_t;
+    typedef std::list<Ipv4Address> ListOfAttachedRouters_tv4;
+
+    /**
+     * A convenience typedef to avoid too much writers cramp.
+     */
+    typedef std::list<Ipv6Address> ListOfAttachedRouters_tv6;
 
     /**
      * Each Network LSA contains a list of attached routers
@@ -551,7 +808,17 @@ class GlobalRoutingLSA
      *
      * @see GlobalRouting::DiscoverLSAs ()
      */
-    ListOfAttachedRouters_t m_attachedRouters;
+    ListOfAttachedRouters_tv4 m_attachedRoutersv4;
+
+    /**
+     * Each Network LSA contains a list of attached routers
+     *
+     * m_attachedRouters is an STL list container to hold the addresses that have
+     * been discovered and prepared for the advertisement.
+     *
+     * @see GlobalRouting::DiscoverLSAs ()
+     */
+    ListOfAttachedRouters_tv6 m_attachedRoutersv6;
 
     /**
      * This is a tristate flag used internally in the SPF computation to mark
@@ -565,7 +832,6 @@ class GlobalRoutingLSA
 
 /**
  * @brief Stream insertion operator.
- *
  * @param os the reference to the output stream
  * @param lsa the LSA
  * @returns the reference to the output stream
@@ -591,6 +857,18 @@ class GlobalRouter : public Object
     static TypeId GetTypeId();
 
     /**
+     * @brief Set the Address Type  that is exported by the Global Router
+     * @param IsIpv4 true if Ipv4 is exported, false if Ipv6 is exported
+     */
+    static void SetAddressType(bool IsIpv4);
+
+    /**
+     * @brief Get the type of address that is exported by the Global Router
+     * @returns  true if Ipv4 is exported, false if Ipv6 is exported
+     */
+    static bool GetAddressType();
+
+    /**
      * @brief Create a Global Router class
      */
     GlobalRouter();
@@ -603,13 +881,20 @@ class GlobalRouter : public Object
      * @brief Set the specific Global Routing Protocol to be used
      * @param routing the routing protocol
      */
-    void SetRoutingProtocol(Ptr<Ipv4GlobalRouting> routing);
+    void SetRoutingProtocol(Ptr<Ipv4GlobalRouting> routing); // we may need to change this later
 
     /**
      * @brief Get the specific Global Routing Protocol used
      * @returns the routing protocol
      */
-    Ptr<Ipv4GlobalRouting> GetRoutingProtocol();
+    Ptr<Ipv4GlobalRouting> GetRoutingProtocolv4(); // again we may need to change this later for now
+
+    /**
+     * @brief Get the specific Global Routing Protocol used
+     * @returns the routing protocol
+     */
+    // Ptr<Ipv6GlobalRouting> GetRoutingProtocolv6(); // again we may need to change this later for
+    // now
 
     /**
      * @brief Get the Router ID associated with this Global Router.
@@ -620,7 +905,8 @@ class GlobalRouter : public Object
      * @see RoutingEnvironment::AllocateRouterId ()
      * @returns The Router ID associated with the Global Router.
      */
-    Ipv4Address GetRouterId() const;
+    Ipv4Address GetRouterId() const; // this is same for ipv4 and ipv6 both because OSPFv2 and
+                                     // OSPFv3 both use the same Ipv4Address to represent RouterIds
 
     /**
      * @brief Walk the connected channels, discover the adjacent routers and build
@@ -688,19 +974,43 @@ class GlobalRouter : public Object
     void InjectRoute(Ipv4Address network, Ipv4Mask networkMask);
 
     /**
-     * @brief Get the number of injected routes that have been added
-     * to the routing table.
-     * @return number of injected routes
+     * @brief Inject a route to be circulated to other routers as an external
+     * route
+     *
+     * @param network The Network to inject
+     * @param networkPrefix The Network Prefix to inject
      */
-    uint32_t GetNInjectedRoutes();
+    void InjectRoute(Ipv6Address network, Ipv6Prefix networkPrefix);
 
     /**
-     * @brief Return the injected route indexed by i
+     * @brief Get the number of injected routes that have been added
+     * to the routing table. only considers the Ipv4 Routes.
+     * @return number of injected routes
+     */
+    uint32_t GetNInjectedRoutesv4();
+
+    /**
+     * @brief Get the number of injected routes that have been added
+     * to the routing table. Only considers the Ipv6 routes
+     * @return number of injected routes
+     */
+    uint32_t GetNInjectedRoutesv6();
+
+    /**
+     * @brief Return the Ipv4 injected route indexed by i.
      * @param i the index of the route
      * @return a pointer to that Ipv4RoutingTableEntry is returned
      *
      */
-    Ipv4RoutingTableEntry* GetInjectedRoute(uint32_t i);
+    Ipv4RoutingTableEntry* GetInjectedRoutev4(uint32_t i);
+
+    /**
+     * @brief Return the Ipv6 injected route indexed by i
+     * @param i the index of the route
+     * @return a pointer to that Ipv4RoutingTableEntry is returned
+     *
+     */
+    Ipv6RoutingTableEntry* GetInjectedRoutev6(uint32_t i);
 
     /**
      * @brief Withdraw a route from the global unicast routing table.
@@ -709,11 +1019,24 @@ class GlobalRouter : public Object
      * index i to have their index decremented.  For instance, it is possible to
      * remove N injected routes by calling RemoveInjectedRoute (0) N times.
      *
-     * @param i The index (into the injected routing list) of the route to remove.
+     * @param i The index (into the injected routing list for Ipv4) of the route to remove.
      *
      * @see GlobalRouter::WithdrawRoute ()
      */
-    void RemoveInjectedRoute(uint32_t i);
+    void RemoveInjectedRoutev4(uint32_t i);
+
+    /**
+     * @brief Withdraw a route from the global unicast routing table.
+     *
+     * Calling this function will cause all indexed routes numbered above
+     * index i to have their index decremented.  For instance, it is possible to
+     * remove N injected routes by calling RemoveInjectedRoute (0) N times.
+     *
+     * @param i The index (into the injected routing list for Ipv4) of the route to remove.
+     *
+     * @see GlobalRouter::WithdrawRoute ()
+     */
+    void RemoveInjectedRoutev6(uint32_t i);
 
     /**
      * @brief Withdraw a route from the global unicast routing table.
@@ -725,6 +1048,17 @@ class GlobalRouter : public Object
      * @see GlobalRouter::RemoveInjectedRoute ()
      */
     bool WithdrawRoute(Ipv4Address network, Ipv4Mask networkMask);
+
+    /**
+     * @brief Withdraw a route from the global unicast routing table.
+     *
+     * @param network The Network to withdraw
+     * @param networkMask The Network Mask to withdraw
+     * @return whether the operation succeeded (will return false if no such route)
+     *
+     * @see GlobalRouter::RemoveInjectedRoute ()
+     */
+    bool WithdrawRoute(Ipv6Address network, Ipv6Prefix networkMask);
 
   private:
     ~GlobalRouter() override;
@@ -754,9 +1088,22 @@ class GlobalRouter : public Object
      * connecting to the channel becomes the designated router for the link.
      *
      * @param ndLocal local NetDevice to scan
-     * @returns the IP address of the designated router
+     * @returns the IPv4 address of the designated router
      */
-    Ipv4Address FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const;
+    Ipv4Address FindDesignatedRouterForLinkv4(Ptr<NetDevice> ndLocal) const;
+
+    /**
+     * @brief Finds a designated router
+     *
+     * Given a local net device, we need to walk the channel to which the net device is
+     * attached and look for nodes with GlobalRouter interfaces on them (one of them
+     * will be us).  Of these, the router with the lowest IP address on the net device
+     * connecting to the channel becomes the designated router for the link.
+     *
+     * @param ndLocal local NetDevice to scan
+     * @returns the IPv6 address of the designated router
+     */
+    Ipv6Address FindDesignatedRouterForLinkv6(Ptr<NetDevice> ndLocal) const;
 
     /**
      * @brief Checks for the presence of another router on the NetDevice
@@ -844,16 +1191,27 @@ class GlobalRouter : public Object
     typedef std::list<GlobalRoutingLSA*> ListOfLSAs_t; //!< container for the GlobalRoutingLSAs
     ListOfLSAs_t m_LSAs;                               //!< database of GlobalRoutingLSAs
 
-    Ipv4Address m_routerId;                   //!< router ID (its IPv4 address)
-    Ptr<Ipv4GlobalRouting> m_routingProtocol; //!< the Ipv4GlobalRouting in use
+    Ipv4Address m_routerId;                     //!< router ID (its IPv4 address)
+    Ptr<Ipv4GlobalRouting> m_routingProtocolv4; //!< the Ipv4GlobalRouting in use
+    //  Ptr<Ipv6GlobalRouting> m_routingProtocolv6; //!< the Ipv6GlobalRouting in use
+
+    static bool m_isIpv4; //!< Flag to determine if router exports Ipv4 or Ipv6 information
 
     typedef std::list<Ipv4RoutingTableEntry*>
-        InjectedRoutes; //!< container of Ipv4RoutingTableEntry
+        InjectedRoutesv4; //!< container of Ipv4RoutingTableEntry
     typedef std::list<Ipv4RoutingTableEntry*>::const_iterator
-        InjectedRoutesCI; //!< Const Iterator to container of Ipv4RoutingTableEntry
+        InjectedRoutesv4CI; //!< Const Iterator to container of Ipv4RoutingTableEntry
     typedef std::list<Ipv4RoutingTableEntry*>::iterator
-        InjectedRoutesI;             //!< Iterator to container of Ipv4RoutingTableEntry
-    InjectedRoutes m_injectedRoutes; //!< Routes we are exporting
+        InjectedRoutesv4I;               //!< Iterator to container of Ipv4RoutingTableEntry
+    InjectedRoutesv4 m_injectedRoutesv4; //!< Routes we are exporting
+
+    typedef std::list<Ipv6RoutingTableEntry*>
+        InjectedRoutesv6; //!< container of Ipv4RoutingTableEntry
+    typedef std::list<Ipv6RoutingTableEntry*>::const_iterator
+        InjectedRoutesv6CI; //!< Const Iterator to container of Ipv4RoutingTableEntry
+    typedef std::list<Ipv6RoutingTableEntry*>::iterator
+        InjectedRoutesv6I;               //!< Iterator to container of Ipv4RoutingTableEntry
+    InjectedRoutesv6 m_injectedRoutesv6; //!< Routes we are exporting
 
     // Declared mutable so that const member functions can clear it
     // (supporting the logical constness of the search methods of this class)

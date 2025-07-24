@@ -139,6 +139,46 @@ SPFVertex*
 CandidateQueue::Find(const Ipv4Address addr) const
 {
     NS_LOG_FUNCTION(this);
+    Address temp = addr.ConvertTo();
+    auto i = m_candidates.begin();
+
+    for (; i != m_candidates.end(); i++)
+    {
+        SPFVertex* v = *i;
+        if (v->GetVertexId() == temp)
+        {
+            return v;
+        }
+    }
+
+    return nullptr;
+}
+
+SPFVertex*
+CandidateQueue::Find(const Ipv6Address addr) const
+{
+    NS_LOG_FUNCTION(this);
+    Address temp = addr.ConvertTo();
+
+    auto i = m_candidates.begin();
+
+    for (; i != m_candidates.end(); i++)
+    {
+        SPFVertex* v = *i;
+        if (v->GetVertexId() == temp)
+        {
+            return v;
+        }
+    }
+
+    return nullptr;
+}
+
+SPFVertex*
+CandidateQueue::Find(const Address addr) const
+{
+    NS_LOG_FUNCTION(this);
+
     auto i = m_candidates.begin();
 
     for (; i != m_candidates.end(); i++)
