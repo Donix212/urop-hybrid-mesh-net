@@ -1170,7 +1170,7 @@ WifiRemoteStationManager::DoIncrementRetryCountOnTxFailure(WifiRemoteStation* st
     if (hdr.IsMgt() || (hdr.IsData() && !hdr.IsQosData()) ||
         (hdr.IsQosData() && (!m_wifiMac->GetBaAgreementEstablishedAsOriginator(
                                 hdr.GetAddr1(),
-                                hdr.GetQosTid() || m_incrRetryCountUnderBa))))
+                                hdr.GetQosTid()) || m_incrRetryCountUnderBa)))
     {
         psdu->IncrementRetryCount();
     }
