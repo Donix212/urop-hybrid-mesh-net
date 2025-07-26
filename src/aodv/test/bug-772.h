@@ -45,34 +45,25 @@ class Bug772ChainTest : public TestCase
 
     /// PCAP file names prefix
     const std::string m_prefix;
-
     /// Socket factory TID
     const std::string m_proto;
-
     /// Total simulation time
     const Time m_time;
-
     /// Chain size
     const uint32_t m_size;
-
     /// Chain step, meters
     const double m_step;
-
     /// port number
     const uint16_t m_port;
 
     /// Create test topology
     void CreateNodes();
-
     /// Create devices, install TCP/IP stack and applications
     void CreateDevices();
-
     /// Compare traces with reference ones
     void CheckResults();
-
     /// Go
     void DoRun() override;
-
     /**
      * Receive data function
      * @param socket the socket to receive from
@@ -81,7 +72,6 @@ class Bug772ChainTest : public TestCase
 
     /// Receiving socket
     Ptr<Socket> m_recvSocket;
-
     /// Transmitting socket
     Ptr<Socket> m_sendSocket;
 
