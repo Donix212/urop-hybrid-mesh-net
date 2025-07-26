@@ -252,6 +252,9 @@ ChainRegressionTest::CheckResults()
     // 2. Behavioral check: log ICMP echo replies, but do not fail if none received
     if (m_icmpReplyCount == 0)
     {
-        NS_TEST_EXPECT_MSG_EQ(m_icmpReplyCount, 0, "Warning: No ICMP echo replies received, but route exists.");
+        NS_TEST_EXPECT_MSG_EQ(
+            m_icmpReplyCount, 
+            0, 
+            "Warning: No ICMP echo replies received, but route exists.");
     }
 }
