@@ -38,7 +38,7 @@ The following is a list of known limitations of the |ns3| 6LowPAN implementation
 The following is a list of limitations for 6LowPAN-ND:
 
 * Lack of support for multi-hop DAD exchanges
-* Limited NA (EARO) status errors supported from :rfc:`6775`
+* Limited NA (EARO) status errors supported from :rfc:`6775` (Currently only supports "Duplicate Address" error) 
 * Currently supports only single-hop, mesh-under routing topologies between 6LBR and 6LN
 * Missing Transaction ID validation, which is part of the :rfc:`8505` specification
 
@@ -91,10 +91,22 @@ However, it is more flexible than the mesh-under approach as you can use one or 
 Examples of routing protocols used with 6lowPAN route-over include protocols such as the Routing protocol for Low-Power and Lossy Networks (RPL) and
 the Ad-hoc On-Demand Distance Vector for IPV6 (AODVv6).
 
-6lowPAN Neighbor Discovery (6lowPAN-ND)
----------------------------------------
+6lowPAN Optimized Neighbor Discovery (6lowPAN-ND)
+-------------------------------------------------
 
-6LoWPAN-ND subclasses Icmpv6L4Protocol, taking over the functions of conventional Ipv6 Neighbour Discovery as defined in :rfc:`4861`.
+IPv6 Neighbor Discovery (ND) as defined in :rfc`4861` assumes always on, multicast friendly links, which are not possible for low-power and lossy networks (LLNs) such as those using IEEE 802.15.4.
+
+:rfc:`6775` and :rfc:`8505` define 6LoWPAN Neighbor Discovery (6LoWPAN-ND) to address these limitations. Some key optimizations include:
+- Host-initiated interactions (sleep-aware RAs): routers need no longer send periodic or unsolicited RAs, instead relying on hosts to initiate interactions for address registration.
+- Use of unicast communication for address resolution and neighbor discovery.
+- Registration of addresses with a 6LoWPAN Router (6LR) or 6LoWPAN Border Router (6LBR) to reduce broadcast traffic and energy usage.
+- 6LoWPAN Context Option (6CO) distributes header-compression contexts to hosts using 6LoWPAN, enabling efficient compression of IPv6 headers.
+
+In ns-3, 6LoWPAN-ND subclasses Icmpv6L4Protocol, taking over the functions of conventional Ipv6 Neighbour Discovery as defined in :rfc:`4861`.
+
+It does this by introducing a registration mechanism for 6LoWPAN nodes (6LNs) to register their addresses with a 6LoWPAN router (6LR) or border router (6LBR).
+This allows 6LNs to use the 6LR/LBR as a proxy for address resolution and neighbor discovery, reducing the need for broadcast messages. 
+
 Every node that implements 6LoWPAN-ND will have a protocol stack that looks like the following:
 
 .. _fig-sixlowpanndprotocolstack:
@@ -103,6 +115,9 @@ Every node that implements 6LoWPAN-ND will have a protocol stack that looks like
     :width: 200
 
     Protocol Stack of a node supporting 6LoWPAN-ND
+
+6LoWPAN-ND Network Topologies:
+------------------------------
 
 The current implementation of 6LoWPAN-ND in |ns3| supports mesh-under routing with single-hop star topologies, where one or more 6LoWPAN Nodes (6LNs) register their IPv6 addresses directly with a single 6LoWPAN Router (6LR), which may also act as the 6LoWPAN Border Router (6LBR).
 
@@ -117,8 +132,33 @@ In this setup:
 .. figure:: figures/sixlowpanndtopology.*
     :width: 200
 
-    Example topology of a 6LoWPAN-ND network
+    Example topology of a 6LoWPAN-ND network using mesh-under routing
 
+The multi-hop route-over topology is defined in :rfc:`8505`, and is currently in active development in ns-3. In this topology, 6LNs register with a single 6LR, and the 6LR can forward packets to the 6LBR, allowing for multi-hop DAD and global address registration across the LLN.
+
+In this setup:
+
+- All link-local address registration (using NS(EARO)) is performed over the same local link.
+- Router Advertisements (RAs) and Neighbor Solicitations (NS) are exchanged directly between 6LNs and the 6LR/LBR, or between 6LRs and the 6LBR.
+- The global address registration cache is maintained at the 6LBR.
+
+.. _fig-sixlowpanndrouteovertopology:
+
+.. figure:: figures/sixlowpanndrouteovertopology.*
+    :width: 200
+
+    Example topology of a 6LoWPAN-ND network using route-over topology
+
+6LoWPAN-ND Node Roles
+----------------------
+
+6LoWPAN-ND defines the following node roles:
+
+- **6LBR (SixLowPanBorderRouter)**: Acts as the gateway between the 6LoWPAN network and the wider Internet. It maintains the Globally Unique Address registration cache for all nodes in the LLN, and Link-local addresses for nodes that are within 1 hop to the 6LBR.
+- **6LR (SixLowPanRouter)**: Forwards packets between 6LNs and the 6LBR. It may also perform address registration for Link-local addresses for nodes within its network.
+- **6LN (SixLowPanNodeOnly)**: A device that participates in the 6LoWPAN network, capable of sending and receiving IPv6 packets.
+
+An additional node role, SixLowPanNode, is used for nodes that start out as 6LNs, but can be upgraded to 6LR later in the simulation. It is used in Route-Over topologies, where a 6LN can become a 6LR to forward packets for other 6LNs as part of multi-hop DAD.
 
 Usage
 -----
@@ -142,20 +182,36 @@ Helpers
 
 The 6lowPAN helpers are patterned after other device helpers.
 
+The main helper is ``SixLowPanHelper``, which provides methods to install 6LoWPAN on a NetDevice and configure the attributes of the 6LoWPAN protocol. Taking reference from ``src/sixlowpan/examples/example-sixlowpan.cc``, the code snippet below demonstrates how it can be used to install 6LoWPAN on any NetDevice that supports it, such as ``LrWpanNetDevice`` or ``CsmaNetDevice`` like so::
 
-A typical 6lowPAN-ND setup will involve installing it on SixLowPanNetDevices that have the Ipv6 internet stack installed and,
-contains additional methods such as ``SixLowPanHelper::InstallSixLowPanNd`` which assist in the initialisation of 6LN, 6LR and 6LBR roles.::
+        Ptr<Node> n0 = CreateObject<Node>(); // 6LN node
+        Ptr<Node> r = CreateObject<Node>();  // 6LBR node
+
+        NodeContainer net1(n0, r);
+
+        NS_LOG_INFO("Create IPv6 Internet Stack");
+        InternetStackHelper internetv6;
+        internetv6.Install(net1);
+
+        NS_LOG_INFO("Create channels.");
+        CsmaHelper csma;
+        csma.SetChannelAttribute("DataRate", DataRateValue(5000000));
+        csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
+        csma.SetDeviceAttribute("Mtu", UintegerValue(150));
+        NetDeviceContainer csmaNetDevices = csma.Install(net1);
 
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer sixlowpanNetDevices = sixlowpan.Install(csmaNetDevices);
+
+We can opt to install 6LoWPAN-ND on the ``sixlowpanNetDevices``. This will involve calling ``SixLowPanHelper::InstallSixLowPanNdNode`` and ``SixLowPanHelper::InstallSixLowPanNdBorderRouter`` to instantiate the 6LN and 6LBR roles on the nodes, respectively. The helper also provides methods to set the advertised prefix and other attributes related to 6LoWPAN-ND.::
 
         // Configure 6LoWPAN ND
         // Node 0 = 6LBR, Node 1 = 6LN
-        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
-        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+        sixlowpan.InstallSixLowPanNdBorderRouter(sixlowpanNetDevices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(sixlowpanNetDevices.Get(0), Ipv6Prefix("2001::", 64));
 
-        sixlowpan.InstallSixLowPanNdNode(devices.Get(0));
-        sixlowpan.InstallSixLowPanNdNode(devices.Get(1));
+        sixlowpan.InstallSixLowPanNdNode(sixlowpanNetDevices.Get(0));
+        sixlowpan.InstallSixLowPanNdNode(sixlowpanNetDevices.Get(1));
 
 Attributes
 ~~~~~~~~~~
@@ -202,6 +258,13 @@ The supported 6LowPAN trace sources are:
 The Tx and Rx traces are called as soon as a packet is received or sent. The Drop trace is
 invoked when a packet (or a fragment) is discarded.
 
+The supported 6LowPAN-ND trace sources are:
+
+* ``AddressRegistrationResult``:  Exposing the IPv6 address associated with the registration, and a boolean indicating whether it was successful or not.
+* ``MulticastRS``:  Exposing the IPv6 address associated with the multicast Router Solicitation that was sent.
+
+The AddressRegistrationResult trace is called when a 6LoWPAN node successfully registers its address with a 6LR or 6LBR, or when the registration fails, which is a core function of the 6LoWPAN-ND protocol.
+The MulticastRS trace is called when a multicast Router Solicitation is sent by a 6LoWPAN node. This is useful for monitoring the behaviour of nodes on startup as they attempt to discover routers in the network.
 
 Examples and Tests
 -------------------
@@ -214,10 +277,9 @@ The following shows 6lowPAN usage under |ns3|:
 
 The following examples have been created to show the 6lowPAN-ND usage:
 
-* ``example-sixlowpan-nd-basic.cc``: A simple example showing the setup of 4 6LNs registering with and pinging a 6LBR node once.
+* ``example-sixlowpan-nd-basic.cc``: A simple example showing the setup of n 6LNs registering with and pinging a 6LBR node once.
 
-
-The following test have been created to verify the correct behavior of 6lowPAN-ND:
+The following tests have been created to verify the correct behavior of 6lowPAN-ND:
 
 * ``sixlowpan-nd-packet-test.cc``: Contains unit tests that validate helper methods for parsing and validating 6LoWPAN-ND packets, including NS(EARO) and NA(EARO) formats.
 * ``sixlowpan-nd-reg-test.cc``: Verifies basic address registration flows between 1-20 6LNs and a 6LBR, including successful and failed registration scenarios, as well as multicast RS binary backoff behaviour.
