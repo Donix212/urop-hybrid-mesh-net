@@ -428,7 +428,11 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
-    NS_LOG_INFO("HandleSixLowPanNS");
+
+    if (m_nodeRole == SixLowPanNodeOnly || m_nodeRole == SixLowPanNode)
+    {
+        return;
+    }
 
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
@@ -572,7 +576,11 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
-    NS_LOG_INFO("HandleSixLowPanNA");
+
+    if (m_nodeRole == SixLowPanBorderRouter)
+    {
+        return;
+    }
 
     Ptr<Packet> p = packet->Copy();
 
@@ -630,9 +638,8 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
 
     NS_LOG_INFO("HandleSixLowPanRS: " << m_node->GetId() << " Received RS from " << src);
-    if (m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly)
+    if (m_nodeRole == SixLowPanNodeOnly || m_nodeRole == SixLowPanNode)
     {
-        NS_LOG_LOGIC("Discarding a RS because I'm a simple node");
         return;
     }
 
@@ -687,6 +694,11 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanRA");
+
+    if (m_nodeRole == SixLowPanBorderRouter)
+    {
+        return;
+    }
 
     if (m_handleRsTimeoutEvent.IsPending())
     {
