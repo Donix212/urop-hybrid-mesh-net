@@ -253,8 +253,8 @@ ChainRegressionTest::CheckResults()
     if (m_icmpReplyCount == 0)
     {
         NS_TEST_EXPECT_MSG_EQ(
-            m_icmpReplyCount, 
-            0, 
+            m_icmpReplyCount,
+            0,
             "Warning: No ICMP echo replies received, but route exists.");
     }
 }
