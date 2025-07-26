@@ -69,8 +69,9 @@ main(int argc, char* argv[])
     // Node 0 = 6LBR
     sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
     sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+    sixlowpan.AddAdvertisedContext(devices.Get(0), Ipv6Prefix("2001::", 64));
 
-    // Nodes 1-4 = 6LNs
+    // Nodes 1-n = 6LNs
     for (uint32_t i = 1; i <= numLn; ++i)
     {
         sixlowpan.InstallSixLowPanNdNode(devices.Get(i));
