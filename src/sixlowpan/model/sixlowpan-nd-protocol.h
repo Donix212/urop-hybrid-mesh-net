@@ -232,15 +232,25 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
 
     /**
      * @brief Set node role for 6LoWPAN-ND.
-     * @param
+     * @param role role to set
      */
     void SetNodeRole(SixLowPanNdProtocol::SixLowPanNodeStatus_e role);
+
+    /**
+     * @brief Get node role for 6LoWPAN-ND.
+     */
+    SixLowPanNodeStatus_e GetNodeRole() const;
 
     /**
      * @brief Set an interface to be used as a 6LBR
      * @param device device to be used for announcement
      */
     void SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device);
+
+    /**
+     * @brief Upgrade a 6LN to a 6LR (SixLowPanNode -> SixLowPanRouter)
+     */
+    void UpgradeToSixLowPanRouter();
 
     /**
      * @brief Set a prefix to be announced on an interface (6LBR)

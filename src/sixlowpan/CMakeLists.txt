@@ -37,4 +37,5 @@ build_lib(
     test/sixlowpan-nd-reg-test.cc
     test/sixlowpan-nd-rovr-test.cc
     test/sixlowpan-nd-multihop-test.cc
+    test/sixlowpan-nd-lr-reg-test.cc
 )

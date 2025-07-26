@@ -228,7 +228,7 @@ SixLowPanHelper::InstallSixLowPanNdNode(NetDeviceContainer c)
 Ipv6InterfaceContainer
 SixLowPanHelper::InstallSixLowPanNdRouter(NetDeviceContainer c)
 {
-    InstallSixLowPanNd(c, false);
+    InstallSixLowPanNd(c, true);
 
     Ipv6AddressHelper ipv6;
     Ipv6InterfaceContainer deviceInterfaces;

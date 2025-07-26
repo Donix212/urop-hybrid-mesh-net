@@ -1141,6 +1141,11 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
         Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
                             &SixLowPanNdProtocol::AddressRegistration,
                             this);
+
+    if (m_nodeRole == SixLowPanNode)
+    {
+        SetNodeRole(SixLowPanNdProtocol::SixLowPanRouter);
+    }
 }
 
 void
@@ -1188,6 +1193,13 @@ SixLowPanNdProtocol::SetNodeRole(SixLowPanNodeStatus_e role)
         m_addressRegistrationCounter = 0;
         m_addrPendingReg.isValid = false;
     }
+}
+
+SixLowPanNdProtocol::SixLowPanNodeStatus_e
+SixLowPanNdProtocol::GetNodeRole() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_nodeRole;
 }
 
 void
@@ -1238,6 +1250,39 @@ SixLowPanNdProtocol::SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device)
     newRa->SetAbroValidLifeTime(m_abroValidLifeTime.GetSeconds());
 
     m_raEntries[device] = newRa;
+}
+
+void
+SixLowPanNdProtocol::UpgradeToSixLowPanRouter()
+{
+    NS_LOG_FUNCTION(this);
+
+    if (m_nodeRole != SixLowPanNodeOnly || m_nodeRole != SixLowPanBorderRouter)
+    {
+        NS_LOG_WARN("Cannot upgrade to router - current role is SixLowPanNodeOnly or "
+                    "SixLowPanBorderRouter.");
+        return;
+    }
+
+    NS_LOG_INFO("Upgrading node " << m_node->GetId() << " from NodeOnly to Router");
+
+    // Enable IPv6 forwarding
+    Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
+    NS_ASSERT(ipv6);
+
+    for (uint32_t i = 0; i < ipv6->GetNInterfaces(); ++i)
+    {
+        Ptr<Ipv6Interface> iface = ipv6->GetInterface(i);
+        Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(iface->GetDevice());
+
+        if (sixDevice)
+        {
+            ipv6->SetForwarding(i, true);
+        }
+    }
+
+    // Change the node role
+    SetNodeRole(SixLowPanRouter);
 }
 
 void
