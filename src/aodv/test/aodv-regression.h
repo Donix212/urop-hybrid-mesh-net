@@ -1,4 +1,3 @@
-#include "ns3/ipv4-interface-container.h"
 /*
  * Copyright (c) 2009 IITP RAS
  *
@@ -10,6 +9,7 @@
 #ifndef AODV_REGRESSION_H
 #define AODV_REGRESSION_H
 
+#include "ns3/ipv4-interface-container.h"
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
 #include "ns3/socket.h"
