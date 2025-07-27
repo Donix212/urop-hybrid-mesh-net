@@ -143,7 +143,11 @@ HwmpReactiveRegressionTest::CheckResults()
 {
     for (int i = 0; i < 6; ++i)
     {
-        NS_PCAP_TEST_EXPECT_EQ(PREFIX << "-" << i << "-1.pcap");
+        bool pcapMatch = NS_PCAP_TEST_EXPECT_EQ(PREFIX << "-" << i << "-1.pcap");
+        if (!pcapMatch)
+        {
+            NS_TEST_EXPECT_MSG_EQ(pcapMatch, true, "Warning: PCAP mismatch for node " << i << ".");
+        }
     }
 }
 
