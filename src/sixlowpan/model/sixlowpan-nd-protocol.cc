@@ -1144,7 +1144,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
 
     if (m_nodeRole == SixLowPanNode)
     {
-        SetNodeRole(SixLowPanNdProtocol::SixLowPanRouter);
+        UpgradeToSixLowPanRouter();
     }
 }
 
@@ -1257,7 +1257,7 @@ SixLowPanNdProtocol::UpgradeToSixLowPanRouter()
 {
     NS_LOG_FUNCTION(this);
 
-    if (m_nodeRole != SixLowPanNodeOnly || m_nodeRole != SixLowPanBorderRouter)
+    if (m_nodeRole == SixLowPanNodeOnly || m_nodeRole == SixLowPanBorderRouter)
     {
         NS_LOG_WARN("Cannot upgrade to router - current role is SixLowPanNodeOnly or "
                     "SixLowPanBorderRouter.");
