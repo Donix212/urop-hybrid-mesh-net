@@ -84,6 +84,7 @@ class HwmpReactiveRegressionTest : public TestCase
     void ResetPosition();
 
     /// Server-side socket
+    uint32_t m_serverReceivedPkts = 0;
     Ptr<Socket> m_serverSocket;
     /// Client-side socket
     Ptr<Socket> m_clientSocket;
