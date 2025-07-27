@@ -7,6 +7,7 @@
  */
 
 #include "../../core/model/test.h"
+#include "sixlowpan-nd-test-utils.h"
 
 #include "ns3/core-module.h"
 #include "ns3/csma-helper.h"
@@ -36,7 +37,7 @@ namespace ns3
 /**
  * @ingroup sixlowpan-nd-reg-tests
  *
- * @brief Test successful registration of varying numbers of 6LNs with 1 6LBR
+ * @brief Test successful registration and upgrade to 6LR of varying numbers of 6LNs with 1 6LBR
  */
 class SixLowPanNdOneLRRegTest : public TestCase
 {
@@ -53,7 +54,7 @@ class SixLowPanNdOneLRRegTest : public TestCase
         // Link-layer address: 02:00:00:00:00:01
         // Gaddr: 2001::ff:fe00:1
 
-        // 6LN - node 1
+        // 6LN (6LR) - node 1
         // LLaddr: fe80::ff:fe00:2
         // Link-layer address: 02:00:00:00:00:02
         // Gaddr: 2001::ff:fe00:2 (Needs reg first)
@@ -136,6 +137,83 @@ class SixLowPanNdOneLRRegTest : public TestCase
     }
 };
 
+class SixLowPanNdFiveLRRegTest : public TestCase
+{
+  public:
+    SixLowPanNdFiveLRRegTest()
+        : TestCase("Registration of 5 6LNs (6LR) with 1 6LBR")
+    {
+    }
+
+    void DoRun() override
+    {
+        Time duration = Time("50s");
+
+        constexpr uint32_t numLns = 5;
+
+        NodeContainer nodes;
+        nodes.Create(1 + numLns); // 1 LBR + 5 LNs (6LR)
+        Ptr<Node> lbrNode = nodes.Get(0);
+
+        MobilityHelper mobility;
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
+
+        LrWpanHelper lrWpanHelper;
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+
+        InternetStackHelper internetv6;
+        internetv6.Install(nodes);
+
+        SixLowPanHelper sixlowpan;
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            sixlowpan.InstallSixLowPanNdRouter(devices.Get(i));
+        }
+
+        std::ostringstream ndiscStream;
+        Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
+        std::ostringstream routingTableStream;
+        Ptr<OutputStreamWrapper> outputRoutingTableStream =
+            Create<OutputStreamWrapper>(&routingTableStream);
+
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
+        Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+
+        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-lr-reg-test"), true);
+
+        Simulator::Stop(duration);
+        Simulator::Run();
+        Simulator::Destroy();
+
+        NS_TEST_ASSERT_MSG_EQ(NormalizeNdiscCacheStates(ndiscStream.str()),
+                              GenerateNdiscCacheOutput(numLns + 1, duration),
+                              "NdiscCache does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
+                              GenerateRoutingTableOutput(numLns + 1, duration),
+                              "RoutingTable does not match expected output.");
+
+        // Assert that all 5 6LNs have been upgraded to 6LR role after registration
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            Ptr<Node> lnNode = nodes.Get(i);
+            Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = lnNode->GetObject<SixLowPanNdProtocol>();
+
+            NS_TEST_ASSERT_MSG_EQ(
+                sixLowPanNdProtocol->GetNodeRole(),
+                SixLowPanNdProtocol::SixLowPanRouter,
+                "Node " << i << " should be upgraded to SixLowPanRouter role after registration.");
+        }
+    }
+};
+
 /**
  * @ingroup sixlowpan-nd-lr-reg-tests
  *
@@ -148,6 +226,7 @@ class SixLowPanNdLrRegTestSuite : public TestSuite
         : TestSuite("sixlowpan-nd-lr-reg-test", Type::UNIT)
     {
         AddTestCase(new SixLowPanNdOneLRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdFiveLRRegTest(), TestCase::Duration::QUICK);
     }
 };
 
