@@ -59,8 +59,6 @@ class SixLowPanNdOneLRRegTest : public TestCase
         // Link-layer address: 02:00:00:00:00:02
         // Gaddr: 2001::ff:fe00:2 (Needs reg first)
 
-        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
-
         // Basic Exchange, then assert NC, 6LNC and RT contents of 6LN and 6LBR
         // Create nodes
         NodeContainer nodes;
@@ -214,6 +212,158 @@ class SixLowPanNdFiveLRRegTest : public TestCase
     }
 };
 
+class SixLowPanNdFifteenLRRegTest : public TestCase
+{
+  public:
+    SixLowPanNdFifteenLRRegTest()
+        : TestCase("Registration of 15 6LNs (6LR) with 1 6LBR")
+    {
+    }
+
+    void DoRun() override
+    {
+        Time duration = Time("300s");
+        constexpr uint32_t numLns = 15;
+
+        NodeContainer nodes;
+        nodes.Create(1 + numLns); // 1 LBR + 15 LNs (6LR)
+        Ptr<Node> lbrNode = nodes.Get(0);
+
+        MobilityHelper mobility;
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
+
+        LrWpanHelper lrWpanHelper;
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+
+        InternetStackHelper internetv6;
+        internetv6.Install(nodes);
+
+        SixLowPanHelper sixlowpan;
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            sixlowpan.InstallSixLowPanNdRouter(devices.Get(i));
+        }
+
+        std::ostringstream ndiscStream;
+        Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
+        std::ostringstream routingTableStream;
+        Ptr<OutputStreamWrapper> outputRoutingTableStream =
+            Create<OutputStreamWrapper>(&routingTableStream);
+
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
+        Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+
+        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-lr-reg-test"), true);
+
+        Simulator::Stop(duration);
+        Simulator::Run();
+        Simulator::Destroy();
+
+        NS_TEST_ASSERT_MSG_EQ(NormalizeNdiscCacheStates(ndiscStream.str()),
+                              GenerateNdiscCacheOutput(numLns + 1, duration),
+                              "NdiscCache does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
+                              GenerateRoutingTableOutput(numLns + 1, duration),
+                              "RoutingTable does not match expected output.");
+
+        // Assert that all 15 6LNs have been upgraded to 6LR role after registration
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            Ptr<Node> lnNode = nodes.Get(i);
+            Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = lnNode->GetObject<SixLowPanNdProtocol>();
+
+            NS_TEST_ASSERT_MSG_EQ(
+                sixLowPanNdProtocol->GetNodeRole(),
+                SixLowPanNdProtocol::SixLowPanRouter,
+                "Node " << i << " should be upgraded to SixLowPanRouter role after registration.");
+        }
+    }
+};
+
+class SixLowPanNdTwentyLRRegTest : public TestCase
+{
+  public:
+    SixLowPanNdTwentyLRRegTest()
+        : TestCase("Registration of 20 6LNs (6LR) with 1 6LBR")
+    {
+    }
+
+    void DoRun() override
+    {
+        Time duration = Time("300s");
+        constexpr uint32_t numLns = 20;
+
+        NodeContainer nodes;
+        nodes.Create(1 + numLns); // 1 LBR + 20 LNs (6LR)
+        Ptr<Node> lbrNode = nodes.Get(0);
+
+        MobilityHelper mobility;
+        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+        mobility.Install(nodes);
+
+        LrWpanHelper lrWpanHelper;
+        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
+        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+
+        InternetStackHelper internetv6;
+        internetv6.Install(nodes);
+
+        SixLowPanHelper sixlowpan;
+        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+
+        sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
+        sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
+
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            sixlowpan.InstallSixLowPanNdRouter(devices.Get(i));
+        }
+
+        std::ostringstream ndiscStream;
+        Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
+        std::ostringstream routingTableStream;
+        Ptr<OutputStreamWrapper> outputRoutingTableStream =
+            Create<OutputStreamWrapper>(&routingTableStream);
+
+        Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
+        Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+
+        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-lr-reg-test"), true);
+
+        Simulator::Stop(duration);
+        Simulator::Run();
+        Simulator::Destroy();
+
+        NS_TEST_ASSERT_MSG_EQ(NormalizeNdiscCacheStates(ndiscStream.str()),
+                              GenerateNdiscCacheOutput(numLns + 1, duration),
+                              "NdiscCache does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
+                              GenerateRoutingTableOutput(numLns + 1, duration),
+                              "RoutingTable does not match expected output.");
+
+        // Assert that all 20 6LNs have been upgraded to 6LR role after registration
+        for (uint32_t i = 1; i <= numLns; ++i)
+        {
+            Ptr<Node> lnNode = nodes.Get(i);
+            Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = lnNode->GetObject<SixLowPanNdProtocol>();
+
+            NS_TEST_ASSERT_MSG_EQ(
+                sixLowPanNdProtocol->GetNodeRole(),
+                SixLowPanNdProtocol::SixLowPanRouter,
+                "Node " << i << " should be upgraded to SixLowPanRouter role after registration.");
+        }
+    }
+};
+
 /**
  * @ingroup sixlowpan-nd-lr-reg-tests
  *
@@ -227,6 +377,8 @@ class SixLowPanNdLrRegTestSuite : public TestSuite
     {
         AddTestCase(new SixLowPanNdOneLRRegTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdFiveLRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdFifteenLRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdTwentyLRRegTest(), TestCase::Duration::QUICK);
     }
 };
 
