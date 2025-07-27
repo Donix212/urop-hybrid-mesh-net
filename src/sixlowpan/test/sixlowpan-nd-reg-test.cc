@@ -450,7 +450,7 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
 
     void DoRun() override
     {
-        Time duration = Time("100s");
+        Time duration = Time("300s");
         constexpr uint32_t numLns = 15;
 
         NodeContainer nodes;
@@ -514,7 +514,7 @@ class SixLowPanNdTwentyLNRegTest : public TestCase
 
     void DoRun() override
     {
-        Time duration = Time("100s");
+        Time duration = Time("300s");
         constexpr uint32_t numLns = 20;
 
         NodeContainer nodes;
