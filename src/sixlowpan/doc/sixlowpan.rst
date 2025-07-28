@@ -39,7 +39,7 @@ The preferred method is to use 6LoWPAN-ND for automatic context distribution, wh
     SixLowPanHelper sixlowpan;
     sixlowpan.InstallSixLowPanNdBorderRouter(borderRouterDevice, "2001::");
     sixlowpan.AddAdvertisedContext(borderRouterDevice, Ipv6Prefix("2001::", 64));
-    
+
     // 6LNs will automatically learn contexts from Router Advertisements
     sixlowpan.InstallSixLowPanNdNode(nodeDevice);
 
@@ -76,7 +76,7 @@ The following is a list of known limitations of the |ns3| 6LowPAN implementation
 The following is a list of limitations for 6LowPAN-ND:
 
 * Lack of support for multi-hop DAD exchanges
-* Limited NA (EARO) status errors supported from :rfc:`6775` (Currently only supports "Duplicate Address" error) 
+* Limited NA (EARO) status errors supported from :rfc:`6775` (Currently only supports "Duplicate Address" error)
 * Currently supports only single-hop, mesh-under routing topologies between 6LBR and 6LN
 * Missing Transaction ID validation, which is part of the :rfc:`8505` specification
 
@@ -144,7 +144,7 @@ IPv6 Neighbor Discovery (ND) as defined in :rfc`4861` assumes always on, multica
 In ns-3, 6LoWPAN-ND subclasses Icmpv6L4Protocol, taking over the functions of conventional Ipv6 Neighbour Discovery as defined in :rfc:`4861`.
 
 It does this by introducing a registration mechanism for 6LoWPAN nodes (6LNs) to register their addresses with a 6LoWPAN router (6LR) or border router (6LBR).
-This allows 6LNs to use the 6LR/LBR as a proxy for address resolution and neighbor discovery, reducing the need for broadcast messages. 
+This allows 6LNs to use the 6LR/LBR as a proxy for address resolution and neighbor discovery, reducing the need for broadcast messages.
 
 Every node that implements 6LoWPAN-ND will have a protocol stack that looks like the following:
 
@@ -343,14 +343,14 @@ The 6LoWPAN header compression implementation has been validated by comparing th
 The 6LoWPAN-ND implementation has been validated through analysis of PCAP traces generated in the examples and tests. The validation process includes:
 
 * **Packet Format Verification**: PCAP traces from ``example-sixlowpan-nd-basic.cc`` are analyzed using Wireshark to verify that:
-  
+
   - Router Solicitation (RS) messages contain proper 6LoWPAN-ND options
   - Router Advertisement (RA) messages include correct 6LoWPAN Context Options (6CO) and Authoritative Border Router Options (ABRO)
   - Neighbor Solicitation with Extended Address Registration Option (NS-EARO) messages are properly formatted
   - Neighbor Advertisement with Extended Address Registration Option (NA-EARO) responses contain correct status codes
 
 * **Protocol Flow Validation**: The timing and sequence of 6LoWPAN-ND message exchanges are verified to ensure compliance with RFC 6775 and RFC 8505 specifications:
-  
+
   - Initial Router Solicitation upon node startup
   - Address registration sequences using NS(EARO)/NA(EARO) exchanges
   - Context distribution via 6CO options in Router Advertisements
