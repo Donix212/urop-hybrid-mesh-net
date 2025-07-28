@@ -505,8 +505,8 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
             }
             else if (entry->GetRovr() != earoHdr.GetRovr())
             {
-                SendSixLowPanNaWithEaro(&dst,
-                                        &src,
+                SendSixLowPanNaWithEaro(dst,
+                                        src,
                                         target,
                                         earoHdr.GetRegTime(),
                                         earoHdr.GetRovr(),
@@ -539,8 +539,8 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         {
             if (entry->GetRovr() != earoHdr.GetRovr())
             {
-                SendSixLowPanNaWithEaro(&dst,
-                                        &src,
+                SendSixLowPanNaWithEaro(dst,
+                                        src,
                                         target,
                                         earoHdr.GetRegTime(),
                                         earoHdr.GetRovr(),
@@ -562,8 +562,8 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         }
     }
 
-    SendSixLowPanNaWithEaro(&dst,
-                            &src,
+    SendSixLowPanNaWithEaro(dst,
+                            src,
                             target,
                             earoHdr.GetRegTime(),
                             earoHdr.GetRovr(),
@@ -1161,69 +1161,12 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
                     << ", registrar: " << m_addrPendingReg.registrar
                     << ", retries: " << static_cast<int>(m_addressRegistrationCounter));
 
-        // bool isInRegisteredAddresses = false;
-        // // Check if address exists in m_registeredAddresses
-        // for (auto& i : m_registeredAddresses)
-        // {
-        //     if (i.registeredAddr == m_addrPendingReg.addressPendingRegistration)
-        //     {
-        //         isInRegisteredAddresses = true;
-        //     }
-        // }
-
-        // if (m_addrPendingReg.newRegistration == true)
-        // {
-        //     m_tidContainer.erase(std::make_pair(m_addrPendingReg.addressPendingRegistration,
-        //                                         m_addrPendingReg.registrar));
-        //     m_pendingRas.pop_front();
-        //     m_neighborBlacklist[m_addrPendingReg.registrar] = Simulator::Now();
-        // }
-        // else
-        // {
-        //     m_registeredAddresses.pop_front();
-        //     // \todo Here we should check if the address is still registered with some other node
-        // }
-        //
-        // if (!m_pendingRas.empty())
-        // {
-        //     // std::cout << Simulator::Now ().As (Time::MS) << " - " << m_node->GetId () << " -
-        //     // calling AddressRegistration (4)" << std::endl;
-        //     m_addressRegistrationEvent =
-        //         Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
-        //                             &SixLowPanNdProtocol::AddressRegistration,
-        //                             this);
-        // }
-        // else
-        // {
-        //     NS_ABORT_MSG_IF(m_registeredAddresses.empty(),
-        //                     "Can't find addresses to re-register (and there should be at least "
-        //                     "one). Aborting.");
-        //     Time reRegistrationTime =
-        //         m_registeredAddresses.front().registrationTimeout - Minutes(m_regTime) / 2 -
-        //         Now();
-        //     if (reRegistrationTime.IsNegative())
-        //     {
-        //         // std::cout << Simulator::Now ().As (Time::MS) << " - " << m_node->GetId () << "
-        //         -
-        //         // calling AddressRegistration (5)" << std::endl;
-        //         m_addressRegistrationEvent =
-        //             Simulator::Schedule(MilliSeconds(m_addressRegistrationJitter->GetValue()),
-        //                                 &SixLowPanNdProtocol::AddressRegistration,
-        //                                 this);
-        //     }
-        //     else
-        //     {
-        //         m_addressReRegistrationEvent =
-        //             Simulator::Schedule(reRegistrationTime,
-        //                                 &SixLowPanNdProtocol::AddressReRegistration,
-        //                                 this);
-        //     }
-        // }
-
-        // \todo
+        // todo
         // Add code to remove next hop from the reliable neighbors.
         // If the re-registration failed (for all of the candidate next hops), remove the address.
         // If we don't have any address anyomore, start sending RS (again).
+        // For now since we only have 1 6LBR we are registering with, we just stop trying to
+        // register with it
     }
 }
 
