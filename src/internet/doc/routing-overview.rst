@@ -158,8 +158,8 @@ protocols will be searched.
 
 .. _Global-centralized-routing:
 
-Global centralized routing
-++++++++++++++++++++++++++
+:doc:`Global Centralized Routing <global-routing>`
+++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Global centralized routing is sometimes called "God" routing; it is a special
 implementation that walks the simulation topology and runs a shortest path
