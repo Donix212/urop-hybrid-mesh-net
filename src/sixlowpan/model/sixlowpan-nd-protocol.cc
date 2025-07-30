@@ -330,49 +330,47 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
 void
 SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6Interface> interface)
 {
-    // std::cout << Now ().As (Time::S) << " ***src*** " << src << " ***dst*** " << dst
-    // << "***Node ID=***" << m_node->GetId () << std::endl;
     NS_LOG_FUNCTION(this << src << dst << interface);
 
+    NS_ABORT_MSG_IF(m_nodeRole == SixLowPanNode || m_nodeRole == SixLowPanNodeOnly,
+                    "6LN cannot send RA");
+
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
-    NS_ABORT_MSG_IF(m_nodeRole == SixLowPanBorderRouter &&
-                        m_raEntries.find(sixDevice) == m_raEntries.end(),
-                    "6LBR not configured on the interface");
 
-    Ptr<SixLowPanNdiscCache> sixCache =
-        DynamicCast<SixLowPanNdiscCache>(FindCache(interface->GetDevice()));
-    NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
-
-    // if the node is a 6LBR, send out the RA entry for the interface
-    auto it = m_raEntries.find(sixDevice);
-    if (m_raEntries.find(sixDevice) != m_raEntries.end())
+    if (m_nodeRole == SixLowPanBorderRouter)
     {
-        Ptr<SixLowPanRaEntry> raEntry = it->second;
+        // if the node is a 6LBR, send out the RA entry for the interface
+        auto it = m_raEntries.find(sixDevice);
+        if (m_raEntries.find(sixDevice) != m_raEntries.end())
+        {
+            Ptr<SixLowPanRaEntry> raEntry = it->second;
 
-        // Build SLLA Option
-        Icmpv6OptionLinkLayerAddress slla(true, interface->GetDevice()->GetAddress());
+            // Build SLLA Option
+            Icmpv6OptionLinkLayerAddress slla(true, interface->GetDevice()->GetAddress());
 
-        // Build 6CIO Option
-        Icmpv6OptionSixLowPanCapabilityIndication cio;
-        // cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::D); // no EDAR EDAC support yet
-        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
-        cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E);
+            // Build 6CIO Option
+            Icmpv6OptionSixLowPanCapabilityIndication cio;
+            // cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::D); // no EDAR EDAC support
+            // yet
+            cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
+            cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E);
 
-        // Build RA Packet
-        Ptr<Packet> p = MakeRaPacket(src, dst, slla, cio, raEntry);
+            // Build RA Packet
+            Ptr<Packet> p = MakeRaPacket(src, dst, slla, cio, raEntry);
 
-        // Build Ipv6 Header manually
-        Ipv6Header ipHeader;
-        ipHeader.SetSource(src);
-        ipHeader.SetDestination(dst);
-        ipHeader.SetNextHeader(PROT_NUMBER);
-        ipHeader.SetPayloadLength(p->GetSize());
-        ipHeader.SetHopLimit(255);
+            // Build Ipv6 Header manually
+            Ipv6Header ipHeader;
+            ipHeader.SetSource(src);
+            ipHeader.SetDestination(dst);
+            ipHeader.SetNextHeader(PROT_NUMBER);
+            ipHeader.SetPayloadLength(p->GetSize());
+            ipHeader.SetHopLimit(255);
 
-        /* send RA */
-        NS_LOG_LOGIC("Send RA to " << dst);
+            /* send RA */
+            NS_LOG_LOGIC("Send RA to " << dst);
 
-        interface->Send(p, ipHeader, dst);
+            interface->Send(p, ipHeader, dst);
+        }
     }
 }
 
@@ -2057,7 +2055,7 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
 
     if (!hasCio)
     {
-        // RAs must contain one (and only one) LLA
+        // RAs must contain one (and only one) SixLowPan Capability Indication Option
         NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option SixLowPan "
                      "Capability Indication Option- ignoring RA");
         return false;
