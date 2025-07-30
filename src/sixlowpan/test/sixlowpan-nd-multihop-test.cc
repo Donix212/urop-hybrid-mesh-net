@@ -50,8 +50,7 @@ class SixLowPanNdMultihopSetupTest : public TestCase
 
         // Construct a 3 node simulation with CSMA Ethernet links A -- B -- C
         // Then try to assign addresses of the same network prefix to A -- B and B -- C
-        // A
-        //
+        // 6LBR -- 6LR -- 6LN
 
         Time stopTime = Seconds(40.0);
         NodeContainer nodesAB;
@@ -100,14 +99,14 @@ class SixLowPanNdMultihopSetupTest : public TestCase
         Ptr<Node> C = NodeList::GetNode(2);
 
         // Manual global addresses
-        Ipv6Address addrA = ifaceAB.GetAddress(0, 1);    // A's global address
-        Ipv6Address addrB = ifaceAB.GetAddress(1, 1);    // B's global address on AB interface
+        Ipv6Address addrA1 = ifaceAB.GetAddress(0, 1);   // A's global address
+        Ipv6Address addrB1 = ifaceAB.GetAddress(1, 1);   // B's global address on AB interface
         Ipv6Address addrB2 = ifaceBC.GetAddress(0, 1);   // B's global address on BC interface
-        Ipv6Address addrC = ifaceBC.GetAddress(1, 1);    // C's global address
-        Ipv6Address LLaddrA = ifaceAB.GetAddress(0, 0);  // A's link-local address
-        Ipv6Address LLaddrB = ifaceAB.GetAddress(1, 0);  // B's link-local address
+        Ipv6Address addrC1 = ifaceBC.GetAddress(1, 1);   // C's global address
+        Ipv6Address LLaddrA1 = ifaceAB.GetAddress(0, 0); // A's link-local address
+        Ipv6Address LLaddrB1 = ifaceAB.GetAddress(1, 0); // B's link-local address
         Ipv6Address LLaddrB2 = ifaceBC.GetAddress(0, 0); // B's link-local address on BC interface
-        Ipv6Address LLaddrC = ifaceBC.GetAddress(1, 0);  // C's link-local address
+        Ipv6Address LLaddrC1 = ifaceBC.GetAddress(1, 0); // C's link-local address
 
         // This enables routing on B
         Ptr<Ipv6> ipv6b = B->GetObject<Ipv6>();
@@ -117,14 +116,13 @@ class SixLowPanNdMultihopSetupTest : public TestCase
         // A: default route via B (AB link)
         Ptr<Ipv6StaticRouting> Astatic =
             DynamicCast<Ipv6StaticRouting>(A->GetObject<Ipv6L3Protocol>()->GetRoutingProtocol());
-        Astatic->SetDefaultRoute(addrB, 1); // Interface to B
+        Astatic->SetDefaultRoute(addrB1, 1); // Interface to B
 
         // B: route to A via AB, route to C via BC
         Ptr<Ipv6StaticRouting> Bstatic =
             DynamicCast<Ipv6StaticRouting>(B->GetObject<Ipv6L3Protocol>()->GetRoutingProtocol());
-        Bstatic->AddHostRouteTo(addrA, LLaddrA, 1);
-        // Bstatic->AddHostRouteTo(addrC, LLaddrC, 2);
-        Bstatic->SetDefaultRoute(addrC, 2);
+        Bstatic->AddHostRouteTo(addrC1, LLaddrC1, 2);
+        Bstatic->SetDefaultRoute(addrA1, 1);
 
         // C: default route via B
         Ptr<Ipv6StaticRouting> Cstatic =
@@ -155,16 +153,16 @@ class SixLowPanNdMultihopSetupTest : public TestCase
             };
 
         // A → B, C
-        InstallPing(A, addrA, addrB, Time("5s"), Time("10s")); // works
-        InstallPing(A, addrA, addrC, Time("10s"), Time("15s"));
+        InstallPing(A, addrA1, addrB1, Time("5s"), Time("10s")); // works
+        InstallPing(A, addrA1, addrC1, Time("10s"), Time("15s"));
 
         // B → A, C
-        InstallPing(B, addrB, addrA, Time("15s"), Time("20s"));  // works
-        InstallPing(B, addrB2, addrC, Time("20s"), Time("25s")); // works
+        InstallPing(B, addrB1, addrA1, Time("15s"), Time("20s")); // works
+        InstallPing(B, addrB2, addrC1, Time("20s"), Time("25s")); // works
 
         // C → A, B
-        InstallPing(C, addrC, addrA, Time("25s"), Time("30s"));
-        InstallPing(C, addrC, addrB2, Time("30s"), Time("35s")); // works
+        InstallPing(C, addrC1, addrA1, Time("25s"), Time("30s"));
+        InstallPing(C, addrC1, addrB2, Time("30s"), Time("35s")); // works
 
         AsciiTraceHelper ascii;
         csma.EnablePcapAll(std::string("sixlowpan-nd-multihop-test"), true);
