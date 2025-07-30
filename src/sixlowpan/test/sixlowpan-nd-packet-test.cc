@@ -6,8 +6,6 @@
  * Author: Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
-#include "../../core/model/test.h"
-
 #include "ns3/boolean.h"
 #include "ns3/inet6-socket-address.h"
 #include "ns3/internet-stack-helper.h"
