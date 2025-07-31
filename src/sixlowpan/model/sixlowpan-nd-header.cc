@@ -29,6 +29,7 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::Icmpv6SixLowPanExtendedDuplica
     SetType(Icmpv6Header::ICMPV6_ND_DUPLICATE_ADDRESS_REQUEST);
     SetChecksum(0);
     m_status = 0;
+    m_tid = 0;
     m_regTime = 0;
     m_regAddress = Ipv6Address("::");
 }
@@ -55,6 +56,7 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::Icmpv6SixLowPanExtendedDuplica
     SetType(Icmpv6Header::ICMPV6_ND_DUPLICATE_ADDRESS_REQUEST);
     SetChecksum(0);
     m_status = 0;
+    m_tid = 0;
     m_regTime = time;
     SetRovr(rovr);
     m_regAddress = address;
@@ -70,6 +72,7 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::Icmpv6SixLowPanExtendedDuplica
     SetType(Icmpv6Header::ICMPV6_ND_DUPLICATE_ADDRESS_CONFIRM);
     SetChecksum(0);
     m_status = status;
+    m_tid = 0;
     m_regTime = time;
     SetRovr(rovr);
     m_regAddress = address;
@@ -110,6 +113,20 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::SetStatus(uint8_t status)
 {
     NS_LOG_FUNCTION(this << static_cast<uint32_t>(status));
     m_status = status;
+}
+
+uint8_t
+Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::GetTransaction_ID() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_tid;
+}
+
+void
+Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::SetTransaction_ID(uint8_t tid)
+{
+    NS_LOG_FUNCTION(this << static_cast<uint32_t>(tid));
+    m_tid = tid;
 }
 
 uint16_t

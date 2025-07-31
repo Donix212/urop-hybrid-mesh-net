@@ -377,8 +377,8 @@ class SixLowPanNdLrRegTestSuite : public TestSuite
     {
         AddTestCase(new SixLowPanNdOneLRRegTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdFiveLRRegTest(), TestCase::Duration::QUICK);
-        // AddTestCase(new SixLowPanNdFifteenLRRegTest(), TestCase::Duration::QUICK);
-        // AddTestCase(new SixLowPanNdTwentyLRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdFifteenLRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdTwentyLRRegTest(), TestCase::Duration::QUICK);
     }
 };
 
