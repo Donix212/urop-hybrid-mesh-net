@@ -184,7 +184,7 @@ uint32_t
 Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::GetSerializedSize() const
 {
     NS_LOG_FUNCTION(this);
-    return 8 + m_rovr.size();
+    return 8 + m_rovr.size() + 16;
 }
 
 void
@@ -194,21 +194,21 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::Serialize(Buffer::Iterator sta
     Buffer::Iterator i = start;
 
     i.WriteU8(GetType());
-    i.WriteU8(m_status);
-
     // note: codePfx is always zero, ROVR size is a multiple of 8 bytes, and less than 32 bytes.
     uint8_t codeSfx = m_rovr.size() / 8;
     i.WriteU8(codeSfx);
-
     i.WriteU16(m_checksum);
     i.WriteU8(m_status);
     i.WriteU8(m_tid);
     i.WriteU16(m_regTime);
-
     for (const auto& rovr : m_rovr)
     {
         i.WriteU8(rovr);
     }
+    // Write the registered address
+    uint8_t buf[16];
+    m_regAddress.Serialize(buf);
+    i.Write(buf, 16);
 }
 
 uint32_t
@@ -218,23 +218,23 @@ Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf::Deserialize(Buffer::Iterator s
     Buffer::Iterator i = start;
 
     SetType(i.ReadU8());
-    uint8_t codePSfx = i.ReadU8();
-    if (codePSfx > 4)
-    {
-        NS_LOG_LOGIC("Invalid CodeSfx or CodePfx value (" << codePSfx << "), discarding message");
-        return 0;
-    }
-    uint8_t rovrLength = codePSfx * 8;
-
+    // note: codePfx is always zero, ROVR size is a multiple of 8 bytes, and less than 32 bytes.
+    uint8_t codeSfx = i.ReadU8();
+    m_checksum = i.ReadU16();
     m_status = i.ReadU8();
-    i.Next(3);
+    m_tid = i.ReadU8();
     m_regTime = i.ReadU16();
+    uint8_t rovrLength = codeSfx * 8;
 
     m_rovr.clear();
     for (uint8_t index = 0; index < rovrLength; index++)
     {
         m_rovr.push_back(i.ReadU8());
     }
+
+    uint8_t buf[16];
+    i.Read(buf, 16);
+    m_regAddress.Set(buf);
 
     return GetSerializedSize();
 }

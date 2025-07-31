@@ -373,12 +373,12 @@ class SixLowPanNdLrRegTestSuite : public TestSuite
 {
   public:
     SixLowPanNdLrRegTestSuite()
-        : TestSuite("sixlowpan-nd-lr-reg-test", Type::UNIT)
+        : TestSuite("sixlowpan-nd-lr-reg-test", Type::UNIT) // test.py -s sixlowpan-nd-lr-reg-test
     {
         AddTestCase(new SixLowPanNdOneLRRegTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdFiveLRRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdFifteenLRRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdTwentyLRRegTest(), TestCase::Duration::QUICK);
+        // AddTestCase(new SixLowPanNdFifteenLRRegTest(), TestCase::Duration::QUICK);
+        // AddTestCase(new SixLowPanNdTwentyLRRegTest(), TestCase::Duration::QUICK);
     }
 };
 

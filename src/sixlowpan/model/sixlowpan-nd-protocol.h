@@ -35,6 +35,8 @@ class SixLowPanNdNsEaroPacketTest;
 class SixLowPanNdNaEaroPacketTest;
 class SixLowPanNdRaPacketTest;
 class SixLowPanNdRsPacketTest;
+class SixLowPanNdEdarPacketTest;
+class SixLowPanNdEdacPacketTest;
 
 /**
  * @ingroup sixlowpan
@@ -47,6 +49,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     friend class SixLowPanNdRaPacketTest;
     friend class SixLowPanNdRsPacketTest;
     friend class SixLowPanNdNsNaTest;
+    friend class SixLowPanNdEdarPacketTest;
+    friend class SixLowPanNdEdacPacketTest;
 
   public:
     /**
@@ -219,16 +223,19 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      */
     void SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6Interface> interface);
 
-    /*
-     * @brief Send a DAR for 6LoWPAN ND.
+    /**
+     * @brief Send an EDAR for 6LoWPAN ND.
      * @param src source IPv6 address
      * @param dst destination IPv6 address
-     * @param time registration lifetime
-     * @param eui EUI-64
-     * @param registered registered IPv6 address
+     * @param rovr ROVR of 6LN registering its global address
+     * @param addrToRegister address to register
+     * @param sixDevice SixLowPan NetDevice
      */
-    //  void SendSixLowPanDAR (Ipv6Address src, Ipv6Address dst, uint16_t time, Mac64Address eui,
-    //                         Ipv6Address registered);
+    void SendSixLowPanEDAR(Ipv6Address src,
+                           Ipv6Address dst,
+                           const std::vector<uint8_t>& rovr,
+                           Ipv6Address addrToRegister,
+                           Ptr<NetDevice> sixDevice);
 
     /**
      * @brief Set node role for 6LoWPAN-ND.
@@ -818,6 +825,32 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                     Ptr<SixLowPanRaEntry> raEntry);
 
     /**
+     * @brief Construct EDAR packet
+     * @param src source address
+     * @param dst destination address
+     * @param edarHdr EDAR header
+     * @param slla source link-layer address option
+     * @return EDAR Packet
+     */
+    static Ptr<Packet> MakeEdarPacket(Ipv6Address src,
+                                      Ipv6Address dst,
+                                      Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edarHdr,
+                                      Icmpv6OptionLinkLayerAddress& slla);
+
+    /**
+     * @brief Construct EDAC packet
+     * @param src source address
+     * @param dst destination address
+     * @param edacHdr EDAC header
+     * @param tlla target link-layer address option
+     * @return EDAC Packet
+     */
+    static Ptr<Packet> MakeEdacPacket(Ipv6Address src,
+                                      Ipv6Address dst,
+                                      Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edacHdr,
+                                      Icmpv6OptionLinkLayerAddress& tlla);
+
+    /**
      * @brief Parses NS packet and populates params, returning true if packet is a valid NS/NS(EARO)
      * packet
      * @param p Packet to be parsed
@@ -877,6 +910,30 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                          Icmpv6OptionLinkLayerAddress& slla,
                                          Icmpv6OptionSixLowPanCapabilityIndication& cio,
                                          std::list<Icmpv6OptionSixLowPanContext>& contexts);
+
+    /**
+     * @brief Parses EDAR packet and populates params, returning true if packet is valid
+     * @param p Packet to be parsed
+     * @param edarHdr populated with packet EDAR header
+     * @param slla contains 6LR link layer address
+     * @return True if packet is valid, false otherwise
+     */
+    static bool ParseAndValidateEdarPacket(
+        Ptr<Packet> p,
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edarHdr,
+        Icmpv6OptionLinkLayerAddress& tlla);
+
+    /**
+     * @brief Parses EDAC packet and populates params, returning true if packet is valid
+     * @param p Packet to be parsed
+     * @param edacHdr populated with packet EDAC header
+     * @param tlla contains 6LR link layer address
+     * @return True if packet is valid, false otherwise
+     */
+    static bool ParseAndValidateEdacPacket(
+        Ptr<Packet> p,
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edacHdr,
+        Icmpv6OptionLinkLayerAddress& slla);
 };
 
 } /* namespace ns3 */

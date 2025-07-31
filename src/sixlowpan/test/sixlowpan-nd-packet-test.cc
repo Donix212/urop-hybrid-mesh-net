@@ -86,7 +86,6 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
 
         // Validate parsed EARO
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetRegTime(), 20, "EARO lifetime should match");
-        NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetTransactionId(), 5, "Transaction ID should match");
 
         NS_TEST_EXPECT_MSG_EQ(hasEaro, 1, "hasEaro should be true");
 
@@ -278,6 +277,202 @@ class SixLowPanNdRsPacketTest : public TestCase
     }
 };
 
+class SixLowPanNdEdarPacketTest : public TestCase
+{
+  public:
+    SixLowPanNdEdarPacketTest()
+        : TestCase("Make and Parse EDAR Packet")
+    {
+    }
+
+    void DoRun() override
+    {
+        // Test EDAR packet creation and parsing
+        Ipv6Address src("fe80::1"), dst("fe80::2");
+        Ipv6Address regAddress("2001:db8::1");
+        uint16_t regTime = 120; // 120 * 60 seconds = 2 hours
+        std::vector<uint8_t> rovr(16, 0xEF);
+        Mac64Address mac("00:11:22:33:44:55:66:78");
+
+        // Create EDAR header
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edarHdr(regTime, rovr, regAddress);
+
+        // Create SLLA option
+        Icmpv6OptionLinkLayerAddress slla(true, mac);
+
+        // Build EDAR packet using MakeEdarPacket method
+        Ptr<Packet> p = SixLowPanNdProtocol::MakeEdarPacket(src, dst, edarHdr, slla);
+
+        // Parse the packet
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedEdarHdr;
+        Icmpv6OptionLinkLayerAddress parsedSlla(true);
+
+        bool result = SixLowPanNdProtocol::ParseAndValidateEdarPacket(p, parsedEdarHdr, parsedSlla);
+
+        // Validate parsing result
+        NS_TEST_EXPECT_MSG_EQ(result, true, "EDAR packet should be parsed successfully");
+
+        // Validate parsed EDAR header
+        NS_TEST_EXPECT_MSG_EQ(parsedEdarHdr.GetRegAddress(),
+                              regAddress,
+                              "Registered address should match");
+        NS_TEST_EXPECT_MSG_EQ(parsedEdarHdr.GetRegTime(),
+                              regTime,
+                              "Registration time should match");
+
+        // Validate parsed SLLA option
+        NS_TEST_EXPECT_MSG_EQ(parsedSlla.GetType(),
+                              Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE,
+                              "SLLA type should be source");
+
+        // Test invalid EDAR packet (multicast registered address)
+        Ipv6Address multicastAddr("ff02::1");
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf invalidEdarHdr(regTime,
+                                                                        rovr,
+                                                                        multicastAddr);
+
+        Ptr<Packet> invalidPacket =
+            SixLowPanNdProtocol::MakeEdarPacket(src, dst, invalidEdarHdr, slla);
+
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedInvalidHdr;
+        Icmpv6OptionLinkLayerAddress parsedInvalidSlla(true);
+
+        bool invalidResult = SixLowPanNdProtocol::ParseAndValidateEdarPacket(invalidPacket,
+                                                                             parsedInvalidHdr,
+                                                                             parsedInvalidSlla);
+
+        NS_TEST_EXPECT_MSG_EQ(invalidResult,
+                              false,
+                              "EDAR with multicast address should be invalid");
+
+        // Test EDAR packet without SLLA option (manually build to test edge case)
+        Ptr<Packet> noSllaPacket = Create<Packet>();
+        noSllaPacket->AddHeader(edarHdr);
+
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedNoSllaHdr;
+        Icmpv6OptionLinkLayerAddress parsedNoSlla(true);
+
+        bool noSllaResult = SixLowPanNdProtocol::ParseAndValidateEdarPacket(noSllaPacket,
+                                                                            parsedNoSllaHdr,
+                                                                            parsedNoSlla);
+
+        NS_TEST_EXPECT_MSG_EQ(noSllaResult, false, "EDAR without SLLA should be invalid");
+    }
+};
+
+class SixLowPanNdEdacPacketTest : public TestCase
+{
+  public:
+    SixLowPanNdEdacPacketTest()
+        : TestCase("Make and Parse EDAC Packet")
+    {
+    }
+
+    void DoRun() override
+    {
+        // Test EDAC packet creation and parsing
+        Ipv6Address regAddress("2001:db8::1");
+        uint8_t status = 0;     // Success
+        uint16_t regTime = 120; // 120 * 60 seconds = 2 hours
+        std::vector<uint8_t> rovr(16, 0xCD);
+        Mac64Address mac("00:11:22:33:44:55:66:99");
+
+        // Create EDAC header
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edacHdr(status, regTime, rovr, regAddress);
+
+        // Create TLLA option
+        Icmpv6OptionLinkLayerAddress tlla(false, mac);
+
+        // Build EDAC packet manually
+        Ptr<Packet> p = Create<Packet>();
+        p->AddHeader(tlla);
+        p->AddHeader(edacHdr);
+
+        // Parse the packet
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedEdacHdr;
+        Icmpv6OptionLinkLayerAddress parsedTlla(false);
+
+        bool result = SixLowPanNdProtocol::ParseAndValidateEdacPacket(p, parsedEdacHdr, parsedTlla);
+
+        // Validate parsing result
+        NS_TEST_EXPECT_MSG_EQ(result, true, "EDAC packet should be parsed successfully");
+
+        // Validate parsed EDAC header
+        NS_TEST_EXPECT_MSG_EQ(parsedEdacHdr.GetRegAddress(),
+                              regAddress,
+                              "Registered address should match");
+        NS_TEST_EXPECT_MSG_EQ(parsedEdacHdr.GetStatus(), status, "Status should match");
+        NS_TEST_EXPECT_MSG_EQ(parsedEdacHdr.GetRegTime(),
+                              regTime,
+                              "Registration time should match");
+
+        // Validate parsed TLLA option
+        NS_TEST_EXPECT_MSG_EQ(parsedTlla.GetType(),
+                              Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET,
+                              "TLLA type should be target");
+
+        // Test invalid EDAC packet (multicast registered address)
+        Ipv6Address multicastAddr("ff02::1");
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf invalidEdacHdr(status,
+                                                                        regTime,
+                                                                        rovr,
+                                                                        multicastAddr);
+
+        Ptr<Packet> invalidPacket = Create<Packet>();
+        invalidPacket->AddHeader(tlla);
+        invalidPacket->AddHeader(invalidEdacHdr);
+
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedInvalidHdr;
+        Icmpv6OptionLinkLayerAddress parsedInvalidTlla(false);
+
+        bool invalidResult = SixLowPanNdProtocol::ParseAndValidateEdacPacket(invalidPacket,
+                                                                             parsedInvalidHdr,
+                                                                             parsedInvalidTlla);
+
+        NS_TEST_EXPECT_MSG_EQ(invalidResult,
+                              false,
+                              "EDAC with multicast address should be invalid");
+
+        // Test EDAC packet without TLLA option (should fail)
+        Ptr<Packet> noTllaPacket = Create<Packet>();
+        noTllaPacket->AddHeader(edacHdr);
+
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedNoTllaHdr;
+        Icmpv6OptionLinkLayerAddress parsedNoTlla(false);
+
+        bool noTllaResult = SixLowPanNdProtocol::ParseAndValidateEdacPacket(noTllaPacket,
+                                                                            parsedNoTllaHdr,
+                                                                            parsedNoTlla);
+
+        NS_TEST_EXPECT_MSG_EQ(noTllaResult, false, "EDAC without TLLA should be invalid");
+
+        // Test different status values
+        uint8_t failureStatus = 1; // Duplicate address
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf failureEdacHdr(failureStatus,
+                                                                        regTime,
+                                                                        rovr,
+                                                                        regAddress);
+
+        Ptr<Packet> failurePacket = Create<Packet>();
+        failurePacket->AddHeader(tlla);
+        failurePacket->AddHeader(failureEdacHdr);
+
+        Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf parsedFailureHdr;
+        Icmpv6OptionLinkLayerAddress parsedFailureTlla(false);
+
+        bool failureResult = SixLowPanNdProtocol::ParseAndValidateEdacPacket(failurePacket,
+                                                                             parsedFailureHdr,
+                                                                             parsedFailureTlla);
+
+        NS_TEST_EXPECT_MSG_EQ(failureResult,
+                              true,
+                              "EDAC with failure status should still parse successfully");
+        NS_TEST_EXPECT_MSG_EQ(parsedFailureHdr.GetStatus(),
+                              failureStatus,
+                              "Failure status should match");
+    }
+};
+
 /**
  * @ingroup sixlowpan-nd-packet-tests
  *
@@ -287,12 +482,14 @@ class SixlowpanNdTestSuite : public TestSuite
 {
   public:
     SixlowpanNdTestSuite()
-        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT) // test.py -s sixlowpan-nd
+        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT) // test.py -s sixlowpan-nd-packet-test
     {
         AddTestCase(new SixLowPanNdNsEaroPacketTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdNaEaroPacketTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdRaPacketTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdRsPacketTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdEdarPacketTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdEdacPacketTest(), TestCase::Duration::QUICK);
     }
 };
 

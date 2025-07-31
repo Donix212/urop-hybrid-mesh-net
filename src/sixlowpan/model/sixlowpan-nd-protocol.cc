@@ -781,59 +781,6 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     AddressRegistration();
 }
 
-/*
-void
-SixLowPanNdProtocol::HandleSixLowPanDAC (Ptr<Packet> packet, Ipv6Address const &src,
-                                         Ipv6Address const &dst, Ptr<Ipv6Interface> interface)
-{
-  NS_LOG_FUNCTION (this << packet << src << dst << interface);
-
-  Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice> (interface->GetDevice ());
-  NS_ASSERT_MSG (
-    sixDevice,
-    "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
-
-  Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf dacHdr (0);
-  packet->RemoveHeader (dacHdr);
-
-  Ipv6Address reg = dacHdr.GetRegAddress ();
-
-  if (!reg.IsMulticast () && src != Ipv6Address::GetAny () && !src.IsMulticast ())
-    {
-      Ptr<SixLowPanNdiscCache> cache = DynamicCast<SixLowPanNdiscCache> (FindCache (sixDevice));
-      NS_ASSERT_MSG (cache, "Can not find a SixLowPanNdiscCache");
-
-      SixLowPanNdiscCache::SixLowPanEntry *entry = 0;
-      entry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry *> (cache->Lookup (reg));
-
-      if (dacHdr.GetStatus () == 0)           // mark the entry as registered, send ARO with
-status=0
-        {
-          entry->MarkRegistered (dacHdr.GetRegTime ());
-
-          //              SendSixLowPanNaWithAro (dst, dacHdr.GetRegAddress (), dacHdr.GetStatus (),
-dacHdr.GetRegTime (),
-          //                                dacHdr.GetRovr (), sixDevice);
-        }
-      else           // remove the tentative entry, send ARO with error code
-        {
-          cache->Remove (entry);
-
-          //              Ipv6Address address = Ipv6Address::MakeAutoconfiguredLinkLocalAddress
-(dacHdr.GetRovr ());
-          // Ipv6Address address = sixDevice->MakeLinkLocalAddressFromMac (dacHdr.GetEui64 ());
-
-          //              SendSixLowPanNaWithAro (dst, address, dacHdr.GetStatus (),
-dacHdr.GetRegTime (), dacHdr.GetRovr (), sixDevice);
-        }
-    }
-  else
-    {
-      NS_LOG_ERROR ("Validity checks for DAR not satisfied.");
-      return;
-    }
-}
-*/
 Ptr<NdiscCache>
 SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface)
 {
@@ -1802,6 +1749,46 @@ SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
     return p;
 }
 
+Ptr<Packet>
+SixLowPanNdProtocol::MakeEdarPacket(Ipv6Address src,
+                                    Ipv6Address dst,
+                                    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edarHdr,
+                                    Icmpv6OptionLinkLayerAddress& slla)
+{
+    Ptr<Packet> p = Create<Packet>();
+
+    p->AddHeader(slla);
+
+    edarHdr.CalculatePseudoHeaderChecksum(src,
+                                          dst,
+                                          p->GetSize() + edarHdr.GetSerializedSize(),
+                                          PROT_NUMBER);
+
+    p->AddHeader(edarHdr);
+
+    return p;
+}
+
+Ptr<Packet>
+SixLowPanNdProtocol::MakeEdacPacket(Ipv6Address src,
+                                    Ipv6Address dst,
+                                    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edacHdr,
+                                    Icmpv6OptionLinkLayerAddress& tlla)
+{
+    Ptr<Packet> p = Create<Packet>();
+
+    p->AddHeader(tlla);
+
+    edacHdr.CalculatePseudoHeaderChecksum(src,
+                                          dst,
+                                          p->GetSize() + edacHdr.GetSerializedSize(),
+                                          PROT_NUMBER);
+
+    p->AddHeader(edacHdr);
+
+    return p;
+}
+
 bool
 SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     Ptr<Packet> p,
@@ -2020,7 +2007,7 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
             break;
         default:
             /*RA message includes unknown option, stop processing*/
-            NS_ABORT_MSG("RA message includes unknown option, stop processing");
+            NS_LOG_LOGIC("RA message includes unknown option, stop processing");
             next = false;
             break;
         }
@@ -2058,6 +2045,112 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
         // RAs must contain one (and only one) SixLowPan Capability Indication Option
         NS_LOG_LOGIC("SixLowPanNdProtocol::ParseAndValidateRaPacket - no Option SixLowPan "
                      "Capability Indication Option- ignoring RA");
+        return false;
+    }
+
+    return true;
+}
+
+bool
+SixLowPanNdProtocol::ParseAndValidateEdarPacket(
+    Ptr<Packet> p,
+    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edarHdr,
+    Icmpv6OptionLinkLayerAddress& slla)
+{
+    // Remove the EDAR header first
+    p->RemoveHeader(edarHdr);
+
+    // Check Registered Address is not multicast
+    if (edarHdr.GetRegAddress().IsMulticast())
+    {
+        NS_LOG_LOGIC("EDAR Registered Address cannot be multicast: " << edarHdr.GetRegAddress());
+        return false;
+    }
+
+    bool hasSlla = false;
+    bool next = true;
+
+    // Parse options following the EDAR header
+    while (next == true)
+    {
+        uint8_t type = 0;
+        p->CopyData(&type, sizeof(type));
+
+        switch (type)
+        {
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
+            p->RemoveHeader(slla);
+            hasSlla = true;
+            break;
+        default:
+            /* EDAR message includes unknown option, stop processing*/
+            NS_LOG_LOGIC("EDAR message includes unknown option, stop processing");
+            next = false;
+            break;
+        }
+        if (p->GetSize() == 0)
+        {
+            next = false;
+        }
+    }
+
+    // EDAR messages MUST contain SLLA option
+    if (!hasSlla)
+    {
+        NS_LOG_LOGIC("EDAR message MUST have source link-layer option, discarding it.");
+        return false;
+    }
+
+    return true;
+}
+
+bool
+SixLowPanNdProtocol::ParseAndValidateEdacPacket(
+    Ptr<Packet> p,
+    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf& edacHdr,
+    Icmpv6OptionLinkLayerAddress& tlla)
+{
+    // Remove the EDAC header first
+    p->RemoveHeader(edacHdr);
+
+    // Check Registered Address is not multicast
+    if (edacHdr.GetRegAddress().IsMulticast())
+    {
+        NS_LOG_LOGIC("EDAC Registered Address cannot be multicast: " << edacHdr.GetRegAddress());
+        return false;
+    }
+
+    bool hasTlla = false;
+    bool next = true;
+
+    // Parse options following the EDAC header
+    while (next == true)
+    {
+        uint8_t type = 0;
+        p->CopyData(&type, sizeof(type));
+
+        switch (type)
+        {
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET:
+            p->RemoveHeader(tlla);
+            hasTlla = true;
+            break;
+        default:
+            /* EDAC message includes unknown option, stop processing*/
+            NS_LOG_LOGIC("EDAC message includes unknown option, stop processing");
+            next = false;
+            break;
+        }
+        if (p->GetSize() == 0)
+        {
+            next = false;
+        }
+    }
+
+    // EDAC messages MUST contain TLLA option
+    if (!hasTlla)
+    {
+        NS_LOG_LOGIC("EDAC message MUST have target link-layer option, discarding it.");
         return false;
     }
 
