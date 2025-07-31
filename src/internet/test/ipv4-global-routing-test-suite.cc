@@ -10,6 +10,7 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/ipv4-global-routing.h"
+#include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/ipv4-routing-protocol.h"
@@ -1399,6 +1400,255 @@ EcmpRouteCalculationTestCase::DoRun()
 /**
  * @ingroup internet-test
  *
+ * @brief Tests the correctness of stubnetwork routes.
+ */
+class StubNetworkTest : public TestCase
+{
+  public:
+    StubNetworkTest();
+    void DoSetup() override;
+    void DoRun() override;
+    ~StubNetworkTest() override;
+
+  private:
+    /**
+     * @brief Send some data
+     *
+     */
+    void SendData();
+    /**
+     * Handle an incoming packet
+     * @param socket The input socket.
+     */
+    void HandleRead(Ptr<Socket> socket);
+    /**
+     * @brief Shutdown a socket
+     *
+     */
+    void ShutDownSock();
+
+    uint16_t m_packetSize;                    //!< Packet size.
+    std::pair<Ptr<Socket>, bool> m_sendSocks; //!< Sending sockets.
+    uint8_t m_count;                          //!< Number of packets received.
+    uint8_t m_firstInterface;  //!< Number of packets received on the first interface.
+    uint8_t m_secondInterface; //!< Number of packets received on the second interface.
+    NodeContainer nodes;       //!< Nodes used in the test.
+};
+
+StubNetworkTest::StubNetworkTest()
+    : TestCase("StubNetwork TestCase"),
+      m_count(0)
+{
+    m_packetSize = 50;
+}
+
+StubNetworkTest::~StubNetworkTest()
+{
+    if (m_sendSocks.first)
+    {
+        m_sendSocks.first->Close();
+        m_sendSocks.first = nullptr;
+    }
+}
+
+void
+StubNetworkTest::SendData()
+{
+    if (!m_sendSocks.second)
+    {
+        return;
+    }
+    Ptr<Packet> packet = Create<Packet>(m_packetSize);
+
+    m_sendSocks.first->Send(packet);
+}
+
+void
+StubNetworkTest::HandleRead(Ptr<Socket> socket)
+{
+    Ptr<Packet> packet;
+    Address from;
+    while ((packet = socket->RecvFrom(from)))
+    {
+        if (packet->GetSize() == 0)
+        { // EOF
+            break;
+        }
+        Ipv4PacketInfoTag tag;
+        bool found;
+        found = packet->PeekPacketTag(tag);
+        if (found)
+        {
+            if (tag.GetRecvIf() == 1)
+            {
+                m_firstInterface++;
+            }
+            if (tag.GetRecvIf() == 2)
+            {
+                m_secondInterface++;
+            }
+            m_count++;
+        }
+    }
+}
+
+void
+StubNetworkTest::ShutDownSock()
+{
+    m_sendSocks.first->Close();
+    m_sendSocks.first = nullptr;
+}
+
+void
+StubNetworkTest::DoSetup()
+{
+    /*
+    //   Creating a Simple topology with 4 nodes and 4 links
+    //
+    //
+    //
+    //          ------n1------
+    //         /              \
+    //        /                \
+    //       n0                n3
+    //        \                /
+    //         \              /
+    //          ------n2------
+    //
+    //    Link n0-n1: 10.1.1.1/24,10.1.1.2/24
+    //    Link n0-n2: 10.1.2.1/24,10.1.2.2/24
+    //    Link n1-n3: 10.1.3.1/24,10.1.3.2/24
+    //    Link n2-n3: 10.1.4.1/24,10.1.4.2/24 and an Extra Ip Address on n2 10.1.4.10/24
+    */
+
+    nodes.Create(4);
+    NodeContainer node01;
+    node01.Add(nodes.Get(0));
+    node01.Add(nodes.Get(1));
+    NodeContainer node23;
+    node23.Add(nodes.Get(2));
+    node23.Add(nodes.Get(3));
+    NodeContainer node02;
+    node02.Add(nodes.Get(0));
+    node02.Add(nodes.Get(2));
+    NodeContainer node13;
+    node13.Add(nodes.Get(1));
+    node13.Add(nodes.Get(3));
+    Ipv4GlobalRoutingHelper globalhelper;
+    InternetStackHelper stack;
+    stack.SetRoutingHelper(globalhelper);
+    stack.Install(nodes);
+    SimpleNetDeviceHelper devHelper;
+    devHelper.SetNetDevicePointToPointMode(true);
+    NetDeviceContainer d01 = devHelper.Install(node01);
+    NetDeviceContainer d23 = devHelper.Install(node23);
+    NetDeviceContainer d02 = devHelper.Install(node02);
+
+    NetDeviceContainer d13 = devHelper.Install(node13);
+
+    // Assign IP addresses to the devices
+    Ipv4AddressHelper address;
+    address.SetBase("10.1.1.0", "255.255.255.0");
+    Ipv4InterfaceContainer i01 = address.Assign(d01);
+    address.SetBase("10.1.4.0", "255.255.255.0");
+    Ipv4InterfaceContainer i23 = address.Assign(d23);
+
+    address.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer i02 = address.Assign(d02);
+
+    address.SetBase("10.1.3.0", "255.255.255.0");
+    Ipv4InterfaceContainer i13 = address.Assign(d13);
+
+    Ptr<Ipv4> ip2 = nodes.Get(2)->GetObject<Ipv4>();
+
+    int32_t interface = ip2->GetInterfaceForDevice(d23.Get(0));
+
+    Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress("10.1.4.10", "255.255.255.0");
+    ip2->AddAddress(interface, ipv4Addr);
+}
+
+void
+StubNetworkTest::DoRun()
+{
+    // This TestCase tests if Routes to stub networks are built correctly, Using a topology
+    // described in issue #1242 of the issue tracker We check if the routing tables are correct. We
+    // then send a packet from n0 to the secondary address of interface 2-4 on node 2 The packet
+    // should be received by interface of n2 facing n0
+    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+
+    // Create the applications to send UDP datagrams of size
+    // 50 bytes
+    TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
+    uint16_t port = 9; // Discard port (RFC 863)
+
+    m_sendSocks.first = Socket::CreateSocket(nodes.Get(0), tid);
+    m_sendSocks.first->Bind();
+    m_sendSocks.first->Connect(InetSocketAddress(Ipv4Address("10.1.4.10"), port));
+    m_sendSocks.second = true;
+    Simulator::Schedule(Seconds(0), &StubNetworkTest::SendData, this);
+
+    // Create an optional packet sink to receive these packets
+
+    Ptr<Socket> sink = Socket::CreateSocket(nodes.Get(2), tid);
+    sink->Bind(Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
+    sink->Listen();
+    sink->ShutdownSend();
+    sink->SetRecvPktInfo(true);
+    sink->SetRecvCallback(MakeCallback(&StubNetworkTest::HandleRead, this));
+
+    // uncomment to see the routing table
+    //  Ptr<OutputStreamWrapper> routingstream = Create<OutputStreamWrapper>(&std::cout);
+    //  Ipv4GlobalRoutingHelper::PrintRoutingTableAt(Seconds(1), nodes.Get(1), routingstream);
+
+    Simulator::Run();
+
+    // now the tests -------
+
+    // test 1:
+    // since the topology is symmetric it is sufficient to check the routing table for n0
+    // get the necessary pointers
+    Ptr<Ipv4L3Protocol> ip0 = nodes.Get(0)->GetObject<Ipv4L3Protocol>();
+    NS_TEST_ASSERT_MSG_NE(ip0, nullptr, "Error-- no Ipv4 object");
+    Ptr<Ipv4RoutingProtocol> routing0 = ip0->GetRoutingProtocol();
+    NS_TEST_ASSERT_MSG_NE(routing0, nullptr, "Error-- no Ipv4 routing protocol object");
+    Ptr<Ipv4GlobalRouting> globalRouting0 = routing0->GetObject<Ipv4GlobalRouting>();
+    NS_TEST_ASSERT_MSG_NE(globalRouting0, nullptr, "Error-- no Ipv4GlobalRouting object");
+
+    Ipv4RoutingTableEntry* route = nullptr;
+    // n0
+    // Test that the right number of routes found.
+    uint32_t nRoutes0 = globalRouting0->GetNRoutes();
+    NS_LOG_DEBUG("StubNetworkTest nRoutes0 " << nRoutes0);
+    NS_TEST_ASSERT_MSG_EQ(nRoutes0, 12, "Error-- not two entries");
+    for (uint32_t i = 0; i < globalRouting0->GetNRoutes(); i++)
+    {
+        route = globalRouting0->GetRoute(i);
+        NS_LOG_DEBUG("entry dest " << route->GetDest() << " gw " << route->GetGateway());
+    }
+    // Spot check the last route
+    if (route)
+    {
+        NS_TEST_ASSERT_MSG_EQ(route->GetDest(),
+                              Ipv4Address("10.1.2.0"),
+                              "Error-- wrong destination");
+        NS_TEST_ASSERT_MSG_EQ(route->GetGateway(),
+                              Ipv4Address("10.1.2.2"),
+                              "Error-- wrong gateway");
+    }
+
+    // test 2:
+    //  Send a packet from n0 to the secondary address of interface 2-4 on node 2.m_secondInterface
+    //  represents the interface of n2 facing n1
+    NS_TEST_ASSERT_MSG_EQ(m_count, 1, "Error-- wrong number of packets");
+
+    NS_TEST_ASSERT_MSG_EQ(m_secondInterface, 1, "Error-- wrong number of packets");
+
+    Simulator::Destroy();
+}
+
+/**
+ * @ingroup internet-test
+ *
  * @brief IPv4 GlobalRouting TestSuite
  */
 class Ipv4GlobalRoutingTestSuite : public TestSuite
@@ -1419,6 +1669,7 @@ Ipv4GlobalRoutingTestSuite::Ipv4GlobalRoutingTestSuite()
     AddTestCase(new Ipv4DynamicGlobalRoutingTestCase, TestCase::Duration::QUICK);
     AddTestCase(new Ipv4GlobalRoutingSlash32TestCase, TestCase::Duration::QUICK);
     AddTestCase(new EcmpRouteCalculationTestCase, TestCase::Duration::QUICK);
+    AddTestCase(new StubNetworkTest, TestCase::Duration::QUICK);
 }
 
 static Ipv4GlobalRoutingTestSuite

@@ -729,7 +729,10 @@ class GlobalRouteManagerImpl
   private:
     SPFVertex* m_spfroot;           //!< the root node
     GlobalRouteManagerLSDB* m_lsdb; //!< the Link State DataBase (LSDB) of the Global Route Manager
-
+    std::vector<
+        std::pair<std::tuple<Ipv4Address, Ipv4Address, Ipv4Mask>, std::pair<int32_t, uint32_t>>>
+        stubNetworkRoutes; //!< List of all the stub network routes that are to be injected into the
+                           // routing table of root node
     /**
      * @brief Test if a node is a stub, from an OSPF sense.
      *
@@ -758,8 +761,9 @@ class GlobalRouteManagerImpl
      * broadcast interfaces for which no neighboring router can be found
      *
      * @param v vertex to be processed
+     * @param stubDistance distance from root node to the child node we are adding stub networks for
      */
-    void SPFProcessStubs(SPFVertex* v);
+    void SPFProcessStubs(SPFVertex* v, uint32_t stubDistance);
 
     /**
      * @brief Process Autonomous Systems (AS) External LSA
@@ -881,12 +885,10 @@ class GlobalRouteManagerImpl
     void SPFIntraAddTransit(SPFVertex* v);
 
     /**
-     * @brief Add a stub to the routing tables
-     *
-     * @param l the global routing link record
-     * @param v the vertex
+     * @brief Add all the stub networks We found in part two of the spf calculation into the routing
+     * table
      */
-    void SPFIntraAddStub(GlobalRoutingLinkRecord* l, SPFVertex* v);
+    void SPFIntraAddStub();
 
     /**
      * @brief Add an external route to the routing tables

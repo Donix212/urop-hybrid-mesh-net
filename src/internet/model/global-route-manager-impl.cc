@@ -1457,7 +1457,8 @@ GlobalRouteManagerImpl::SPFCalculate(Ipv4Address root)
     }
 
     // Second stage of SPF calculation procedure
-    SPFProcessStubs(m_spfroot);
+    SPFProcessStubs(m_spfroot, 0);
+    SPFIntraAddStub();
     for (uint32_t i = 0; i < m_lsdb->GetNumExtLSAs(); i++)
     {
         m_spfroot->ClearVertexProcessed();
@@ -1631,59 +1632,167 @@ GlobalRouteManagerImpl::SPFAddASExternal(GlobalRoutingLSA* extlsa, SPFVertex* v)
 }
 
 // Processing logic from RFC 2328, page 166 and quagga ospf_spf_process_stubs ()
-// stub link records will exist for point-to-point interfaces and for
+// Stub link records will exist for point-to-point interfaces and for
 // broadcast interfaces for which no neighboring router can be found
+// Note: If multiple exit Interfaces are present from the root node, then only the
+// route with the shortest path to the link will be added to the table.This may lead to one extra
+// hop for the packets destined for the stub network. This is because LSAs do not export
+// information about the multiple addresses on the interface and rely on stub networks, which span
+// at least two nodes in the case of Point to point links. This is a known limitation for
+// globalRouting.
 void
-GlobalRouteManagerImpl::SPFProcessStubs(SPFVertex* v)
+GlobalRouteManagerImpl::SPFProcessStubs(SPFVertex* v, uint32_t stubDistance)
 {
     NS_LOG_FUNCTION(this << v);
     NS_LOG_LOGIC("Processing stubs for " << v->GetVertexId());
+
     if (v->GetVertexType() == SPFVertex::VertexRouter)
     {
         GlobalRoutingLSA* rlsa = v->GetLSA();
         NS_LOG_LOGIC("Processing router LSA with id " << rlsa->GetLinkStateId());
+
+        // we walk through all the link records of this vertex and add the stubnetwork records found
+        // to the list. Note: There are no Equal cost entries for stub networks . Since the stub
+        // network exists on both ends of the link Packets may travel one extra hop to reach the
+        // desired ip in case they are destined for a stubnetwork.
+
+        // XXX simplified logic for the moment.  There are two cases to consider:
+        // 1) the stub network is on this router; do nothing. there is an entry for the stub network
+        // on the connected vertex we will use that.
+        // 2) the stub network is on a remote router, so I should use the
+        // same next hop that I use to get to vertex v
+
         for (uint32_t i = 0; i < rlsa->GetNLinkRecords(); i++)
         {
+            if (v->GetVertexId() == m_spfroot->GetVertexId())
+            {
+                NS_LOG_LOGIC("Stub is on local host: " << v->GetVertexId() << "; skip this vertex");
+                break;
+            }
+
+            //
+            // Get the Global Router Link State Advertisement from the vertex we're
+            // adding the routes for.  The LSA will have a number of attached Global Router
+            // Link Records corresponding to links off of that vertex / node.  We're going
+            // to be interested in the records corresponding to stubnetwork links.
+            //
+
             NS_LOG_LOGIC("Examining link " << i << " of " << v->GetVertexId() << "'s "
                                            << v->GetLSA()->GetNLinkRecords() << " link records");
             GlobalRoutingLinkRecord* l = v->GetLSA()->GetLinkRecord(i);
+
             if (l->GetLinkType() == GlobalRoutingLinkRecord::StubNetwork)
             {
                 NS_LOG_LOGIC("Found a Stub record to " << l->GetLinkId());
-                SPFIntraAddStub(l, v);
-                continue;
+
+                if (v->GetVertexId() == m_spfroot->GetVertexId())
+                {
+                    NS_LOG_LOGIC("Stub is on local host: " << v->GetVertexId() << "; returning");
+                    continue;
+                }
+                NS_LOG_LOGIC("Stub is on remote host: " << v->GetVertexId() << "; installing");
+                NS_ASSERT_MSG(v->GetLSA(),
+                              "GlobalRouteManagerImpl::SPFIntraAddRouter (): "
+                              "Expected valid LSA in SPFVertex* v");
+                Ipv4Mask tempMask(l->GetLinkData().Get());
+                Ipv4Address tempIp = l->GetLinkId();
+                tempIp = tempIp.CombineMask(tempMask);
+
+                for (uint32_t j = 0; j < v->GetNRootExitDirections(); j++)
+                {
+                    SPFVertex::NodeExit_t exit = v->GetRootExitDirection(j);
+                    Ipv4Address nextHop = exit.first;
+                    int32_t outIf = exit.second;
+
+                    // we need to check if the stub network is already in the list. If it is, we
+                    // don't need to add it again. this happens because since stubnetwork records
+                    // are present at both ends of a point to point link.
+                    std::tuple<Ipv4Address, Ipv4Address, Ipv4Mask> key =
+                        std::make_tuple(tempIp, nextHop, tempMask);
+
+                    std::pair<int32_t, uint32_t> ifHop = std::make_pair(outIf, stubDistance);
+
+                    // if there multiple next hops from the root to the stub network, we take the
+                    // one which is closest to the root. This avoids routing loops , the number of
+                    // hops from root is in stubDistance.
+                    auto it = std::find_if(stubNetworkRoutes.begin(),
+                                           stubNetworkRoutes.end(),
+                                           [&](const auto& entry) {
+                                               return std::get<0>(entry.first) == std::get<0>(key);
+                                           });
+                    if (it != stubNetworkRoutes.end())
+                    {
+                        // check if this route is closer to the root than the one we have already
+                        if (stubDistance <= it->second.second)
+                        {
+                            // if this represents a shorter path, remove the old one.
+                            if (stubDistance < it->second.second)
+                            {
+                                while (std::find_if(stubNetworkRoutes.begin(),
+                                                    stubNetworkRoutes.end(),
+                                                    [&](const auto& entry) {
+                                                        return std::get<0>(entry.first) ==
+                                                               std::get<0>(key);
+                                                    }) != stubNetworkRoutes.end())
+                                {
+                                    stubNetworkRoutes.erase(it);
+                                }
+                                // if this is a unique route, add it to the list. ECMP is
+                                // supported.
+                                stubNetworkRoutes.emplace_back(key, ifHop);
+                            }
+                            else
+                            {
+                                if (outIf == it->second.first)
+                                {
+                                    stubNetworkRoutes.erase(it);
+                                }
+                                // if this is a unique route, add it to the list. ECMP is
+                                // supported.
+                                stubNetworkRoutes.emplace_back(key, ifHop);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // this is the first time we are seeing this stubnetwork add it.
+                        stubNetworkRoutes.emplace_back(key, ifHop);
+                    }
+                }
+            }
+        }
+
+        for (uint32_t i = 0; i < v->GetNChildren(); i++)
+        {
+            if (!v->GetChild(i)->IsVertexProcessed())
+            {
+                SPFProcessStubs(v->GetChild(i), stubDistance + 1);
+                v->GetChild(i)->SetVertexProcessed(true);
             }
         }
     }
-    for (uint32_t i = 0; i < v->GetNChildren(); i++)
+    else
     {
-        if (!v->GetChild(i)->IsVertexProcessed())
+        for (uint32_t i = 0; i < v->GetNChildren(); i++)
         {
-            SPFProcessStubs(v->GetChild(i));
-            v->GetChild(i)->SetVertexProcessed(true);
+            if (!v->GetChild(i)->IsVertexProcessed())
+            {
+                SPFProcessStubs(v->GetChild(i), stubDistance);
+                v->GetChild(i)->SetVertexProcessed(true);
+            }
         }
     }
 }
 
-// RFC2328 16.1. second stage.
+// RFC2328 16.1. second stage. Add all the stub network routes to the root node
+// that we found in SPFProcessStubs()
 void
-GlobalRouteManagerImpl::SPFIntraAddStub(GlobalRoutingLinkRecord* l, SPFVertex* v)
+GlobalRouteManagerImpl::SPFIntraAddStub()
 {
-    NS_LOG_FUNCTION(this << l << v);
+    NS_LOG_FUNCTION(this);
 
     NS_ASSERT_MSG(m_spfroot, "GlobalRouteManagerImpl::SPFIntraAddStub (): Root pointer not set");
 
-    // XXX simplified logic for the moment.  There are two cases to consider:
-    // 1) the stub network is on this router; do nothing for now
-    //    (already handled above)
-    // 2) the stub network is on a remote router, so I should use the
-    // same next hop that I use to get to vertex v
-    if (v->GetVertexId() == m_spfroot->GetVertexId())
-    {
-        NS_LOG_LOGIC("Stub is on local host: " << v->GetVertexId() << "; returning");
-        return;
-    }
-    NS_LOG_LOGIC("Stub is on remote host: " << v->GetVertexId() << "; installing");
     //
     // The root of the Shortest Path First tree is the router to which we are
     // going to write the actual routing table entries.  The vertex corresponding
@@ -1733,30 +1842,18 @@ GlobalRouteManagerImpl::SPFIntraAddStub(GlobalRoutingLinkRecord* l, SPFVertex* v
             NS_ASSERT_MSG(ipv4,
                           "GlobalRouteManagerImpl::SPFIntraAddRouter (): "
                           "QI for <Ipv4> interface failed");
+
             //
-            // Get the Global Router Link State Advertisement from the vertex we're
-            // adding the routes to.  The LSA will have a number of attached Global Router
-            // Link Records corresponding to links off of that vertex / node.  We're going
-            // to be interested in the records corresponding to point-to-point links.
-            //
-            NS_ASSERT_MSG(v->GetLSA(),
-                          "GlobalRouteManagerImpl::SPFIntraAddRouter (): "
-                          "Expected valid LSA in SPFVertex* v");
-            Ipv4Mask tempmask(l->GetLinkData().Get());
-            Ipv4Address tempip = l->GetLinkId();
-            tempip = tempip.CombineMask(tempmask);
-            //
-            // Here's why we did all of that work.  We're going to add a host route to the
-            // host address found in the m_linkData field of the point-to-point link
-            // record.  In the case of a point-to-point link, this is the local IP address
-            // of the node connected to the link.  Each of these point-to-point links
-            // will correspond to a local interface that has an IP address to which
-            // the node at the root of the SPF tree can send packets.  The vertex <v>
-            // (corresponding to the node that has these links and interfaces) has
-            // an m_nextHop address precalculated for us that is the address to which the
-            // root node should send packets to be forwarded to these IP addresses.
-            // Similarly, the vertex <v> has an m_rootOif (outbound interface index) to
-            // which the packets should be send for forwarding.
+            // Here's why we did all of that work.  We're going to add a stub network route to the
+            // stub network found in the m_linkId and m_linkData field of the stub network link
+            // record.  In the case of a stub network link, this is the IP address and the network
+            // mask of the node connected to the link.  Each of these stub network links will
+            // correspond to a local interface that has a network address to which the node at the
+            // root of the SPF tree can send packets.  The vertex <v> (corresponding to the node
+            // that has these links and interfaces) has an m_nextHop address precalculated for us
+            // that is the address to which the root node should send packets to be forwarded to
+            // these IP addresses. Similarly, the vertex <v> has an m_rootOif (outbound interface
+            // index) to which the packets should be send for forwarding.
             //
 
             Ptr<GlobalRouter> router = node->GetObject<GlobalRouter>();
@@ -1766,29 +1863,31 @@ GlobalRouteManagerImpl::SPFIntraAddStub(GlobalRoutingLinkRecord* l, SPFVertex* v
             }
             Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();
             NS_ASSERT(gr);
-            // walk through all next-hop-IPs and out-going-interfaces for reaching
-            // the stub network gateway 'v' from the root node
-            for (uint32_t i = 0; i < v->GetNRootExitDirections(); i++)
+            // walk through all the stubNertworkRoutes we added to the list in SPFProcessStubs() and
+            // add them to this root nodes routing table
+            for (const auto& [key, ifHop] : stubNetworkRoutes)
             {
-                SPFVertex::NodeExit_t exit = v->GetRootExitDirection(i);
-                Ipv4Address nextHop = exit.first;
-                int32_t outIf = exit.second;
-                if (outIf >= 0)
+                const auto& [dest, nextHop, mask] = key;
+
+                if (ifHop.first >= 0)
                 {
-                    gr->AddNetworkRouteTo(tempip, tempmask, nextHop, outIf);
-                    NS_LOG_LOGIC("(Route " << i << ") Node " << node->GetId()
-                                           << " add network route to " << tempip
-                                           << " using next hop " << nextHop << " via interface "
-                                           << outIf);
+                    gr->AddNetworkRouteTo(dest, mask, nextHop, ifHop.first);
+
+                    NS_LOG_LOGIC("Node " << node->GetId() << " add network route to " << dest
+                                         << " using next hop " << nextHop << " via interface "
+                                         << ifHop.first);
                 }
                 else
                 {
-                    NS_LOG_LOGIC("(Route " << i << ") Node " << node->GetId()
-                                           << " NOT able to add network route to " << tempip
-                                           << " using next hop " << nextHop
-                                           << " since outgoing interface id is negative");
+                    NS_LOG_LOGIC("Node " << node->GetId() << " NOT able to add network route to "
+                                         << dest << " using next hop " << nextHop
+                                         << " since outgoing interface id is negative");
                 }
             }
+            // done adding all the stub networks
+            // clear the list
+            stubNetworkRoutes.clear();
+
             return;
         }
     }
