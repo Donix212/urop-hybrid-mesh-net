@@ -16,9 +16,6 @@ The 6LoWPAN model design does not follow the standard from an architectural stan
 other kinds of networks such as Sub-1 GHz low-power RF, Bluetooth LE, etc. Other than that, the module strictly follows :rfc:`4944` and :rfc:`6282`, with the exception of header compression 2 (HC2) encoding which is not supported, as it has been superseded by
 IP Header Compression (IPHC) and Next Header Compression (NHC) types (\ :rfc:`6282`).
 
-Design
-======
-
 The model design does not follow strictly the standard from an architectural
 standpoint, as it does extend it beyond the original scope by supporting also
 other kinds of networks.
@@ -27,38 +24,11 @@ Other than that, the module strictly follows :rfc:`4944` and :rfc:`6282`, with t
 exception that HC2 encoding is not supported, as it has been superseded by IPHC and NHC
 compression type (\ :rfc:`6282`).
 
-IPHC stateful (context-based) compression is supported. With the implementation of :rfc:`6775`
-("Neighbor Discovery Optimization for IPv6 over Low-Power Wireless Personal Area Networks (6LoWPANs)"),
-contexts can now be distributed automatically via 6LoWPAN Neighbor Discovery or added manually.
-
-**Automatic Context Distribution (Recommended)**
-
-The preferred method is to use 6LoWPAN-ND for automatic context distribution, where the 6LBR will advertise the contexts via the 6CO option that will be included in Router Advertisements for 6LNs and 6LRs to learn::
-
-    // Configure 6LBR to advertise contexts automatically
-    SixLowPanHelper sixlowpan;
-    sixlowpan.InstallSixLowPanNdBorderRouter(borderRouterDevice, "2001::");
-    sixlowpan.AddAdvertisedContext(borderRouterDevice, Ipv6Prefix("2001::", 64));
-
-    // 6LNs will automatically learn contexts from Router Advertisements
-    sixlowpan.InstallSixLowPanNdNode(nodeDevice);
-
-**Manual Context Configuration (Legacy)**
-
-For scenarios where automatic distribution is not desired or available, contexts can be added manually::
-
-    // Manual context setup - must be identical on all nodes
-    sixlowpan.AddContext(allDevices, 0, Ipv6Prefix("2001::", 64), Time(Minutes(60)));
-
-Note that when using manual context configuration, all nodes in the network must have
-identical context configurations to avoid decompression failures
-
-NetDevice
-#########
+** SixLowPanNetDevice**
 
 The whole module is developed as a transparent NetDevice, which can act as a
 proxy between IPv6 and any NetDevice (the module has been successfully tested
-with ``PointToPointNedevice``, ``CsmaNetDevice`` and ``LrWpanNetDevice``). For this reason, the module implements a virtual NetDevice, and all the calls are passed
+with ``PointToPointNetDevice``, ``CsmaNetDevice`` and ``LrWpanNetDevice``). For this reason, the module implements a virtual NetDevice, and all the calls are passed
 without modifications to the underlying NetDevice. The only important difference is in
 GetMtu behaviour. It will always return *at least* 1280 bytes, as is the minimum IPv6 MTU.
 
@@ -146,14 +116,17 @@ In ns-3, 6LoWPAN-ND subclasses Icmpv6L4Protocol, taking over the functions of co
 It does this by introducing a registration mechanism for 6LoWPAN nodes (6LNs) to register their addresses with a 6LoWPAN router (6LR) or border router (6LBR).
 This allows 6LNs to use the 6LR/LBR as a proxy for address resolution and neighbor discovery, reducing the need for broadcast messages.
 
-Every node that implements 6LoWPAN-ND will have a protocol stack that looks like the following:
+Every node that implements 6LoWPAN-ND will typically have a protocol stack that resembles the following:
 
-.. _fig-sixlowpanndprotocolstack:
+.. list-table::
+   :align: center
+   :class: bordered-table
+   :header-rows: 0
 
-.. figure:: figures/sixlowpanndprotocolstack.*
-    :width: 200
-
-    Protocol Stack of a node supporting 6LoWPAN-ND
+   * - **L4 SixLowPanNdProtocol (Subclasses Icmpv6L4Protocol)**
+   * - **L3 Ipv6L3Protocol**
+   * - **L2.5 SixLowPanNetDevice (shim)**
+   * - **L2 LrWpanNetDevice**
 
 6LoWPAN-ND Network Topologies:
 ------------------------------
@@ -219,6 +192,33 @@ in advance.
 
 .. note::
     By default, 6LoWPAN will use an EtherType equal to 0xA0ED, as mandated by :rfc:`7973`. If the device does not support EtherTypes (e.g., 802.15.4), this value is discarded.
+
+IPHC stateful (context-based) compression is supported. With the implementation of :rfc:`6775`
+("Neighbor Discovery Optimization for IPv6 over Low-Power Wireless Personal Area Networks (6LoWPANs)"),
+contexts can now be distributed automatically via 6LoWPAN Neighbor Discovery or added manually.
+
+
+**Automatic Context Distribution (Recommended)**
+
+The preferred method is to use 6LoWPAN-ND for automatic context distribution, where the 6LBR will advertise the contexts via the 6CO option that will be included in Router Advertisements for 6LNs and 6LRs to learn::
+
+    // Configure 6LBR to advertise contexts automatically
+    SixLowPanHelper sixlowpan;
+    sixlowpan.InstallSixLowPanNdBorderRouter(borderRouterDevice, "2001::");
+    sixlowpan.AddAdvertisedContext(borderRouterDevice, Ipv6Prefix("2001::", 64));
+
+    // 6LNs will automatically learn contexts from Router Advertisements
+    sixlowpan.InstallSixLowPanNdNode(nodeDevice);
+
+**Manual Context Configuration (Legacy)**
+
+For scenarios where automatic distribution is not desired or available, contexts can be added manually::
+
+    // Manual context setup - must be identical on all nodes
+    sixlowpan.AddContext(allDevices, 0, Ipv6Prefix("2001::", 64), Time(Minutes(60)));
+
+Note that when using manual context configuration, all nodes in the network must have
+identical context configurations to avoid decompression failures
 
 Helpers
 ~~~~~~~
