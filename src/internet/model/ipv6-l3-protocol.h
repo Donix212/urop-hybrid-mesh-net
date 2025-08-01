@@ -705,6 +705,15 @@ class Ipv6L3Protocol : public Ipv6
     bool GetStrongEndSystemModel() const override;
 
     /**
+     * @brief Decides whether to send an ICMP error depending on the packet
+     *
+     * @param ipHeader The ipv6 header of the packet
+     * @param payload The payload of the packet
+     * @return true if ICMP message should be sent, otherwise false
+     */
+    bool ShouldSendIcmpv6Error(const Ipv6Header& ipHeader, Ptr<const Packet> payload);
+
+    /**
      * @brief Node attached to stack.
      */
     Ptr<Node> m_node;

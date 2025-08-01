@@ -574,6 +574,43 @@ class Socket : public Object
      * @returns number of bytes copied into buf
      */
     int RecvFrom(uint8_t* buf, uint32_t size, uint32_t flags, Address& fromAddress);
+
+    /**
+     * @brief Blocks an ICMPv4 message of the given type
+     *
+     * @param type The type of the icmp message to block
+     */
+    virtual void IcmpFilterSetBlock(uint8_t type);
+
+    /**
+     * @brief Passes an ICMPv4 message of the given type
+     *
+     * @param type The type of the message
+     */
+    virtual void IcmpFilterSetPass(uint8_t type);
+
+    /**
+     * @brief Clean the ICMPv6 filter structure
+     */
+    virtual void Icmpv6FilterSetPassAll();
+
+    /**
+     * @brief Set the filter to block all the ICMPv6 types
+     */
+    virtual void Icmpv6FilterSetBlockAll();
+
+    /**
+     * @brief Set the filter to pass one ICMPv6 type
+     * @param type the ICMPv6 type to pass
+     */
+    virtual void Icmpv6FilterSetPass(uint8_t type);
+
+    /**
+     * @brief Set the filter to block one ICMPv6 type
+     * @param type the ICMPv6 type to block
+     */
+    virtual void Icmpv6FilterSetBlock(uint8_t type);
+
     /**
      * @brief Get socket address.
      * @param address the address name this socket is associated with.

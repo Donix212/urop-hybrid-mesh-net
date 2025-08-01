@@ -431,6 +431,25 @@ class Ipv4L3Protocol : public Ipv4
                      uint32_t interface);
 
     /**
+     * @brief Checks if the IPv4 address exists on this node
+     *
+     * @param addr The IPv4 Address
+     * @return true if exists, otherwise false
+     */
+    bool IsMyAddress(Ipv4Address addr) const;
+
+    /**
+     * @brief Checks whether an ICMP error should be generated
+     *        or not upon dropping the given packet
+     *
+     * @param h
+     * @param p
+     * @return true
+     * @return false
+     */
+    bool ShouldSendIcmpError(const Ipv4Header& h, Ptr<const Packet> p);
+
+    /**
      * @brief Container of the IPv4 Interfaces.
      */
     typedef std::vector<Ptr<Ipv4Interface>> Ipv4InterfaceList;

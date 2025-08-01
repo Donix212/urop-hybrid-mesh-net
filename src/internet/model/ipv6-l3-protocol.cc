@@ -1010,8 +1010,10 @@ Ipv6L3Protocol::Receive(Ptr<NetDevice> device,
     else
     {
         NS_LOG_LOGIC("Dropping received packet-- interface is down");
+
         Ipv6Header hdr;
         packet->RemoveHeader(hdr);
+
         m_dropTrace(hdr, packet, DROP_INTERFACE_DOWN, this, interface);
         return;
     }
@@ -1144,6 +1146,34 @@ Ipv6L3Protocol::Receive(Ptr<NetDevice> device,
         NS_LOG_WARN("No route found for forwarding packet.  Drop.");
         // Drop trace and ICMPs are courtesy of RouteInputError
     }
+}
+
+bool
+Ipv6L3Protocol::ShouldSendIcmpv6Error(const Ipv6Header& ipHeader, Ptr<const Packet> payload)
+{
+    if (ipHeader.GetDestination().IsMulticast())
+    {
+        return false;
+    }
+
+    if (ipHeader.GetSource().IsAny() || ipHeader.GetSource().IsMulticast())
+    {
+        return false;
+    }
+
+    if (ipHeader.GetNextHeader() == Icmpv6L4Protocol::GetStaticProtocolNumber())
+    {
+        Icmpv6Header icmp6;
+        if (payload && payload->PeekHeader(icmp6))
+        {
+            if (icmp6.GetType() >= 1 && icmp6.GetType() <= 127)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void
@@ -1325,7 +1355,7 @@ Ipv6L3Protocol::IpForward(Ptr<const NetDevice> idev,
         NS_LOG_WARN("TTL exceeded.  Drop.");
         m_dropTrace(ipHeader, packet, DROP_TTL_EXPIRED, this, 0);
         // Do not reply to multicast IPv6 address
-        if (!ipHeader.GetDestination().IsMulticast())
+        if (ShouldSendIcmpv6Error(ipHeader, packet))
         {
             packet->AddHeader(ipHeader);
             GetIcmpv6()->SendErrorTimeExceeded(packet,
@@ -1497,14 +1527,14 @@ Ipv6L3Protocol::LocalDeliver(Ptr<const Packet> packet, const Ipv6Header& ip, uin
                 if (nextHeaderPosition == 0)
                 {
                     GetIcmpv6()->SendErrorParameterError(malformedPacket,
-                                                         dst,
+                                                         src,
                                                          Icmpv6Header::ICMPV6_UNKNOWN_NEXT_HEADER,
                                                          40);
                 }
                 else
                 {
                     GetIcmpv6()->SendErrorParameterError(malformedPacket,
-                                                         dst,
+                                                         src,
                                                          Icmpv6Header::ICMPV6_UNKNOWN_NEXT_HEADER,
                                                          ip.GetSerializedSize() +
                                                              nextHeaderPosition);
@@ -1572,7 +1602,7 @@ Ipv6L3Protocol::RouteInputError(Ptr<const Packet> p,
 
     m_dropTrace(ipHeader, p, DROP_ROUTE_ERROR, this, 0);
 
-    if (!ipHeader.GetDestination().IsMulticast())
+    if (ShouldSendIcmpv6Error(ipHeader, p))
     {
         Ptr<Packet> packet = p->Copy();
         packet->AddHeader(ipHeader);

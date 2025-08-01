@@ -580,6 +580,36 @@ Socket::Ipv6LeaveGroup()
     m_ipv6MulticastGroupAddress = Ipv6Address::GetAny();
 }
 
+void
+Socket::IcmpFilterSetBlock(uint8_t type)
+{
+}
+
+void
+Socket::IcmpFilterSetPass(uint8_t type)
+{
+}
+
+void
+Socket::Icmpv6FilterSetPassAll()
+{
+}
+
+void
+Socket::Icmpv6FilterSetBlockAll()
+{
+}
+
+void
+Socket::Icmpv6FilterSetPass(uint8_t type)
+{
+}
+
+void
+Socket::Icmpv6FilterSetBlock(uint8_t type)
+{
+}
+
 /***************************************************************
  *           Socket Tags
  ***************************************************************/

@@ -9,6 +9,7 @@
 #ifndef ICMPV4_L4_PROTOCOL_H
 #define ICMPV4_L4_PROTOCOL_H
 
+#include "icmp-socket-impl.h"
 #include "icmpv4.h"
 #include "ip-l4-protocol.h"
 
@@ -20,6 +21,7 @@ namespace ns3
 class Node;
 class Ipv4Interface;
 class Ipv4Route;
+class IcmpSocketImpl;
 
 /**
  * @ingroup ipv4
@@ -87,6 +89,35 @@ class Icmpv4L4Protocol : public IpL4Protocol
                                    Ptr<Ipv6Interface> incomingInterface) override;
 
     /**
+     * @brief Method for creating a socket
+     * @returns The Icmpv4 socket
+     */
+    Ptr<IcmpSocketImpl> CreateSocket();
+
+    /**
+     * @brief Method for removing a socket from the set of sockets
+     * @param socket The socket to be removed from the set of sockets
+     * @returns True if the sockets exists, otherwise false
+     */
+    bool RemoveSocket(Ptr<IcmpSocketImpl> socket);
+
+    /**
+     * @brief Send ICMPv4 Destination Unreachable (Host)
+     *
+     * @param header IPv4 header of the triggering packet.
+     * @param orgData Original payload
+     */
+    void SendDestUnreachHost(Ipv4Header header, Ptr<const Packet> orgData);
+
+    /**
+     * @brief Send ICMPv4 Destination Unreachable (inet).
+     *
+     * @param header IPv4 header of the triggering packet.
+     * @param orgData Original payload
+     */
+    void SendDestUnreachInet(Ipv4Header header, Ptr<const Packet> orgData);
+
+    /**
      * @brief Send a Destination Unreachable - Fragmentation needed ICMP error
      * @param header the original IP header
      * @param orgData the original packet
@@ -110,6 +141,20 @@ class Icmpv4L4Protocol : public IpL4Protocol
      * @param orgData the original packet
      */
     void SendDestUnreachPort(Ipv4Header header, Ptr<const Packet> orgData);
+
+    /**
+     * @brief Allocates a new identifier for the socket
+     * @returns An identifier that has not been bound by a socket
+     */
+    uint16_t AllocateId();
+
+    /**
+     * @brief Binds the socket to the identifier
+     * @param id The identifier to bind to
+     * @param sock The socket that has to bind to the id
+     * @returns True if bind successful, otherwise false
+     */
+    bool BindId(uint16_t id, Ptr<IcmpSocketImpl> sock);
 
     // From IpL4Protocol
     void SetDownTarget(IpL4Protocol::DownTargetCallback cb) override;
@@ -140,28 +185,30 @@ class Icmpv4L4Protocol : public IpL4Protocol
                     Ipv4Address source,
                     Ipv4Address destination,
                     uint8_t tos);
+
     /**
      * @brief Handles an incoming ICMP Destination Unreachable packet
      * @param p the packet
-     * @param header the IP header
-     * @param source the source address
-     * @param destination the destination address
+     * @param icmp The icmp header
+     * @param ip the ip header
+     * @param incomingInterface the Ipv4Interface on which the packet arrived
      */
     void HandleDestUnreach(Ptr<Packet> p,
-                           Icmpv4Header header,
-                           Ipv4Address source,
-                           Ipv4Address destination);
+                           Icmpv4Header icmp,
+                           Ipv4Header ip,
+                           Ptr<Ipv4Interface> incomingInterface);
     /**
      * @brief Handles an incoming ICMP Time Exceeded packet
      * @param p the packet
      * @param icmp the ICMP header
-     * @param source the source address
-     * @param destination the destination address
+     * @param ip the ip header
+     * @param incomingInterface the Ipv4Interface on which the packet arrived
      */
     void HandleTimeExceeded(Ptr<Packet> p,
                             Icmpv4Header icmp,
-                            Ipv4Address source,
-                            Ipv4Address destination);
+                            Ipv4Header ip,
+                            Ptr<Ipv4Interface> incomingInterface);
+
     /**
      * @brief Send an ICMP Destination Unreachable packet
      *
@@ -199,6 +246,7 @@ class Icmpv4L4Protocol : public IpL4Protocol
                      uint8_t type,
                      uint8_t code,
                      Ptr<Ipv4Route> route);
+
     /**
      * @brief Forward the message to an L4 protocol
      *
@@ -214,10 +262,40 @@ class Icmpv4L4Protocol : public IpL4Protocol
                  Ipv4Header ipHeader,
                  const uint8_t payload[8]);
 
-    void DoDispose() override;
+    /**
+     * @brief Forward the ICMPv4 packet to sockets
+     *
+     * @param p The packet to be sent up
+     * @param header the IP header carried by ICMP
+     * @param incomingInterface the Ipv4Interface on which the packet arrived
+     */
+    void ForwardToIcmpSocket(Ptr<Packet> p,
+                             Ipv4Header header,
+                             Ptr<Ipv4Interface> incomingInterface);
 
-    Ptr<Node> m_node;                              //!< the node this protocol is associated with
-    IpL4Protocol::DownTargetCallback m_downTarget; //!< callback to Ipv4::Send
+    /**
+     * @brief Creates a packet from the error payload
+     *
+     * @param payload The 8 bytes of the payload in error message apart from ipHeader
+     * @param errorType The type of ICMP error received
+     * @param errorCode The code of ICMP error received
+     * @return Ptr<Packet>
+     */
+    Ptr<Packet> ParseError(uint8_t payload[8], uint8_t errorType, uint8_t errorCode);
+
+    /**
+     * @brief Checks if there exists a socket with this identifier
+     *
+     * @param identifier The identifier to check for
+     * @return true if exists, false otherwise
+     */
+    bool IsIdInUse(uint16_t identifier) const;
+
+    void DoDispose() override;
+    Ptr<Node> m_node; //!< the node this protocol is associated with
+    std::unordered_map<uint16_t, Ptr<IcmpSocketImpl>> m_sockets; //!< All the sockets on this node
+    IpL4Protocol::DownTargetCallback m_downTarget;               //!< callback to Ipv4::Send
+    uint16_t ping_port_rover; //!< Stores the latest Identifier Allocated + 1
 };
 
 } // namespace ns3

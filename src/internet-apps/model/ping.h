@@ -262,7 +262,8 @@ class Ping : public Application
     bool m_useIpv6{false};
     /// Destination is Broadcast or Multicast
     bool m_multipleDestinations{false};
-
+    /// Whether the ping application uses raw socket or icmp socket
+    bool m_useRaw{true};
     /// Routers addresses for IPv6 routing type 0.
     std::vector<Ipv6Address> m_routers;
 

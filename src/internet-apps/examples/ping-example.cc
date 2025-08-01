@@ -6,13 +6,13 @@
  * Author: Chandrakant Jena <chandrakant.barcelona@gmail.com>
  */
 
-// Example to demonstrate the working of the Ping Application
+// Example to demonstrate the working of the Ping Application with the icmp socket
 // Network topology:
 // A ------------------------------ B ------------------------------ C
 //             100 Mbps                           100 Mbps
 //               5 ms (one way)                     5 ms (one way)
 // IPv4 addresses:
-// 10.1.1.1    <->         10.1.1.2 / 10.1.2.1     <->         10.1.2.2
+// 10.1.1.1    <->         10.1.1.2 / 10.1.2.2     <->         10.1.2.1
 //
 // IPv6 addresses:
 // 2001:1::200:ff:fe00:1
@@ -85,6 +85,7 @@ main(int argc, char* argv[])
     Address destination;
     std::string sourceStr;
     Address source;
+    uint32_t useRaw{false};
     bool useIpv6{true};
 
     GlobalValue::Bind("ChecksumEnabled", BooleanValue(true));
@@ -100,6 +101,7 @@ main(int argc, char* argv[])
     cmd.AddValue("source",
                  "Source address, needed only for multicast or broadcast destinations",
                  sourceStr);
+    cmd.AddValue("useRaw", "Tell application to use Raw sockets if true", useRaw);
     cmd.Parse(argc, argv);
 
     if (!destinationStr.empty())
@@ -170,12 +172,13 @@ main(int argc, char* argv[])
     link1Nodes.Add(nodes.Get(0));
     link1Nodes.Add(nodes.Get(1));
     NodeContainer link2Nodes;
-    link2Nodes.Add(nodes.Get(1));
     link2Nodes.Add(nodes.Get(2));
+    link2Nodes.Add(nodes.Get(1));
 
     PointToPointHelper pointToPoint;
     pointToPoint.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
     pointToPoint.SetChannelAttribute("Delay", StringValue("5ms"));
+    pointToPoint.SetDeviceAttribute("Mtu", UintegerValue(1500));
 
     NetDeviceContainer link1Devices;
     link1Devices = pointToPoint.Install(link1Nodes);
@@ -203,13 +206,49 @@ main(int argc, char* argv[])
         stack.SetRoutingHelper(nixRouting);
         stack.SetIpv6StackInstall(false);
         stack.Install(nodes);
+        Ipv4Mask mask("255.255.255.0");
 
-        Ipv4AddressHelper addressV4;
-        addressV4.SetBase("10.1.1.0", "255.255.255.0");
-        addressV4.Assign(link1Devices);
-        addressV4.NewNetwork();
-        Ipv4InterfaceContainer link2InterfacesV4 = addressV4.Assign(link2Devices);
+        Ipv4InterfaceContainer link1InterfacesV4;
+        Ipv4InterfaceContainer link2InterfacesV4;
 
+        if (sourceStr.empty())
+        {
+            Ipv4AddressHelper addressV4;
+            addressV4.SetBase("10.1.1.0", "255.255.255.0");
+            link1InterfacesV4 = addressV4.Assign(link1Devices);
+        }
+        else
+        {
+            Ipv4Address src(sourceStr.c_str());
+            Ipv4Address net1(src.Get() & mask.Get()); // Subnet address of A <--> B
+
+            uint32_t hostSrc = src.Get() & ~mask.Get();
+            Ipv4AddressHelper addressV4;
+            addressV4.SetBase(net1, mask, Ipv4Address(hostSrc));
+            link1InterfacesV4 = addressV4.Assign(link1Devices);
+        }
+
+        if (destinationStr.empty())
+        {
+            Ipv4AddressHelper addressV4;
+            addressV4.SetBase("10.1.1.0", "255.255.255.0");
+            link2InterfacesV4 = addressV4.Assign(link2Devices);
+        }
+        else
+        {
+            Ipv4Address dst(destinationStr.c_str());
+            Ipv4Address net2(dst.Get() & mask.Get()); // Submet address of B <--> C
+
+            uint32_t hostDst = dst.Get() & ~mask.Get();
+            Ipv4AddressHelper addressV4;
+            addressV4.SetBase(net2, mask, Ipv4Address(hostDst));
+            link2InterfacesV4 = addressV4.Assign(link2Devices);
+        }
+
+        if (sourceStr.empty())
+        {
+            source = link1InterfacesV4.GetAddress(0, 0);
+        }
         if (destination.IsInvalid())
         {
             destination = link2InterfacesV4.GetAddress(1, 0);
@@ -225,14 +264,12 @@ main(int argc, char* argv[])
 
         Ipv6AddressHelper addressV6;
         addressV6.SetBase("2001:1::", 64);
-        addressV6.Assign(link1Devices);
+        Ipv6InterfaceContainer link1InterfacesV6 = addressV6.Assign(link1Devices);
         addressV6.NewNetwork();
         Ipv6InterfaceContainer link2InterfacesV6 = addressV6.Assign(link2Devices);
 
-        if (destination.IsInvalid())
-        {
-            destination = link2InterfacesV6.GetAddress(1, 1);
-        }
+        source = link1InterfacesV6.GetAddress(0, 1);
+        destination = link1InterfacesV6.GetAddress(1, 1);
     }
 
     // Create Ping application and installing on node A
@@ -240,6 +277,7 @@ main(int argc, char* argv[])
     pingHelper.SetAttribute("Interval", TimeValue(interPacketInterval));
     pingHelper.SetAttribute("Size", UintegerValue(size));
     pingHelper.SetAttribute("Count", UintegerValue(count));
+    pingHelper.SetAttribute("UseRaw", BooleanValue(useRaw));
     ApplicationContainer apps = pingHelper.Install(nodes.Get(0));
     apps.Start(Seconds(1));
     apps.Stop(Seconds(50));

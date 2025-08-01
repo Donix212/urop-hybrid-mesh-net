@@ -123,24 +123,24 @@ class Ipv6RawSocketImpl : public Socket
     /**
      * @brief Clean the ICMPv6 filter structure
      */
-    void Icmpv6FilterSetPassAll();
+    void Icmpv6FilterSetPassAll() override;
 
     /**
      * @brief Set the filter to block all the ICMPv6 types
      */
-    void Icmpv6FilterSetBlockAll();
+    void Icmpv6FilterSetBlockAll() override;
 
     /**
      * @brief Set the filter to pass one ICMPv6 type
      * @param type the ICMPv6 type to pass
      */
-    void Icmpv6FilterSetPass(uint8_t type);
+    void Icmpv6FilterSetPass(uint8_t type) override;
 
     /**
      * @brief Set the filter to block one ICMPv6 type
      * @param type the ICMPv6 type to block
      */
-    void Icmpv6FilterSetBlock(uint8_t type);
+    void Icmpv6FilterSetBlock(uint8_t type) override;
 
     /**
      * @brief Ask the filter about the status of one ICMPv6 type
