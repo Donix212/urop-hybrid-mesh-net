@@ -130,15 +130,17 @@ SixLowPanNdProtocol::GetTypeId()
                           MakeTimeChecker())
             .AddTraceSource(
                 "AddressRegistrationResult",
-                "Triggered when an address registration succeeds or fails."
-                "Callback signature is (Ipv6Address address, bool success).",
+                "Trace fired when an address registration succeeds or fails",
                 MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_addressRegistrationResultTrace),
                 "ns3::SixLowPanNdProtocol::AddressRegistrationCallback")
             .AddTraceSource("MulticastRS",
-                            "Fired whenever this node sends a multicast Router Solicitation. "
-                            "Callback signature: (Ipv6Address src)",
+                            "Trace fired when a multicast RS is sent",
                             MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_multicastRsTrace),
-                            "ns3::SixLowPanNdProtocol::MulticastRsCallback");
+                            "ns3::SixLowPanNdProtocol::MulticastRsCallback")
+            .AddTraceSource("NaRx",
+                            "Trace fired when a NA packet is received",
+                            MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_naRxTrace),
+                            "ns3::SixLowPanNdProtocol::NaRxCallback");
 
     return tid;
 }
@@ -580,6 +582,8 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
         return;
     }
 
+    m_naRxTrace(packet->Copy());
+
     Ptr<Packet> p = packet->Copy();
 
     Icmpv6NA naHdr;
@@ -618,10 +622,16 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     // switch statement on EARO status
     if (earo.GetStatus() == SUCCESS) /* status=0, success! */
     {
+        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
+                                         true,
+                                         earo.GetStatus());
         AddressRegistrationSuccess(src, earo.GetTransactionId());
     }
     else /* status NOT 0, fail! */
     {
+        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
+                                         false,
+                                         earo.GetStatus());
         // for now we just let the timeout occur, and retry until max retries
         return;
     }
@@ -991,8 +1001,6 @@ void
 SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid)
 {
     NS_LOG_FUNCTION(this << registrar << tid);
-    NS_LOG_INFO("AddressRegistrationSuccess: " << m_addrPendingReg.addressPendingRegistration);
-    m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration, true);
 
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
@@ -1109,7 +1117,6 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
     }
     else
     {
-        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration, false);
         NS_LOG_INFO("Address registration failed for node "
                     << m_node->GetId()
                     << ", address: " << m_addrPendingReg.addressPendingRegistration

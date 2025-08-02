@@ -7,18 +7,12 @@
  */
 
 #include "ns3/core-module.h"
-#include "ns3/csma-helper.h"
-#include "ns3/inet6-socket-address.h"
-#include "ns3/internet-apps-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/internet-stack-helper.h"
-#include "ns3/lr-wpan-module.h"
-#include "ns3/mobility-module.h"
+#include "ns3/simple-net-device-helper.h"
 #include "ns3/simple-net-device.h"
 #include "ns3/sixlowpan-module.h"
-#include "ns3/sixlowpan-nd-prefix.h"
 #include "ns3/sixlowpan-nd-protocol.h"
-#include "ns3/socket.h"
 #include "ns3/test.h"
 
 #include <fstream>
@@ -44,41 +38,15 @@ class SixLowPanNdRovrTest : public TestCase
 
     void DoRun() override
     {
-        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
-        // LogComponentEnable("SixLowPanHelper", LOG_LEVEL_INFO);
-
-        // 6LBR - node 0
-        // LLaddr: fe80::ff:fe00:1
-        // Link-layer address: 02:00:00:00:00:01
-        // Gaddr: 2001::ff:fe00:1
-
-        // 6LN1 - node 1
-        // LLaddr: fe80::ff:fe00:2 (Has to be reg-ed)
-        // Link-layer address: 00:01
-        // Gaddr: 2001::ff:fe00:1 (Has to be reg-ed)
-
-        // We manually construct and send an NS (EARO) to 6LBR, attempting to register an existing
-        // address, under a different ROVR. Upon inspection of 6LBR's 6LNCE (by printing out and
-        // validating the NdiscCache), we can observe that the registration failed (The reg attempt
-        // by the new ROVR is not shown). Upon inspection of the NA (EARO) response (by inspecting
-        // the packet trace), we can also notice that it has a status code of 1
-
         // Create nodes
-        // Create 2 nodes: 6LBR, 6LN
         NodeContainer nodes;
         nodes.Create(2);
         Ptr<Node> lbrNode = nodes.Get(0);
         Ptr<Node> lnNode = nodes.Get(1);
 
-        // Set constant positions
-        MobilityHelper mobility;
-        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        mobility.Install(nodes);
-
-        // Install LrWpanNetDevices
-        LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+        // Install SimpleNetDevice instead of LrWpan
+        SimpleNetDeviceHelper simpleNetDeviceHelper;
+        NetDeviceContainer simpleNetDevices = simpleNetDeviceHelper.Install(nodes);
 
         // Install IPv6 stack
         InternetStackHelper internetv6;
@@ -86,7 +54,7 @@ class SixLowPanNdRovrTest : public TestCase
 
         // Install 6LoWPAN
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(simpleNetDevices);
 
         // Install 6LoWPAN-ND
         sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
@@ -94,34 +62,72 @@ class SixLowPanNdRovrTest : public TestCase
 
         sixlowpan.InstallSixLowPanNdNode(devices.Get(1)); // 6LN
 
+        Ptr<SixLowPanNdProtocol> lnNdProtocol = lnNode->GetObject<SixLowPanNdProtocol>();
+        lnNdProtocol->TraceConnectWithoutContext(
+            "NaRx",
+            MakeCallback(&SixLowPanNdRovrTest::NaRxSink, this));
+
+        // Get interface of 6LBR
+        Ptr<Ipv6L3Protocol> lbrIpv6 = lbrNode->GetObject<Ipv6L3Protocol>();
+        Ptr<Ipv6Interface> lbrIf = lbrIpv6->GetInterface(0)->GetObject<Ipv6Interface>();
+        Address lbrMac = simpleNetDevices.Get(0)->GetAddress(); // Get the MAC address of 6LBR
+
         // Construct NS (EARO) with same target LLaddr as 6LN, but different ROVR
-        Ipv6Address lnLLaddr("fe80::ff:fe00:2");
-        Ipv6Address lbrLLaddr("fe80::ff:fe00:1");
-        Address lbrMac = lrwpanDevices.Get(0)->GetAddress();
-        std::vector<uint8_t> rovr(16, 0);
+        Ipv6Address lnLLaddr("fe80::200:ff:fe00:2");
+        Ipv6Address lbrLLaddr("fe80::200:ff:fe00:1");
+        std::vector<uint8_t> rovr(16, 0); // Different ROVR (all zeros)
         Ptr<NetDevice> lnSixDevice = devices.Get(1);
-        Simulator::Schedule(Seconds(3),
+
+        Simulator::Schedule(Seconds(5),
                             &SixLowPanNdProtocol::SendSixLowPanNsWithEaro,
                             lnNode->GetObject<SixLowPanNdProtocol>(),
                             lnLLaddr,   // addrToRegister
                             lbrLLaddr,  // dst
                             lbrMac,     // dstMac
                             300,        // lifetime (seconds)
-                            rovr,       // ROVR
+                            rovr,       // ROVR (different from node's actual ROVR)
                             0,          // TID
                             lnSixDevice // NetDevice to send from
         );
 
-        // Print tables
-        Ptr<OutputStreamWrapper> out1 = Create<OutputStreamWrapper>(&std::cout);
-        Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), out1);
-        // Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), out1);
-
-        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-rovr-test"), true);
-
-        Simulator::Stop(Seconds(5));
+        Simulator::Stop(Seconds(10));
         Simulator::Run();
         Simulator::Destroy();
+
+        NS_TEST_ASSERT_MSG_EQ(m_naPacketsReceived.size() >= 1,
+                              true,
+                              "Should have received at least one NA packet");
+
+        // Assert the last NA packet has the expected properties
+        if (!m_naPacketsReceived.empty())
+        {
+            Ptr<Packet> lastNa = m_naPacketsReceived.back();
+
+            Icmpv6NA naHdr;
+            Icmpv6OptionLinkLayerAddress tlla(false); /* TLLAO */
+            Icmpv6OptionSixLowPanExtendedAddressRegistration earo;
+
+            bool hasEaro = false;
+            bool isValid = SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(lastNa,
+                                                                             naHdr,
+                                                                             tlla,
+                                                                             earo,
+                                                                             hasEaro);
+            NS_TEST_ASSERT_MSG_EQ(isValid, true, "Packet should be valid NA with EARO");
+            Ipv6Address target = naHdr.GetIpv6Target();
+
+            NS_TEST_ASSERT_MSG_EQ(earo.GetStatus(),
+                                  static_cast<uint8_t>(1),
+                                  "NA status should be 1 (duplicate address)");
+        }
+    }
+
+  private:
+    std::vector<Ptr<Packet>> m_naPacketsReceived;
+
+    void NaRxSink(Ptr<Packet> pkt)
+    {
+        m_naPacketsReceived.push_back(pkt);
     }
 };
 

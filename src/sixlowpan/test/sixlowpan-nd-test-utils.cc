@@ -45,10 +45,10 @@ GenerateRoutingTableOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream destStream;
-                destStream << "2001::ff:fe00:" << std::hex << (i + 1) << "/128";
+                destStream << "2001::200:ff:fe00:" << std::hex << (i + 1) << "/128";
 
                 std::ostringstream gwStream;
-                gwStream << "fe80::ff:fe00:" << std::hex << (i + 1);
+                gwStream << "fe80::200:ff:fe00:" << std::hex << (i + 1);
 
                 oss << std::setw(31) << std::left << destStream.str() << std::setw(27) << std::left
                     << gwStream.str() << std::setw(5) << std::left << "UH" << std::setw(4)
@@ -69,7 +69,7 @@ GenerateRoutingTableOutput(uint32_t numNodes, Time time)
 
             // Default route to 6LBR
             oss << std::setw(31) << std::left << "::/0" << std::setw(27) << std::left
-                << "fe80::ff:fe00:1" << std::setw(5) << std::left << "UG" << std::setw(4)
+                << "fe80::200:ff:fe00:1" << std::setw(5) << std::left << "UG" << std::setw(4)
                 << std::left << "0"
                 << "-   -   1" << std::endl;
         }
@@ -107,11 +107,11 @@ SortRoutingTableString(std::string routingTable)
 
             while (std::getline(iss, line) && !line.empty())
             {
-                // Check if this is a host route to a 6LN (contains "2001::ff:fe00:")
-                if (line.find("2001::ff:fe00:") != std::string::npos)
+                // Check if this is a host route to a 6LN (contains "2001::200:ff:fe00:")
+                if (line.find("2001::200:ff:fe00:") != std::string::npos)
                 {
                     // Extract the hex value for sorting
-                    std::regex hexPattern("2001::ff:fe00:([0-9a-f]+)/128");
+                    std::regex hexPattern("2001::200:ff:fe00:([0-9a-f]+)/128");
                     std::smatch match;
 
                     if (std::regex_search(line, match, hexPattern))
@@ -201,11 +201,11 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream lladdrStream;
-                lladdrStream << "00-06-02:00:00:00:00:" << std::setfill('0') << std::setw(2)
+                lladdrStream << "00-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
                              << std::hex << (i + 1);
 
-                // Global address entry (2001::ff:fe00:X)
-                oss << "2001::ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
+                // Global address entry (2001::200:ff:fe00:X)
+                oss << "2001::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
                     << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
             }
 
@@ -213,18 +213,18 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream lladdrStream;
-                lladdrStream << "00-06-02:00:00:00:00:" << std::setfill('0') << std::setw(2)
+                lladdrStream << "00-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
                              << std::hex << (i + 1);
 
-                // Link-local address entry (fe80::ff:fe00:X)
-                oss << "fe80::ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
+                // Link-local address entry (fe80::200:ff:fe00:X)
+                oss << "fe80::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
                     << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
             }
         }
         else // 6LN (Node 1+)
         {
             // 6LNs have entry to 6LBR (link-local only)
-            oss << "fe80::ff:fe00:1 dev 2 lladdr 00-06-02:00:00:00:00:01 REACHABLE "
+            oss << "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
                    "GARBAGE-COLLECTIBLE"
                 << std::endl;
         }
