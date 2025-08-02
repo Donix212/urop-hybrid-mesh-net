@@ -132,15 +132,17 @@ SixLowPanNdProtocol::GetTypeId()
                           MakeTimeChecker())
             .AddTraceSource(
                 "AddressRegistrationResult",
-                "Triggered when an address registration succeeds or fails."
-                "Callback signature is (Ipv6Address address, bool success, uint8_t status).",
+                "Trace fired when an address registration succeeds or fails",
                 MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_addressRegistrationResultTrace),
                 "ns3::SixLowPanNdProtocol::AddressRegistrationCallback")
             .AddTraceSource("MulticastRS",
-                            "Fired whenever this node sends a multicast Router Solicitation. "
-                            "Callback signature: (Ipv6Address src)",
+                            "Trace fired when a multicast RS is sent",
                             MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_multicastRsTrace),
-                            "ns3::SixLowPanNdProtocol::MulticastRsCallback");
+                            "ns3::SixLowPanNdProtocol::MulticastRsCallback")
+            .AddTraceSource("NaRx",
+                            "Trace fired when a NA packet is received",
+                            MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_naRxTrace),
+                            "ns3::SixLowPanNdProtocol::NaRxCallback");
 
     return tid;
 }
@@ -580,6 +582,8 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanNA");
+
+    m_naRxTrace(packet->Copy());
 
     Ptr<Packet> p = packet->Copy();
 
