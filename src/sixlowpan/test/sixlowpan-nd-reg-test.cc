@@ -358,7 +358,7 @@ class SixLowPanNdOneLNRegTest : public TestCase
     Ipv6Address registeredAddress;
 
     // Fired each time any LN fires AddressRegistrationResult(address, success)
-    void RegistrationResultSink(Ipv6Address address, bool success)
+    void RegistrationResultSink(Ipv6Address address, bool success, uint8_t status)
     {
         if (success)
         {
