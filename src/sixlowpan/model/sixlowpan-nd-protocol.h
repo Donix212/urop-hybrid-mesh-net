@@ -677,10 +677,10 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     std::map<Ptr<SixLowPanNetDevice>, Ptr<SixLowPanRaEntry>>
         m_raEntries; //!< Router Advertisement entries (if the node is a 6LBR).
 
-    TracedCallback<Ipv6Address, bool> m_addressRegistrationResultTrace;
-    //!< Traces a successful address registration (true = success, false = failure)
+    TracedCallback<Ipv6Address, bool, uint8_t> m_addressRegistrationResultTrace;
+    //!< Traces address registration result (address, success/failure, status code)
 
-    typedef Callback<void, Ipv6Address, bool> AddressRegistrationCallback;
+    typedef Callback<void, Ipv6Address, bool, uint8_t> AddressRegistrationCallback;
 
     /// Trace fired whenever we send a multicast RS
     TracedCallback<Ipv6Address> m_multicastRsTrace;
