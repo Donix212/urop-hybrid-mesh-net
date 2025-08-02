@@ -133,7 +133,7 @@ SixLowPanNdProtocol::GetTypeId()
             .AddTraceSource(
                 "AddressRegistrationResult",
                 "Triggered when an address registration succeeds or fails."
-                "Callback signature is (Ipv6Address address, bool success).",
+                "Callback signature is (Ipv6Address address, bool success, uint8_t status).",
                 MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_addressRegistrationResultTrace),
                 "ns3::SixLowPanNdProtocol::AddressRegistrationCallback")
             .AddTraceSource("MulticastRS",
@@ -619,10 +619,16 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     // switch statement on EARO status
     if (earo.GetStatus() == SUCCESS) /* status=0, success! */
     {
+        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
+                                         true,
+                                         earo.GetStatus());
         AddressRegistrationSuccess(src, earo.GetTransactionId());
     }
     else /* status NOT 0, fail! */
     {
+        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
+                                         false,
+                                         earo.GetStatus());
         // for now we just let the timeout occur, and retry until max retries
         return;
     }
@@ -1041,8 +1047,6 @@ void
 SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid)
 {
     NS_LOG_FUNCTION(this << registrar << tid);
-    NS_LOG_INFO("AddressRegistrationSuccess: " << m_addrPendingReg.addressPendingRegistration);
-    m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration, true);
 
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
@@ -1154,7 +1158,6 @@ SixLowPanNdProtocol::AddressRegistrationTimeout()
     }
     else
     {
-        m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration, false);
         NS_LOG_INFO("Address registration failed for node "
                     << m_node->GetId()
                     << ", address: " << m_addrPendingReg.addressPendingRegistration
