@@ -7,22 +7,13 @@
  */
 
 #include "ns3/core-module.h"
-#include "ns3/csma-helper.h"
-#include "ns3/inet6-socket-address.h"
-#include "ns3/internet-apps-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/internet-stack-helper.h"
-#include "ns3/lr-wpan-module.h"
-#include "ns3/mobility-module.h"
 #include "ns3/simple-net-device-helper.h"
 #include "ns3/simple-net-device.h"
 #include "ns3/sixlowpan-module.h"
-#include "ns3/sixlowpan-nd-prefix.h"
 #include "ns3/sixlowpan-nd-protocol.h"
-#include "ns3/socket.h"
-#include "ns3/spectrum-module.h"
 #include "ns3/test.h"
-#include "ns3/udp-socket-factory.h"
 
 #include <fstream>
 #include <limits>
