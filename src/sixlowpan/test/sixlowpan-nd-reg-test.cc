@@ -14,6 +14,7 @@
 #include "ns3/internet-stack-helper.h"
 #include "ns3/lr-wpan-module.h"
 #include "ns3/mobility-module.h"
+#include "ns3/simple-net-device-helper.h"
 #include "ns3/simple-net-device.h"
 #include "ns3/sixlowpan-module.h"
 #include "ns3/sixlowpan-nd-prefix.h"
@@ -67,10 +68,10 @@ GenerateRoutingTableOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream destStream;
-                destStream << "2001::ff:fe00:" << std::hex << (i + 1) << "/128";
+                destStream << "2001::200:ff:fe00:" << std::hex << (i + 1) << "/128";
 
                 std::ostringstream gwStream;
-                gwStream << "fe80::ff:fe00:" << std::hex << (i + 1);
+                gwStream << "fe80::200:ff:fe00:" << std::hex << (i + 1);
 
                 oss << std::setw(31) << std::left << destStream.str() << std::setw(27) << std::left
                     << gwStream.str() << std::setw(5) << std::left << "UH" << std::setw(4)
@@ -91,7 +92,7 @@ GenerateRoutingTableOutput(uint32_t numNodes, Time time)
 
             // Default route to 6LBR
             oss << std::setw(31) << std::left << "::/0" << std::setw(27) << std::left
-                << "fe80::ff:fe00:1" << std::setw(5) << std::left << "UG" << std::setw(4)
+                << "fe80::200:ff:fe00:1" << std::setw(5) << std::left << "UG" << std::setw(4)
                 << std::left << "0"
                 << "-   -   1" << std::endl;
         }
@@ -129,11 +130,11 @@ SortRoutingTableString(std::string routingTable)
 
             while (std::getline(iss, line) && !line.empty())
             {
-                // Check if this is a host route to a 6LN (contains "2001::ff:fe00:")
-                if (line.find("2001::ff:fe00:") != std::string::npos)
+                // Check if this is a host route to a 6LN (contains "2001::200:ff:fe00:")
+                if (line.find("2001::200:ff:fe00:") != std::string::npos)
                 {
                     // Extract the hex value for sorting
-                    std::regex hexPattern("2001::ff:fe00:([0-9a-f]+)/128");
+                    std::regex hexPattern("2001::200:ff:fe00:([0-9a-f]+)/128");
                     std::smatch match;
 
                     if (std::regex_search(line, match, hexPattern))
@@ -223,11 +224,11 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream lladdrStream;
-                lladdrStream << "00-06-02:00:00:00:00:" << std::setfill('0') << std::setw(2)
+                lladdrStream << "00-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
                              << std::hex << (i + 1);
 
-                // Global address entry (2001::ff:fe00:X)
-                oss << "2001::ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
+                // Global address entry (2001::200:ff:fe00:X)
+                oss << "2001::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
                     << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
             }
 
@@ -235,18 +236,18 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream lladdrStream;
-                lladdrStream << "00-06-02:00:00:00:00:" << std::setfill('0') << std::setw(2)
+                lladdrStream << "00-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
                              << std::hex << (i + 1);
 
-                // Link-local address entry (fe80::ff:fe00:X)
-                oss << "fe80::ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
+                // Link-local address entry (fe80::200:ff:fe00:X)
+                oss << "fe80::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
                     << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
             }
         }
         else // 6LN (Node 1+)
         {
             // 6LNs have entry to 6LBR (link-local only)
-            oss << "fe80::ff:fe00:1 dev 2 lladdr 00-06-02:00:00:00:00:01 REACHABLE "
+            oss << "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
                    "GARBAGE-COLLECTIBLE"
                 << std::endl;
         }
@@ -271,14 +272,14 @@ class SixLowPanNdOneLNRegTest : public TestCase
     void DoRun() override
     {
         // 6LBR - node 0
-        // LLaddr: fe80::ff:fe00:1
+        // LLaddr: fe80::200:ff:fe00:1
         // Link-layer address: 02:00:00:00:00:01
-        // Gaddr: 2001::ff:fe00:1
+        // Gaddr: 2001::200:ff:fe00:1
 
         // 6LN - node 1
-        // LLaddr: fe80::ff:fe00:2
+        // LLaddr: fe80::200:ff:fe00:2
         // Link-layer address: 02:00:00:00:00:02
-        // Gaddr: 2001::ff:fe00:2 (Needs reg first)
+        // Gaddr: 2001::200:ff:fe00:2 (Needs reg first)
 
         // Basic Exchange, then assert NC, 6LNC and RT contents of 6LN and 6LBR
         // Create nodes
@@ -287,23 +288,17 @@ class SixLowPanNdOneLNRegTest : public TestCase
         Ptr<Node> lbrNode = nodes.Get(0);
         Ptr<Node> lnNode = nodes.Get(1);
 
-        // Set constant positions
-        MobilityHelper mobility;
-        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        mobility.Install(nodes);
-
-        // Install LrWpanNetDevices
-        LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+        // Install SimpleNetDevice on nodes
+        SimpleNetDeviceHelper simpleNetDeviceHelper;
+        NetDeviceContainer simpleNetDevices = simpleNetDeviceHelper.Install(nodes);
 
         // Install Internet stack
         InternetStackHelper internetv6;
         internetv6.Install(nodes);
 
-        // Install 6LoWPAN on top of LrWpan
+        // Install 6LoWPAN on top of SimpleNetDevice
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(simpleNetDevices);
 
         // Configure 6LoWPAN ND
         // Node 0 = 6LBR
@@ -321,8 +316,6 @@ class SixLowPanNdOneLNRegTest : public TestCase
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), outputRoutingTableStream);
 
-        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
-
         Ptr<SixLowPanNdProtocol> nd = lnNode->GetObject<SixLowPanNdProtocol>();
         nd->TraceConnectWithoutContext(
             "AddressRegistrationResult",
@@ -334,10 +327,11 @@ class SixLowPanNdOneLNRegTest : public TestCase
 
         constexpr auto expectedNdiscStream =
             "NDISC Cache of node 0 at time +5s\n"
-            "2001::ff:fe00:2 dev 2 lladdr 00-06-02:00:00:00:00:02 REACHABLE REGISTERED\n"
-            "fe80::ff:fe00:2 dev 2 lladdr 00-06-02:00:00:00:00:02 REACHABLE REGISTERED\n"
+            "2001::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
+            "fe80::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
             "NDISC Cache of node 1 at time +5s\n"
-            "fe80::ff:fe00:1 dev 2 lladdr 00-06-02:00:00:00:00:01 REACHABLE GARBAGE-COLLECTIBLE\n";
+            "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
+            "GARBAGE-COLLECTIBLE\n";
         NS_TEST_EXPECT_MSG_EQ(ndiscStream.str(), expectedNdiscStream, "NdiscCache is incorrect.");
 
         constexpr auto expectedRoutingTableStream =
@@ -345,18 +339,18 @@ class SixLowPanNdOneLNRegTest : public TestCase
             "Destination                    Next Hop                   Flag Met Ref Use If\n"
             "::1/128                        ::                         UH   0   -   -   0\n"
             "fe80::/64                      ::                         U    0   -   -   1\n"
-            "2001::ff:fe00:2/128            fe80::ff:fe00:2            UH   0   -   -   1\n\n"
+            "2001::200:ff:fe00:2/128        fe80::200:ff:fe00:2        UH   0   -   -   1\n\n"
             "Node: 1, Time: +5s, Local time: +5s, Ipv6StaticRouting table\n"
             "Destination                    Next Hop                   Flag Met Ref Use If\n"
             "::1/128                        ::                         UH   0   -   -   0\n"
             "fe80::/64                      ::                         U    0   -   -   1\n"
-            "::/0                           fe80::ff:fe00:1            UG   0   -   -   1\n\n";
+            "::/0                           fe80::200:ff:fe00:1        UG   0   -   -   1\n\n";
         NS_TEST_EXPECT_MSG_EQ(routingTableStream.str(),
                               expectedRoutingTableStream,
                               "Routing table does not match expected.");
 
         NS_TEST_ASSERT_MSG_EQ(registeredAddress,
-                              Ipv6Address("2001::ff:fe00:2"),
+                              Ipv6Address("2001::200:ff:fe00:2"),
                               "Registered address does not match expected value.");
     }
 
@@ -391,19 +385,16 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         nodes.Create(1 + numLns); // 1 LBR + 5 LNs
         Ptr<Node> lbrNode = nodes.Get(0);
 
-        MobilityHelper mobility;
-        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        mobility.Install(nodes);
+        SimpleNetDeviceHelper simpleNetDeviceHelper;
 
-        LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+        NetDeviceContainer simpleNetDevices;
+        simpleNetDevices = simpleNetDeviceHelper.Install(nodes);
 
         InternetStackHelper internetv6;
         internetv6.Install(nodes);
 
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(simpleNetDevices);
 
         sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
         sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
@@ -421,8 +412,6 @@ class SixLowPanNdFiveLNRegTest : public TestCase
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
-
-        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
 
         Simulator::Stop(duration);
         Simulator::Run();
@@ -455,20 +444,17 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
         nodes.Create(1 + numLns); // 1 LBR + 15 LNs
         Ptr<Node> lbrNode = nodes.Get(0);
 
-        MobilityHelper mobility;
-        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        mobility.Install(nodes);
-
-        LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+        // Use SimpleNetDevice instead of LrWpan
+        SimpleNetDeviceHelper simpleNetDeviceHelper;
+        NetDeviceContainer simpleNetDevices = simpleNetDeviceHelper.Install(nodes);
 
         InternetStackHelper internetv6;
         internetv6.Install(nodes);
 
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(simpleNetDevices);
 
+        // Configure 6LoWPAN ND
         sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
         sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
 
@@ -485,8 +471,6 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
-
-        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
 
         Simulator::Stop(duration);
         Simulator::Run();
@@ -519,20 +503,17 @@ class SixLowPanNdTwentyLNRegTest : public TestCase
         nodes.Create(1 + numLns); // 1 LBR + 20 LNs
         Ptr<Node> lbrNode = nodes.Get(0);
 
-        MobilityHelper mobility;
-        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        mobility.Install(nodes);
-
-        LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+        // Use SimpleNetDevice instead of LrWpan
+        SimpleNetDeviceHelper simpleNetDeviceHelper;
+        NetDeviceContainer simpleNetDevices = simpleNetDeviceHelper.Install(nodes);
 
         InternetStackHelper internetv6;
         internetv6.Install(nodes);
 
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer devices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer devices = sixlowpan.Install(simpleNetDevices);
 
+        // Configure 6LoWPAN ND
         sixlowpan.InstallSixLowPanNdBorderRouter(devices.Get(0), "2001::");
         sixlowpan.SetAdvertisedPrefix(devices.Get(0), Ipv6Prefix("2001::", 64));
 
@@ -549,8 +530,6 @@ class SixLowPanNdTwentyLNRegTest : public TestCase
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
-
-        lrWpanHelper.EnablePcapAll(std::string("sixlowpan-nd-reg-test"), true);
 
         Simulator::Stop(duration);
         Simulator::Run();
@@ -580,25 +559,19 @@ class SixLowPanNdMulticastRsTimeoutTest : public TestCase
         nodes.Create(1);
         Ptr<Node> lnNode = nodes.Get(0);
 
-        // Set constant position
-        MobilityHelper mobility;
-        mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        mobility.Install(nodes);
-
-        // Install LrWpanNetDevice
-        LrWpanHelper lrWpanHelper;
-        NetDeviceContainer lrwpanDevices = lrWpanHelper.Install(nodes);
-        lrWpanHelper.CreateAssociatedPan(lrwpanDevices, 0);
+        // Use SimpleNetDevice instead of LrWpan
+        SimpleNetDeviceHelper simpleNetDeviceHelper;
+        NetDeviceContainer simpleNetDevices = simpleNetDeviceHelper.Install(nodes);
 
         // Install Internet stack
         InternetStackHelper internetv6;
         internetv6.Install(nodes);
 
-        // Install 6LoWPAN device
+        // Install 6LoWPAN device on top of SimpleNetDevice
         SixLowPanHelper sixlowpan;
-        NetDeviceContainer sixDevices = sixlowpan.Install(lrwpanDevices);
+        NetDeviceContainer sixDevices = sixlowpan.Install(simpleNetDevices);
 
-        // Install ND only as a node (no BR)
+        // Install ND only as a node (no BR) - this means no RA responses
         sixlowpan.InstallSixLowPanNdNode(sixDevices.Get(0));
 
         // Set up trace to capture multicast RS events
@@ -609,10 +582,12 @@ class SixLowPanNdMulticastRsTimeoutTest : public TestCase
             MakeCallback(&SixLowPanNdMulticastRsTimeoutTest::MulticastRsSink, this));
 
         // Simulation time should be long enough to see RS timeout
+        // Keep same duration to maintain test behavior
         Simulator::Stop(Seconds(210));
         Simulator::Run();
         Simulator::Destroy();
 
+        // Verify we got the expected number of multicast RS events
         NS_TEST_ASSERT_MSG_EQ(m_multicastRsEvents.size(),
                               7,
                               "Expected 7 multicast RS events, but got " +
@@ -622,7 +597,7 @@ class SixLowPanNdMulticastRsTimeoutTest : public TestCase
   private:
     std::vector<Ipv6Address> m_multicastRsEvents;
 
-    // this will be called for each RS we send
+    // This will be called for each RS we send
     void MulticastRsSink(Ipv6Address src)
     {
         m_multicastRsEvents.push_back(src);
