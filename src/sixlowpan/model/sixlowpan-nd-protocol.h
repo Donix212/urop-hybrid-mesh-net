@@ -35,6 +35,7 @@ class SixLowPanNdNsEaroPacketTest;
 class SixLowPanNdNaEaroPacketTest;
 class SixLowPanNdRaPacketTest;
 class SixLowPanNdRsPacketTest;
+class SixLowPanNdRovrTest;
 
 /**
  * @ingroup sixlowpan
@@ -47,6 +48,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     friend class SixLowPanNdRaPacketTest;
     friend class SixLowPanNdRsPacketTest;
     friend class SixLowPanNdNsNaTest;
+    friend class SixLowPanNdRovrTest;
 
   public:
     /**
@@ -680,13 +682,20 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     TracedCallback<Ipv6Address, bool, uint8_t> m_addressRegistrationResultTrace;
     //!< Traces address registration result (address, success/failure, status code)
 
+    // Trace sink signature for address registration result
     typedef Callback<void, Ipv6Address, bool, uint8_t> AddressRegistrationCallback;
 
-    /// Trace fired whenever we send a multicast RS
+    /// Trace fired whenever a multicast RS is sent
     TracedCallback<Ipv6Address> m_multicastRsTrace;
 
     // Trace sink signature for multicast RS sends:
-    typedef Callback<void, Ipv6Address /*src*/> MulticastRsCallback;
+    typedef Callback<void, Ipv6Address> MulticastRsCallback;
+
+    // Trace fired whenever an NA packet is received
+    TracedCallback<Ptr<Packet>> m_naRxTrace;
+
+    // Trace sink signature for NA reception
+    typedef Callback<void, Ptr<Packet>> NaRxCallback;
 
     /**
      * Structure holding data about a pending RA being processed
