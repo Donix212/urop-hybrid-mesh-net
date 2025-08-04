@@ -252,7 +252,6 @@ SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
         // NS_LOG_INFO("Node " << node->GetId() << ", Interface " << interfaceId
         //                     << " forwarding: " << (isForwarding ? "true" : "false"));
     }
-    return;
 }
 
 void

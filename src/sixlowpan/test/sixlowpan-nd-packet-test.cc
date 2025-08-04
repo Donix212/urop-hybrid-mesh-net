@@ -43,12 +43,13 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("fe80::2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("fe80::2");
 
         Icmpv6NS nsHdr(src);
         Mac64Address mac("00:11:22:33:44:55:66:77");
-        Icmpv6OptionLinkLayerAddress slla(1, mac);
-        Icmpv6OptionLinkLayerAddress tlla(0, mac);
+        Icmpv6OptionLinkLayerAddress slla(true, mac);
+        Icmpv6OptionLinkLayerAddress tlla(false, mac);
         std::vector<uint8_t> rovr(16, 0xAB);
         Icmpv6OptionSixLowPanExtendedAddressRegistration earo(20, rovr, 5);
 
@@ -121,7 +122,9 @@ class SixLowPanNdNaEaroPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("fe80::2"), target("fe80::ff:fe00:2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("fe80::2");
+        Ipv6Address target("fe80::ff:fe00:2");
         Icmpv6NA naHdr;
         naHdr.SetIpv6Target(target);
         naHdr.SetFlagR(true);
@@ -171,7 +174,8 @@ class SixLowPanNdRaPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("fe80::2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("fe80::2");
 
         Ptr<SixLowPanNdProtocol::SixLowPanRaEntry> raEntry =
             Create<SixLowPanNdProtocol::SixLowPanRaEntry>();
@@ -193,7 +197,7 @@ class SixLowPanNdRaPacketTest : public TestCase
                                                                      Time("10min"));
         raEntry->AddPrefix(newPrefix);
 
-        Icmpv6OptionLinkLayerAddress slla(1, Mac64Address("00:11:22:33:44:55:66:77"));
+        Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
 
         Icmpv6OptionSixLowPanCapabilityIndication cio;
         cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
@@ -240,7 +244,8 @@ class SixLowPanNdRsPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("ff02::2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("ff02::2");
         Icmpv6RS rs;
         Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
         Icmpv6OptionSixLowPanCapabilityIndication cio;
