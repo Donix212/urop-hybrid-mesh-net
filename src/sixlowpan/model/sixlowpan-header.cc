@@ -2201,7 +2201,7 @@ Icmpv6OptionSixLowPanCapabilityIndication::Icmpv6OptionSixLowPanCapabilityIndica
 }
 
 TypeId
-Icmpv6OptionSixLowPanCapabilityIndication::GetTypeId(void)
+Icmpv6OptionSixLowPanCapabilityIndication::GetTypeId()
 {
     static TypeId tid = TypeId("ns3::Icmpv6OptionSixLowPanCapabilityIndication")
                             .SetParent<Icmpv6Header>()
@@ -2211,7 +2211,7 @@ Icmpv6OptionSixLowPanCapabilityIndication::GetTypeId(void)
 }
 
 TypeId
-Icmpv6OptionSixLowPanCapabilityIndication::GetInstanceTypeId(void) const
+Icmpv6OptionSixLowPanCapabilityIndication::GetInstanceTypeId() const
 {
     return GetTypeId();
 }
