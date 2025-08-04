@@ -24,7 +24,7 @@ Other than that, the module strictly follows :rfc:`4944` and :rfc:`6282`, with t
 exception that HC2 encoding is not supported, as it has been superseded by IPHC and NHC
 compression type (\ :rfc:`6282`).
 
-** SixLowPanNetDevice**
+**SixLowPanNetDevice**
 
 The whole module is developed as a transparent NetDevice, which can act as a
 proxy between IPv6 and any NetDevice (the module has been successfully tested
