@@ -1380,19 +1380,19 @@ std::ostream& operator<<(std::ostream& os, const SixLowPanMesh& header);
 class Icmpv6OptionSixLowPanCapabilityIndication : public Icmpv6OptionHeader
 {
   public:
-    Icmpv6OptionSixLowPanCapabilityIndication(void);
+    Icmpv6OptionSixLowPanCapabilityIndication();
 
     /**
      * @brief Get the type ID.
      * @return The object TypeId.
      */
-    static TypeId GetTypeId(void);
+    static TypeId GetTypeId();
 
     /**
      * @brief Return the instance type identifier.
      * @return Instance type ID.
      */
-    TypeId GetInstanceTypeId(void) const override;
+    TypeId GetInstanceTypeId() const override;
 
     void Print(std::ostream& os) const override;
 
@@ -1400,7 +1400,7 @@ class Icmpv6OptionSixLowPanCapabilityIndication : public Icmpv6OptionHeader
      * @brief Get the serialized size of the packet.
      * @return Size.
      */
-    uint32_t GetSerializedSize(void) const override;
+    uint32_t GetSerializedSize() const override;
 
     /**
      * @brief Serialize the packet.

@@ -93,7 +93,7 @@ class SixLowPanNdRovrTest : public TestCase
         Simulator::Run();
         Simulator::Destroy();
 
-        NS_TEST_ASSERT_MSG_EQ(m_naPacketsReceived.size() >= 1,
+        NS_TEST_ASSERT_MSG_EQ(!m_naPacketsReceived.empty(),
                               true,
                               "Should have received at least one NA packet");
 
