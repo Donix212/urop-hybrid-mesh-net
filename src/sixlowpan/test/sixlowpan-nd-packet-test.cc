@@ -31,7 +31,7 @@ namespace ns3
 /**
  * @ingroup sixlowpan-nd-packet-tests
  *
- * @brief 6LoWPAN-ND test case for helper functions
+ * @brief 6LoWPAN-ND test case for NS(EARO) packet creation and parsing
  */
 class SixLowPanNdNsEaroPacketTest : public TestCase
 {
@@ -112,6 +112,11 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-packet-tests
+ *
+ * @brief 6LoWPAN-ND test case for NA(EARO) packet creation and parsing
+ */
 class SixLowPanNdNaEaroPacketTest : public TestCase
 {
   public:
@@ -164,6 +169,11 @@ class SixLowPanNdNaEaroPacketTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-packet-tests
+ *
+ * @brief 6LoWPAN-ND test case for RA packet creation and parsing
+ */
 class SixLowPanNdRaPacketTest : public TestCase
 {
   public:
@@ -234,6 +244,11 @@ class SixLowPanNdRaPacketTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-packet-tests
+ *
+ * @brief 6LoWPAN-ND test case for RS packet creation and parsing
+ */
 class SixLowPanNdRsPacketTest : public TestCase
 {
   public:
@@ -292,7 +307,7 @@ class SixlowpanNdTestSuite : public TestSuite
 {
   public:
     SixlowpanNdTestSuite()
-        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT) // test.py -s sixlowpan-nd
+        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT)
     {
         AddTestCase(new SixLowPanNdNsEaroPacketTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdNaEaroPacketTest(), TestCase::Duration::QUICK);
@@ -301,6 +316,5 @@ class SixlowpanNdTestSuite : public TestSuite
     }
 };
 
-// Register the test suite
-static SixlowpanNdTestSuite g_sixlowpanNdTestSuite;
+static SixlowpanNdTestSuite g_sixlowpanNdTestSuite; //!< Static variable for test initialization
 } // namespace ns3

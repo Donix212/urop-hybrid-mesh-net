@@ -193,10 +193,24 @@ class SixLowPanHelper
      */
     void InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter);
 
+    /**
+     * @brief Initialize the ROVR for a node.
+     * @param [in] node The node to initialize the ROVR for.
+     */
     void InitializeRovr(Ptr<Node> node);
 
+    /**
+     * @brief Convert a MAC address to a ROVR.
+     * @param mac The MAC address to convert.
+     * @return A vector of bytes representing the ROVR.
+     */
     std::vector<uint8_t> ConvertMacToRovr(const Address& mac);
 
+    /**
+     * @brief Print a ROVR as a string.
+     * @param rovr The ROVR to print.
+     * @return A string representation of the ROVR.
+     */
     std::string PrintRovr(const std::vector<uint8_t>& rovr);
 
     ObjectFactory m_deviceFactory; //!< Object factory.

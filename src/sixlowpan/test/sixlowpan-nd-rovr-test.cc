@@ -122,8 +122,12 @@ class SixLowPanNdRovrTest : public TestCase
     }
 
   private:
-    std::vector<Ptr<Packet>> m_naPacketsReceived;
+    std::vector<Ptr<Packet>> m_naPacketsReceived; //!< Container for NA packets received during test
 
+    /**
+     * @brief Callback sink for NA packet reception trace events
+     * @param pkt Received NA packet
+     */
     void NaRxSink(Ptr<Packet> pkt)
     {
         m_naPacketsReceived.push_back(pkt);
@@ -145,6 +149,6 @@ class SixLowPanNdRovrTestSuite : public TestSuite
     }
 };
 
-// Register the test suite
-static SixLowPanNdRovrTestSuite g_sixlowpanndrovrTestSuite;
+static SixLowPanNdRovrTestSuite
+    g_sixlowpanndrovrTestSuite; //!< Static variable for test initialization
 } // namespace ns3
