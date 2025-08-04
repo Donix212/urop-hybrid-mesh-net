@@ -723,7 +723,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     // Decode the RA
     Icmpv6RA raHdr;
     Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro; /* ABRO  */
-    Icmpv6OptionLinkLayerAddress slla(1);                /* SLLAO */
+    Icmpv6OptionLinkLayerAddress slla(true);             /* SLLAO */
     Icmpv6OptionSixLowPanCapabilityIndication cio;       /* 6CIO */
     std::list<Icmpv6OptionPrefixInformation> pios;       /* PIO */
     std::list<Icmpv6OptionSixLowPanContext> contexts;    /* 6CO */
@@ -859,7 +859,7 @@ SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> inter
             m_cacheList.erase(iter);
         }
     }
-    m_cacheList.push_back(cache);
+    m_cacheList.emplace_back(cache);
 
     return cache;
 }
@@ -894,7 +894,6 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
 void
 SixLowPanNdProtocol::FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr)
 {
-    return;
 }
 
 void
@@ -944,7 +943,7 @@ SixLowPanNdProtocol::AddressRegistration()
 
     Time additionalDelay = Seconds(0);
 
-    if (m_addrPendingReg.isValid == false)
+    if (!m_addrPendingReg.isValid)
     {
         if (!m_pendingRas.empty())
         {
@@ -1319,11 +1318,7 @@ SixLowPanNdProtocol::IsBorderRouterOnInterface(Ptr<SixLowPanNetDevice> device) c
 {
     NS_LOG_FUNCTION(device);
 
-    if (m_raEntries.find(device) == m_raEntries.end())
-    {
-        return false;
-    }
-    return true;
+    return m_raEntries.find(device) != m_raEntries.end();
 }
 
 //
@@ -1445,7 +1440,7 @@ SixLowPanNdProtocol::SixLowPanRaEntry::GetContexts() const
 }
 
 Icmpv6RA
-SixLowPanNdProtocol::SixLowPanRaEntry::BuildRouterAdvertisementHeader()
+SixLowPanNdProtocol::SixLowPanRaEntry::BuildRouterAdvertisementHeader() const
 {
     Icmpv6RA raHdr;
     /* set RA header information */
@@ -1717,9 +1712,7 @@ SixLowPanNdProtocol::MakeRaPacket(Ipv6Address src,
 
     // 6CO
     std::map<uint8_t, Ptr<SixLowPanNdContext>> contexts = raEntry->GetContexts();
-    for (std::map<uint8_t, Ptr<SixLowPanNdContext>>::iterator i = contexts.begin();
-         i != contexts.end();
-         i++)
+    for (auto i = contexts.begin(); i != contexts.end(); i++)
     {
         Icmpv6OptionSixLowPanContext sixHdr;
         sixHdr.SetContextPrefix(i->second->GetContextPrefix());
@@ -1762,7 +1755,7 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     bool next = true;
 
     /* search all options following the NS header */
-    while (next == true)
+    while (next)
     {
         uint8_t type;
         p->CopyData(&type, sizeof(type));
@@ -1834,7 +1827,7 @@ SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
     bool next = true;
 
     /* search all options following the NA header */
-    while (next == true)
+    while (next)
     {
         uint8_t type;
         p->CopyData(&type, sizeof(type));
@@ -1872,7 +1865,7 @@ SixLowPanNdProtocol::ParseAndValidateRsPacket(Ptr<Packet> p,
     bool hasCio = false;
     bool next = true;
 
-    while (next == true)
+    while (next)
     {
         uint8_t type;
         p->CopyData(&type, sizeof(type));
@@ -1928,7 +1921,7 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
     bool hasCio = false;
 
     bool next = true;
-    while (next == true)
+    while (next)
     {
         uint8_t type = 0;
         p->CopyData(&type, sizeof(type));
