@@ -132,7 +132,7 @@ SortRoutingTableString(std::string routingTable)
                     {
                         std::string hexStr = match[1].str();
                         int hexValue = std::stoi(hexStr, nullptr, 16);
-                        hostRoutes.emplace_back({hexValue, line});
+                        hostRoutes.emplace_back(hexValue, line);
                     }
                 }
                 else
