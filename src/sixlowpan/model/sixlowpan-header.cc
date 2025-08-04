@@ -2320,12 +2320,7 @@ Icmpv6OptionSixLowPanCapabilityIndication::SetOption(SixLowPanCapability_e optio
 bool
 Icmpv6OptionSixLowPanCapabilityIndication::CheckOption(SixLowPanCapability_e option) const
 {
-    if (m_capabilityOptionField & option)
-    {
-        return true;
-    }
-
-    return false;
+    return (m_capabilityOptionField & option) != 0;
 }
 
 std::ostream&

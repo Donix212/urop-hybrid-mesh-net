@@ -320,7 +320,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
          * Builds an Icmpv6RA from the stored data.
          * @return the Icmpv6RA.
          */
-        Icmpv6RA BuildRouterAdvertisementHeader();
+        Icmpv6RA BuildRouterAdvertisementHeader() const;
 
         /**
          * Builds a container of Icmpv6OptionPrefixInformation from the stored data.
