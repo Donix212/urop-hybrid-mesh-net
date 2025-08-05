@@ -747,11 +747,11 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
         bool newRegistration;     //!< new registration (true) or re-registration (false)
         Ptr<NetDevice> sixDevice; //!< The SixLowPanNetDevice to use for the registration
         Icmpv6OptionLinkLayerAddress
-            llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
+            llaHdr; //!< Link-Layer address option from the RA (can be 6LR or 6LBR).
         Ptr<Ipv6Interface>
-            interface; //! Interface that did receive the RA that this address is taken from
+            interface; //!< Interface that did receive the RA that this address is taken from
         Icmpv6OptionPrefixInformation
-            pioHdr; //! Prefix Information Option for the address being registered
+            pioHdr; //!< Prefix Information Option for the address being registered
     } AddressPendingRegistration;
 
     AddressPendingRegistration m_addrPendingReg; //!< Address being Registered
