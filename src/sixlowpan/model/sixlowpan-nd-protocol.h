@@ -78,18 +78,18 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     };
 
     /**
-     *  Role of the node: 6LN, 6LR, 6LBR
+     *  Role of the node: 6LN,6BBR, 6LBR
      *
      *  A Node starts either as a 6LN or as a 6LBR.
-     *  A 6LN can become a 6LR.
+     *  A 6LN can become a 6BBR.
      *
      */
     enum SixLowPanNodeStatus_e
     {
-        SixLowPanNodeOnly,    //!< a 6LN that can not become a 6LR
-        SixLowPanNode,        //!< a 6LN that can (and want to) become a 6LR
-        SixLowPanRouter,      //!< a 6LR
-        SixLowPanBorderRouter //!< a 6LBR
+        SixLowPanNodeOnly,       //!< a 6LN that can not become a 6BBR
+        SixLowPanNode,           //!< a 6LN that can (and want to) become a 6BBR
+        SixLowPanBackboneRouter, //!< a 6BBR
+        SixLowPanBorderRouter    //!< a 6LBR
     };
 
     /**
@@ -257,9 +257,9 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     void SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device);
 
     /**
-     * @brief Upgrade a 6LN to a 6LR (SixLowPanNode -> SixLowPanRouter)
+     * @brief Upgrade a 6LN to a 6BBR (SixLowPanNode -> SixLowPanBackboneRouter)
      */
-    void UpgradeToSixLowPanRouter();
+    void UpgradeToSixLowPanBackboneRouter();
 
     /**
      * @brief Set a prefix to be announced on an interface (6LBR)
@@ -724,9 +724,9 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     typedef struct
     {
         Ptr<SixLowPanRaEntry> pendingRa; //!< RA being processed
-        Ipv6Address source;              //!< Origin of the RA (might be a 6LR)
+        Ipv6Address source;              //!< Origin of the RA (might be a 6BBR)
         Icmpv6OptionLinkLayerAddress
-            llaHdr; //!< Link-Layer address option from the RA (can be 6LR or 6LBR).
+            llaHdr; //!< Link-Layer address option from the RA (can be 6BBR or 6LBR).
         Ptr<Ipv6Interface> incomingIf;                  //!< Interface that did receive the RA
         std::list<Ipv6Address> addressesToBeregistered; //!< Addresses pending registration.
         std::map<Ipv6Address, Icmpv6OptionPrefixInformation>
@@ -744,11 +744,11 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
         Time registrationTimeout;   //!< Registration expiration time
         Ipv6Address registeredAddr; //!< Registered address
         Ipv6Address abroAddress;    //!< Address of the ABRO (always global)
-        Ipv6Address registrar; //!< Registering node (lladdr of 6LR or 6LBR for a lladdr, gaddr of
+        Ipv6Address registrar; //!< Registering node (lladdr of 6BBR or 6LBR for a lladdr, gaddr of
                                //!< 6LBR for gaddr)
         Address registrarMacAddr; //!< Registering node MAC address
         Icmpv6OptionLinkLayerAddress
-            llaHdr; //!< Link-Layer address option from the RA (can be 6LR or 6LBR).
+            llaHdr; //!< Link-Layer address option from the RA (can be 6BBR or 6LBR).
         Ptr<Ipv6Interface> interface; //!< Interface used for the registration
         Icmpv6OptionPrefixInformation
             pioHdr; //!< Prefix Information Option for the address being registered
@@ -770,7 +770,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
         bool newRegistration;     //!< new registration (true) or re-registration (false)
         Ptr<NetDevice> sixDevice; //!< The SixLowPanNetDevice to use for the registration
         Icmpv6OptionLinkLayerAddress
-            llaHdr; //!< Link-Layer address option from the RA (can be 6LR or 6LBR).
+            llaHdr; //!< Link-Layer address option from the RA (can be 6BBR or 6LBR).
         Ptr<Ipv6Interface>
             interface; //!< Interface that did receive the RA that this address is taken from
         Icmpv6OptionPrefixInformation
@@ -927,7 +927,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @brief Parses EDAR packet and populates params, returning true if packet is valid
      * @param p Packet to be parsed
      * @param edarHdr populated with packet EDAR header
-     * @param slla contains 6LR link layer address
+     * @param slla contains 6BBR link layer address
      * @return True if packet is valid, false otherwise
      */
     static bool ParseAndValidateEdarPacket(
@@ -939,7 +939,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @brief Parses EDAC packet and populates params, returning true if packet is valid
      * @param p Packet to be parsed
      * @param edacHdr populated with packet EDAC header
-     * @param tlla contains 6LR link layer address
+     * @param tlla contains 6BBR link layer address
      * @return True if packet is valid, false otherwise
      */
     static bool ParseAndValidateEdacPacket(

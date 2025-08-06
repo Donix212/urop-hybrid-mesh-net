@@ -37,13 +37,13 @@ namespace ns3
 /**
  * @ingroup sixlowpan-nd-reg-tests
  *
- * @brief Test successful registration and upgrade to 6LR of varying numbers of 6LNs with 1 6LBR
+ * @brief Test successful registration and upgrade to 6BBR of varying numbers of 6LNs with 1 6LBR
  */
-class SixLowPanNdOneLRRegTest : public TestCase
+class SixLowPanNdOneBBRRegTest : public TestCase
 {
   public:
-    SixLowPanNdOneLRRegTest()
-        : TestCase("Registration of 1 6LN (6LR) with 1 6LBR")
+    SixLowPanNdOneBBRRegTest()
+        : TestCase("Registration of 1 6LN (6BBR) with 1 6LBR")
     {
     }
 
@@ -71,8 +71,8 @@ class SixLowPanNdOneLRRegTest : public TestCase
         // Node 0 = 6LBR
         sixlowpan.InstallSixLowPanNdBorderRouter(sixlowpanNetDevices.Get(0), "2001::");
         sixlowpan.SetAdvertisedPrefix(sixlowpanNetDevices.Get(0), Ipv6Prefix("2001::", 64));
-        // Node 1 = 6LR
-        sixlowpan.InstallSixLowPanNdRouter(sixlowpanNetDevices.Get(1));
+        // Node 1 = 6BBR
+        sixlowpan.InstallSixLowPanNdBackboneRouter(sixlowpanNetDevices.Get(1));
 
         std::ostringstream ndiscStream;
         Ptr<OutputStreamWrapper> outputNdiscStream = Create<OutputStreamWrapper>(&ndiscStream);
@@ -112,19 +112,20 @@ class SixLowPanNdOneLRRegTest : public TestCase
                               expectedRoutingTableStream,
                               "Routing table does not match expected.");
 
-        // Additionally, assert that the nodeRole of the lnNode is now SixLowPanRouter
+        // Additionally, assert that the nodeRole of the lnNode is now SixLowPanBackboneRouter
         Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = lnNode->GetObject<SixLowPanNdProtocol>();
-        NS_TEST_EXPECT_MSG_EQ(sixLowPanNdProtocol->GetNodeRole(),
-                              SixLowPanNdProtocol::SixLowPanRouter,
-                              "Node role of 6LN should be SixLowPanRouter after registration.");
+        NS_TEST_EXPECT_MSG_EQ(
+            sixLowPanNdProtocol->GetNodeRole(),
+            SixLowPanNdProtocol::SixLowPanBackboneRouter,
+            "Node role of 6LN should be SixLowPanBackboneRouter after registration.");
     }
 };
 
-class SixLowPanNdFiveLRRegTest : public TestCase
+class SixLowPanNdFiveBBRRegTest : public TestCase
 {
   public:
-    SixLowPanNdFiveLRRegTest()
-        : TestCase("Registration of 5 6LNs (6LR) with 1 6LBR")
+    SixLowPanNdFiveBBRRegTest()
+        : TestCase("Registration of 5 6LNs (6BBR) with 1 6LBR")
     {
     }
 
@@ -134,7 +135,7 @@ class SixLowPanNdFiveLRRegTest : public TestCase
         constexpr uint32_t numLns = 5;
 
         NodeContainer nodes;
-        nodes.Create(1 + numLns); // 1 LBR + 5 LNs (6LR)
+        nodes.Create(1 + numLns); // 1 LBR + 5 LNs (6BBR)
         Ptr<Node> lbrNode = nodes.Get(0);
 
         // Install SimpleNetDevice instead of LrWpan
@@ -152,7 +153,7 @@ class SixLowPanNdFiveLRRegTest : public TestCase
 
         for (uint32_t i = 1; i <= numLns; ++i)
         {
-            sixlowpan.InstallSixLowPanNdRouter(devices.Get(i));
+            sixlowpan.InstallSixLowPanNdBackboneRouter(devices.Get(i));
         }
 
         std::ostringstream ndiscStream;
@@ -176,7 +177,7 @@ class SixLowPanNdFiveLRRegTest : public TestCase
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
 
-        // Assert that all 5 6LNs have been upgraded to 6LR role after registration
+        // Assert that all 5 6LNs have been upgraded to 6BBR role after registration
         for (uint32_t i = 1; i <= numLns; ++i)
         {
             Ptr<Node> lnNode = nodes.Get(i);
@@ -184,17 +185,19 @@ class SixLowPanNdFiveLRRegTest : public TestCase
 
             NS_TEST_ASSERT_MSG_EQ(
                 sixLowPanNdProtocol->GetNodeRole(),
-                SixLowPanNdProtocol::SixLowPanRouter,
-                "Node " << i << " should be upgraded to SixLowPanRouter role after registration.");
+                SixLowPanNdProtocol::SixLowPanBackboneRouter,
+                "Node "
+                    << i
+                    << " should be upgraded to SixLowPanBackboneRouter role after registration.");
         }
     }
 };
 
-class SixLowPanNdFifteenLRRegTest : public TestCase
+class SixLowPanNdFifteenBBRRegTest : public TestCase
 {
   public:
-    SixLowPanNdFifteenLRRegTest()
-        : TestCase("Registration of 15 6LNs (6LR) with 1 6LBR")
+    SixLowPanNdFifteenBBRRegTest()
+        : TestCase("Registration of 15 6LNs (6BBR) with 1 6LBR")
     {
     }
 
@@ -204,7 +207,7 @@ class SixLowPanNdFifteenLRRegTest : public TestCase
         constexpr uint32_t numLns = 15;
 
         NodeContainer nodes;
-        nodes.Create(1 + numLns); // 1 LBR + 15 LNs (6LR)
+        nodes.Create(1 + numLns); // 1 LBR + 15 LNs (6BBR)
         Ptr<Node> lbrNode = nodes.Get(0);
 
         // Install SimpleNetDevice instead of LrWpan
@@ -222,7 +225,7 @@ class SixLowPanNdFifteenLRRegTest : public TestCase
 
         for (uint32_t i = 1; i <= numLns; ++i)
         {
-            sixlowpan.InstallSixLowPanNdRouter(devices.Get(i));
+            sixlowpan.InstallSixLowPanNdBackboneRouter(devices.Get(i));
         }
 
         std::ostringstream ndiscStream;
@@ -246,7 +249,7 @@ class SixLowPanNdFifteenLRRegTest : public TestCase
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
 
-        // Assert that all 15 6LNs have been upgraded to 6LR role after registration
+        // Assert that all 15 6LNs have been upgraded to 6BBR role after registration
         for (uint32_t i = 1; i <= numLns; ++i)
         {
             Ptr<Node> lnNode = nodes.Get(i);
@@ -254,17 +257,19 @@ class SixLowPanNdFifteenLRRegTest : public TestCase
 
             NS_TEST_ASSERT_MSG_EQ(
                 sixLowPanNdProtocol->GetNodeRole(),
-                SixLowPanNdProtocol::SixLowPanRouter,
-                "Node " << i << " should be upgraded to SixLowPanRouter role after registration.");
+                SixLowPanNdProtocol::SixLowPanBackboneRouter,
+                "Node "
+                    << i
+                    << " should be upgraded to SixLowPanBackboneRouter role after registration.");
         }
     }
 };
 
-class SixLowPanNdTwentyLRRegTest : public TestCase
+class SixLowPanNdTwentyBBRRegTest : public TestCase
 {
   public:
-    SixLowPanNdTwentyLRRegTest()
-        : TestCase("Registration of 20 6LNs (6LR) with 1 6LBR")
+    SixLowPanNdTwentyBBRRegTest()
+        : TestCase("Registration of 20 6LNs (6BBR) with 1 6LBR")
     {
     }
 
@@ -274,7 +279,7 @@ class SixLowPanNdTwentyLRRegTest : public TestCase
         constexpr uint32_t numLns = 20;
 
         NodeContainer nodes;
-        nodes.Create(1 + numLns); // 1 LBR + 20 LNs (6LR)
+        nodes.Create(1 + numLns); // 1 LBR + 20 LNs (6BBR)
         Ptr<Node> lbrNode = nodes.Get(0);
 
         // Install SimpleNetDevice instead of LrWpan
@@ -292,7 +297,7 @@ class SixLowPanNdTwentyLRRegTest : public TestCase
 
         for (uint32_t i = 1; i <= numLns; ++i)
         {
-            sixlowpan.InstallSixLowPanNdRouter(devices.Get(i));
+            sixlowpan.InstallSixLowPanNdBackboneRouter(devices.Get(i));
         }
 
         std::ostringstream ndiscStream;
@@ -316,7 +321,7 @@ class SixLowPanNdTwentyLRRegTest : public TestCase
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
 
-        // Assert that all 20 6LNs have been upgraded to 6LR role after registration
+        // Assert that all 20 6LNs have been upgraded to 6BBR role after registration
         for (uint32_t i = 1; i <= numLns; ++i)
         {
             Ptr<Node> lnNode = nodes.Get(i);
@@ -324,30 +329,32 @@ class SixLowPanNdTwentyLRRegTest : public TestCase
 
             NS_TEST_ASSERT_MSG_EQ(
                 sixLowPanNdProtocol->GetNodeRole(),
-                SixLowPanNdProtocol::SixLowPanRouter,
-                "Node " << i << " should be upgraded to SixLowPanRouter role after registration.");
+                SixLowPanNdProtocol::SixLowPanBackboneRouter,
+                "Node "
+                    << i
+                    << " should be upgraded to SixLowPanBackboneRouter role after registration.");
         }
     }
 };
 
 /**
- * @ingroup sixlowpan-nd-lr-reg-tests
+ * @ingroup sixlowpan-nd-bbr-reg-tests
  *
  * @brief 6LoWPAN-ND TestSuite
  */
-class SixLowPanNdLrRegTestSuite : public TestSuite
+class SixLowPanNdBbrRegTestSuite : public TestSuite
 {
   public:
-    SixLowPanNdLrRegTestSuite()
-        : TestSuite("sixlowpan-nd-lr-reg-test", Type::UNIT) // test.py -s sixlowpan-nd-lr-reg-test
+    SixLowPanNdBbrRegTestSuite()
+        : TestSuite("sixlowpan-nd-bbr-reg-test", Type::UNIT)
     {
-        AddTestCase(new SixLowPanNdOneLRRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdFiveLRRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdFifteenLRRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdTwentyLRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdOneBBRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdFiveBBRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdFifteenBBRRegTest(), TestCase::Duration::QUICK);
+        AddTestCase(new SixLowPanNdTwentyBBRRegTest(), TestCase::Duration::QUICK);
     }
 };
 
 // Register the test suite
-static SixLowPanNdLrRegTestSuite g_sixlowpanndlrregTestSuite;
+static SixLowPanNdBbrRegTestSuite g_sixlowpanndbbrregTestSuite;
 } // namespace ns3

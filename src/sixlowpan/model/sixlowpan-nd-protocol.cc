@@ -1096,7 +1096,7 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
 
     if (m_nodeRole == SixLowPanNode)
     {
-        UpgradeToSixLowPanRouter();
+        UpgradeToSixLowPanBackboneRouter();
     }
 }
 
@@ -1204,7 +1204,7 @@ SixLowPanNdProtocol::SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device)
 }
 
 void
-SixLowPanNdProtocol::UpgradeToSixLowPanRouter()
+SixLowPanNdProtocol::UpgradeToSixLowPanBackboneRouter()
 {
     NS_LOG_FUNCTION(this);
 
@@ -1233,7 +1233,7 @@ SixLowPanNdProtocol::UpgradeToSixLowPanRouter()
     }
 
     // Change the node role
-    SetNodeRole(SixLowPanRouter);
+    SetNodeRole(SixLowPanBackboneRouter);
 }
 
 void

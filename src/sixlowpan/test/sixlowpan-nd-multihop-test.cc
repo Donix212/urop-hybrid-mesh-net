@@ -50,7 +50,7 @@ class SixLowPanNdMultihopSetupTest : public TestCase
 
         // Construct a 3 node simulation with CSMA Ethernet links A -- B -- C
         // Then try to assign addresses of the same network prefix to A -- B and B -- C
-        // 6LBR -- 6LR -- 6LN
+        // 6LBR -- 6BBR -- 6LN
 
         Time stopTime = Seconds(40.0);
         NodeContainer nodesAB;
@@ -187,11 +187,11 @@ class SixLowPanNdMultihopBasicTest : public TestCase
 
         // Test that the basic bootstrapping, and multihop EDAR / EDAC works
         // Construct a 3 node simulation with CSMA Ethernet links A -- B -- C
-        // 6LBR -- 6LR -- 6LN
+        // 6LBR -- 6BBR -- 6LN
         // Node A (6LBR)
         // Iface 1: LLaddr:fe80::200:ff:fe00:1/64 Gaddr:2001:ab::200:ff:fe00:1/64
 
-        // Node B (6LN (6LR))
+        // Node B (6LN (6BBR))
         // Iface 1: LLaddr:fe80::200:ff:fe00:2/64 Gaddr:2001:ab::200:ff:fe00:2/64
         // Iface 2: LLaddr:fe80::200:ff:fe00:3/64 Gaddr:2001:ab::200:ff:fe00:3/64
 
@@ -224,7 +224,7 @@ class SixLowPanNdMultihopBasicTest : public TestCase
 
         // Install SixLowPanNdProtocol on all nodes
         // Configure 6LoWPAN-ND roles:
-        // (6LBR) (1) <---> (1) (6LR) (2) <---> (1) (6LN)
+        // (6LBR) (1) <---> (1) (6BBR) (2) <---> (1) (6LN)
 
         // A is the 6LBR on the 1 interface
         sixlowpan.InstallSixLowPanNdBorderRouter(NetDeviceContainer(sixlowpanDevicesAB.Get(0)),
@@ -232,11 +232,11 @@ class SixLowPanNdMultihopBasicTest : public TestCase
         sixlowpan.SetAdvertisedPrefix(sixlowpanDevicesAB.Get(0), Ipv6Prefix("2001:ab::", 64));
         // sixlowpan.AddAdvertisedContext(sixlowpanDevicesAB.Get(0), Ipv6Prefix("2001:ab::", 64));
 
-        // B is 6LR on both interfaces
+        // B is 6BBR on both interfaces
         NetDeviceContainer bDevices;
         bDevices.Add(sixlowpanDevicesAB.Get(1)); // B's AB interface
         bDevices.Add(sixlowpanDevicesBC.Get(0)); // B's BC interface
-        sixlowpan.InstallSixLowPanNdRouter(bDevices);
+        sixlowpan.InstallSixLowPanNdBackboneRouter(bDevices);
         sixlowpan.SetAdvertisedPrefix(sixlowpanDevicesBC.Get(0), Ipv6Prefix("2001:cd::", 64));
 
         // C is 6LN on the 1 interface
