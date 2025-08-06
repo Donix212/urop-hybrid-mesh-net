@@ -31,7 +31,7 @@ namespace ns3
 /**
  * @ingroup sixlowpan-nd-packet-tests
  *
- * @brief 6LoWPAN-ND test case for helper functions
+ * @brief 6LoWPAN-ND test case for NS(EARO) packet creation and parsing
  */
 class SixLowPanNdNsEaroPacketTest : public TestCase
 {
@@ -43,12 +43,13 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("fe80::2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("fe80::2");
 
         Icmpv6NS nsHdr(src);
         Mac64Address mac("00:11:22:33:44:55:66:77");
-        Icmpv6OptionLinkLayerAddress slla(1, mac);
-        Icmpv6OptionLinkLayerAddress tlla(0, mac);
+        Icmpv6OptionLinkLayerAddress slla(true, mac);
+        Icmpv6OptionLinkLayerAddress tlla(false, mac);
         std::vector<uint8_t> rovr(16, 0xAB);
         Icmpv6OptionSixLowPanExtendedAddressRegistration earo(20, rovr, 5);
 
@@ -86,6 +87,7 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
 
         // Validate parsed EARO
         NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetRegTime(), 20, "EARO lifetime should match");
+        NS_TEST_EXPECT_MSG_EQ(parsedEaro.GetTransactionId(), 5, "Transaction ID should match");
 
         NS_TEST_EXPECT_MSG_EQ(hasEaro, 1, "hasEaro should be true");
 
@@ -110,6 +112,11 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-packet-tests
+ *
+ * @brief 6LoWPAN-ND test case for NA(EARO) packet creation and parsing
+ */
 class SixLowPanNdNaEaroPacketTest : public TestCase
 {
   public:
@@ -120,7 +127,9 @@ class SixLowPanNdNaEaroPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("fe80::2"), target("fe80::ff:fe00:2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("fe80::2");
+        Ipv6Address target("fe80::ff:fe00:2");
         Icmpv6NA naHdr;
         naHdr.SetIpv6Target(target);
         naHdr.SetFlagR(true);
@@ -160,6 +169,11 @@ class SixLowPanNdNaEaroPacketTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-packet-tests
+ *
+ * @brief 6LoWPAN-ND test case for RA packet creation and parsing
+ */
 class SixLowPanNdRaPacketTest : public TestCase
 {
   public:
@@ -170,7 +184,8 @@ class SixLowPanNdRaPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("fe80::2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("fe80::2");
 
         Ptr<SixLowPanNdProtocol::SixLowPanRaEntry> raEntry =
             Create<SixLowPanNdProtocol::SixLowPanRaEntry>();
@@ -192,7 +207,7 @@ class SixLowPanNdRaPacketTest : public TestCase
                                                                      Time("10min"));
         raEntry->AddPrefix(newPrefix);
 
-        Icmpv6OptionLinkLayerAddress slla(1, Mac64Address("00:11:22:33:44:55:66:77"));
+        Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
 
         Icmpv6OptionSixLowPanCapabilityIndication cio;
         cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
@@ -229,6 +244,11 @@ class SixLowPanNdRaPacketTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-packet-tests
+ *
+ * @brief 6LoWPAN-ND test case for RS packet creation and parsing
+ */
 class SixLowPanNdRsPacketTest : public TestCase
 {
   public:
@@ -239,7 +259,8 @@ class SixLowPanNdRsPacketTest : public TestCase
 
     void DoRun() override
     {
-        Ipv6Address src("fe80::1"), dst("ff02::2");
+        Ipv6Address src("fe80::1");
+        Ipv6Address dst("ff02::2");
         Icmpv6RS rs;
         Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
         Icmpv6OptionSixLowPanCapabilityIndication cio;
@@ -482,7 +503,7 @@ class SixlowpanNdTestSuite : public TestSuite
 {
   public:
     SixlowpanNdTestSuite()
-        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT) // test.py -s sixlowpan-nd-packet-test
+        : TestSuite("sixlowpan-nd-packet-test", Type::UNIT)
     {
         AddTestCase(new SixLowPanNdNsEaroPacketTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdNaEaroPacketTest(), TestCase::Duration::QUICK);

@@ -266,7 +266,7 @@ Icmpv6OptionSixLowPanExtendedAddressRegistration::Icmpv6OptionSixLowPanExtendedA
     m_status = 0;
     m_opaque = 0;
     m_i = 0;
-    m_flagR = 0;
+    m_flagR = false;
     m_tid = 0;
     m_regTime = 0;
 }
@@ -282,7 +282,7 @@ Icmpv6OptionSixLowPanExtendedAddressRegistration::Icmpv6OptionSixLowPanExtendedA
     m_status = 0;
     m_opaque = 0;
     m_i = 0;
-    m_flagR = 0;
+    m_flagR = false;
     m_tid = tid;
     m_regTime = time;
     SetRovr(rovr);
@@ -300,7 +300,7 @@ Icmpv6OptionSixLowPanExtendedAddressRegistration::Icmpv6OptionSixLowPanExtendedA
     m_status = status;
     m_opaque = 0;
     m_i = 0;
-    m_flagR = 0;
+    m_flagR = false;
     m_tid = tid;
     m_regTime = time;
     SetRovr(rovr);

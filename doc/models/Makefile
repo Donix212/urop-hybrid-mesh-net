@@ -16,10 +16,7 @@ SOURCES = \
 	source/network.rst \
 	source/emulation-overview.rst \
 	source/traffic-control.rst \
-	$(SRC)/antenna/doc/source/antenna.rst \
-	$(SRC)/antenna/doc/source/antenna-design.rst \
-	$(SRC)/antenna/doc/source/antenna-user.rst \
-	$(SRC)/antenna/doc/source/antenna-testing.rst \
+	$(SRC)/antenna/doc/antenna.rst \
 	$(SRC)/aodv/doc/aodv.rst \
 	$(SRC)/applications/doc/applications.rst \
 	$(SRC)/bridge/doc/bridge.rst \
@@ -109,8 +106,8 @@ SOURCES = \
 SOURCEFIGS = \
 	figures/testbed.dia \
 	figures/emulated-channel.dia \
-	$(SRC)/antenna/doc/source/figures/antenna-coordinate-system.dia	\
-	$(SRC)/antenna/doc/source/figures/circular-antenna-pattern.png	\
+	$(SRC)/antenna/doc/figures/antenna-coordinate-system.dia	\
+	$(SRC)/antenna/doc/figures/circular-antenna-pattern.png	\
 	$(SRC)/applications/doc/http-embedded-object-size.png \
 	$(SRC)/applications/doc/http-main-object-size.png \
 	$(SRC)/applications/doc/http-num-of-embedded-objects.png \
@@ -126,6 +123,7 @@ SOURCEFIGS = \
 	$(SRC)/internet/doc/internet-node-recv.dia \
 	$(SRC)/internet/doc/routing.dia \
 	$(SRC)/internet/doc/routing-specialization.dia \
+	$(SRC)/internet/doc/global-routing-limitation.dia \
 	$(SRC)/internet/doc/figures/tcp-state-machine.png \
 	$(SRC)/internet/doc/figures/dctcp-10ms-50mbps-tcp-throughput.pdf \
 	$(SRC)/internet/doc/figures/dctcp-10ms-50mbps-tcp-throughput.png \
@@ -396,6 +394,7 @@ IMAGES_EPS = \
 	$(FIGURES)/internet-node-recv.eps \
 	$(FIGURES)/routing.eps \
 	$(FIGURES)/routing-specialization.eps \
+	$(FIGURES)/global-routing-limitation.eps \
 	$(FIGURES)/WifiArchitecture.eps \
 	$(FIGURES)/PhyEntityHierarchy.eps \
 	$(FIGURES)/WifiPpduHierarchy.eps \
@@ -525,6 +524,7 @@ $(FIGURES)/internet-node-send.pdf_width = 5in
 $(FIGURES)/internet-node-recv.pdf_width = 5in
 $(FIGURES)/routing.pdf_width = 6in
 $(FIGURES)/routing-specialization.pdf_width = 5in
+$(FIGURES)/global-routing-limitation.pdf_width = 6in
 $(FIGURES)/snir.pdf_width = 3in
 $(FIGURES)/lte-interference-test-scenario.pdf_width = 3in
 $(FIGURES)/epc-ctrl-arch.pdf_width = 8cm

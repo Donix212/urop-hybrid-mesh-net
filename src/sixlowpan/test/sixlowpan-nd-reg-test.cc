@@ -124,9 +124,14 @@ class SixLowPanNdOneLNRegTest : public TestCase
     }
 
   private:
-    Ipv6Address registeredAddress;
+    Ipv6Address registeredAddress; //!< Address that was successfully registered during the test
 
-    // Fired each time any LN fires AddressRegistrationResult(address, success)
+    /**
+     * @brief Callback sink for address registration result trace events
+     * @param address IPv6 address that was being registered
+     * @param success Whether the registration was successful
+     * @param status Registration status code
+     */
     void RegistrationResultSink(Ipv6Address address, bool success, uint8_t status)
     {
         if (success)
@@ -136,6 +141,11 @@ class SixLowPanNdOneLNRegTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-reg-tests
+ *
+ * @brief Test successful registration of 5 6LNs with 1 6LBR
+ */
 class SixLowPanNdFiveLNRegTest : public TestCase
 {
   public:
@@ -196,6 +206,11 @@ class SixLowPanNdFiveLNRegTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-reg-tests
+ *
+ * @brief Test successful registration of 15 6LNs with 1 6LBR
+ */
 class SixLowPanNdFifteenLNRegTest : public TestCase
 {
   public:
@@ -255,6 +270,11 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-reg-tests
+ *
+ * @brief Test successful registration of 20 6LNs with 1 6LBR
+ */
 class SixLowPanNdTwentyLNRegTest : public TestCase
 {
   public:
@@ -314,6 +334,11 @@ class SixLowPanNdTwentyLNRegTest : public TestCase
     }
 };
 
+/**
+ * @ingroup sixlowpan-nd-reg-tests
+ *
+ * @brief Test 6LN multicast RS timeout behavior when no RA is received
+ */
 class SixLowPanNdMulticastRsTimeoutTest : public TestCase
 {
   public:
@@ -364,9 +389,13 @@ class SixLowPanNdMulticastRsTimeoutTest : public TestCase
     }
 
   private:
-    std::vector<Ipv6Address> m_multicastRsEvents;
+    std::vector<Ipv6Address>
+        m_multicastRsEvents; //!< Container for multicast RS events captured during test
 
-    // This will be called for each RS we send
+    /**
+     * @brief Callback sink for multicast RS trace events
+     * @param src Source address of the multicast RS
+     */
     void MulticastRsSink(Ipv6Address src)
     {
         m_multicastRsEvents.push_back(src);
@@ -392,6 +421,6 @@ class SixLowPanNdRegTestSuite : public TestSuite
     }
 };
 
-// Register the test suite
-static SixLowPanNdRegTestSuite g_sixlowpanndregTestSuite;
+static SixLowPanNdRegTestSuite
+    g_sixlowpanndregTestSuite; //!< Static variable for test initialization
 } // namespace ns3

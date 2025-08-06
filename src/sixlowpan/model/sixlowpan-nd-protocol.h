@@ -212,8 +212,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                  uint8_t status);
     /**
      * @brief Send a Multicast RS (+ 6CIO) (RFC6775 5.3)
-     * @param dst destination IPv6 address
-     * @param interface the interface from which the packet will be sent
+     * @param src source IPv6 address
+     * @param hardwareAddress the hardware address of the node
      */
     void SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareAddress);
 
@@ -358,7 +358,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
          * Builds an Icmpv6RA from the stored data.
          * @return the Icmpv6RA.
          */
-        Icmpv6RA BuildRouterAdvertisementHeader();
+        Icmpv6RA BuildRouterAdvertisementHeader() const;
 
         /**
          * Builds a container of Icmpv6OptionPrefixInformation from the stored data.
@@ -702,23 +702,21 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     std::map<Ptr<SixLowPanNetDevice>, Ptr<SixLowPanRaEntry>>
         m_raEntries; //!< Router Advertisement entries (if the node is a 6LBR).
 
-    TracedCallback<Ipv6Address, bool, uint8_t> m_addressRegistrationResultTrace;
-    //!< Traces address registration result (address, success/failure, status code)
+    TracedCallback<Ipv6Address, bool, uint8_t>
+        m_addressRegistrationResultTrace; //!< Traces address registration result (address,
+                                          //!< success/failure, status code)
 
-    // Trace sink signature for address registration result
-    typedef Callback<void, Ipv6Address, bool, uint8_t> AddressRegistrationCallback;
+    typedef Callback<void, Ipv6Address, bool, uint8_t>
+        AddressRegistrationCallback; //!< Trace sink signature for address registration result
 
-    /// Trace fired whenever a multicast RS is sent
-    TracedCallback<Ipv6Address> m_multicastRsTrace;
+    TracedCallback<Ipv6Address> m_multicastRsTrace; //!< Trace fired whenever a multicast RS is sent
 
-    // Trace sink signature for multicast RS sends:
-    typedef Callback<void, Ipv6Address> MulticastRsCallback;
+    typedef Callback<void, Ipv6Address>
+        MulticastRsCallback; //!< Trace sink signature for multicast RS sends
 
-    // Trace fired whenever an NA packet is received
-    TracedCallback<Ptr<Packet>> m_naRxTrace;
+    TracedCallback<Ptr<Packet>> m_naRxTrace; //!< Trace fired whenever an NA packet is received
 
-    // Trace sink signature for NA reception
-    typedef Callback<void, Ptr<Packet>> NaRxCallback;
+    typedef Callback<void, Ptr<Packet>> NaRxCallback; //!< Trace sink signature for NA reception
 
     /**
      * Structure holding data about a pending RA being processed
@@ -750,10 +748,10 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                //!< 6LBR for gaddr)
         Address registrarMacAddr; //!< Registering node MAC address
         Icmpv6OptionLinkLayerAddress
-            llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
+            llaHdr; //!< Link-Layer address option from the RA (can be 6LR or 6LBR).
         Ptr<Ipv6Interface> interface; //!< Interface used for the registration
         Icmpv6OptionPrefixInformation
-            pioHdr; //! Prefix Information Option for the address being registered
+            pioHdr; //!< Prefix Information Option for the address being registered
     } SixLowPanRegisteredAddress;
 
     std::list<SixLowPanRegisteredAddress>
@@ -772,11 +770,11 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
         bool newRegistration;     //!< new registration (true) or re-registration (false)
         Ptr<NetDevice> sixDevice; //!< The SixLowPanNetDevice to use for the registration
         Icmpv6OptionLinkLayerAddress
-            llaHdr; //! Link-Layer address option from the RA (can be 6LR or 6LBR).
+            llaHdr; //!< Link-Layer address option from the RA (can be 6LR or 6LBR).
         Ptr<Ipv6Interface>
-            interface; //! Interface that did receive the RA that this address is taken from
+            interface; //!< Interface that did receive the RA that this address is taken from
         Icmpv6OptionPrefixInformation
-            pioHdr; //! Prefix Information Option for the address being registered
+            pioHdr; //!< Prefix Information Option for the address being registered
     } AddressPendingRegistration;
 
     AddressPendingRegistration m_addrPendingReg; //!< Address being Registered
@@ -823,8 +821,9 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @brief Constructs a RA packet (raEntry contains info for raHdr, pios, abro and contexts)
      * @param src source address
      * @param dst destination address
-     * @param slla
-     * @param raEntry
+     * @param slla Source Link-Layer Address Option
+     * @param cio Capability Indication Option
+     * @param raEntry RA entry containing router advertisement information
      * @return RA Packet
      */
     static Ptr<Packet> MakeRaPacket(Ipv6Address src,
@@ -880,8 +879,10 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     /**
      * @brief Parses NA packet and populates params, returning true if packet is valid
      * @param p Packet to be parsed
-     * @param naHdr
-     * @param earo
+     * @param naHdr populated with packet NA header
+     * @param tlla populated with packet Target Link-Layer Address Option if present
+     * @param earo populated with packet EARO if present
+     * @param hasEaro true if NA packet contains an EARO option
      * @return True if packet is valid, false otherwise
      */
     static bool ParseAndValidateNaEaroPacket(Ptr<Packet> p,
@@ -893,8 +894,9 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     /**
      * @brief Parses RS packet and populates params, returning true if packet is valid
      * @param p Packet to be parsed
-     * @param rsHdr
-     * @param slla
+     * @param rsHdr populated with packet RS header
+     * @param slla populated with packet Source Link-Layer Address Option if present
+     * @param cio populated with packet Capability Indication Option if present
      * @return True if packet is valid, false otherwise
      */
     static bool ParseAndValidateRsPacket(Ptr<Packet> p,
@@ -905,11 +907,12 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     /**
      * @brief Parses RA packet and populates params, returning true if packet is valid
      * @param p Packet to be parsed
-     * @param raHdr
-     * @param pios
-     * @param abro
-     * @param slla
-     * @param contexts
+     * @param raHdr populated with packet RA header
+     * @param pios populated with Prefix Information Options from the packet
+     * @param abro populated with Authoritative Border Router Option from the packet
+     * @param slla populated with Source Link-Layer Address Option if present
+     * @param cio populated with Capability Indication Option if present
+     * @param contexts populated with 6LoWPAN Context Options from the packet
      * @return True if packet is valid, false otherwise
      */
     static bool ParseAndValidateRaPacket(Ptr<Packet> p,

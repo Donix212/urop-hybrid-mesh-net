@@ -84,7 +84,7 @@ SixLowPanNdiscCache::Add(Ipv6Address to)
     NS_LOG_FUNCTION(this << to);
     NS_ASSERT(m_ndCache.find(to) == m_ndCache.end());
 
-    SixLowPanNdiscCache::SixLowPanEntry* entry = new SixLowPanNdiscCache::SixLowPanEntry(this);
+    auto entry = new SixLowPanNdiscCache::SixLowPanEntry(this);
     entry->SetIpv6Address(to);
     m_ndCache[to] = entry;
     return entry;
@@ -100,7 +100,7 @@ SixLowPanNdiscCache::PrintNdiscCache(Ptr<OutputStreamWrapper> stream)
     {
         *os << i->first << " dev ";
         std::string found = Names::FindName(GetDevice());
-        if (Names::FindName(GetDevice()) != "")
+        if (!Names::FindName(GetDevice()).empty())
         {
             *os << found;
         }
@@ -109,8 +109,7 @@ SixLowPanNdiscCache::PrintNdiscCache(Ptr<OutputStreamWrapper> stream)
             *os << static_cast<int>(GetDevice()->GetIfIndex());
         }
 
-        SixLowPanNdiscCache::SixLowPanEntry* entry =
-            dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(i->second);
+        auto entry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(i->second);
         *os << " lladdr " << entry->GetMacAddress();
 
         if (entry->IsReachable())
@@ -249,8 +248,6 @@ SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout()
     NS_LOG_FUNCTION(this);
 
     Ptr<Node> node = m_ndCache->GetDevice()->GetNode();
-    //  std::cout << "**** " << node->GetId () << " * " << Now ().As (Time::S) << " timeout -
-    //  removing entry " << *this << std::endl;
 
     Ptr<Ipv6L3Protocol> ipv6l3Protocol = node->GetObject<Ipv6L3Protocol>();
     ipv6l3Protocol->GetRoutingProtocol()->NotifyRemoveRoute(
@@ -259,8 +256,6 @@ SixLowPanNdiscCache::SixLowPanEntry::FunctionTimeout()
         Ipv6Address::GetAny(),
         ipv6l3Protocol->GetInterfaceForDevice(m_ndCache->GetDevice()));
     m_ndCache->Remove(this);
-
-    return;
 }
 
 std::vector<uint8_t>
