@@ -814,6 +814,17 @@ SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> inter
     return cache;
 }
 
+void
+SixLowPanNdProtocol::CreateBindingTable(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface)
+{
+    NS_LOG_FUNCTION(this << device << interface);
+
+    Ptr<SixLowPanNdBindingTable> table = CreateObject<SixLowPanNdBindingTable>();
+    table->SetDevice(device, interface, this);
+
+    m_bindingTableList.push_back(table);
+}
+
 bool
 SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
                             const Ipv6Header& ipHeader,
@@ -2067,6 +2078,13 @@ SixLowPanNdProtocol::ParseAndValidateEdarPacket(
         return false;
     }
 
+    // Check Registered Address is not link-local
+    if (edarHdr.GetRegAddress().IsLinkLocal())
+    {
+        NS_LOG_LOGIC("EDAR Registered Address cannot be link-local: " << edarHdr.GetRegAddress());
+        return false;
+    }
+
     bool hasSlla = false;
     bool next = true;
 
@@ -2155,5 +2173,41 @@ SixLowPanNdProtocol::ParseAndValidateEdacPacket(
     }
 
     return true;
+}
+
+Ptr<SixLowPanNdBindingTable>
+SixLowPanNdProtocol::FindBindingTable(Ptr<Ipv6Interface> interface)
+{
+    NS_LOG_FUNCTION(this << interface);
+
+    if (!interface)
+    {
+        NS_LOG_WARN("Interface is null, cannot find binding table");
+        return nullptr;
+    }
+
+    // Get the device from the interface
+    Ptr<NetDevice> device = interface->GetDevice();
+
+    if (!device)
+    {
+        NS_LOG_WARN("Interface has no associated device, cannot find binding table");
+        return nullptr;
+    }
+
+    // Search through the binding table list to find the one associated with this device
+    for (auto it = m_bindingTableList.begin(); it != m_bindingTableList.end(); ++it)
+    {
+        Ptr<SixLowPanNdBindingTable> bindingTable = *it;
+
+        if (bindingTable && bindingTable->GetDevice() == device)
+        {
+            NS_LOG_DEBUG("Found binding table for interface on device " << device->GetIfIndex());
+            return bindingTable;
+        }
+    }
+
+    NS_LOG_DEBUG("No binding table found for interface on device " << device->GetIfIndex());
+    return nullptr;
 }
 } /* namespace ns3 */

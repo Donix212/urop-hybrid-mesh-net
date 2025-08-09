@@ -288,10 +288,19 @@ SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
             sixLowPanNdProtocol = CreateObject<SixLowPanNdProtocol>();
             sixLowPanNdProtocol->SetAttribute("DAD", BooleanValue(false));
             sixLowPanNdProtocol->SetAttribute("RsMaxRetransmissionCount", UintegerValue(3));
-            // sixLowPanNdProtocol->SetAttribute ("RtrSolicitationInterval", TimeValue (Seconds
-            // (10)));
             node->AggregateObject(sixLowPanNdProtocol);
         }
+
+        // Get the IPv6 interface
+        Ptr<Ipv6Interface> interface = ipv6->GetInterface(interfaceId);
+
+        // Create binding table for border router functionality
+        Ptr<SixLowPanNdBindingTable> bindingTable =
+            sixLowPanNdProtocol->CreateBindingTable(dev, interface);
+
+        NS_LOG_DEBUG("Created binding table for node " << node->GetId() << " on interface "
+                                                       << interfaceId);
+
         ipv6->Insert(sixLowPanNdProtocol, interfaceId);
 
         if (borderRouter)

@@ -15,6 +15,7 @@
 #define SIXLOWPAN_ND_PROTOCOL_H
 
 #include "sixlowpan-header.h"
+#include "sixlowpan-nd-binding-table.h"
 #include "sixlowpan-nd-header.h"
 
 #include "ns3/icmpv6-l4-protocol.h"
@@ -157,6 +158,8 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
 
     Ptr<NdiscCache> CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface) override;
 
+    void CreateBindingTable(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface);
+
     bool Lookup(Ptr<Packet> p,
                 const Ipv6Header& ipHeader,
                 Ipv6Address dst,
@@ -288,6 +291,24 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @return true if the interface is configured as a 6LBR
      */
     bool IsBorderRouterOnInterface(Ptr<SixLowPanNetDevice> device) const;
+
+    /**
+     * @brief Find the binding table corresponding to the IPv6 interface.
+     * @param interface the IPv6 interface
+     * @return the SixLowPanNdBindingTable associated with the interface
+     */
+    Ptr<SixLowPanNdBindingTable> FindBindingTable(Ptr<Ipv6Interface> interface);
+
+    /**
+     * @brief Lookup in the binding table for the IPv6 address
+     *
+     * @param dst destination address to look up
+     * @param device device to find the appropriate binding table
+     * @return the binding table entry if found, nullptr otherwise
+     */
+    SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry* BindingTableLookup(
+        Ipv6Address dst,
+        Ptr<NetDevice> device);
 
   protected:
     /**
@@ -786,6 +807,11 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     //  Time m_currentRtrSolicitationInterval;  //!< Current RS Retransmission interval
     //  Ptr<UniformRandomVariable> m_rsRetransmissionDelay; //!< Random variable for RS
     //  retransmissions.
+
+    typedef std::list<Ptr<SixLowPanNdBindingTable>>
+        BindingTableList; //!< container of BindingTables
+
+    BindingTableList m_bindingTableList; //!< Binding Table for 6LoWPAN ND
 
     /**
      * @brief Construct NS (EARO) packet.
