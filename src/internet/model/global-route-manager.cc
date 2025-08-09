@@ -70,6 +70,15 @@ GlobalRouteManager<T>::ResetRouterId()
     routerId = 0;
 }
 
+template <typename T>
+void
+GlobalRouteManager<T>::InitializeRouters()
+{
+    SimulationSingleton<GlobalRouteManagerImpl<typename GlobalRouteManager<T>::IpManager>>::Get()
+        ->InitializeRouters();
+}
+
 template class ns3::GlobalRouteManager<ns3::Ipv4Manager>;
+template class ns3::GlobalRouteManager<ns3::Ipv6Manager>;
 
 } // namespace ns3

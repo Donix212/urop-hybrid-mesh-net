@@ -96,6 +96,12 @@ class GlobalRouteManager
      */
     static void ResetRouterId();
 
+    /**
+     * @brief initialize all nodes as routers. this method queries all the nodes in the simulation
+     * and enables ipv6 forwarding on all of them.
+     */
+    static void InitializeRouters();
+
   private:
     static uint32_t routerId; //!< Router ID counter
 };

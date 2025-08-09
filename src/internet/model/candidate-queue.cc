@@ -204,5 +204,6 @@ CandidateQueue<T>::CompareSPFVertex(const SPFVertex<T>* v1, const SPFVertex<T>* 
     return result;
 }
 template class CandidateQueue<Ipv4Manager>;
+template class CandidateQueue<Ipv6Manager>;
 
 } // namespace ns3

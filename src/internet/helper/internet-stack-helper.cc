@@ -215,15 +215,25 @@ InternetStackHelper::AssignStreams(NodeContainer c, int64_t stream)
     for (auto i = c.Begin(); i != c.End(); ++i)
     {
         Ptr<Node> node = *i;
-        Ptr<Ipv4GlobalRouter> router = node->GetObject<Ipv4GlobalRouter>();
-        if (router)
+        Ptr<GlobalRouter<Ipv4Manager>> routerv4 = node->GetObject<GlobalRouter<Ipv4Manager>>();
+        if (routerv4)
         {
-            Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();
+            Ptr<Ipv4GlobalRouting> gr = routerv4->GetRoutingProtocol();
             if (gr)
             {
                 currentStream += gr->AssignStreams(currentStream);
             }
         }
+        Ptr<GlobalRouter<Ipv6Manager>> routerv6 = node->GetObject<GlobalRouter<Ipv6Manager>>();
+        if (routerv6)
+        {
+            Ptr<GlobalRouting<Ipv6RoutingProtocol>> gr = routerv6->GetRoutingProtocol();
+            if (gr)
+            {
+                currentStream += gr->AssignStreams(currentStream);
+            }
+        }
+
         Ptr<Ipv6ExtensionDemux> demux = node->GetObject<Ipv6ExtensionDemux>();
         if (demux)
         {

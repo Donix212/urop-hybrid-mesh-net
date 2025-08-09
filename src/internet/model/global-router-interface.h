@@ -126,6 +126,24 @@ class GlobalRoutingLinkRecord
                             uint16_t metric);
 
     /**
+     * Construct an initialized Global Routing Link Record.
+     *
+     * @param linkType The type of link record to construct.
+     * @param linkId The link ID for the record.
+     * @param linkData The link data field for the record.
+     * @param linkLocData The link local data field for the record.
+     * @param metric The metric field for the record.
+     * @see LinkType
+     * @see SetLinkId
+     * @see SetLinkData
+     */
+    GlobalRoutingLinkRecord(LinkType linkType,
+                            IpAddress linkId,
+                            IpAddress linkData,
+                            IpAddress linkLocData,
+                            uint16_t metric);
+
+    /**
      * @brief Destroy a Global Routing Link Record.
      *
      * Currently does nothing.  Here as a placeholder only.
@@ -232,6 +250,30 @@ class GlobalRoutingLinkRecord
      */
     void SetMetric(uint16_t metric);
 
+    /**
+     * @brief Set the Link Local Data field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link Local Data must be the Link Local IP
+     * address of the node of the local side of the link.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link Local data field is not used.
+     *
+     * @param addr An Ipv6Address to store in the Link Data field of the record.
+     */
+    void SetLinkLocData(IpAddress addr);
+
+    /**
+     * @brief Set the Link Local Data field of the Global Routing Link Record.
+     *
+     * For an OSPF type 1 link (PointToPoint) the Link Local Data must be the Link Local IP
+     * address of the node of the local side of the link.
+     *
+     * For an OSPF type 3 link (StubNetwork), the Link Local data field is not used.
+     *
+     * @returns addr An Ipv6Address to store in the Link Data field of the record.
+     */
+    IpAddress GetLinkLocData();
+
   private:
     /**
      * m_linkId and m_linkData are defined by OSPF to have different meanings
@@ -255,6 +297,17 @@ class GlobalRoutingLinkRecord
      * For Type 3 link (Stub), set m_linkData to mask
      */
     IpAddress m_linkData; // for links to RouterLSA,
+
+    /**
+     * m_linkLocData is not defined by the OSPF spec. This field is used to store the link local
+     * address associated with the link on the local side.
+     *
+     * For Type 1 link (PointToPoint), set m_linkLocData to Link local IP address on the local side
+     *
+     * For Type 3 link (Stub), this is not used.
+     */
+    IpAddress
+        m_linkLocData; // for the Link local address associated with the link on the local side
 
     /**
      * The type of the Global Routing Link Record.  Defined in the OSPF spec.

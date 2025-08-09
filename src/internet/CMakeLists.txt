@@ -3,6 +3,7 @@ set(source_files
     helper/internet-trace-helper.cc
     helper/ipv4-address-helper.cc
     helper/ipv4-global-routing-helper.cc
+    helper/ipv6-global-routing-helper.cc
     helper/ipv4-interface-container.cc
     helper/ipv4-list-routing-helper.cc
     helper/ipv4-routing-helper.cc
@@ -133,6 +134,7 @@ set(header_files
     helper/internet-trace-helper.h
     helper/ipv4-address-helper.h
     helper/ipv4-global-routing-helper.h
+    helper/ipv6-global-routing-helper.h
     helper/ipv4-interface-container.h
     helper/ipv4-list-routing-helper.h
     helper/ipv4-routing-helper.h

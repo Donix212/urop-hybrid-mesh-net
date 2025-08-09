@@ -878,6 +878,12 @@ class GlobalRouteManagerImpl
      */
     void DebugSPFCalculate(IpAddress root);
 
+    /**
+     * @brief initialize all nodes as routers. this method queries all the nodes in the simulation
+     * and enables ipv6 forwarding on all of them.
+     */
+    void InitializeRouters();
+
   private:
     SPFVertex<T>* m_spfroot; //!< the root node
     GlobalRouteManagerLSDB<IpManager>*
