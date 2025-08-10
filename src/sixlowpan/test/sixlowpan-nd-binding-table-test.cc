@@ -44,6 +44,10 @@ class SixLowPanNdBindingTableBasicTest : public TestCase
         Ipv6Address linkLocal1("fe80::1");
         Ipv6Address linkLocal2("fe80::2");
 
+        // Test router link-local addresses
+        Ipv6Address routerLinkLocal1("fe80::abcd:ef01");
+        Ipv6Address routerLinkLocal2("fe80::1234:5678");
+
         // Test 1: Add TENTATIVE entries
         auto entry1 = bindingTable->Add(addr1);
         auto entry2 = bindingTable->Add(addr2);
@@ -71,6 +75,23 @@ class SixLowPanNdBindingTableBasicTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(entry2->GetLinkLocalAddress(),
                               linkLocal2,
                               "Entry2 should have correct link-local address");
+
+        // Test router link-local address
+        entry1->SetRouterLinkLocalAddress(routerLinkLocal1);
+        entry2->SetRouterLinkLocalAddress(routerLinkLocal2);
+
+        NS_TEST_ASSERT_MSG_EQ(entry1->GetRouterLinkLocalAddress(),
+                              routerLinkLocal1,
+                              "Entry1 should have correct router link-local address");
+        NS_TEST_ASSERT_MSG_EQ(entry2->GetRouterLinkLocalAddress(),
+                              routerLinkLocal2,
+                              "Entry2 should have correct router link-local address");
+
+        // Test default router link-local address should be GetAny()
+        auto entry3 = bindingTable->Add(Ipv6Address("2001:db8::300"));
+        NS_TEST_ASSERT_MSG_EQ(entry3->GetRouterLinkLocalAddress(),
+                              Ipv6Address::GetAny(),
+                              "Default router link-local address should be GetAny()");
 
         // Test 4: Lookup entries
         auto foundEntry1 = bindingTable->Lookup(addr1);

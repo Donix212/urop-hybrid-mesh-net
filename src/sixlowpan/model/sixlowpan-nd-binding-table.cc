@@ -187,9 +187,10 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SixLowPanNdBindingTableEn
     : m_rovr(16, 0),     // Initialize ROVR
       m_type(TENTATIVE), // Set default state
       m_reachableTimer(Timer::CANCEL_ON_DESTROY),
-      m_staleTimer(Timer::CANCEL_ON_DESTROY),   // Add stale timer
-      m_bindingTable(bt),                       // Set binding table
-      m_linkLocalAddress(Ipv6Address::GetAny()) // Initialize link-local address
+      m_staleTimer(Timer::CANCEL_ON_DESTROY),         // Add stale timer
+      m_bindingTable(bt),                             // Set binding table
+      m_linkLocalAddress(Ipv6Address::GetAny()),      // Initialize link-local address
+      m_routerLinkLocalAddress(Ipv6Address::GetAny()) // Initialize router link-local address
 {
     NS_LOG_FUNCTION(this << bt);
     m_rovr.resize(16, 0);
@@ -213,17 +214,9 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::Print(std::ostream& os) c
         break;
     }
 
-    os << " global=" << m_ipv6Address;
-    os << " link-local=" << m_linkLocalAddress;
-    os << " rovr ";
-    for (size_t i = 0; i < m_rovr.size(); ++i)
-    {
-        os << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(m_rovr[i]);
-        if (i < m_rovr.size() - 1)
-        {
-            os << ":";
-        }
-    }
+    os << " address=" << m_ipv6Address;
+    os << " lladdr=" << m_linkLocalAddress;
+    os << " router lladdr=" << m_routerLinkLocalAddress;
     os << std::dec;
 }
 
@@ -436,6 +429,21 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetLinkLocalAddress() con
 {
     NS_LOG_FUNCTION(this);
     return m_linkLocalAddress;
+}
+
+void
+SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SetRouterLinkLocalAddress(
+    Ipv6Address routerLinkLocalAddress)
+{
+    NS_LOG_FUNCTION(this << routerLinkLocalAddress);
+    m_routerLinkLocalAddress = routerLinkLocalAddress;
+}
+
+Ipv6Address
+SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetRouterLinkLocalAddress() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_routerLinkLocalAddress;
 }
 
 // Stream operator implementation

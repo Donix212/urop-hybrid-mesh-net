@@ -188,6 +188,18 @@ class SixLowPanNdBindingTable : public Object
          */
         Ipv6Address GetLinkLocalAddress() const;
 
+        /**
+         * @brief Set the router link-local IPv6 address for this entry.
+         * @param routerLinkLocalAddress the router's link-local IPv6 address
+         */
+        void SetRouterLinkLocalAddress(Ipv6Address routerLinkLocalAddress);
+
+        /**
+         * @brief Get the router link-local IPv6 address for this entry.
+         * @return the router's link-local IPv6 address
+         */
+        Ipv6Address GetRouterLinkLocalAddress() const;
+
       private:
         /**
          * @brief The SixLowPanEntry type enumeration.
@@ -234,6 +246,11 @@ class SixLowPanNdBindingTable : public Object
          * @brief The link-local IPv6 address for this entry.
          */
         Ipv6Address m_linkLocalAddress;
+
+        /**
+         * @brief The router's link-local IPv6 address for this entry.
+         */
+        Ipv6Address m_routerLinkLocalAddress;
     };
 
   protected:
