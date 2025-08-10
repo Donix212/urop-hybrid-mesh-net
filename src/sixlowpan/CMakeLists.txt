@@ -41,5 +41,6 @@ build_lib(
     test/sixlowpan-nd-multihop-test.cc
     test/sixlowpan-nd-bbr-reg-test.cc
     test/sixlowpan-nd-binding-table-test.cc
+    test/sixlowpan-nd-edar-edac-test.cc
     test/sixlowpan-nd-test-utils.cc
 )

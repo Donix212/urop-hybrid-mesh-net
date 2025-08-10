@@ -39,6 +39,7 @@ class SixLowPanNdRsPacketTest;
 class SixLowPanNdRovrTest;
 class SixLowPanNdEdarPacketTest;
 class SixLowPanNdEdacPacketTest;
+class SixLowPanNdEdarBasicTest;
 
 /**
  * @ingroup sixlowpan
@@ -54,6 +55,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     friend class SixLowPanNdRovrTest;
     friend class SixLowPanNdEdarPacketTest;
     friend class SixLowPanNdEdacPacketTest;
+    friend class SixLowPanNdEdarBasicTest;
 
   public:
     /**
@@ -232,16 +234,35 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @brief Send an EDAR for 6LoWPAN ND.
      * @param src source IPv6 address
      * @param dst destination IPv6 address
+     * @param time registration lifetime
      * @param rovr ROVR of 6LN registering its global address
      * @param addrToRegister address to register
      * @param sixDevice SixLowPan NetDevice
      */
     void SendSixLowPanEDAR(Ipv6Address src,
                            Ipv6Address dst,
+                           uint16_t time,
                            const std::vector<uint8_t>& rovr,
                            Ipv6Address addrToRegister,
                            Ptr<NetDevice> sixDevice);
 
+    /**
+     * @brief Send an EDAC for 6LoWPAN ND.
+     * @param src source IPv6 address
+     * @param dst destination IPv6 address
+     * @param status status code for the duplicate address detection result
+     * @param time registration lifetime
+     * @param rovr ROVR of 6LN registering its global address
+     * @param addrToRegister address that was checked for duplication
+     * @param sixDevice SixLowPan NetDevice
+     */
+    void SendSixLowPanEDAC(Ipv6Address src,
+                           Ipv6Address dst,
+                           uint8_t status,
+                           uint16_t time,
+                           const std::vector<uint8_t>& rovr,
+                           Ipv6Address addrToRegister,
+                           Ptr<NetDevice> sixDevice);
     /**
      * @brief Set node role for 6LoWPAN-ND.
      * @param role role to set
@@ -665,15 +686,29 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                            const Ipv6Address& dst,
                            Ptr<Ipv6Interface> interface);
 
-    /*
-     * @brief Receive DAC for 6LoWPAN ND method.
+    /**
+     * @brief Receive EDAR for 6LoWPAN ND method.
      * @param packet the packet
-     * @param src source address
-     * @param dst destination address
+     * @param src source address (Gaddr of 6BBR)
+     * @param dst destination address (Gaddr of 6LBR)
      * @param interface the interface from which the packet is coming
      */
-    // void HandleSixLowPanDAC (Ptr<Packet> packet, Ipv6Address const &src, Ipv6Address const &dst,
-    //                         Ptr<Ipv6Interface> interface);
+    void HandleSixLowPanEDAR(Ptr<Packet> packet,
+                             const Ipv6Address& src,
+                             const Ipv6Address& dst,
+                             Ptr<Ipv6Interface> interface);
+
+    /**
+     * @brief Receive EDAC for 6LoWPAN ND method.
+     * @param packet the packet
+     * @param src source address (Gaddr of 6LBR)
+     * @param dst destination address (Gaddr of 6BBR)
+     * @param interface the interface from which the packet is coming
+     */
+    void HandleSixLowPanEDAC(Ptr<Packet> packet,
+                             const Ipv6Address& src,
+                             const Ipv6Address& dst,
+                             Ptr<Ipv6Interface> interface);
 
     /**
      * Check an RA for consistency with the ones in the RA cache
