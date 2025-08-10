@@ -295,8 +295,7 @@ SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
         Ptr<Ipv6Interface> interface = ipv6->GetInterface(interfaceId);
 
         // Create binding table for border router functionality
-        Ptr<SixLowPanNdBindingTable> bindingTable =
-            sixLowPanNdProtocol->CreateBindingTable(dev, interface);
+        sixLowPanNdProtocol->CreateBindingTable(dev, interface);
 
         NS_LOG_DEBUG("Created binding table for node " << node->GetId() << " on interface "
                                                        << interfaceId);

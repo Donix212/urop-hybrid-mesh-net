@@ -187,8 +187,9 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SixLowPanNdBindingTableEn
     : m_rovr(16, 0),     // Initialize ROVR
       m_type(TENTATIVE), // Set default state
       m_reachableTimer(Timer::CANCEL_ON_DESTROY),
-      m_staleTimer(Timer::CANCEL_ON_DESTROY), // Add stale timer
-      m_bindingTable(bt)                      // Set binding table
+      m_staleTimer(Timer::CANCEL_ON_DESTROY),   // Add stale timer
+      m_bindingTable(bt),                       // Set binding table
+      m_linkLocalAddress(Ipv6Address::GetAny()) // Initialize link-local address
 {
     NS_LOG_FUNCTION(this << bt);
     m_rovr.resize(16, 0);
@@ -212,6 +213,8 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::Print(std::ostream& os) c
         break;
     }
 
+    os << " global=" << m_ipv6Address;
+    os << " link-local=" << m_linkLocalAddress;
     os << " rovr ";
     for (size_t i = 0; i < m_rovr.size(); ++i)
     {
@@ -418,6 +421,21 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetBindingTable() const
 {
     NS_LOG_FUNCTION(this);
     return m_bindingTable;
+}
+
+void
+SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SetLinkLocalAddress(
+    Ipv6Address linkLocalAddress)
+{
+    NS_LOG_FUNCTION(this << linkLocalAddress);
+    m_linkLocalAddress = linkLocalAddress;
+}
+
+Ipv6Address
+SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetLinkLocalAddress() const
+{
+    NS_LOG_FUNCTION(this);
+    return m_linkLocalAddress;
 }
 
 // Stream operator implementation
