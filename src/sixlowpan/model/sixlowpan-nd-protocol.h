@@ -774,6 +774,10 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
 
     typedef Callback<void, Ptr<Packet>> NaRxCallback; //!< Trace sink signature for NA reception
 
+    TracedCallback<Ptr<Packet>> m_raRxTrace; //!< Trace fired whenever an RA packet is received
+
+    typedef Callback<void, Ptr<Packet>> RaRxCallback; //!< Trace sink signature for RA reception
+
     /**
      * Structure holding data about a pending RA being processed
      */

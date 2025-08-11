@@ -140,7 +140,11 @@ SixLowPanNdProtocol::GetTypeId()
             .AddTraceSource("NaRx",
                             "Trace fired when a NA packet is received",
                             MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_naRxTrace),
-                            "ns3::SixLowPanNdProtocol::NaRxCallback");
+                            "ns3::SixLowPanNdProtocol::NaRxCallback")
+            .AddTraceSource("RaRx",
+                            "Trace fired when an RA packet is received",
+                            MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_raRxTrace),
+                            "ns3::SixLowPanNdProtocol::RaRxCallback");
 
     return tid;
 }
@@ -771,6 +775,9 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanRA");
+
+    // Fire the RA reception trace
+    m_raRxTrace(packet->Copy());
 
     if (m_nodeRole == SixLowPanBorderRouter)
     {
