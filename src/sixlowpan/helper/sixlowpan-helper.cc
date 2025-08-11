@@ -235,14 +235,6 @@ SixLowPanHelper::InstallSixLowPanNdBackboneRouter(NetDeviceContainer c)
     Ipv6InterfaceContainer deviceInterfaces;
     deviceInterfaces = ipv6.AssignWithoutAddress(c);
 
-    // Initialize ROVR for each node
-    // for (uint32_t i = 0; i < c.GetN(); ++i)
-    // {
-    //     Ptr<NetDevice> dev = c.Get(i);
-    //     Ptr<Node> node = dev->GetNode();
-    //     InitializeRovr(node);
-    // }
-
     // Initialise ROVR, schedule Multicast RS and set node role here
     for (uint32_t i = 0; i < c.GetN(); ++i)
     {
@@ -253,9 +245,13 @@ SixLowPanHelper::InstallSixLowPanNdBackboneRouter(NetDeviceContainer c)
 
         InitializeRovr(node);
 
+        Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(dev);
         Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
 
         sixLowPanNdProtocol->SetNodeRole(SixLowPanNdProtocol::SixLowPanNodeStatus_e::SixLowPanNode);
+
+        // Add this line to mark the interface as 6BBR
+        sixLowPanNdProtocol->SetInterfaceAs6bbr(sixLowPanNetDevice);
 
         Simulator::Schedule(Seconds(0),
                             &SixLowPanNdProtocol::SendSixLowPanMulticastRS,

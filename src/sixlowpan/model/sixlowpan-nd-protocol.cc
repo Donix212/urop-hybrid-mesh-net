@@ -378,6 +378,98 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
             interface->Send(p, ipHeader, dst);
         }
     }
+    else if (m_nodeRole == SixLowPanBackboneRouter)
+    {
+        // If the node is a 6BBR, construct an RA entry based on received RA entries from 6LBRs
+        // Look in m_raCache for received RA entries from 6LBRs.
+        // For each RA entry in m_raCache, construct a SixLowPanRaEntry that has the m_prefixes
+        // containing only the advertised prefix from the 6BBR, with all other fields the same, and
+        // send it to the 6LN
+
+        NS_LOG_DEBUG("6BBR forwarding RA based on cached 6LBR RA entries");
+
+        // Check if we have any cached RA entries from 6LBRs
+        if (m_raCache.empty())
+        {
+            NS_LOG_DEBUG("No cached RA entries from 6LBRs, cannot forward RA");
+            return;
+        }
+
+        // Loop through cached RA entries and construct a new RA entry for the 6BBR
+        for (auto raIt = m_raCache.begin(); raIt != m_raCache.end(); ++raIt)
+        {
+            Ptr<SixLowPanRaEntry> cachedRaEntry = raIt->second;
+
+            // Create a new RA entry for the 6BBR to send
+            Ptr<SixLowPanRaEntry> bbrRaEntry = Create<SixLowPanRaEntry>();
+
+            // Copy most fields from the cached 6LBR RA entry
+            bbrRaEntry->SetManagedFlag(cachedRaEntry->IsManagedFlag());
+            bbrRaEntry->SetOtherConfigFlag(cachedRaEntry->IsOtherConfigFlag());
+            bbrRaEntry->SetHomeAgentFlag(cachedRaEntry->IsHomeAgentFlag());
+            bbrRaEntry->SetOtherConfigFlag(cachedRaEntry->IsOtherConfigFlag());
+            bbrRaEntry->SetCurHopLimit(cachedRaEntry->GetCurHopLimit());
+            bbrRaEntry->SetRetransTimer(cachedRaEntry->GetRetransTimer());
+            bbrRaEntry->SetReachableTime(cachedRaEntry->GetReachableTime());
+            bbrRaEntry->SetRouterLifeTime(cachedRaEntry->GetRouterLifeTime());
+
+            // Set ABRO fields - 6BBR acts as border router for this segment
+            bbrRaEntry->SetAbroVersion(cachedRaEntry->GetAbroVersion());
+            bbrRaEntry->SetAbroValidLifeTime(cachedRaEntry->GetAbroValidLifeTime());
+            bbrRaEntry->SetAbroBorderRouterAddress(cachedRaEntry->GetAbroBorderRouterAddress());
+
+            // Copy contexts from cached RA
+            auto cachedContexts = cachedRaEntry->GetContexts();
+            for (const auto& context : cachedContexts)
+            {
+                bbrRaEntry->AddContext(context.second);
+            }
+
+            // For prefixes, we need to handle 6BBR-specific logic
+            // Check if this 6BBR has its own advertised prefix for this interface
+            auto raEntryIt = m_raEntries.find(sixDevice);
+            if (raEntryIt != m_raEntries.end())
+            {
+                // 6BBR has its own prefix configuration for this interface
+                auto bbrPrefixes = raEntryIt->second->GetPrefixes();
+                for (const auto& prefix : bbrPrefixes)
+                {
+                    bbrRaEntry->AddPrefix(prefix);
+                }
+            }
+            else
+            {
+                // No specific 6BBR prefix configuration, throw an error
+                NS_ABORT_MSG("6BBR does not have a prefix configured for interface "
+                             << sixDevice->GetIfIndex() << ", cannot send RA");
+            }
+
+            // Build SLLA Option (6BBR's own link-layer address)
+            Icmpv6OptionLinkLayerAddress slla(true, interface->GetDevice()->GetAddress());
+
+            // Build 6CIO Option (6BBR capabilities)
+            Icmpv6OptionSixLowPanCapabilityIndication cio;
+            cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::L); // Is 6BBR
+            cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::P); // Is Routing Registrar
+            cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E); // EDAR/EDAC support
+
+            // Build RA Packet
+            Ptr<Packet> p = MakeRaPacket(src, dst, slla, cio, bbrRaEntry);
+
+            // Build IPv6 Header manually
+            Ipv6Header ipHeader;
+            ipHeader.SetSource(src);
+            ipHeader.SetDestination(dst);
+            ipHeader.SetNextHeader(PROT_NUMBER);
+            ipHeader.SetPayloadLength(p->GetSize());
+            ipHeader.SetHopLimit(255);
+
+            /* send RA */
+            NS_LOG_LOGIC("6BBR Send RA to " << dst << " based on cached 6LBR RA");
+
+            interface->Send(p, ipHeader, dst);
+        }
+    }
 }
 
 void
@@ -1447,6 +1539,22 @@ SixLowPanNdProtocol::SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device)
     newRa->SetAbroBorderRouterAddress(borderAddress);
     newRa->SetAbroVersion(0x66);
     newRa->SetAbroValidLifeTime(m_abroValidLifeTime.GetSeconds());
+
+    m_raEntries[device] = newRa;
+}
+
+void
+SixLowPanNdProtocol::SetInterfaceAs6bbr(Ptr<SixLowPanNetDevice> device)
+{
+    NS_LOG_FUNCTION(device);
+
+    if (m_raEntries.find(device) != m_raEntries.end())
+    {
+        NS_LOG_LOGIC("Not going to re-configure an interface");
+        return;
+    }
+
+    Ptr<SixLowPanRaEntry> newRa = Create<SixLowPanRaEntry>();
 
     m_raEntries[device] = newRa;
 }

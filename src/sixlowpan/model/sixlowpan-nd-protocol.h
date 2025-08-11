@@ -40,6 +40,7 @@ class SixLowPanNdRovrTest;
 class SixLowPanNdEdarPacketTest;
 class SixLowPanNdEdacPacketTest;
 class SixLowPanNdEdarBasicTest;
+class SixLowPanNdRsRaBasicTest;
 
 /**
  * @ingroup sixlowpan
@@ -56,6 +57,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     friend class SixLowPanNdEdarPacketTest;
     friend class SixLowPanNdEdacPacketTest;
     friend class SixLowPanNdEdarBasicTest;
+    friend class SixLowPanNdRsRaBasicTest;
 
   public:
     /**
@@ -279,6 +281,12 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param device device to be used for announcement
      */
     void SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device);
+
+    /**
+     * @brief Set an interface to be used as a 6BBR
+     * @param device device to be used for announcement
+     */
+    void SetInterfaceAs6bbr(Ptr<SixLowPanNetDevice> device);
 
     /**
      * @brief Upgrade a 6LN to a 6BBR (SixLowPanNode -> SixLowPanBackboneRouter)
