@@ -617,7 +617,6 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     }
 
     Ptr<Packet> packet = pkt->Copy();
-    // std::cout << *packet << "\n";
 
     Icmpv6NS nsHdr;
     Icmpv6OptionLinkLayerAddress sllaoHdr(true);              /* SLLAO */
@@ -641,6 +640,13 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         return;
     }
 
+    // Assert that earoHdr registration time > 0
+    if (earoHdr.GetRegTime() <= 0)
+    {
+        NS_ABORT_MSG("Address Registration Time in EARO must be greater than 0.");
+        return;
+    }
+
     // NS (EARO)
     /* Update NDISC table with information of src */
     Ptr<NdiscCache> cache = FindCache(sixDevice);
@@ -651,7 +657,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     // \todo double check the NCE statuses.
     // \todo set the registered status.
 
-    if (earoHdr.GetRegTime() > 0)
+    if (m_nodeRole == SixLowPanBorderRouter)
     {
         if (!entry)
         {
@@ -694,44 +700,19 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
             // Forward the registration to the 6LBR.
             // Unless we're the 6LBR, of course.
         }
-    }
-    else // Remove the entry (if any) and remove the RT entry (if any)
-    {
-        if (entry)
-        {
-            if (entry->GetRovr() != earoHdr.GetRovr())
-            {
-                SendSixLowPanNaWithEaro(dst,
-                                        src,
-                                        target,
-                                        earoHdr.GetRegTime(),
-                                        earoHdr.GetRovr(),
-                                        earoHdr.GetTransactionId(),
-                                        sixDevice,
-                                        1);
-                return; // discard the packet since the rovr doesn't match
-            }
-            cache->Remove(entry);
-        }
-        if (!target.IsLinkLocal())
-        {
-            Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-            ipv6l3Protocol->GetRoutingProtocol()->NotifyRemoveRoute(
-                target,
-                Ipv6Prefix(128),
-                src,
-                ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-        }
-    }
 
-    SendSixLowPanNaWithEaro(dst,
-                            src,
-                            target,
-                            earoHdr.GetRegTime(),
-                            earoHdr.GetRovr(),
-                            earoHdr.GetTransactionId(),
-                            sixDevice,
-                            earoHdr.GetStatus());
+        SendSixLowPanNaWithEaro(dst,
+                                src,
+                                target,
+                                earoHdr.GetRegTime(),
+                                earoHdr.GetRovr(),
+                                earoHdr.GetTransactionId(),
+                                sixDevice,
+                                earoHdr.GetStatus());
+    }
+    else // node is a SixLowPanBackboneRouter
+    {
+    }
 }
 
 void
@@ -839,16 +820,15 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     }
 
     /* Update Neighbor Cache */
-    Ptr<SixLowPanNdiscCache> sixCache = DynamicCast<SixLowPanNdiscCache>(FindCache(sixDevice));
-    NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
-    SixLowPanNdiscCache::SixLowPanEntry* sixEntry = nullptr;
-    sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Lookup(src));
+    Ptr<NdiscCache> sixCache = DynamicCast<NdiscCache>(FindCache(sixDevice));
+    NS_ASSERT_MSG(sixCache, "Can not find a NdiscCache");
+    NdiscCache::Entry* sixEntry = nullptr;
+    sixEntry = dynamic_cast<NdiscCache::Entry*>(sixCache->Lookup(src));
     if (!sixEntry)
     {
-        sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Add(src));
+        sixEntry = dynamic_cast<NdiscCache::Entry*>(sixCache->Add(src));
         sixEntry->SetRouter(false);
         sixEntry->MarkStale(slla.GetAddress());
-        sixEntry->MarkTentative();
         NS_LOG_LOGIC("Tentative entry created from RS");
     }
     else if (sixEntry->GetMacAddress() != slla.GetAddress())
