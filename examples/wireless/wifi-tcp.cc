@@ -82,7 +82,6 @@ main(int argc, char* argv[])
     std::string phyRate{"HtMcs7"};        /* Physical layer bitrate. */
     Time simulationTime{"10s"};           /* Simulation time. */
     bool pcapTracing{false};              /* PCAP Tracing is enabled or not. */
-    bool enableGnuplotOutput{true};       /* GnuPlot generation is enabled or not. */
     std::string outputPrefix{"wifi-tcp"}; /* Output file prefix for plots. */
 
     /* Command line argument parser setup. */
@@ -97,12 +96,9 @@ main(int argc, char* argv[])
     cmd.AddValue("phyRate", "Physical layer bitrate", phyRate);
     cmd.AddValue("simulationTime", "Simulation time in seconds", simulationTime);
     cmd.AddValue("pcap", "Enable/disable PCAP Tracing", pcapTracing);
-    cmd.AddValue("gnuplot", "Enable/disable GnuPlot generation", enableGnuplotOutput);
+    cmd.AddValue("gnuplot", "Enable/disable GnuPlot generation", enableGnuplot);
     cmd.AddValue("outputPrefix", "Prefix for output files", outputPrefix);
     cmd.Parse(argc, argv);
-
-    // Set global GnuPlot flag
-    enableGnuplot = enableGnuplotOutput;
 
     // Configure GnuPlot dataset if enabled
     if (enableGnuplot)

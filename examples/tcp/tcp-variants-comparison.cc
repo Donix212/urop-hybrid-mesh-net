@@ -62,8 +62,8 @@ static std::map<uint32_t, uint32_t> cWndValue;                      //!< congest
 static std::map<uint32_t, uint32_t> ssThreshValue;                  //!< SlowStart threshold value.
 
 // GnuPlot data structures
-static GnuplotHelper* gnuplotHelper = nullptr; //!< GnuPlot helper for automatic plot generation
-static bool enableGnuplot = false;             //!< Flag to enable/disable GnuPlot generation
+static GnuplotHelper gnuplotHelper; //!< GnuPlot helper for automatic plot generation
+static bool enableGnuplot = false;  //!< Flag to enable/disable GnuPlot generation
 
 /**
  * Get the Node Id From Context.
@@ -393,11 +393,11 @@ main(int argc, char* argv[])
     // Configure GnuPlot helper if enabled
     if (enableGnuplot)
     {
-        gnuplotHelper = new GnuplotHelper(prefix_file_name + "-tcp-comparison",
-                                          "TCP Variants Performance Comparison",
-                                          "Time (Seconds)",
-                                          "Value",
-                                          "png");
+        gnuplotHelper.ConfigurePlot(prefix_file_name + "-tcp-comparison",
+                                    "TCP Variants Performance Comparison",
+                                    "Time (Seconds)",
+                                    "Value",
+                                    "png");
         std::cout << "GnuPlot generation enabled. Plots will be generated for TCP metrics."
                   << std::endl;
     }
@@ -597,28 +597,28 @@ main(int argc, char* argv[])
                                 index + 1);
 
             // Configure GnuPlot probes if enabled
-            if (enableGnuplot && gnuplotHelper)
+            if (enableGnuplot)
             {
                 // Configure probes for congestion window monitoring
-                gnuplotHelper->PlotProbe("ns3::Uinteger32Probe",
-                                         "/NodeList/" + std::to_string(index + 1) +
-                                             "/$ns3::TcpL4Protocol/SocketList/0/CongestionWindow",
-                                         "Output",
-                                         "Congestion Window Flow " + std::to_string(index + 1));
+                gnuplotHelper.PlotProbe("ns3::Uinteger32Probe",
+                                        "/NodeList/" + std::to_string(index + 1) +
+                                            "/$ns3::TcpL4Protocol/SocketList/0/CongestionWindow",
+                                        "Output",
+                                        "Congestion Window Flow " + std::to_string(index + 1));
 
                 // Configure probes for slow start threshold monitoring
-                gnuplotHelper->PlotProbe("ns3::Uinteger32Probe",
-                                         "/NodeList/" + std::to_string(index + 1) +
-                                             "/$ns3::TcpL4Protocol/SocketList/0/SlowStartThreshold",
-                                         "Output",
-                                         "Slow Start Threshold Flow " + std::to_string(index + 1));
+                gnuplotHelper.PlotProbe("ns3::Uinteger32Probe",
+                                        "/NodeList/" + std::to_string(index + 1) +
+                                            "/$ns3::TcpL4Protocol/SocketList/0/SlowStartThreshold",
+                                        "Output",
+                                        "Slow Start Threshold Flow " + std::to_string(index + 1));
 
                 // Configure probes for RTT monitoring
-                gnuplotHelper->PlotProbe("ns3::TimeProbe",
-                                         "/NodeList/" + std::to_string(index + 1) +
-                                             "/$ns3::TcpL4Protocol/SocketList/0/RTT",
-                                         "Output",
-                                         "RTT Flow " + std::to_string(index + 1));
+                gnuplotHelper.PlotProbe("ns3::TimeProbe",
+                                        "/NodeList/" + std::to_string(index + 1) +
+                                            "/$ns3::TcpL4Protocol/SocketList/0/RTT",
+                                        "Output",
+                                        "RTT Flow " + std::to_string(index + 1));
             }
         }
     }
@@ -642,13 +642,6 @@ main(int argc, char* argv[])
     if (flow_monitor)
     {
         flowHelper.SerializeToXmlFile(prefix_file_name + ".flowmonitor", true, true);
-    }
-
-    // Cleanup GnuPlot helper
-    if (gnuplotHelper)
-    {
-        delete gnuplotHelper;
-        gnuplotHelper = nullptr;
     }
 
     Simulator::Destroy();

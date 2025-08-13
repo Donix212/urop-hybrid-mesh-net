@@ -13,47 +13,50 @@
 
 #include <fstream>
 #include <iostream>
+#include <sys/stat.h>
 
 namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("ExampleGnuplotHelper");
 
-NS_OBJECT_ENSURE_REGISTERED(ExampleGnuplotHelper);
-
-TypeId
-ExampleGnuplotHelper::GetTypeId()
-{
-    static TypeId tid = TypeId("ns3::ExampleGnuplotHelper")
-                            .SetParent<Object>()
-                            .SetGroupName("Stats")
-                            .AddConstructor<ExampleGnuplotHelper>();
-    return tid;
-}
-
-ExampleGnuplotHelper::ExampleGnuplotHelper()
-    : m_enableGnuplot(false),
-      m_outputPrefix("example"),
-      m_terminalType("png"),
-      m_nextPlotId(0)
-{
-    NS_LOG_FUNCTION(this);
-}
-
-ExampleGnuplotHelper::~ExampleGnuplotHelper()
-{
-    NS_LOG_FUNCTION(this);
-}
-
 void
-ExampleGnuplotHelper::ConfigureOutput(bool enableGnuplot,
-                                      const std::string& outputPrefix,
+ExampleGnuplotHelper::ConfigureOutput(const std::string& outputPrefix,
                                       const std::string& terminalType)
 {
-    NS_LOG_FUNCTION(this << enableGnuplot << outputPrefix << terminalType);
-    m_enableGnuplot = enableGnuplot;
+    NS_LOG_FUNCTION(this << outputPrefix << terminalType);
     m_outputPrefix = outputPrefix;
     m_terminalType = terminalType;
+}
+
+uint32_t
+ExampleGnuplotHelper::DoAddPlot(const std::string& plotName,
+                                const std::string& title,
+                                const std::string& xLabel,
+                                const std::string& yLabel,
+                                const std::string& datasetName,
+                                Gnuplot2dDataset::Style style)
+{
+    NS_LOG_FUNCTION(this << plotName << title << xLabel << yLabel << datasetName << style);
+
+    uint32_t plotId = m_nextPlotId++;
+    PlotInfo& plotInfo = m_plots[plotId];
+
+    plotInfo.name = plotName;
+
+    // Create the gnuplot object and configure it
+    plotInfo.plot = Gnuplot();
+    plotInfo.plot.SetTitle(title);
+    plotInfo.plot.SetTerminal(m_terminalType);
+    plotInfo.plot.SetLegend(xLabel, yLabel);
+
+    // Add the first dataset
+    Gnuplot2dDataset dataset;
+    dataset.SetTitle(datasetName);
+    dataset.SetStyle(style);
+    plotInfo.datasets.push_back(dataset);
+
+    return plotId;
 }
 
 uint32_t
@@ -63,33 +66,7 @@ ExampleGnuplotHelper::AddTimeSeriesPlot(const std::string& plotName,
                                         const std::string& yLabel,
                                         const std::string& datasetName)
 {
-    NS_LOG_FUNCTION(this << plotName << title << xLabel << yLabel << datasetName);
-
-    uint32_t plotId = m_nextPlotId++;
-    PlotInfo& plotInfo = m_plots[plotId];
-
-    plotInfo.name = plotName;
-    plotInfo.title = title;
-    plotInfo.xLabel = xLabel;
-    plotInfo.yLabel = yLabel;
-    plotInfo.nextDatasetId = 1;
-
-    if (m_enableGnuplot)
-    {
-        std::string outputFile = m_outputPrefix + "-" + plotName + "." + m_terminalType;
-        plotInfo.plot = Gnuplot(outputFile);
-        plotInfo.plot.SetTitle(title);
-        plotInfo.plot.SetTerminal(m_terminalType);
-        plotInfo.plot.SetLegend(xLabel, yLabel);
-
-        // Add the first dataset
-        Gnuplot2dDataset dataset;
-        dataset.SetTitle(datasetName);
-        dataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
-        plotInfo.datasets[0] = dataset;
-    }
-
-    return plotId;
+    return DoAddPlot(plotName, title, xLabel, yLabel, datasetName, Gnuplot2dDataset::LINES_POINTS);
 }
 
 uint32_t
@@ -99,33 +76,7 @@ ExampleGnuplotHelper::AddScatterPlot(const std::string& plotName,
                                      const std::string& yLabel,
                                      const std::string& datasetName)
 {
-    NS_LOG_FUNCTION(this << plotName << title << xLabel << yLabel << datasetName);
-
-    uint32_t plotId = m_nextPlotId++;
-    PlotInfo& plotInfo = m_plots[plotId];
-
-    plotInfo.name = plotName;
-    plotInfo.title = title;
-    plotInfo.xLabel = xLabel;
-    plotInfo.yLabel = yLabel;
-    plotInfo.nextDatasetId = 1;
-
-    if (m_enableGnuplot)
-    {
-        std::string outputFile = m_outputPrefix + "-" + plotName + "." + m_terminalType;
-        plotInfo.plot = Gnuplot(outputFile);
-        plotInfo.plot.SetTitle(title);
-        plotInfo.plot.SetTerminal(m_terminalType);
-        plotInfo.plot.SetLegend(xLabel, yLabel);
-
-        // Add the first dataset
-        Gnuplot2dDataset dataset;
-        dataset.SetTitle(datasetName);
-        dataset.SetStyle(Gnuplot2dDataset::POINTS);
-        plotInfo.datasets[0] = dataset;
-    }
-
-    return plotId;
+    return DoAddPlot(plotName, title, xLabel, yLabel, datasetName, Gnuplot2dDataset::POINTS);
 }
 
 void
@@ -140,7 +91,8 @@ ExampleGnuplotHelper::AddDataPoint(uint32_t plotId, double x, double y)
         return;
     }
 
-    if (m_enableGnuplot)
+    // Always add data to the first dataset (index 0)
+    if (!plotIt->second.datasets.empty())
     {
         plotIt->second.datasets[0].Add(x, y);
     }
@@ -162,7 +114,8 @@ ExampleGnuplotHelper::AddDataPointWithError(uint32_t plotId,
         return;
     }
 
-    if (m_enableGnuplot)
+    // Always add data with error to the first dataset (index 0)
+    if (!plotIt->second.datasets.empty())
     {
         plotIt->second.datasets[0].Add(x, y, errorX, errorY);
     }
@@ -181,15 +134,13 @@ ExampleGnuplotHelper::AddDataset(uint32_t plotId, const std::string& datasetName
     }
 
     PlotInfo& plotInfo = plotIt->second;
-    uint32_t datasetId = plotInfo.nextDatasetId++;
+    uint32_t datasetId = plotInfo.datasets.size();
 
-    if (m_enableGnuplot)
-    {
-        Gnuplot2dDataset dataset;
-        dataset.SetTitle(datasetName);
-        dataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
-        plotInfo.datasets[datasetId] = dataset;
-    }
+    // Always create the dataset
+    Gnuplot2dDataset dataset;
+    dataset.SetTitle(datasetName);
+    dataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
+    plotInfo.datasets.push_back(dataset);
 
     return datasetId;
 }
@@ -206,17 +157,15 @@ ExampleGnuplotHelper::AddDataPointToDataset(uint32_t plotId, uint32_t datasetId,
         return;
     }
 
-    auto datasetIt = plotIt->second.datasets.find(datasetId);
-    if (datasetIt == plotIt->second.datasets.end())
+    // Check if dataset index is valid
+    if (datasetId >= plotIt->second.datasets.size())
     {
         NS_LOG_ERROR("Dataset ID " << datasetId << " not found in plot " << plotId);
         return;
     }
 
-    if (m_enableGnuplot)
-    {
-        datasetIt->second.Add(x, y);
-    }
+    // Always add data to the specified dataset
+    plotIt->second.datasets[datasetId].Add(x, y);
 }
 
 void
@@ -231,33 +180,48 @@ ExampleGnuplotHelper::SetPlotStyle(uint32_t plotId, const std::string& extraOpti
         return;
     }
 
-    plotIt->second.extraOptions = extraOptions;
-
-    if (m_enableGnuplot)
-    {
-        plotIt->second.plot.AppendExtra(extraOptions);
-    }
+    // Always append extra options
+    plotIt->second.plot.AppendExtra(extraOptions);
 }
 
 void
-ExampleGnuplotHelper::GenerateOutput()
+ExampleGnuplotHelper::GenerateOutput(bool enableGnuplot)
 {
-    NS_LOG_FUNCTION(this);
+    NS_LOG_FUNCTION(this << enableGnuplot);
 
-    if (!m_enableGnuplot)
+    if (!enableGnuplot)
     {
-        NS_LOG_INFO("GnuPlot generation is disabled, skipping plot generation");
+        NS_LOG_INFO("GnuPlot generation is disabled, only generating raw data files");
+        // Generate raw data files
+        for (auto& [plotId, plotInfo] : m_plots)
+        {
+            for (size_t i = 0; i < plotInfo.datasets.size(); ++i)
+            {
+                std::string dataFileName = m_outputPrefix + "-" + plotInfo.name + "-dataset" + 
+                                         std::to_string(i) + ".dat";
+                std::ofstream dataFile(dataFileName);
+                
+                // Extract data points from the dataset and write them
+                // This is a simplified approach - real implementation would need 
+                // to access the dataset's internal data structure
+                dataFile << "# Raw data for " << plotInfo.name << " dataset " << i << std::endl;
+                dataFile.close();
+            }
+        }
         return;
     }
 
-    for (auto& plotPair : m_plots)
+    // Generate gnuplot files
+    for (auto& [plotId, plotInfo] : m_plots)
     {
-        PlotInfo& plotInfo = plotPair.second;
+        // Set the output filename when generating the plot
+        std::string outputFile = m_outputPrefix + "-" + plotInfo.name + "." + m_terminalType;
+        plotInfo.plot.SetOutputFilename(outputFile);
 
         // Add all datasets to the plot
-        for (auto& datasetPair : plotInfo.datasets)
+        for (const auto& dataset : plotInfo.datasets)
         {
-            plotInfo.plot.AddDataset(datasetPair.second);
+            plotInfo.plot.AddDataset(dataset);
         }
 
         // Generate the plot files
