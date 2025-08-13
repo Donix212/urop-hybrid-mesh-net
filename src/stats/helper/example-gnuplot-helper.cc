@@ -197,12 +197,12 @@ ExampleGnuplotHelper::GenerateOutput(bool enableGnuplot)
         {
             for (size_t i = 0; i < plotInfo.datasets.size(); ++i)
             {
-                std::string dataFileName = m_outputPrefix + "-" + plotInfo.name + "-dataset" + 
-                                         std::to_string(i) + ".dat";
+                std::string dataFileName =
+                    m_outputPrefix + "-" + plotInfo.name + "-dataset" + std::to_string(i) + ".dat";
                 std::ofstream dataFile(dataFileName);
-                
+
                 // Extract data points from the dataset and write them
-                // This is a simplified approach - real implementation would need 
+                // This is a simplified approach - real implementation would need
                 // to access the dataset's internal data structure
                 dataFile << "# Raw data for " << plotInfo.name << " dataset " << i << std::endl;
                 dataFile.close();

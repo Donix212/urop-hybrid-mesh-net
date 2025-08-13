@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * Author: Enhanced GnuPlot Examples Implementation
- * 
+ *
  * This file implements ExampleGnuplotHelper, which complements the existing
  * GnuplotHelper by supporting manual data collection patterns commonly used
  * in examples. See the stats module documentation for usage guidelines and
@@ -45,7 +45,8 @@ namespace ns3
  * - **Data flow**: Manual calls to AddDataPoint() from user code
  * - **Decision point**: Deferred - decide whether to generate plots at the end
  * - **Multiple plots**: Supports multiple plots and datasets with simple IDs
- * - **Example pattern**: `helper.AddDataPoint(plotId, time, value); helper.GenerateOutput(enablePlots);`
+ * - **Example pattern**: `helper.AddDataPoint(plotId, time, value);
+ * helper.GenerateOutput(enablePlots);`
  *
  * **GnuplotHelper** (existing class):
  * - **Purpose**: Automatic data collection from ns-3 trace sources
@@ -75,17 +76,17 @@ namespace ns3
  * @code
  * // Global helper object
  * ExampleGnuplotHelper plotHelper;
- * 
+ *
  * // Configure output (optional, has defaults)
  * plotHelper.ConfigureOutput("tcp-comparison", "png");
- * 
+ *
  * // Create a time series plot
- * uint32_t plotId = plotHelper.AddTimeSeriesPlot("cwnd", "TCP Congestion Window", 
+ * uint32_t plotId = plotHelper.AddTimeSeriesPlot("cwnd", "TCP Congestion Window",
  *                                                "Time (s)", "Window Size", "TCP NewReno");
- * 
+ *
  * // In trace callbacks or data collection loops
  * plotHelper.AddDataPoint(plotId, time, cwndValue);
- * 
+ *
  * // At the end, decide whether to generate plots
  * plotHelper.GenerateOutput(enableGnuplot);  // true = plots + data, false = data only
  * @endcode
@@ -226,15 +227,15 @@ class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
      */
     struct PlotInfo
     {
-        std::string name;                              //!< Plot filename
-        Gnuplot plot;                                  //!< Gnuplot object
-        std::vector<Gnuplot2dDataset> datasets;       //!< Vector of datasets for this plot
+        std::string name;                       //!< Plot filename
+        Gnuplot plot;                           //!< Gnuplot object
+        std::vector<Gnuplot2dDataset> datasets; //!< Vector of datasets for this plot
     };
 
-    std::string m_outputPrefix{"example"};       //!< Output file prefix
-    std::string m_terminalType{"png"};           //!< Gnuplot terminal type
-    std::map<uint32_t, PlotInfo> m_plots;        //!< Map of plot ID to plot info
-    uint32_t m_nextPlotId{0};                    //!< Next available plot ID
+    std::string m_outputPrefix{"example"}; //!< Output file prefix
+    std::string m_terminalType{"png"};     //!< Gnuplot terminal type
+    std::map<uint32_t, PlotInfo> m_plots;  //!< Map of plot ID to plot info
+    uint32_t m_nextPlotId{0};              //!< Next available plot ID
 };
 
 } // namespace ns3
