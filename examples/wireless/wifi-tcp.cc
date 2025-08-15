@@ -20,25 +20,34 @@
  * of TCP i.e. congestion control algorithm to use.
  */
 
+#include "ns3/applications-module.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/core-module.h"
 #include "ns3/gnuplot-helper.h"
 #include "ns3/gnuplot.h"
+#include "ns3/internet-module.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/log.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/mobility-model.h"
+#include "ns3/network-module.h"
 #include "ns3/on-off-helper.h"
 #include "ns3/packet-sink-helper.h"
 #include "ns3/packet-sink.h"
 #include "ns3/ssid.h"
 #include "ns3/string.h"
 #include "ns3/tcp-westwood-plus.h"
+#include "ns3/traffic-control-module.h"
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/yans-wifi-helper.h"
 
+#include <fstream>
+#include <ostream>
+#include <stdint.h>
+#include <string>
 #include <sys/stat.h>
 
 NS_LOG_COMPONENT_DEFINE("wifi-tcp");
@@ -250,6 +259,37 @@ main(int argc, char* argv[])
         std::cout << "  Script file: " << outputPrefix << "-throughput.sh" << std::endl;
         std::cout << "  Image will be: " << outputPrefix << "-throughput.png" << std::endl;
     }
+
+    // Write out the simulation configuration to a file
+    auto WriteConfig = [](const std::string& filename,
+                          uint32_t payloadSize,
+                          const DataRate& dataRate,
+                          const std::string& tcpVariant,
+                          const std::string& phyRate,
+                          const Time& simulationTime,
+                          bool pcapTracing,
+                          bool enableGnuplot,
+                          const std::string& outputPrefix) {
+        std::ofstream configFile(filename);
+        configFile << "payloadSize: " << payloadSize << std::endl;
+        configFile << "dataRate: " << dataRate << std::endl;
+        configFile << "tcpVariant: " << tcpVariant << std::endl;
+        configFile << "phyRate: " << phyRate << std::endl;
+        configFile << "simulationTime: " << simulationTime.GetSeconds() << "s" << std::endl;
+        configFile << "pcapTracing: " << (pcapTracing ? "true" : "false") << std::endl;
+        configFile << "enableGnuplot: " << (enableGnuplot ? "true" : "false") << std::endl;
+        configFile << "outputPrefix: " << outputPrefix << std::endl;
+        configFile.close();
+    };
+    WriteConfig(outputPrefix + "-config.txt",
+                payloadSize,
+                dataRate,
+                tcpVariant,
+                phyRate,
+                simulationTime,
+                pcapTracing,
+                enableGnuplot,
+                outputPrefix);
 
     return 0;
 }

@@ -24,22 +24,17 @@
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
-#include "ns3/enum.h"
-#include "ns3/error-model.h"
-#include "ns3/event-id.h"
 #include "ns3/flow-monitor-helper.h"
 #include "ns3/gnuplot-helper.h"
 #include "ns3/gnuplot.h"
 #include "ns3/internet-module.h"
-#include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
-#include "ns3/point-to-point-module.h"
-#include "ns3/tcp-header.h"
+#include "ns3/point-to-point-helper.h"
 #include "ns3/traffic-control-module.h"
-#include "ns3/udp-header.h"
 
 #include <fstream>
-#include <iostream>
+#include <ostream>
+#include <stdint.h>
 #include <string>
 
 using namespace ns3;
