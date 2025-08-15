@@ -1,3 +1,17 @@
+    // Write out configuration at the start
+    std::ofstream configFile(outputPrefix + "-config.txt");
+    configFile << "simulationTime: " << simulationTime.GetSeconds() << "s" << std::endl;
+    configFile << "udp: " << (udp ? "true" : "false") << std::endl;
+    configFile << "distance: " << distance << std::endl;
+    configFile << "index: " << index << std::endl;
+    configFile << "wifiType: " << wifiType << std::endl;
+    configFile << "errorModelType: " << errorModelType << std::endl;
+    configFile << "enablePcap: " << (enablePcap ? "true" : "false") << std::endl;
+    configFile << "enableGnuplot: " << (enableGnuplot ? "true" : "false") << std::endl;
+    configFile << "outputPrefix: " << outputPrefix << std::endl;
+    configFile << "terminalType: " << terminalType << std::endl;
+    configFile << "tcpPacketSize: " << tcpPacketSize << std::endl;
+    configFile.close();
 /*
  * Copyright (c) 2009 MIRKO BANCHI
  * Copyright (c) 2015 University of Washington
@@ -92,17 +106,17 @@ NS_LOG_COMPONENT_DEFINE("WifiSpectrumPerExampleEnhanced");
 int
 main(int argc, char* argv[])
 {
-    bool udp{true};
-    meter_u distance{50};
-    Time simulationTime{"10s"};
-    uint16_t index{256};
-    std::string wifiType{"ns3::SpectrumWifiPhy"};
-    std::string errorModelType{"ns3::NistErrorRateModel"};
-    bool enablePcap{false};
-    bool enableGnuplot{true};
-    std::string outputPrefix{"wifi-spectrum-per"};
-    std::string terminalType{"png"};
-    const uint32_t tcpPacketSize{1448};
+    bool udp = true;
+    meter_u distance = 50;
+    Time simulationTime = "10s";
+    uint16_t index = 256;
+    std::string wifiType = "ns3::SpectrumWifiPhy";
+    std::string errorModelType = "ns3::NistErrorRateModel";
+    bool enablePcap = false;
+    bool enableGnuplot = true;
+    std::string outputPrefix = "wifi-spectrum-per";
+    std::string terminalType = "png";
+    const uint32_t tcpPacketSize = 1448;
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("simulationTime", "Simulation time", simulationTime);
@@ -132,7 +146,7 @@ main(int argc, char* argv[])
     std::cout << "GnuPlot generation: " << (enableGnuplot ? "enabled" : "disabled") << std::endl;
 
     // Create GnuPlot helper
-    Ptr<ExampleGnuplotHelper> plotHelper = CreateObject<ExampleGnuplotHelper>();
+    ManualGnuplotHelper plotHelper;
     plotHelper->ConfigureOutput(enableGnuplot, outputPrefix, terminalType);
 
     // Create plots for different metrics
@@ -175,71 +189,65 @@ main(int argc, char* argv[])
 
     for (uint16_t i = startIndex; i <= stopIndex; i++)
     {
-        uint32_t payloadSize = 1472; // bytes
-        double datarate = 0;
-        StringValue DataRate;
+    uint32_t payloadSize = 1472; // bytes
+    DataRate dataRate;
+    StringValue dataRateStr;
 
         // ... [Include all the MCS configuration code from the original example] ...
         // For brevity, I'll include a few representative cases:
 
         if (i == 0)
         {
-            DataRate = StringValue("OfdmRate6Mbps");
-            datarate = 6;
+            dataRateStr = StringValue("OfdmRate6Mbps");
         }
         else if (i == 1)
         {
-            DataRate = StringValue("OfdmRate9Mbps");
-            datarate = 9;
+            dataRateStr = StringValue("OfdmRate9Mbps");
         }
         else if (i == 2)
         {
-            DataRate = StringValue("OfdmRate12Mbps");
-            datarate = 12;
+            dataRateStr = StringValue("OfdmRate12Mbps");
         }
         else if (i == 3)
         {
-            DataRate = StringValue("OfdmRate18Mbps");
-            datarate = 18;
+            dataRateStr = StringValue("OfdmRate18Mbps");
         }
         else if (i == 4)
         {
-            DataRate = StringValue("OfdmRate24Mbps");
-            datarate = 24;
+            dataRateStr = StringValue("OfdmRate24Mbps");
         }
         else if (i == 5)
         {
-            DataRate = StringValue("OfdmRate36Mbps");
-            datarate = 36;
+            dataRateStr = StringValue("OfdmRate36Mbps");
         }
         else if (i == 6)
         {
-            DataRate = StringValue("OfdmRate48Mbps");
-            datarate = 48;
+            dataRateStr = StringValue("OfdmRate48Mbps");
         }
         else if (i == 7)
         {
-            DataRate = StringValue("OfdmRate54Mbps");
-            datarate = 54;
+            dataRateStr = StringValue("OfdmRate54Mbps");
         }
         else if (i >= 8 && i <= 15)
         {
             // HT MCS 0-7 (20 MHz)
-            DataRate = StringValue("HtMcs" + std::to_string(i - 8));
-            datarate = 6.5 + (i - 8) * 6.5; // Simplified rate calculation
+            dataRateStr = StringValue("HtMcs" + std::to_string(i - 8));
         }
         else if (i >= 16 && i <= 23)
         {
             // HT MCS 0-7 (40 MHz)
-            DataRate = StringValue("HtMcs" + std::to_string(i - 16));
-            datarate = 13.5 + (i - 16) * 13.5; // Simplified rate calculation
+            dataRateStr = StringValue("HtMcs" + std::to_string(i - 16));
         }
         else
         {
             // HT MCS 0-7 (40 MHz with SGI)
-            DataRate = StringValue("HtMcs" + std::to_string(i - 24));
-            datarate = 15 + (i - 24) * 15; // Simplified rate calculation
+            dataRateStr = StringValue("HtMcs" + std::to_string(i - 24));
         }
+
+        // Convert to ns3::DataRate if needed
+        Config::SetDefault("ns3::WifiRemoteStationManager::DataMode", dataRateStr);
+        // If you need the actual DataRate value, you can use:
+        // dataRate = DataRate(dataRateStr.Get());
 
         // Create nodes
         NodeContainer wifiStaNode;
@@ -416,16 +424,16 @@ main(int argc, char* argv[])
     else
     {
         // Generate raw data files for compatibility
-        ExampleGnuplotHelper::WriteRawDataFile(outputPrefix + "-throughput.dat",
+    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-throughput.dat",
                                                throughputData,
                                                "MCS_Index Throughput(Mbps)");
-        ExampleGnuplotHelper::WriteRawDataFile(outputPrefix + "-signal.dat",
+    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-signal.dat",
                                                signalData,
                                                "MCS_Index Signal(dBm)");
-        ExampleGnuplotHelper::WriteRawDataFile(outputPrefix + "-noise.dat",
+    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-noise.dat",
                                                noiseData,
                                                "MCS_Index Noise(dBm)");
-        ExampleGnuplotHelper::WriteRawDataFile(outputPrefix + "-snr.dat",
+    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-snr.dat",
                                                snrData,
                                                "MCS_Index SNR(dB)");
         std::cout << "\nRaw data files generated." << std::endl;
