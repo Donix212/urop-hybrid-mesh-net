@@ -1,17 +1,17 @@
-    // Write out configuration at the start
-    std::ofstream configFile(outputPrefix + "-config.txt");
-    configFile << "simulationTime: " << simulationTime.GetSeconds() << "s" << std::endl;
-    configFile << "udp: " << (udp ? "true" : "false") << std::endl;
-    configFile << "distance: " << distance << std::endl;
-    configFile << "index: " << index << std::endl;
-    configFile << "wifiType: " << wifiType << std::endl;
-    configFile << "errorModelType: " << errorModelType << std::endl;
-    configFile << "enablePcap: " << (enablePcap ? "true" : "false") << std::endl;
-    configFile << "enableGnuplot: " << (enableGnuplot ? "true" : "false") << std::endl;
-    configFile << "outputPrefix: " << outputPrefix << std::endl;
-    configFile << "terminalType: " << terminalType << std::endl;
-    configFile << "tcpPacketSize: " << tcpPacketSize << std::endl;
-    configFile.close();
+// Write out configuration at the start
+std::ofstream configFile(outputPrefix + "-config.txt");
+configFile << "simulationTime: " << simulationTime.GetSeconds() << "s" << std::endl;
+configFile << "udp: " << (udp ? "true" : "false") << std::endl;
+configFile << "distance: " << distance << std::endl;
+configFile << "index: " << index << std::endl;
+configFile << "wifiType: " << wifiType << std::endl;
+configFile << "errorModelType: " << errorModelType << std::endl;
+configFile << "enablePcap: " << (enablePcap ? "true" : "false") << std::endl;
+configFile << "enableGnuplot: " << (enableGnuplot ? "true" : "false") << std::endl;
+configFile << "outputPrefix: " << outputPrefix << std::endl;
+configFile << "terminalType: " << terminalType << std::endl;
+configFile << "tcpPacketSize: " << tcpPacketSize << std::endl;
+configFile.close();
 /*
  * Copyright (c) 2009 MIRKO BANCHI
  * Copyright (c) 2015 University of Washington
@@ -189,9 +189,9 @@ main(int argc, char* argv[])
 
     for (uint16_t i = startIndex; i <= stopIndex; i++)
     {
-    uint32_t payloadSize = 1472; // bytes
-    DataRate dataRate;
-    StringValue dataRateStr;
+        uint32_t payloadSize = 1472; // bytes
+        DataRate dataRate;
+        StringValue dataRateStr;
 
         // ... [Include all the MCS configuration code from the original example] ...
         // For brevity, I'll include a few representative cases:
@@ -424,18 +424,18 @@ main(int argc, char* argv[])
     else
     {
         // Generate raw data files for compatibility
-    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-throughput.dat",
-                                               throughputData,
-                                               "MCS_Index Throughput(Mbps)");
-    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-signal.dat",
-                                               signalData,
-                                               "MCS_Index Signal(dBm)");
-    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-noise.dat",
-                                               noiseData,
-                                               "MCS_Index Noise(dBm)");
-    ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-snr.dat",
-                                               snrData,
-                                               "MCS_Index SNR(dB)");
+        ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-throughput.dat",
+                                              throughputData,
+                                              "MCS_Index Throughput(Mbps)");
+        ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-signal.dat",
+                                              signalData,
+                                              "MCS_Index Signal(dBm)");
+        ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-noise.dat",
+                                              noiseData,
+                                              "MCS_Index Noise(dBm)");
+        ManualGnuplotHelper::WriteRawDataFile(outputPrefix + "-snr.dat",
+                                              snrData,
+                                              "MCS_Index SNR(dB)");
         std::cout << "\nRaw data files generated." << std::endl;
     }
 

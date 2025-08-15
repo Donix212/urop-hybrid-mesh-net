@@ -1,19 +1,17 @@
-.. include:: replace.txt
-.. highlight:: cpp
+..include::replace.txt.
+        .highlight::cpp
 
-ExampleGnuplotHelper
---------------------
+            ExampleGnuplotHelper-- -- -- -- -- -- -- -- -- --
 
-The ``ExampleGnuplotHelper`` class provides a simple way to add
-optional GnuPlot visualization to examples that manually collect data
-points .It complements the existing ``GnuplotHelper`` class by
-targeting a different use case and data collection pattern.
+    The ``ExampleGnuplotHelper`` class provides a simple way to add optional GnuPlot visualization
+        to examples that manually collect data points
+        .It complements the existing ``GnuplotHelper`` class by targeting a different
+            use case and data collection pattern.
 
-Comparison with GnuplotHelper
-++++++++++++++++++++++++++++++
+    Comparison with GnuplotHelper++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++
 
-The |ns3| stats module provides two different approaches to generating
-GnuPlot visualizations:
+    The |
+    ns3 | stats module provides two different approaches to generating GnuPlot visualizations:
 
 **GnuplotHelper** (automatic trace source integration):
 
@@ -59,63 +57,62 @@ Here's how to add plotting to an existing example::
 
     // Global variables (add these)
     ExampleGnuplotHelper plotHelper;
-    bool enableGnuplot = false; // Command line option
+bool enableGnuplot = false; // Command line option
 
-    // In main() function - setup
-    plotHelper.ConfigureOutput("tcp-example", "png");
-    uint32_t cwndPlotId = plotHelper.AddTimeSeriesPlot("cwnd",
-                                                       "TCP Congestion Window",
-                                                       "Time (s)",
-                                                       "Window Size",
-                                                       "TCP Variant");
+// In main() function - setup
+plotHelper.ConfigureOutput("tcp-example", "png");
+uint32_t cwndPlotId = plotHelper.AddTimeSeriesPlot("cwnd",
+                                                   "TCP Congestion Window",
+                                                   "Time (s)",
+                                                   "Window Size",
+                                                   "TCP Variant");
 
-    // In existing trace callback - add data points
-    static void
-    CwndTrace(uint32_t oldval, uint32_t newval)
-    {
-	plotHelper.AddDataPoint(cwndPlotId, Simulator::Now().GetSeconds(), newval);
-	// ... existing trace callback code unchanged
-    }
+// In existing trace callback - add data points
+static void
+CwndTrace(uint32_t oldval, uint32_t newval)
+{
+    plotHelper.AddDataPoint(cwndPlotId, Simulator::Now().GetSeconds(), newval);
+    // ... existing trace callback code unchanged
+}
 
-    // At end of main() - generate output
-    plotHelper.GenerateOutput(enableGnuplot);
+// At end of main() - generate output
+plotHelper.GenerateOutput(enableGnuplot);
 
-This approach allows examples to maintain their existing structure
-while adding optional visualization capabilities.
+This approach allows examples to maintain their existing structure while adding optional
+    visualization capabilities.
 
-Multiple Plots and Datasets
-++++++++++++++++++++++++++++
+    Multiple Plots and Datasets++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++
 
-The helper supports multiple plots and multiple datasets per plot::
+    The helper supports multiple plots and multiple datasets per plot::
 
-    // Create multiple plots
+        // Create multiple plots
     uint32_t cwndPlot = plotHelper.AddTimeSeriesPlot("cwnd", "Congestion Window", ...);
-    uint32_t rttPlot = plotHelper.AddTimeSeriesPlot("rtt", "Round Trip Time", ...);
+uint32_t rttPlot = plotHelper.AddTimeSeriesPlot("rtt", "Round Trip Time", ...);
 
-    // Add additional datasets to existing plots
-    uint32_t dataset2 = plotHelper.AddDataset(cwndPlot, "TCP Cubic");
-    uint32_t dataset3 = plotHelper.AddDataset(cwndPlot, "TCP BBR");
+// Add additional datasets to existing plots
+uint32_t dataset2 = plotHelper.AddDataset(cwndPlot, "TCP Cubic");
+uint32_t dataset3 = plotHelper.AddDataset(cwndPlot, "TCP BBR");
 
-    // Add data to specific datasets
-    plotHelper.AddDataPointToDataset(cwndPlot, dataset2, time, cubicCwnd);
-    plotHelper.AddDataPointToDataset(cwndPlot, dataset3, time, bbrCwnd);
+// Add data to specific datasets
+plotHelper.AddDataPointToDataset(cwndPlot, dataset2, time, cubicCwnd);
+plotHelper.AddDataPointToDataset(cwndPlot, dataset3, time, bbrCwnd);
 
-Output Modes
-+++++++++++++
+Output Modes++ ++ ++ ++ ++ ++ +
 
-The helper can operate in two modes :
+        The helper can operate in two modes :
 
-**Raw Data Mode** (``GenerateOutput(false)``)
+    **Raw Data Mode**(``GenerateOutput(false)``)
 
-* Generates ``.dat`` files with space- separated data * Maintains backward compatibility with existing examples
-* Allows users to create custom plots with external tools
+    *
+    Generates ``.dat`` files with space
+    - separated data* Maintains backward compatibility with existing examples* Allows users to
+          create custom plots with external tools
 
-** GnuPlot Mode ** (``GenerateOutput(true)``)
+              ** GnuPlot Mode**(``GenerateOutput(true)``)
 
-* Generates ``.dat`` files with data
-* Creates ``.plt`` files with GnuPlot commands
-* Creates ``.sh`` shell scripts to run GnuPlot 
-* Produces final plot images(PNG, SVG, etc.)
+          * Generates ``.dat`` files with data* Creates ``
+                .plt`` files with GnuPlot commands* Creates ``
+                .sh`` shell scripts to run GnuPlot* Produces final plot images(PNG, SVG, etc.)
 
-This flexibility allows examples to work in environments where GnuPlot may
-not be available while still providing rich visualization when it is.
+                    This flexibility allows examples to work in environments where GnuPlot may
+            not be available while still providing rich visualization when it is.
