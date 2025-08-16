@@ -3,14 +3,14 @@
  */
 struct DataSetId
 {
-  /**
-   * @brief Plot ID to which the dataset belongs.
-   */
-  uint32_t plotId;
-  /**
-   * @brief Dataset ID within the plot.
-   */
-  uint32_t datasetId;
+    /**
+     * @brief Plot ID to which the dataset belongs.
+     */
+    uint32_t plotId;
+    /**
+     * @brief Dataset ID within the plot.
+     */
+    uint32_t datasetId;
 };
 
 /*
@@ -182,75 +182,76 @@ class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
     void AddDataPointWithError(uint32_t plotId, double x, double y, double errorX, double errorY);
 
   private:
-  /**
-   * @brief Internal helper for adding a data point, optionally with error bars, to the first dataset.
-   * @param plotId Plot ID
-   * @param x X coordinate
-   * @param y Y coordinate
-   * @param withErrors Whether to add error bars
-   * @param errorX X error (used if withErrors is true)
-   * @param errorY Y error (used if withErrors is true)
-   */
-  void DoAddDataPoint(uint32_t plotId,
-            double x,
-            double y,
-            bool withErrors = false,
-            double errorX = 0,
-            double errorY = 0);
+    /**
+     * @brief Internal helper for adding a data point, optionally with error bars, to the first
+     * dataset.
+     * @param plotId Plot ID
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param withErrors Whether to add error bars
+     * @param errorX X error (used if withErrors is true)
+     * @param errorY Y error (used if withErrors is true)
+     */
+    void DoAddDataPoint(uint32_t plotId,
+                        double x,
+                        double y,
+                        bool withErrors = false,
+                        double errorX = 0,
+                        double errorY = 0);
 
-  /**
-   * @brief Add a new dataset to a plot
-   * @param plotId Plot ID
-   * @param datasetName Name of the new dataset
-   * @return DataSetId struct identifying the plot and dataset
-   */
-  DataSetId AddDataset(uint32_t plotId, const std::string& datasetName);
+    /**
+     * @brief Add a new dataset to a plot
+     * @param plotId Plot ID
+     * @param datasetName Name of the new dataset
+     * @return DataSetId struct identifying the plot and dataset
+     */
+    DataSetId AddDataset(uint32_t plotId, const std::string& datasetName);
 
-  /**
-   * @brief Add a data point to a specific dataset
-   * @param dsid DataSetId struct identifying the plot and dataset
-   * @param x X coordinate
-   * @param y Y coordinate
-   */
-  void AddDataPointToDataset(DataSetId dsid, double x, double y);
+    /**
+     * @brief Add a data point to a specific dataset
+     * @param dsid DataSetId struct identifying the plot and dataset
+     * @param x X coordinate
+     * @param y Y coordinate
+     */
+    void AddDataPointToDataset(DataSetId dsid, double x, double y);
 
-  /**
-   * @brief Add a data point with error bars to a specific dataset
-   * @param dsid DataSetId struct identifying the plot and dataset
-   * @param x X coordinate
-   * @param y Y coordinate
-   * @param errorX X error
-   * @param errorY Y error
-   */
-  void AddDataPointToDatasetWithError(DataSetId dsid,
-                    double x,
-                    double y,
-                    double errorX,
-                    double errorY);
+    /**
+     * @brief Add a data point with error bars to a specific dataset
+     * @param dsid DataSetId struct identifying the plot and dataset
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param errorX X error
+     * @param errorY Y error
+     */
+    void AddDataPointToDatasetWithError(DataSetId dsid,
+                                        double x,
+                                        double y,
+                                        double errorX,
+                                        double errorY);
 
-  /**
-   * @brief Overload for convenience: add a data point to a dataset
-   * @param dsid DataSetId struct identifying the plot and dataset
-   * @param x X coordinate
-   * @param y Y coordinate
-   */
-  void AddDataPoint(DataSetId dsid, double x, double y);
+    /**
+     * @brief Overload for convenience: add a data point to a dataset
+     * @param dsid DataSetId struct identifying the plot and dataset
+     * @param x X coordinate
+     * @param y Y coordinate
+     */
+    void AddDataPoint(DataSetId dsid, double x, double y);
 
-  /**
-   * @brief Add a data point with error bars to a specific dataset (by plot and dataset ID)
-   * @param plotId Plot ID
-   * @param datasetId Dataset ID
-   * @param x X coordinate
-   * @param y Y coordinate
-   * @param errorX X error
-   * @param errorY Y error
-   */
-  void AddDataPointToDatasetWithError(uint32_t plotId,
-                    uint32_t datasetId,
-                    double x,
-                    double y,
-                    double errorX,
-                    double errorY);
+    /**
+     * @brief Add a data point with error bars to a specific dataset (by plot and dataset ID)
+     * @param plotId Plot ID
+     * @param datasetId Dataset ID
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param errorX X error
+     * @param errorY Y error
+     */
+    void AddDataPointToDatasetWithError(uint32_t plotId,
+                                        uint32_t datasetId,
+                                        double x,
+                                        double y,
+                                        double errorX,
+                                        double errorY);
 
     /**
      * @brief Set plot style options
