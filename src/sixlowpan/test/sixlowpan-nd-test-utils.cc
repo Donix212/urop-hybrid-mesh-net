@@ -206,7 +206,7 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
 
                 // Global address entry (2001::200:ff:fe00:X)
                 oss << "2001::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
-                    << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
+                    << lladdrStream.str() << " REACHABLE GARBAGE-COLLECTIBLE" << std::endl;
             }
 
             // Then, output all link-local address entries
@@ -218,7 +218,7 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
 
                 // Link-local address entry (fe80::200:ff:fe00:X)
                 oss << "fe80::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
-                    << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
+                    << lladdrStream.str() << " REACHABLE GARBAGE-COLLECTIBLE" << std::endl;
             }
         }
         else // 6LN (Node 1+)
@@ -228,6 +228,65 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
                    "GARBAGE-COLLECTIBLE"
                 << std::endl;
         }
+    }
+
+    return oss.str();
+}
+
+std::string
+GenerateBindingTableOutput(uint32_t numNodes, Time time)
+{
+    std::ostringstream oss;
+
+    // Generate binding table for each node
+    for (uint32_t nodeId = 0; nodeId < numNodes; ++nodeId)
+    {
+        // Node header - match the exact format from PrintBindingTable
+        oss << "6LoWPAN-ND Binding Table of node " << std::dec << nodeId << " at time "
+            << "+" << time.GetSeconds() << "s" << std::endl;
+        oss << "Interface 1:" << std::endl;
+
+        if (nodeId == 0) // 6LBR (Node 0)
+        {
+            // 6LBR has binding entries for each registered 6LN (nodes 1 through numNodes-1)
+            std::vector<std::pair<std::string, std::string>> entries;
+
+            for (uint32_t i = 1; i < numNodes; ++i)
+            {
+                std::ostringstream globalAddr, linkLocalAddr;
+                globalAddr << "2001::200:ff:fe00:" << std::hex
+                           << (i + 1); // Node 1 -> :2, Node 2 -> :3, etc.
+                linkLocalAddr << "fe80::200:ff:fe00:" << std::hex << (i + 1);
+
+                // Global address entry
+                std::ostringstream globalEntry;
+                globalEntry << globalAddr.str() << " addr=" << linkLocalAddr.str()
+                            << " routeraddr=fe80::200:ff:fe00:1 REACHABLE";
+
+                // Link-local address entry
+                std::ostringstream llEntry;
+                llEntry << linkLocalAddr.str() << " addr=" << linkLocalAddr.str()
+                        << " routeraddr=fe80::200:ff:fe00:1 REACHABLE";
+
+                entries.push_back({globalAddr.str(), globalEntry.str()});
+                entries.push_back({linkLocalAddr.str(), llEntry.str()});
+            }
+
+            // Sort entries by IPv6 address (global addresses come before link-local due to lexical
+            // ordering)
+            std::sort(
+                entries.begin(),
+                entries.end(),
+                [](const std::pair<std::string, std::string>& a,
+                   const std::pair<std::string, std::string>& b) { return a.first < b.first; });
+
+            // Output sorted entries
+            for (const auto& entry : entries)
+            {
+                oss << entry.second << std::endl;
+            }
+        }
+        // else: 6LNs (Node 1+) have empty binding tables - no entries to add
     }
 
     return oss.str();

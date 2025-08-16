@@ -38,6 +38,13 @@ std::string SortRoutingTableString(std::string routingTable);
  */
 std::string NormalizeNdiscCacheStates(const std::string& ndiscOutput);
 
+/**
+ * Generate expected binding table output for test validation
+ * @param numNodes Total number of nodes in the network (1 6LBR + (numNodes-1) 6LNs)
+ * @param time Simulation time for the output
+ * @return Expected binding table output string
+ */
+std::string GenerateBindingTableOutput(uint32_t numNodes, Time time);
 } // namespace ns3
 
 #endif // SIXLOWPAN_ND_TEST_UTILS_H

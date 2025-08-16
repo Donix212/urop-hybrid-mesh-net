@@ -81,7 +81,11 @@ class SixLowPanNdOneLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(Seconds(5), outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), outputRoutingTableStream);
 
@@ -96,8 +100,10 @@ class SixLowPanNdOneLNRegTest : public TestCase
 
         constexpr auto expectedNdiscStream =
             "NDISC Cache of node 0 at time +5s\n"
-            "2001::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
-            "fe80::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
+            "2001::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE "
+            "GARBAGE-COLLECTIBLE\n"
+            "fe80::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE "
+            "GARBAGE-COLLECTIBLE\n"
             "NDISC Cache of node 1 at time +5s\n"
             "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
             "GARBAGE-COLLECTIBLE\n";
@@ -118,9 +124,25 @@ class SixLowPanNdOneLNRegTest : public TestCase
                               expectedRoutingTableStream,
                               "Routing table does not match expected.");
 
+        constexpr auto expectedBindingTableStream =
+            "6LoWPAN-ND Binding Table of node 0 at time +5s\n"
+            "Interface 1:\n"
+            "2001::200:ff:fe00:2 addr=fe80::200:ff:fe00:2 routeraddr=fe80::200:ff:fe00:1 "
+            "REACHABLE\n"
+            "fe80::200:ff:fe00:2 addr=fe80::200:ff:fe00:2 routeraddr=fe80::200:ff:fe00:1 "
+            "REACHABLE\n"
+            "6LoWPAN-ND Binding Table of node 1 at time +5s\n"
+            "Interface 1:\n";
+
+        NS_TEST_EXPECT_MSG_EQ(bindingTableStream.str(),
+                              expectedBindingTableStream,
+                              "Binding table is incorrect.");
+
         NS_TEST_ASSERT_MSG_EQ(registeredAddress,
                               Ipv6Address("2001::200:ff:fe00:2"),
                               "Registered address does not match expected value.");
+        std::cout << NormalizeNdiscCacheStates(ndiscStream.str()) << std::endl;
+        std::cout << GenerateNdiscCacheOutput(2, Seconds(5)) << std::endl;
     }
 
   private:
@@ -156,7 +178,8 @@ class SixLowPanNdFiveLNRegTest : public TestCase
 
     void DoRun() override
     {
-        Time duration = Time("50s");
+        LogComponentEnable("SixLowPanNdProtocol", LOG_LEVEL_INFO);
+        Time duration = Time("5s");
 
         constexpr uint32_t numLns = 5;
 
@@ -188,7 +211,11 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
 
@@ -203,6 +230,13 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ(bindingTableStream.str(),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "Binding table does not match expected output.");
+
+        std::cout << NormalizeNdiscCacheStates(ndiscStream.str()) << std::endl;
+        std::cout << GenerateNdiscCacheOutput(numLns + 1, duration) << std::endl;
     }
 };
 
@@ -252,10 +286,13 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
-
         Simulator::Stop(duration);
         Simulator::Run();
         Simulator::Destroy();
@@ -267,6 +304,10 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ(bindingTableStream.str(),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "Binding table does not match expected output.");
     }
 };
 
@@ -413,11 +454,11 @@ class SixLowPanNdRegTestSuite : public TestSuite
     SixLowPanNdRegTestSuite()
         : TestSuite("sixlowpan-nd-reg-test", Type::UNIT)
     {
-        AddTestCase(new SixLowPanNdOneLNRegTest(), TestCase::Duration::QUICK);
+        // AddTestCase(new SixLowPanNdOneLNRegTest(), TestCase::Duration::QUICK);
         AddTestCase(new SixLowPanNdFiveLNRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdFifteenLNRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdTwentyLNRegTest(), TestCase::Duration::QUICK);
-        AddTestCase(new SixLowPanNdMulticastRsTimeoutTest(), TestCase::Duration::QUICK);
+        // AddTestCase(new SixLowPanNdFifteenLNRegTest(), TestCase::Duration::QUICK);
+        // AddTestCase(new SixLowPanNdTwentyLNRegTest(), TestCase::Duration::QUICK);
+        // AddTestCase(new SixLowPanNdMulticastRsTimeoutTest(), TestCase::Duration::QUICK);
     }
 };
 

@@ -173,10 +173,22 @@ SixLowPanNdBindingTable::PrintBindingTable(Ptr<OutputStreamWrapper> stream)
 
     std::ostream* os = stream->GetStream();
 
+    // Collect entries in a vector for sorting
+    std::vector<std::pair<Ipv6Address, SixLowPanNdBindingTableEntry*>> entries;
     for (const auto& i : m_sixLowPanNdBindingTable)
     {
-        *os << i.first << " ";
-        i.second->Print(*os);
+        entries.push_back({i.first, i.second});
+    }
+
+    // Sort by IPv6 address
+    std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+
+    // Print sorted entries
+    for (const auto& entry : entries)
+    {
+        entry.second->Print(*os);
         *os << std::endl;
     }
 }
@@ -202,22 +214,23 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::Print(std::ostream& os) c
 {
     NS_LOG_FUNCTION(this << &os);
 
+    os << m_ipv6Address;
+    os << " addr=" << m_linkLocalAddress;
+    os << " routeraddr=" << m_routerLinkLocalAddress;
+
     switch (m_type)
     {
     case TENTATIVE:
-        os << "state TENTATIVE";
+        os << " TENTATIVE";
         break;
     case REACHABLE:
-        os << "state REACHABLE";
+        os << " REACHABLE";
         break;
     case STALE:
-        os << "state STALE";
+        os << " STALE";
         break;
     }
 
-    os << " addr=" << m_ipv6Address;
-    os << " lladdr=" << m_linkLocalAddress;
-    os << " routerlladdr=" << m_routerLinkLocalAddress;
     os << std::dec;
 }
 

@@ -599,9 +599,10 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         return;
     }
 
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
+        DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
-        sixDevice,
+        sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
     if (src == Ipv6Address::GetAny())
@@ -630,6 +631,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     {
         return; // NS With EARO that is invalid
     }
+
     Ipv6Address target = nsHdr.GetIpv6Target();
 
     // Check if hasEaro
@@ -647,72 +649,106 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         return;
     }
 
-    // NS (EARO)
-    /* Update NDISC table with information of src */
-    Ptr<NdiscCache> cache = FindCache(sixDevice);
+    Ptr<SixLowPanNdBindingTable> bindingTable = FindBindingTable(interface);
+    NS_ASSERT_MSG(bindingTable, "Can not find a SixLowPanNdBindingTable");
+    auto btEntry = bindingTable->Lookup(target);
 
-    SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
-    entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
+    Ptr<NdiscCache> neighbourCache = FindCache(sixLowPanNetDevice);
+    NS_ASSERT_MSG(neighbourCache, "Can not find a NdiscCache");
+    auto ncEntry = static_cast<NdiscCache::Entry*>(neighbourCache->Lookup(target));
 
-    // \todo double check the NCE statuses.
-    // \todo set the registered status.
-
-    if (m_nodeRole == SixLowPanBorderRouter)
+    // Already an existing valid entry for the target address
+    if (btEntry && btEntry->IsReachable())
     {
-        if (!entry)
+        if (btEntry->GetRovr() != earoHdr.GetRovr())
         {
-            entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
-            entry->SetRovr(earoHdr.GetRovr());
+            NS_LOG_INFO("Received ROVR mismatch... discard.");
+            SendSixLowPanNaWithEaro(dst,
+                                    src,
+                                    target,
+                                    earoHdr.GetRegTime(),
+                                    earoHdr.GetRovr(),
+                                    earoHdr.GetTransactionId(),
+                                    sixLowPanNetDevice,
+                                    1);
+            return; // discard the packet since the rovr doesn't match
         }
         else
         {
-            // Check if the ROVR is empty (Only), and set it if so
-            if (entry->GetRovr().empty())
-            {
-                entry->SetRovr(earoHdr.GetRovr());
-            }
-            else if (entry->GetRovr() != earoHdr.GetRovr())
-            {
-                SendSixLowPanNaWithEaro(dst,
-                                        src,
-                                        target,
-                                        earoHdr.GetRegTime(),
-                                        earoHdr.GetRovr(),
-                                        earoHdr.GetTransactionId(),
-                                        sixDevice,
-                                        1);
-                return; // discard the packet since the rovr doesn't match
-            }
+            // Successful Re-registration
+            NS_LOG_INFO("Received ROVR match... re-registering.");
+            SendSixLowPanNaWithEaro(dst,
+                                    src,
+                                    target,
+                                    earoHdr.GetRegTime(),
+                                    earoHdr.GetRovr(),
+                                    earoHdr.GetTransactionId(),
+                                    sixLowPanNetDevice,
+                                    0);
+            return;
         }
-        entry->SetRouter(false);
-        entry->SetMacAddress(sllaoHdr.GetAddress());
-        entry->MarkReachable();
-        entry->StartReachableTimer();
-        entry->MarkRegistered(earoHdr.GetRegTime());
-        if (!target.IsLinkLocal())
+    }
+
+    // At this point, either no btEntry exists, or the existing one can be overwritten
+    if (!btEntry)
+    {
+        btEntry = bindingTable->Add(target);
+    }
+
+    // We can override the existing entry's fields
+    btEntry->MarkTentative();
+    btEntry->SetLinkLocalAddress(src);
+    btEntry->SetRouterLinkLocalAddress(dst);
+
+    if (target.IsLinkLocal())
+    {
+        btEntry->MarkReachable(earoHdr.GetRegTime());
+    }
+    else
+    {
+        if (m_nodeRole == SixLowPanBorderRouter)
         {
+            // Mark Reachable
+            btEntry->MarkReachable(earoHdr.GetRegTime());
+
+            // Inject static route for target
             Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
             ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
                 target,
                 Ipv6Prefix(128),
                 src,
-                ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-            // Forward the registration to the 6LBR.
-            // Unless we're the 6LBR, of course.
+                ipv6l3Protocol->GetInterfaceForDevice(sixLowPanNetDevice));
         }
+        else
+        {
+            // Need to do multi-hop EDAR EDAC exchange
+            SendSixLowPanEDAR(src,
+                              dst,
+                              earoHdr.GetRegTime(),
+                              earoHdr.GetRovr(),
+                              target,
+                              sixLowPanNetDevice);
+            return;
+        }
+    }
 
-        SendSixLowPanNaWithEaro(dst,
-                                src,
-                                target,
-                                earoHdr.GetRegTime(),
-                                earoHdr.GetRovr(),
-                                earoHdr.GetTransactionId(),
-                                sixDevice,
-                                earoHdr.GetStatus());
-    }
-    else // node is a SixLowPanBackboneRouter
+    // Update Neighbour Cache
+    if (!ncEntry)
     {
+        ncEntry = static_cast<NdiscCache::Entry*>(neighbourCache->Add(target));
     }
+    ncEntry->SetRouter(false);
+    ncEntry->SetMacAddress(sllaoHdr.GetAddress());
+    ncEntry->MarkReachable();
+
+    SendSixLowPanNaWithEaro(dst,
+                            src,
+                            target,
+                            earoHdr.GetRegTime(),
+                            earoHdr.GetRovr(),
+                            earoHdr.GetTransactionId(),
+                            sixLowPanNetDevice,
+                            0);
 }
 
 void
@@ -851,7 +887,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     // Fire the RA reception trace
     m_raRxTrace(packet->Copy());
 
-    if (m_nodeRole == SixLowPanBorderRouter)
+    if (m_nodeRole == SixLowPanBorderRouter || m_nodeRole == SixLowPanBackboneRouter)
     {
         return;
     }
@@ -950,7 +986,7 @@ SixLowPanNdProtocol::HandleSixLowPanEDAR(Ptr<Packet> packet,
     // Only 6LBRs should handle EDAR messages
     if (m_nodeRole != SixLowPanBorderRouter)
     {
-        NS_LOG_LOGIC("Node is not a 6LBR, ignoring EDAR message");
+        NS_LOG_INFO("Node is not 6LBR, ignoring EDAR message");
         return;
     }
 
