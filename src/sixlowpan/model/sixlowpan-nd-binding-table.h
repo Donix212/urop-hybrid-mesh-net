@@ -243,12 +243,13 @@ class SixLowPanNdBindingTable : public Object
         Ipv6Address m_ipv6Address;
 
         /**
-         * @brief The link-local IPv6 address for this entry.
+         * @brief The link-local address associated with this entry.
          */
         Ipv6Address m_linkLocalAddress;
 
         /**
-         * @brief The router's link-local IPv6 address for this entry.
+         * @brief The link-local address of the router interface associated with the binding table
+         * for this entry.
          */
         Ipv6Address m_routerLinkLocalAddress;
     };

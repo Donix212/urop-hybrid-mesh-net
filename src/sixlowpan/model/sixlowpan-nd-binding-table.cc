@@ -140,6 +140,7 @@ SixLowPanNdBindingTable::Add(Ipv6Address to)
     // Create new entry
     auto entry = new SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry(this);
     m_sixLowPanNdBindingTable[to] = entry;
+    entry->SetIpv6Address(to);
 
     NS_LOG_DEBUG("Added new binding table entry for " << to);
     return entry;
@@ -214,9 +215,9 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::Print(std::ostream& os) c
         break;
     }
 
-    os << " address=" << m_ipv6Address;
+    os << " addr=" << m_ipv6Address;
     os << " lladdr=" << m_linkLocalAddress;
-    os << " router lladdr=" << m_routerLinkLocalAddress;
+    os << " routerlladdr=" << m_routerLinkLocalAddress;
     os << std::dec;
 }
 

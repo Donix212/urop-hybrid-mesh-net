@@ -997,19 +997,35 @@ SixLowPanNdProtocol::HandleSixLowPanEDAR(Ptr<Packet> packet,
                                                        << " with different ROVR");
             return;
         }
-        entry->MarkReachable(edarHdr.GetRegTime());
+        else
+        {
+            // Re-registration success
+            // SendSixLowPanEDAC response with status 0
+            SendSixLowPanEDAC(dst,                     // src (6LBR  Gaddr)
+                              src,                     // dst (6BBR Gaddr)
+                              0,                       // DAD result
+                              edarHdr.GetRegTime(),    // registration time
+                              edarHdr.GetRovr(),       // ROVR
+                              edarHdr.GetRegAddress(), // address that was checked
+                              sixDevice);              // outgoing interface
+            return;
+        }
     }
     else
     {
         entry = bindingTable->Add(edarHdr.GetRegAddress());
-        entry->MarkReachable(edarHdr.GetRegTime());
     }
+
+    // Mark entry as REACHABLE
+    entry->MarkReachable(edarHdr.GetRegTime());
+    entry->SetLinkLocalAddress(src);
+    entry->SetRouterLinkLocalAddress(dst);
     // Add route to registered address
     Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
     ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
         edarHdr.GetRegAddress(),
         Ipv6Prefix(128),
-        src, // Next hop is the 6BBR
+        src, // Next hop is the 6BBR's Gaddr
         ipv6l3Protocol->GetInterfaceForDevice(sixDevice));
 
     // Send EDAC response
@@ -1046,9 +1062,9 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
 
     // Parse and validate the EDAC packet
     Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edacHdr;
-    Icmpv6OptionLinkLayerAddress tlla(false);
+    Icmpv6OptionLinkLayerAddress tllao(false);
 
-    bool isValid = ParseAndValidateEdacPacket(packet, edacHdr, tlla);
+    bool isValid = ParseAndValidateEdacPacket(packet, edacHdr, tllao);
     if (!isValid)
     {
         NS_LOG_LOGIC("Invalid EDAC packet, discarding");
@@ -1060,43 +1076,62 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
         NS_ABORT_MSG("Address deregistration is not supported currently in SixLowPanNdProtocol.");
     }
 
+    // Find Neighbour Cache for this interface
+    Ptr<NdiscCache> cache = FindCache(sixDevice);
+
+    SixLowPanNdiscCache::SixLowPanEntry* ncEntry = nullptr;
+    ncEntry =
+        static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(edacHdr.GetRegAddress()));
+
     // Find the binding table for this interface
     Ptr<SixLowPanNdBindingTable> bindingTable = FindBindingTable(interface);
     NS_ASSERT_MSG(bindingTable, "Can not find a SixLowPanNdBindingTable");
 
-    auto entry = bindingTable->Lookup(edacHdr.GetRegAddress());
-    if (entry)
+    auto btEntry = bindingTable->Lookup(edacHdr.GetRegAddress());
+    if (btEntry)
     {
-        if (!entry->IsTentative() || entry->GetRovr() != edacHdr.GetRovr())
+        if (!btEntry->IsTentative() || btEntry->GetRovr() != edacHdr.GetRovr())
         {
             return; // Entry exists but is not tentative or ROVR mismatch
         }
         if (edacHdr.GetStatus() == 0)
         {
-            entry->MarkReachable(edacHdr.GetRegTime());
+            if (!ncEntry)
+            {
+                // Create a new entry in the NdiscCache if it doesn't exist
+                ncEntry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(
+                    cache->Add(edacHdr.GetRegAddress()));
+            }
+            // Mark ncEntry as REACHABLE
+            ncEntry->SetRouter(false);
+            ncEntry->SetMacAddress(tllao.GetAddress());
+            ncEntry->MarkReachable();
+            ncEntry->StartReachableTimer();
+
+            // Mark entry as REACHABLE
+            btEntry->MarkReachable(edacHdr.GetRegTime());
+
             // Add route to registered address
             Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
             ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
                 edacHdr.GetRegAddress(),
                 Ipv6Prefix(128),
-                entry->GetLinkLocalAddress(), // Next hop is the 6LN Gaddr
-                ipv6l3Protocol->GetInterfaceForDevice(entry->GetBindingTable()->GetDevice()));
-
-            // Mark entry as REACHABLE
-            entry->MarkReachable(edacHdr.GetRegTime());
+                btEntry->GetLinkLocalAddress(), // Next hop is the 6LN LLaddr
+                ipv6l3Protocol->GetInterfaceForDevice(sixDevice));
         }
+
         Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-        Ipv6Address bbrLLaddr = entry->GetRouterLinkLocalAddress();
-        Ipv6Address lnLLaddr = entry->GetLinkLocalAddress();
+        Ipv6Address bbrLLaddr = btEntry->GetRouterLinkLocalAddress();
+        Ipv6Address lnLLaddr = btEntry->GetLinkLocalAddress();
         SendSixLowPanNaWithEaro(
-            bbrLLaddr,                                             // src (6BBR LLaddr)
-            lnLLaddr,                                              // dst (6LN LLaddr)
-            edacHdr.GetRegAddress(),                               // target address
-            edacHdr.GetRegTime(),                                  // registration time
-            edacHdr.GetRovr(),                                     // ROVR
-            0,                                                     // transaction ID
-            entry->GetBindingTable()->GetInterface()->GetDevice(), // outgoing interface
-            edacHdr.GetStatus());                                  // status
+            bbrLLaddr,                                               // src (6BBR LLaddr)
+            lnLLaddr,                                                // dst (6LN LLaddr)
+            edacHdr.GetRegAddress(),                                 // target address
+            edacHdr.GetRegTime(),                                    // registration time
+            edacHdr.GetRovr(),                                       // ROVR
+            0,                                                       // transaction ID
+            btEntry->GetBindingTable()->GetInterface()->GetDevice(), // outgoing interface
+            edacHdr.GetStatus());                                    // status
     }
 }
 
