@@ -340,11 +340,6 @@ see if there were wildcards in the path.
                        "Emitter Count",
                        GnuplotAggregator::KEY_INSIDE);
 
-ManualGnuplotHelper (formerly ExampleGnuplotHelper)
-===================================================
-
-.. include:: source-temp/doc/models/source/stats-example-gnuplot-helper.rst
-
 FileHelper
 ==========
 
