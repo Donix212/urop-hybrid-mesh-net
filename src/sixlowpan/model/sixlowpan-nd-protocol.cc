@@ -594,11 +594,6 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
 {
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
 
-    if (m_nodeRole == SixLowPanNodeOnly || m_nodeRole == SixLowPanNode)
-    {
-        return;
-    }
-
     Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
         DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
@@ -699,6 +694,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     btEntry->MarkTentative();
     btEntry->SetLinkLocalAddress(src);
     btEntry->SetRouterLinkLocalAddress(dst);
+    btEntry->SetRovr(earoHdr.GetRovr());
 
     if (target.IsLinkLocal())
     {
@@ -740,6 +736,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     ncEntry->SetRouter(false);
     ncEntry->SetMacAddress(sllaoHdr.GetAddress());
     ncEntry->MarkReachable();
+    ncEntry->StartReachableTimer();
 
     SendSixLowPanNaWithEaro(dst,
                             src,
@@ -758,11 +755,6 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
-
-    if (m_nodeRole == SixLowPanBorderRouter)
-    {
-        return;
-    }
 
     m_naRxTrace(packet->Copy());
 
@@ -982,6 +974,8 @@ SixLowPanNdProtocol::HandleSixLowPanEDAR(Ptr<Packet> packet,
                                          Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanEDAR: " << m_node->GetId() << " Received EDAR from " << src
+                                        << " to " << dst);
 
     // Only 6LBRs should handle EDAR messages
     if (m_nodeRole != SixLowPanBorderRouter)
@@ -1052,10 +1046,11 @@ SixLowPanNdProtocol::HandleSixLowPanEDAR(Ptr<Packet> packet,
         entry = bindingTable->Add(edarHdr.GetRegAddress());
     }
 
-    // Mark entry as REACHABLE
+    // Mark binding table entry as REACHABLE
     entry->MarkReachable(edarHdr.GetRegTime());
     entry->SetLinkLocalAddress(src);
     entry->SetRouterLinkLocalAddress(dst);
+    entry->SetRovr(edarHdr.GetRovr());
     // Add route to registered address
     Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
     ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
@@ -1114,10 +1109,7 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
 
     // Find Neighbour Cache for this interface
     Ptr<NdiscCache> cache = FindCache(sixDevice);
-
-    SixLowPanNdiscCache::SixLowPanEntry* ncEntry = nullptr;
-    ncEntry =
-        static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(edacHdr.GetRegAddress()));
+    auto ncEntry = static_cast<NdiscCache::Entry*>(cache->Lookup(edacHdr.GetRegAddress()));
 
     // Find the binding table for this interface
     Ptr<SixLowPanNdBindingTable> bindingTable = FindBindingTable(interface);
@@ -1135,8 +1127,7 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
             if (!ncEntry)
             {
                 // Create a new entry in the NdiscCache if it doesn't exist
-                ncEntry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(
-                    cache->Add(edacHdr.GetRegAddress()));
+                ncEntry = static_cast<NdiscCache::Entry*>(cache->Add(edacHdr.GetRegAddress()));
             }
             // Mark ncEntry as REACHABLE
             ncEntry->SetRouter(false);
@@ -1144,7 +1135,7 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
             ncEntry->MarkReachable();
             ncEntry->StartReachableTimer();
 
-            // Mark entry as REACHABLE
+            // Mark btEntry as REACHABLE
             btEntry->MarkReachable(edacHdr.GetRegTime());
 
             // Add route to registered address
@@ -1169,29 +1160,6 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
             btEntry->GetBindingTable()->GetInterface()->GetDevice(), // outgoing interface
             edacHdr.GetStatus());                                    // status
     }
-}
-
-Ptr<NdiscCache>
-SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface)
-{
-    NS_LOG_FUNCTION(this << device << interface);
-
-    Ptr<SixLowPanNdiscCache> cache = CreateObject<SixLowPanNdiscCache>();
-
-    cache->SetDevice(device, interface, this);
-    device->AddLinkChangeCallback(MakeCallback(&NdiscCache::Flush, cache));
-
-    // in case a cache was previously created by Icmpv6L4Protocol, remove it.
-    for (auto iter = m_cacheList.begin(); iter != m_cacheList.end(); iter++)
-    {
-        if ((*iter)->GetDevice() == device)
-        {
-            m_cacheList.erase(iter);
-        }
-    }
-    m_cacheList.emplace_back(cache);
-
-    return cache;
 }
 
 void

@@ -62,8 +62,8 @@ class SixLowPanNdEdarBasicTest : public TestCase
         sixlowpan.InstallSixLowPanNdBackboneRouter(devices.Get(1)); // 6LN
 
         // Test addresses and ROVR
-        Ipv6Address bbrAddr("2001::200:ff:fe00:1"); // 6BBR address (source)
-        Ipv6Address lbrAddr("2001::200:ff:fe00:2"); // 6LBR Gaddr (destination)
+        Ipv6Address lbrAddr("2001::200:ff:fe00:1"); // 6LBR address (destination)
+        Ipv6Address bbrAddr("2001::200:ff:fe00:2"); // 6BBR Gaddr (source)
         Ipv6Address regAddr("2001::200:ff:fe00:3"); // Address to register
         std::vector<uint8_t> rovr(16, 0);
 
@@ -71,8 +71,8 @@ class SixLowPanNdEdarBasicTest : public TestCase
         Simulator::Schedule(Seconds(3),
                             &SixLowPanNdProtocol::SendSixLowPanEDAR,
                             bbrNdProtocol,
-                            lbrAddr,
                             bbrAddr,
+                            lbrAddr,
                             5120,
                             rovr,
                             regAddr,

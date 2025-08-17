@@ -160,8 +160,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                                         const Ipv6Header& header,
                                         Ptr<Ipv6Interface> interface) override;
 
-    Ptr<NdiscCache> CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface) override;
-
     void CreateBindingTable(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface);
 
     bool Lookup(Ptr<Packet> p,

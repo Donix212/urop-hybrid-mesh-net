@@ -79,7 +79,11 @@ class SixLowPanNdOneBBRRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(Seconds(5), outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), outputRoutingTableStream);
 
@@ -90,11 +94,10 @@ class SixLowPanNdOneBBRRegTest : public TestCase
         // Update expected outputs to match SimpleNetDevice addressing
         constexpr auto expectedNdiscStream =
             "NDISC Cache of node 0 at time +5s\n"
-            "2001::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
-            "fe80::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
+            "2001::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE\n"
+            "fe80::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE\n"
             "NDISC Cache of node 1 at time +5s\n"
-            "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
-            "GARBAGE-COLLECTIBLE\n";
+            "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE\n";
         NS_TEST_EXPECT_MSG_EQ(ndiscStream.str(), expectedNdiscStream, "NdiscCache is incorrect.");
 
         constexpr auto expectedRoutingTableStream =
@@ -111,6 +114,20 @@ class SixLowPanNdOneBBRRegTest : public TestCase
         NS_TEST_EXPECT_MSG_EQ(routingTableStream.str(),
                               expectedRoutingTableStream,
                               "Routing table does not match expected.");
+
+        constexpr auto expectedBindingTableStream =
+            "6LoWPAN-ND Binding Table of node 0 at time +5s\n"
+            "Interface 1:\n"
+            "2001::200:ff:fe00:2 addr=fe80::200:ff:fe00:2 routeraddr=fe80::200:ff:fe00:1 "
+            "REACHABLE\n"
+            "fe80::200:ff:fe00:2 addr=fe80::200:ff:fe00:2 routeraddr=fe80::200:ff:fe00:1 "
+            "REACHABLE\n"
+            "6LoWPAN-ND Binding Table of node 1 at time +5s\n"
+            "Interface 1:\n";
+
+        NS_TEST_EXPECT_MSG_EQ(bindingTableStream.str(),
+                              expectedBindingTableStream,
+                              "Binding table is incorrect.");
 
         // Additionally, assert that the nodeRole of the lnNode is now SixLowPanBackboneRouter
         Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = lnNode->GetObject<SixLowPanNdProtocol>();
@@ -161,7 +178,11 @@ class SixLowPanNdFiveBBRRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
 
@@ -176,6 +197,14 @@ class SixLowPanNdFiveBBRRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_EXPECT_MSG_EQ(bindingTableStream.str(),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "Binding table is incorrect.");
+
+        // std::cout << ndiscStream.str() << std::endl;
+        // std::cout << routingTableStream.str() << std::endl;
+        // std::cout << bindingTableStream.str() << std::endl;
 
         // Assert that all 5 6LNs have been upgraded to 6BBR role after registration
         for (uint32_t i = 1; i <= numLns; ++i)
@@ -233,7 +262,11 @@ class SixLowPanNdFifteenBBRRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
 
@@ -248,6 +281,14 @@ class SixLowPanNdFifteenBBRRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_EXPECT_MSG_EQ(bindingTableStream.str(),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "Binding table is incorrect.");
+
+        // std::cout << ndiscStream.str() << std::endl;
+        // std::cout << routingTableStream.str() << std::endl;
+        // std::cout << bindingTableStream.str() << std::endl;
 
         // Assert that all 15 6LNs have been upgraded to 6BBR role after registration
         for (uint32_t i = 1; i <= numLns; ++i)
@@ -305,7 +346,11 @@ class SixLowPanNdTwentyBBRRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
 
@@ -320,6 +365,10 @@ class SixLowPanNdTwentyBBRRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_EXPECT_MSG_EQ(bindingTableStream.str(),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "Binding table is incorrect.");
 
         // Assert that all 20 6LNs have been upgraded to 6BBR role after registration
         for (uint32_t i = 1; i <= numLns; ++i)
