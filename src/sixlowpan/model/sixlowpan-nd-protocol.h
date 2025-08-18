@@ -232,19 +232,14 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
 
     /**
      * @brief Send an EDAR for 6LoWPAN ND.
-     * @param src source IPv6 address
      * @param dst destination IPv6 address
      * @param time registration lifetime
      * @param rovr ROVR of 6LN registering its global address
-     * @param addrToRegister address to register
-     * @param sixDevice SixLowPan NetDevice
+     * @param addrToRegister address that was checked for duplication
      */
-    void SendSixLowPanEDAR(Ipv6Address src,
-                           Ipv6Address dst,
-                           uint16_t time,
+    void SendSixLowPanEDAR(uint16_t time,
                            const std::vector<uint8_t>& rovr,
-                           Ipv6Address addrToRegister,
-                           Ptr<NetDevice> sixDevice);
+                           Ipv6Address addrToRegister);
 
     /**
      * @brief Send an EDAC for 6LoWPAN ND.
@@ -783,6 +778,14 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     TracedCallback<Ptr<Packet>> m_raRxTrace; //!< Trace fired whenever an RA packet is received
 
     typedef Callback<void, Ptr<Packet>> RaRxCallback; //!< Trace sink signature for RA reception
+
+    TracedCallback<Ptr<Packet>> m_edarRxTrace; //!< Trace fired whenever an EDAR packet is received
+
+    typedef Callback<void, Ptr<Packet>> EdarRxCallback; //!< Trace sink signature for EDAR reception
+
+    TracedCallback<Ptr<Packet>> m_edacRxTrace; //!< Trace fired whenever an EDAC packet is received
+
+    typedef Callback<void, Ptr<Packet>> EdacRxCallback; //!< Trace sink signature for EDAC reception
 
     /**
      * Structure holding data about a pending RA being processed

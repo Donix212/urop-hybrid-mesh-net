@@ -144,7 +144,15 @@ SixLowPanNdProtocol::GetTypeId()
             .AddTraceSource("RaRx",
                             "Trace fired when an RA packet is received",
                             MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_raRxTrace),
-                            "ns3::SixLowPanNdProtocol::RaRxCallback");
+                            "ns3::SixLowPanNdProtocol::RaRxCallback")
+            .AddTraceSource("EdarRx",
+                            "Trace fired whenever an EDAR packet is received",
+                            MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_edarRxTrace),
+                            "ns3::SixLowPanNdProtocol::EdarRxCallback")
+            .AddTraceSource("EdacRx",
+                            "Trace fired whenever an EDAC packet is received",
+                            MakeTraceSourceAccessor(&SixLowPanNdProtocol::m_edacRxTrace),
+                            "ns3::SixLowPanNdProtocol::EdacRxCallback");
 
     return tid;
 }
@@ -274,8 +282,6 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
     // Interval between RSes: 10s, 10s, 20s, 40s, 60s, 60s, ...
     m_multicastRsTrace(src);
     NS_LOG_FUNCTION(this << src << hardwareAddress);
-    // NS_LOG_INFO("SendSixLowPanMulticastRS called at time " << Simulator::Now().GetSeconds() <<
-    // "s");
 
     Ptr<Packet> p = Create<Packet>();
     Icmpv6RS rs;
@@ -473,20 +479,80 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
 }
 
 void
-SixLowPanNdProtocol::SendSixLowPanEDAR(Ipv6Address src,
-                                       Ipv6Address dst,
-                                       uint16_t time,
+SixLowPanNdProtocol::SendSixLowPanEDAR(uint16_t time,
                                        const std::vector<uint8_t>& rovr,
-                                       Ipv6Address addrToRegister,
-                                       Ptr<NetDevice> sixDevice)
+                                       Ipv6Address addrToRegister)
 {
-    NS_LOG_FUNCTION(this << src << dst << time << addrToRegister << sixDevice);
+    // Check if we have any cached RA entries from 6LBRs
+    if (m_raCache.empty())
+    {
+        NS_FATAL_ERROR("SendSixLowPanEDAR: No cached RA entries found. Cannot determine 6LBR "
+                       "destination address.");
+        return;
+    }
+
+    // Get the first entry from m_raCache and use its border router address as destination
+    Ipv6Address dst = m_raCache.begin()->second->GetAbroBorderRouterAddress();
 
     NS_ASSERT_MSG(!dst.IsMulticast(),
                   "Destination address must not be a multicast address in EDAR messages.");
 
+    Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
+    NS_ASSERT(ipv6 && ipv6->GetRoutingProtocol());
+
+    Ipv6Header header;
+    Socket::SocketErrno err;
+    Ptr<Ipv6Route> route;
+    Ptr<NetDevice> oif(nullptr); // specify non-zero if bound to a source address
+
+    header.SetDestination(dst);
+    route = ipv6->GetRoutingProtocol()->RouteOutput(Create<Packet>(), header, oif, err);
+
+    if (!route)
+    {
+        NS_LOG_WARN("No route found to destination " << dst << ", dropping EDAR packet");
+        return;
+    }
+
+    NS_LOG_LOGIC("Route found for EDAR");
+
+    // Get source address from route
+    Ipv6Address src = route->GetSource();
+
+    // Get the output device from route
+    Ptr<NetDevice> outputDevice = route->GetOutputDevice();
+
+    // Find the SixLowPanNetDevice associated with this output device
+    Ptr<SixLowPanNetDevice> sixDevice = nullptr;
+
+    // Check if the output device itself is a SixLowPanNetDevice
+    sixDevice = DynamicCast<SixLowPanNetDevice>(outputDevice);
+
+    if (!sixDevice)
+    {
+        // If not, check if it's the underlying device of a SixLowPanNetDevice
+        for (uint32_t i = 0; i < ipv6->GetNInterfaces(); ++i)
+        {
+            Ptr<Ipv6Interface> iface = ipv6->GetInterface(i);
+            Ptr<SixLowPanNetDevice> candidateDevice =
+                DynamicCast<SixLowPanNetDevice>(iface->GetDevice());
+
+            if (candidateDevice && candidateDevice->GetNetDevice() == outputDevice)
+            {
+                sixDevice = candidateDevice;
+                break;
+            }
+        }
+    }
+
+    if (!sixDevice)
+    {
+        NS_LOG_WARN("Could not find SixLowPanNetDevice for output device, dropping EDAR packet");
+        return;
+    }
+
     // Build EDAR Header
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edarHdr;
+    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edarHdr(true);
     edarHdr.SetRegAddress(addrToRegister);
     edarHdr.SetRegTime(time);
     edarHdr.SetRovr(rovr);
@@ -499,8 +565,11 @@ SixLowPanNdProtocol::SendSixLowPanEDAR(Ipv6Address src,
 
     NS_LOG_LOGIC("Send EDAR (from " << src << " to " << dst << ") for address " << addrToRegister);
 
-    // Send the packet
-    SendMessage(p, src, dst, MULTIHOP_HOPLIMIT);
+    // Send the packet using the route
+    SocketIpv6HopLimitTag tag;
+    tag.SetHopLimit(MULTIHOP_HOPLIMIT);
+    p->AddPacketTag(tag);
+    m_downTarget(p, src, dst, PROT_NUMBER, route);
 }
 
 void
@@ -519,7 +588,7 @@ SixLowPanNdProtocol::SendSixLowPanEDAC(Ipv6Address src,
                   "Destination address must not be a multicast address in EDAC messages.");
 
     // Build EDAC Header
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edacHdr;
+    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edacHdr(false);
     edacHdr.SetRegAddress(addrToRegister);
     edacHdr.SetRegTime(time);
     edacHdr.SetRovr(rovr);
@@ -593,6 +662,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanNS " << m_node->GetId() << " src: " << src << " dst: " << dst);
 
     Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
         DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
@@ -718,12 +788,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         else
         {
             // Need to do multi-hop EDAR EDAC exchange
-            SendSixLowPanEDAR(src,
-                              dst,
-                              earoHdr.GetRegTime(),
-                              earoHdr.GetRovr(),
-                              target,
-                              sixLowPanNetDevice);
+            SendSixLowPanEDAR(earoHdr.GetRegTime(), earoHdr.GetRovr(), target);
             return;
         }
     }
@@ -755,6 +820,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanNA " << m_node->GetId() << " src: " << src << " dst: " << dst);
 
     m_naRxTrace(packet->Copy());
 
@@ -819,7 +885,7 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
 
-    NS_LOG_INFO("HandleSixLowPanRS: " << m_node->GetId() << " Received RS from " << src);
+    NS_LOG_INFO("HandleSixLowPanRS: " << m_node->GetId() << " src: " << src << " dst: " << dst);
     if (m_nodeRole == SixLowPanNodeOnly || m_nodeRole == SixLowPanNode)
     {
         return;
@@ -874,7 +940,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
                                        Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
-    NS_LOG_INFO("HandleSixLowPanRA");
+    NS_LOG_INFO("HandleSixLowPanRA " << m_node->GetId() << " src: " << src << " dst: " << dst);
 
     // Fire the RA reception trace
     m_raRxTrace(packet->Copy());
@@ -974,8 +1040,9 @@ SixLowPanNdProtocol::HandleSixLowPanEDAR(Ptr<Packet> packet,
                                          Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
-    NS_LOG_INFO("HandleSixLowPanEDAR: " << m_node->GetId() << " Received EDAR from " << src
-                                        << " to " << dst);
+    NS_LOG_INFO("HandleSixLowPanEDAR: " << m_node->GetId() << " src: " << src << " dst: " << dst);
+
+    m_edarRxTrace(packet->Copy());
 
     // Only 6LBRs should handle EDAR messages
     if (m_nodeRole != SixLowPanBorderRouter)
@@ -1078,6 +1145,9 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
                                          Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_INFO("HandleSixLowPanEDAC: " << m_node->GetId() << " src: " << src << " dst: " << dst);
+
+    m_edacRxTrace(packet->Copy());
 
     // Only 6BBRs should handle EDAC messages
     if (m_nodeRole != SixLowPanBackboneRouter)
@@ -1086,13 +1156,8 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
         return;
     }
 
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
-    NS_ASSERT_MSG(
-        sixDevice,
-        "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
-
     // Parse and validate the EDAC packet
-    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edacHdr;
+    Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf edacHdr(false);
     Icmpv6OptionLinkLayerAddress tllao(false);
 
     bool isValid = ParseAndValidateEdacPacket(packet, edacHdr, tllao);
@@ -1107,59 +1172,74 @@ SixLowPanNdProtocol::HandleSixLowPanEDAC(Ptr<Packet> packet,
         NS_ABORT_MSG("Address deregistration is not supported currently in SixLowPanNdProtocol.");
     }
 
-    // Find Neighbour Cache for this interface
-    Ptr<NdiscCache> cache = FindCache(sixDevice);
-    auto ncEntry = static_cast<NdiscCache::Entry*>(cache->Lookup(edacHdr.GetRegAddress()));
+    Ipv6Address target = edacHdr.GetRegAddress();
 
-    // Find the binding table for this interface
-    Ptr<SixLowPanNdBindingTable> bindingTable = FindBindingTable(interface);
-    NS_ASSERT_MSG(bindingTable, "Can not find a SixLowPanNdBindingTable");
-
-    auto btEntry = bindingTable->Lookup(edacHdr.GetRegAddress());
-    if (btEntry)
+    // Iterate through every binding table, to find the one that contains the entry corresponding to
+    // the target address
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = nullptr;
+    SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry* btEntry = nullptr;
+    for (auto& bindingTable : m_bindingTableList)
     {
-        if (!btEntry->IsTentative() || btEntry->GetRovr() != edacHdr.GetRovr())
+        if (bindingTable->Lookup(target) != nullptr)
         {
-            return; // Entry exists but is not tentative or ROVR mismatch
+            btEntry = bindingTable->Lookup(target);
+            sixLowPanNetDevice =
+                DynamicCast<SixLowPanNetDevice>(bindingTable->GetInterface()->GetDevice());
+            break; // Found the binding table with the target address
         }
-        if (edacHdr.GetStatus() == 0)
-        {
-            if (!ncEntry)
-            {
-                // Create a new entry in the NdiscCache if it doesn't exist
-                ncEntry = static_cast<NdiscCache::Entry*>(cache->Add(edacHdr.GetRegAddress()));
-            }
-            // Mark ncEntry as REACHABLE
-            ncEntry->SetRouter(false);
-            ncEntry->SetMacAddress(tllao.GetAddress());
-            ncEntry->MarkReachable();
-            ncEntry->StartReachableTimer();
-
-            // Mark btEntry as REACHABLE
-            btEntry->MarkReachable(edacHdr.GetRegTime());
-
-            // Add route to registered address
-            Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-            ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
-                edacHdr.GetRegAddress(),
-                Ipv6Prefix(128),
-                btEntry->GetLinkLocalAddress(), // Next hop is the 6LN LLaddr
-                ipv6l3Protocol->GetInterfaceForDevice(sixDevice));
-        }
-
-        Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-        Ipv6Address bbrLLaddr = btEntry->GetRouterLinkLocalAddress();
-        Ipv6Address lnLLaddr = btEntry->GetLinkLocalAddress();
-        SendSixLowPanNaWithEaro(
-            bbrLLaddr,                                               // src (6BBR LLaddr)
-            lnLLaddr,                                                // dst (6LN LLaddr)
-            edacHdr.GetRegAddress(),                                 // target address
-            edacHdr.GetRegTime(),                                    // registration time
-            edacHdr.GetRovr(),                                       // ROVR
-            0,                                                       // transaction ID
-            btEntry->GetBindingTable()->GetInterface()->GetDevice(), // outgoing interface
-            edacHdr.GetStatus());                                    // status
     }
+
+    if (!btEntry)
+    {
+        NS_LOG_LOGIC("No binding table entry found for target address " << target);
+        return; // No binding table entry found for the target address
+    }
+
+    // Find Neighbour Cache for this interface
+    Ptr<NdiscCache> cache = FindCache(sixLowPanNetDevice);
+    auto ncEntry = static_cast<NdiscCache::Entry*>(cache->Lookup(target));
+
+    if (!btEntry->IsTentative() || btEntry->GetRovr() != edacHdr.GetRovr())
+    {
+        return; // Entry exists but is not tentative or ROVR mismatch
+    }
+
+    if (edacHdr.GetStatus() == 0)
+    {
+        if (!ncEntry)
+        {
+            // Create a new entry in the NdiscCache if it doesn't exist
+            ncEntry = static_cast<NdiscCache::Entry*>(cache->Add(target));
+        }
+        // Mark ncEntry as REACHABLE
+        ncEntry->SetRouter(false);
+        ncEntry->SetMacAddress(tllao.GetAddress());
+        ncEntry->MarkReachable();
+        ncEntry->StartReachableTimer();
+
+        // Mark btEntry as REACHABLE
+        btEntry->MarkReachable(edacHdr.GetRegTime());
+
+        // Add route to registered address
+        Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
+        ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
+            target,
+            Ipv6Prefix(128),
+            btEntry->GetLinkLocalAddress(), // Next hop is the 6LN LLaddr
+            ipv6l3Protocol->GetInterfaceForDevice(sixLowPanNetDevice));
+    }
+
+    Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
+    Ipv6Address bbrLLaddr = btEntry->GetRouterLinkLocalAddress();
+    Ipv6Address lnLLaddr = btEntry->GetLinkLocalAddress();
+    SendSixLowPanNaWithEaro(bbrLLaddr,            // src (6BBR LLaddr)
+                            lnLLaddr,             // dst (6LN LLaddr)
+                            target,               // target address
+                            edacHdr.GetRegTime(), // registration time
+                            edacHdr.GetRovr(),    // ROVR
+                            0,                    // transaction ID
+                            sixLowPanNetDevice,   // outgoing interface
+                            edacHdr.GetStatus()); // status
 }
 
 void
@@ -1424,6 +1504,10 @@ SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopC
     else
     {
         Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
+        NS_LOG_INFO("Adding autoconfigured address: "
+                    << m_addrPendingReg.addressPendingRegistration << " on interface "
+                    << ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice())
+                    << " for registrar " << registrar);
         Icmpv6OptionPrefixInformation prefixHdr = m_addrPendingReg.pioHdr;
         ipv6->AddAutoconfiguredAddress(
             ipv6->GetInterfaceForDevice(m_addrPendingReg.interface->GetDevice()),
@@ -1590,7 +1674,7 @@ SixLowPanNdProtocol::UpgradeToSixLowPanBackboneRouter()
         return;
     }
 
-    NS_LOG_INFO("Upgrading node " << m_node->GetId() << " from NodeOnly to Router");
+    NS_LOG_INFO("UpgradeToSixLowPanBackboneRouter " << m_node->GetId());
 
     // Enable IPv6 forwarding
     Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();

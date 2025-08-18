@@ -53,3 +53,14 @@ build_lib_example(
     ${liblr-wpan}
     ${libinternet-apps}
 )
+
+build_lib_example(
+  NAME example-sixlowpan-nd-multihop-dad
+  SOURCE_FILES example-sixlowpan-nd-multihop-dad.cc
+  LIBRARIES_TO_LINK
+    ${libnetwork}
+    ${libsixlowpan}
+    ${libinternet}
+    ${liblr-wpan}
+    ${libinternet-apps}
+)
