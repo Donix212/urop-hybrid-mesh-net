@@ -1,18 +1,3 @@
-/**
- * @brief Identifier for a dataset within a plot.
- */
-struct DataSetId
-{
-    /**
-     * @brief Plot ID to which the dataset belongs.
-     */
-    uint32_t plotId;
-    /**
-     * @brief Dataset ID within the plot.
-     */
-    uint32_t datasetId;
-};
-
 /*
  * Copyright (c) 2025 ns-3 project
  *
@@ -20,14 +5,14 @@ struct DataSetId
  *
  * Author: Enhanced GnuPlot Examples Implementation
  *
- * This file implements ExampleGnuplotHelper, which complements the existing
+ * This file implements ManualGnuplotHelper, which complements the existing
  * GnuplotHelper by supporting manual data collection patterns commonly used
  * in examples. See the stats module documentation for usage guidelines and
  * comparison with GnuplotHelper.
  */
 
-#ifndef EXAMPLE_GNUPLOT_HELPER_H
-#define EXAMPLE_GNUPLOT_HELPER_H
+#ifndef MANUAL_GNUPLOT_HELPER_H
+#define MANUAL_GNUPLOT_HELPER_H
 
 #include "gnuplot-aggregator.h"
 #include "gnuplot-helper.h"
@@ -40,6 +25,7 @@ struct DataSetId
 #include <fstream>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ns3
@@ -57,7 +43,7 @@ namespace ns3
  *
  * ## Relationship to Existing GnuPlot Classes
  *
- * **ExampleGnuplotHelper** (this class):
+ * **ManualGnuplotHelper** (this class):
  * - **Purpose**: Manual data point collection and optional plot generation
  * - **Use case**: Examples that already have data collection loops or trace callbacks
  * - **Data flow**: Manual calls to AddDataPoint() from user code
@@ -76,7 +62,7 @@ namespace ns3
  *
  * ## When to Use This Class
  *
- * Use ExampleGnuplotHelper when:
+ * Use ManualGnuplotHelper when:
  * - You have existing manual data collection code (loops, trace callbacks)
  * - You need to process or transform data before plotting
  * - You want to optionally enable/disable plotting without code changes
@@ -93,7 +79,7 @@ namespace ns3
  *
  * @code
  * // Global helper object
- * ExampleGnuplotHelper plotHelper;
+ * ManualGnuplotHelper plotHelper;
  *
  * // Configure output (optional, has defaults)
  * plotHelper.ConfigureOutput("tcp-comparison", "png");
@@ -112,18 +98,33 @@ namespace ns3
  * This approach allows examples to maintain their existing data collection patterns
  * while adding optional plotting capabilities.
  */
-class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
+class ManualGnuplotHelper : public SimpleRefCount<ManualGnuplotHelper>
 {
+    /**
+     * @brief Identifier for a dataset within a plot.
+     */
+    struct DataSetId
+    {
+        /**
+         * @brief Plot ID to which the dataset belongs.
+         */
+        uint32_t plotId;
+        /**
+         * @brief Dataset ID within the plot.
+         */
+        uint32_t datasetId;
+    };
+
   public:
     /**
      * @brief Constructor
      */
-    ExampleGnuplotHelper() = default;
+    ManualGnuplotHelper() = default;
 
     /**
      * @brief Destructor
      */
-    ~ExampleGnuplotHelper() = default;
+    ~ManualGnuplotHelper() = default;
 
     /**
      * @brief Configure the output mode
@@ -181,6 +182,14 @@ class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
      */
     void AddDataPointWithError(uint32_t plotId, double x, double y, double errorX, double errorY);
 
+    /**
+     * @brief Add a data point to a specific dataset
+     * @param dsid DataSetId struct identifying the plot and dataset
+     * @param x X coordinate
+     * @param y Y coordinate
+     */
+    void AddDataPointToDataset(DataSetId dsid, double x, double y);
+
   private:
     /**
      * @brief Internal helper for adding a data point, optionally with error bars, to the first
@@ -206,14 +215,6 @@ class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
      * @return DataSetId struct identifying the plot and dataset
      */
     DataSetId AddDataset(uint32_t plotId, const std::string& datasetName);
-
-    /**
-     * @brief Add a data point to a specific dataset
-     * @param dsid DataSetId struct identifying the plot and dataset
-     * @param x X coordinate
-     * @param y Y coordinate
-     */
-    void AddDataPointToDataset(DataSetId dsid, double x, double y);
 
     /**
      * @brief Add a data point with error bars to a specific dataset
@@ -277,7 +278,6 @@ class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
                                  const std::vector<std::pair<double, double>>& data,
                                  const std::string& header = "");
 
-  private:
     /**
      * @brief Common implementation for AddTimeSeriesPlot and AddScatterPlot
      * @param plotName Name for the plot files
@@ -310,7 +310,6 @@ class ExampleGnuplotHelper : public SimpleRefCount<ExampleGnuplotHelper>
     std::map<uint32_t, PlotInfo> m_plots;  //!< Map of plot ID to plot info
     uint32_t m_nextPlotId{0};              //!< Next available plot ID
 };
-
 } // namespace ns3
 
-#endif /* EXAMPLE_GNUPLOT_HELPER_H */
+#endif /* MANUAL_GNUPLOT_HELPER_H */
