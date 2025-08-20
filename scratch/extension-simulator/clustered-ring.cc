@@ -4,24 +4,25 @@
 #include "ns3/csma-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/flow-monitor-helper.h"
-#include "ns3/ipv4.h"
+#include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/ipv4-routing-helper.h"
 
 #include <vector>
 #include <sstream>
 
 using namespace ns3;
 
+NS_LOG_COMPONENT_DEFINE("ClusterRoutingSim");
+
 int main()
 {
-    uint32_t u_centralNodes = 1;        // number of central nodes
-    uint32_t u_Nclusters = 2;           // number of clusters
-    uint32_t u_nodesPerCluster = 2;     // radial nodes per cluster
+    uint32_t u_centralNodes = 1;
+    uint32_t u_Nclusters = 2;
+    uint32_t u_nodesPerCluster = 2;
 
-    // Create central nodes
     NodeContainer centralNodes;
     centralNodes.Create(u_centralNodes);
 
-    // Create clusters of radial nodes
     std::vector<NodeContainer> clusters;
     for (uint32_t c = 0; c < u_Nclusters; ++c)
     {
@@ -37,14 +38,19 @@ int main()
     InternetStackHelper internet;
     Ipv4AddressHelper ipv4;
 
-    // Install internet stack on all nodes
     internet.Install(centralNodes);
-    for (auto& cluster : clusters)
+    for (auto &cluster : clusters)
     {
         internet.Install(cluster);
     }
 
-    // Now build one CSMA LAN per cluster including the assigned central node
+    // ✅ Enable IP forwarding on central nodes
+    for (uint32_t i = 0; i < u_centralNodes; ++i)
+    {
+        Ptr<Ipv4> ipv4Central = centralNodes.Get(i)->GetObject<Ipv4>();
+        ipv4Central->SetAttribute("IpForward", BooleanValue(true));
+    }
+
     std::vector<Ipv4InterfaceContainer> clusterInterfaces;
     std::vector<Ipv4Address> peerList;
 
@@ -53,8 +59,8 @@ int main()
         uint32_t centralIdx = c % u_centralNodes;
 
         NodeContainer lanNodes;
-        lanNodes.Add(centralNodes.Get(centralIdx));  // Add central node
-        lanNodes.Add(clusters[c]);                     // Add radial nodes of cluster
+        lanNodes.Add(centralNodes.Get(centralIdx));
+        lanNodes.Add(clusters[c]);
 
         NetDeviceContainer devices = csma.Install(lanNodes);
 
@@ -70,17 +76,35 @@ int main()
 
         for (uint32_t i = 0; i < u_nodesPerCluster; ++i)
         {
-            Ipv4Address radialIp = interfaces.GetAddress(i + 1); // radial nodes start at index 1
+            Ipv4Address radialIp = interfaces.GetAddress(i + 1);
             peerList.push_back(radialIp);
             std::cout << "Cluster " << c << ", Radial Node " << i
                       << ", IP: " << radialIp << std::endl;
         }
     }
 
-    // Routing: use global routing to automatically handle routes between clusters
+    // ✅ Populate routing tables
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
-    // Install applications on central nodes
+    // Optional: Static default route from radial to central node
+    // Uncomment this block if you want to enforce default routing via central node
+    Ipv4StaticRoutingHelper staticRoutingHelper;
+    for (uint32_t c = 0; c < u_Nclusters; ++c)
+    {
+        Ptr<Node> centralNode = centralNodes.Get(c % u_centralNodes);
+        Ipv4Address centralIp = clusterInterfaces[c].GetAddress(0);
+
+        for (uint32_t i = 0; i < u_nodesPerCluster; ++i)
+        {
+            Ptr<Node> radialNode = clusters[c].Get(i);
+            Ptr<Ipv4> radialIpv4 = radialNode->GetObject<Ipv4>();
+            Ptr<Ipv4StaticRouting> staticRouting = staticRoutingHelper.GetStaticRouting(radialIpv4);
+
+            staticRouting->SetDefaultRoute(centralIp, 1);
+        }
+    }
+
+    // Application setup (placeholder)
     ApplicationContainer apps;
     for (uint32_t i = 0; i < u_centralNodes; ++i)
     {
@@ -98,27 +122,32 @@ int main()
             std::cerr << "[SwitchApp Setup] No IP found for central node " << i << std::endl;
             continue;
         }
-        Ptr<SwitchApp> peer = CreateObject<SwitchApp>();
-        peer->Setup(centralIp, 9000);
-        Ptr<Node> node = centralNodes.Get(i);
-        node->AddApplication(peer);
-        apps.Add(peer);
 
-        std::cout << "[SwitchApp Setup] Installed on Central Node " << i << " with IP " << centralIp << std::endl;
+        // Placeholder: CreateObject<SwitchApp>() should be your custom application
+        // Replace with actual app logic
+        // Ptr<SwitchApp> peer = CreateObject<SwitchApp>();
+        // peer->Setup(centralIp, 9000);
+        // centralNodes.Get(i)->AddApplication(peer);
+        // apps.Add(peer);
+
+        std::cout << "[SwitchApp Setup] Central Node " << i << " with IP " << centralIp << std::endl;
     }
 
-    // Install applications on radial nodes
     for (uint32_t c = 0; c < u_Nclusters; ++c)
     {
         for (uint32_t i = 0; i < u_nodesPerCluster; ++i)
         {
-            Ptr<RadialApp> peer = CreateObject<RadialApp>();
-            peer->SetPeerList(peerList);
             Ipv4Address selfIp = clusterInterfaces[c].GetAddress(i + 1);
-            peer->Setup(selfIp);
-            Ptr<Node> node = clusters[c].Get(i);
-            node->AddApplication(peer);
-            apps.Add(peer);
+
+            // Placeholder: Replace with your custom RadialApp
+            // Ptr<RadialApp> peer = CreateObject<RadialApp>();
+            // peer->SetPeerList(peerList);
+            // peer->Setup(selfIp);
+            // clusters[c].Get(i)->AddApplication(peer);
+            // apps.Add(peer);
+
+            std::cout << "[RadialApp Setup] Cluster " << c << ", Node " << i
+                      << ", IP: " << selfIp << std::endl;
         }
     }
 
@@ -129,7 +158,6 @@ int main()
     csma.EnableAsciiAll(ascii.CreateFileStream("scratch/extension-simulator/csma-routing.tr"));
     csma.EnablePcapAll("scratch/extension-simulator/csma-trace", true);
 
-    // Flow Monitor
     FlowMonitorHelper flowmonHelper;
     flowmonHelper.InstallAll();
 
