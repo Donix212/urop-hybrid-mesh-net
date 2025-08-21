@@ -1353,14 +1353,17 @@ GlobalRouter<T>::ProcessPointToPointLink(Ptr<NetDevice> ndLocal, GlobalRoutingLS
     }
 
     // Regardless of state of peer, add a type 3 link (RFC 2328: 12.4.1.1)
-    // the only exxception is if the remote interface has a link local address only, then it behaves
+    // the only exception is if the remote interface has a link local address only, then it behaves
     // as a router and not a host
-    if (ipRemote->GetNAddresses(interfaceLocal) == 1 &&
-        ipRemote->GetAddress(interfaceLocal, 0).GetAddress().IsLinkLocal())
+    if constexpr (!IsIpv4)
     {
-        NS_LOG_LOGIC(
-            "The remote interface only has a link local address, not adding a type 3 link record");
-        return;
+        if (ipRemote->GetNAddresses(interfaceRemote) == 1 &&
+            ipRemote->GetAddress(interfaceRemote, 0).GetAddress().IsLinkLocal())
+        {
+            NS_LOG_LOGIC("The remote interface only has a link local address, not adding a type 3 "
+                         "link record");
+            return;
+        }
     }
 
     plr = new GlobalRoutingLinkRecord<T>;
