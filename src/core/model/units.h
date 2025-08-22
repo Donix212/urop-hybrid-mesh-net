@@ -13,24 +13,101 @@
 #include <iostream>
 #include <string>
 
+// ns-3 extensions to the nholthaus/units library
+namespace units
+{
+// Power spectral density units (linear versions)
+UNIT_ADD(power,
+         milliwatt_per_hertz,
+         milliwatt_per_hertz,
+         mW_per_Hz,
+         compound_unit<power::milliwatt, inverse<frequency::hertz>>)
+UNIT_ADD(power,
+         milliwatt_per_megahertz,
+         milliwatt_per_megahertz,
+         mW_per_MHz,
+         compound_unit<power::milliwatt, inverse<frequency::megahertz>>)
+// Power spectral density units (decibel versions)
+UNIT_ADD_DECIBEL(power, milliwatt_per_hertz, dBm_per_Hz)
+UNIT_ADD_DECIBEL(power, milliwatt_per_megahertz, dBm_per_MHz)
+
+/// Multiplication between dBm_per_Hz and hertz to yield dBm
+template <class FrequencyType,
+          std::enable_if_t<traits::is_convertible_unit_t<FrequencyType, frequency::hertz_t>::value,
+                           int> = 0>
+constexpr inline power::dBm_t
+operator*(const power::dBm_per_Hz_t& lhs, const FrequencyType& rhs) noexcept
+{
+    using underlying_type =
+        typename units::traits::unit_t_traits<power::dBm_per_Hz_t>::underlying_type;
+    // Convert to linear: dBm_per_Hz * Hz = milliwatt
+    auto linear_result =
+        lhs.template toLinearized<underlying_type>() *
+        convert<typename units::traits::unit_t_traits<FrequencyType>::unit_type, frequency::hertz>(
+            rhs());
+    // Convert back to dBm
+    return power::dBm_t(linear_result, std::true_type());
+}
+
+/// Multiplication between hertz and dBm_per_Hz to yield dBm
+template <class FrequencyType,
+          std::enable_if_t<traits::is_convertible_unit_t<FrequencyType, frequency::hertz_t>::value,
+                           int> = 0>
+constexpr inline power::dBm_t
+operator*(const FrequencyType& lhs, const power::dBm_per_Hz_t& rhs) noexcept
+{
+    return rhs * lhs; // Delegate to the other operator
+}
+
+/// Multiplication between dBm_per_MHz and megahertz to yield dBm
+template <
+    class FrequencyType,
+    std::enable_if_t<traits::is_convertible_unit_t<FrequencyType, frequency::megahertz_t>::value,
+                     int> = 0>
+constexpr inline power::dBm_t
+operator*(const power::dBm_per_MHz_t& lhs, const FrequencyType& rhs) noexcept
+{
+    using underlying_type =
+        typename units::traits::unit_t_traits<power::dBm_per_MHz_t>::underlying_type;
+    auto linear_result = lhs.template toLinearized<underlying_type>() *
+                         convert<typename units::traits::unit_t_traits<FrequencyType>::unit_type,
+                                 frequency::megahertz>(rhs());
+    return power::dBm_t(linear_result, std::true_type());
+}
+
+/// Multiplication between megahertz and dBm_per_MHz to yield dBm
+template <
+    class FrequencyType,
+    std::enable_if_t<traits::is_convertible_unit_t<FrequencyType, frequency::megahertz_t>::value,
+                     int> = 0>
+constexpr inline power::dBm_t
+operator*(const FrequencyType& lhs, const power::dBm_per_MHz_t& rhs) noexcept
+{
+    return rhs * lhs;
+}
+
+} // namespace units
+
 namespace ns3
 {
 
 // aliases
-using mWatt_t = units::power::milliwatt_t;   //!< mWatt strong type
-using Watt_t = units::power::watt_t;         //!< Watt strong type
-using dBW_t = units::power::dBW_t;           //!< dBW strong type
-using dBm_t = units::power::dBm_t;           //!< dBm strong type
-using dB_t = units::dimensionless::dB_t;     //!< dB strong type
-using dBr_t = dB_t;                          //!< dBr strong type
+using mWatt_t = units::power::milliwatt_t;         //!< mWatt strong type
+using Watt_t = units::power::watt_t;               //!< Watt strong type
+using dBW_t = units::power::dBW_t;                 //!< dBW strong type
+using dBm_t = units::power::dBm_t;                 //!< dBm strong type
+using dB_t = units::dimensionless::dB_t;           //!< dB strong type
+using dBr_t = dB_t;                                //!< dBr strong type
 using scalar_t = units::dimensionless::scalar_t;   //!< scalar strong type
-using Hz_t = units::frequency::hertz_t;      //!< Hz strong type
-using MHz_t = units::frequency::megahertz_t; //!< MHz strong type
-using meter_t = units::length::meter_t;      //!< meter strong type
-using ampere_t = units::current::ampere_t;   //!< ampere strong type
-using volt_t = units::voltage::volt_t;       //!< volt strong type
-using degree_t = units::angle::degree_t;     //!< degree strong type (angle)
-using joule_t = units::energy::joule_t;      //!< joule strong type
+using Hz_t = units::frequency::hertz_t;            //!< Hz strong type
+using MHz_t = units::frequency::megahertz_t;       //!< MHz strong type
+using meter_t = units::length::meter_t;            //!< meter strong type
+using ampere_t = units::current::ampere_t;         //!< ampere strong type
+using volt_t = units::voltage::volt_t;             //!< volt strong type
+using degree_t = units::angle::degree_t;           //!< degree strong type (angle)
+using joule_t = units::energy::joule_t;            //!< joule strong type
+using dBm_per_Hz_t = units::power::dBm_per_Hz_t;   //!< dBm/Hz strong type
+using dBm_per_MHz_t = units::power::dBm_per_MHz_t; //!< dBm/MHz strong type
 
 // Stream extraction operators must be defined for units that will be used
 // within Attributes or ns-3 CommandLine
