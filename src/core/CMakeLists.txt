@@ -295,6 +295,7 @@ set(header_files
     model/type-traits.h
     model/uinteger.h
     model/uniform-random-bit-generator.h
+    model/units.h
     model/units-nholthaus.h
     model/valgrind.h
     model/vector.h
