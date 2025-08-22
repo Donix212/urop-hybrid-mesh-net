@@ -174,6 +174,7 @@ set(source_files
     model/trace-source-accessor.cc
     model/config.cc
     model/db.cc
+    model/dbm.cc
     model/callback.cc
     model/names.cc
     model/vector.cc
@@ -224,6 +225,7 @@ set(header_files
     model/command-line.h
     model/config.h
     model/db.h
+    model/dbm.h
     model/default-deleter.h
     model/default-simulator-impl.h
     model/demangle.h
