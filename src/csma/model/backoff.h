@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup csma
+ * @ingroup Csma
  * @brief The backoff class is used for calculating backoff times
  * when many net devices can write to the same channel
  */

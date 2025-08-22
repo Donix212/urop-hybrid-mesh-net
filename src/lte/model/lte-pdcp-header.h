@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief The packet header for the Packet Data Convergence Protocol (PDCP) packets
  *
  * This class has fields corresponding to those in an PDCP header as well as

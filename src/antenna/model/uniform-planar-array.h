@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup antenna
+ * @ingroup Antenna
  *
  * @brief Class implementing Uniform Planar Array (UPA) model.
  *

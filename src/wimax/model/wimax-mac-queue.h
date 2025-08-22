@@ -23,7 +23,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * Class implementing the device packet queue
  */
 class WimaxMacQueue : public Object

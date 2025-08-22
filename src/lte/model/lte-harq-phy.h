@@ -33,7 +33,7 @@ typedef std::vector<HarqProcessInfoElement_t>
     HarqProcessInfoList_t; ///< HarqProcessInfoList_t typedef
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief The LteHarqPhy class implements the HARQ functionalities related to PHY layer
  *(i.e., decodification buffers for incremental redundancy management)
  *

@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Keep track of the current position and velocity of an object.
  *
  * All space coordinates in this class and its subclasses are

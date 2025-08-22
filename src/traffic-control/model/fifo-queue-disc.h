@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * Simple queue disc implementing the FIFO (First-In First-Out) policy.
  *

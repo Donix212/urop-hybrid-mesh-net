@@ -12,7 +12,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * Spectrum model logger for frequencies between 300 KHz 300 GHz
  */
 Ptr<SpectrumModel>

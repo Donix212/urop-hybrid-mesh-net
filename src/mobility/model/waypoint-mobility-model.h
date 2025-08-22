@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Waypoint-based mobility model.
  *
  * Each object determines its velocity and position at a given time

@@ -19,7 +19,7 @@ namespace ns3
 class Address;
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * A class used for addressing MAC8 MAC's.
  *

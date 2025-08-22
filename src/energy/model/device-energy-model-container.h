@@ -22,7 +22,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Holds a vector of ns3::DeviceEnergyModel pointers.
  *
  * DeviceEnergyModelContainer returns a list of DeviceEnergyModel pointers

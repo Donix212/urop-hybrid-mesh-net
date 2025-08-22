@@ -23,7 +23,7 @@
 using namespace ns3;
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  * @ingroup tests
  * @defgroup mesh-test mesh module tests
  */

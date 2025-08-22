@@ -20,7 +20,7 @@ namespace zigbee
 {
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * The device Type
  * Zigbee Specification r22.1.0 (Table 3-62 or Table 3-63)
  */
@@ -31,7 +31,7 @@ enum MacDeviceType
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * The power source capabilities.
  * Zigbee Specification r22.1.0 (Table 3-62)
  */
@@ -42,7 +42,7 @@ enum PowerSource
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Requested Timeout Field
  * See Zigbee Specification r22.1.0, 3.4.11.3.1
  *
@@ -52,7 +52,7 @@ static const double RequestedTimeoutField
     [15]{0.166667, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Represent the the Capability Information Bit fields
  * See zigbe Specification r22.1.0, Table 3-62
  */
@@ -166,7 +166,7 @@ class CapabilityInformation
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the Superframe Specification information field.
  * See IEEE 802.15.4-2011   Section 5.2.2.1.2 Figure 41
  */

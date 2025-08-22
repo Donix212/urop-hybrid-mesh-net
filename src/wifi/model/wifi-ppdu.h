@@ -21,7 +21,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::WifiPpdu class
  * and ns3::WifiConstPsduMap.
  */
@@ -38,7 +38,7 @@ class WifiPhyOperatingChannel;
 typedef std::unordered_map<uint16_t /* STA-ID */, Ptr<const WifiPsdu> /* PSDU */> WifiConstPsduMap;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiPpdu stores a preamble, a modulation class, PHY headers and a PSDU.
  * This class should be subclassed for each amendment.

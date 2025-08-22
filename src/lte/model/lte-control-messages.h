@@ -24,7 +24,7 @@ namespace ns3
 class LteNetDevice;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * The LteControlMessage provides a basic implementations for
  * control messages (such as PDCCH allocation map, CQI feedbacks)
@@ -76,7 +76,7 @@ class LteControlMessage : public SimpleRefCount<LteControlMessage>
 // -----------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The Downlink Data Control Indicator messages defines the RB allocation for the
  * users in the downlink
  */
@@ -105,7 +105,7 @@ class DlDciLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The Uplink Data Control Indicator messages defines the RB allocation for the
  * users in the uplink
  */
@@ -134,7 +134,7 @@ class UlDciLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The downlink CqiLteControlMessage defines an ideal list of
  * feedback about the channel quality sent by the UE to the eNodeB.
  */
@@ -163,7 +163,7 @@ class DlCqiLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The uplink BsrLteControlMessage defines the specific
  * extension of the CE element for reporting the buffer status report
  */
@@ -192,7 +192,7 @@ class BsrLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The downlink DlHarqFeedbackLteControlMessage defines the specific
  * messages for transmitting the DL HARQ feedback through PUCCH
  */
@@ -221,7 +221,7 @@ class DlHarqFeedbackLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * abstract model for the Random Access Preamble
  */
@@ -250,7 +250,7 @@ class RachPreambleLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * abstract model for the MAC Random Access Response message
  */
@@ -308,7 +308,7 @@ class RarLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief Abstract model for broadcasting the Master Information Block (MIB)
  *        within the control channel (BCCH).
  *
@@ -347,7 +347,7 @@ class MibLteControlMessage : public LteControlMessage
 // ---------------------------------------------------------------------------
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief Abstract model for broadcasting the System Information Block Type 1
  *        (SIB1) within the control channel (BCCH).
  *

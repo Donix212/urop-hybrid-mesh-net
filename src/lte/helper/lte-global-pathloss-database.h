@@ -21,7 +21,7 @@ namespace ns3
 class SpectrumPhy;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Store the last pathloss value for each TX-RX pair. This is an
  * example of how the PathlossTrace (provided by some SpectrumChannel
@@ -71,7 +71,7 @@ class LteGlobalPathlossDatabase
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * Store the last pathloss value for each TX-RX pair for downlink
  */
 class DownlinkLteGlobalPathlossDatabase : public LteGlobalPathlossDatabase
@@ -85,7 +85,7 @@ class DownlinkLteGlobalPathlossDatabase : public LteGlobalPathlossDatabase
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * Store the last pathloss value for each TX-RX pair for uplink
  */
 class UplinkLteGlobalPathlossDatabase : public LteGlobalPathlossDatabase

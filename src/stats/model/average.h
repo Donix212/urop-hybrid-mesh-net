@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  *
  * Simple average, min, max and std. deviation calculator
  *

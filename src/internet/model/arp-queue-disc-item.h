@@ -17,7 +17,7 @@ namespace ns3
 
 /**
  * @ingroup arp
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * ArpQueueDiscItem is a subclass of QueueDiscItem which stores ARP packets.
  * Header and payload are kept separate to allow the queue disc to hash the

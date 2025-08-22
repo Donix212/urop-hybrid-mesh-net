@@ -27,7 +27,7 @@ namespace ns3
 class EventImpl;
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup scheduler Scheduler and Events
  * @brief Manage the event list by creating and scheduling events.
  */

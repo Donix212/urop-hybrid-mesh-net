@@ -21,7 +21,7 @@ enum
 };
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief A class used in the implementation of the GtkConfigStore
  */
 struct ModelTypeid
@@ -48,7 +48,7 @@ struct ModelTypeid
 };
 
 /**
- * @ingroup configstore
+ * @ingroup ConfigStore
  * @brief ModelTypeIdCreator class
  */
 class ModelTypeidCreator : public AttributeDefaultIterator

@@ -51,7 +51,7 @@ enum ManyToOne
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Represent the static portion of the zigbee payload header that describes
  * the payload command type.
  */
@@ -94,7 +94,7 @@ class ZigbeePayloadType : public Header
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Represent a variable portion of the zigbee payload header that includes
  * the route request command.
  * See Zigbee specification r22.1.0, Section 3.4.1
@@ -234,7 +234,7 @@ class ZigbeePayloadRouteRequestCommand : public Header
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Represent a variable portion of the zigbee payload header that includes
  * the route reply command.
  * See Zigbee specification r22.1.0, Section 3.4.2
@@ -343,7 +343,7 @@ class ZigbeePayloadRouteReplyCommand : public Header
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Represents the payload portion of a beacon frame.
  * See Zigbee specification r22.1.0, Table 3-71 (NWK layer Information fields)
  */

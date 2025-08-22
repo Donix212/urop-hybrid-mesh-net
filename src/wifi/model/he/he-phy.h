@@ -22,7 +22,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::HePhy class
  * and ns3::HeSigAParameters struct.
  */
@@ -48,7 +48,7 @@ struct HeSigAParameters
 
 /**
  * @brief PHY entity for HE (11ax)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * HE PHY is based on VHT PHY.
  *

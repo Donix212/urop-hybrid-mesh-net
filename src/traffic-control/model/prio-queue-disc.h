@@ -20,7 +20,7 @@ namespace ns3
 typedef std::array<uint16_t, 16> Priomap;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * The Prio qdisc is a simple classful queueing discipline that contains an
  * arbitrary number of classes of differing priority. The classes are dequeued

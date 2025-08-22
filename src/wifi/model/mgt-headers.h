@@ -145,7 +145,7 @@ using AssocResponseElems = std::tuple<SupportedRates,
                                       std::vector<TidToLinkMapping>>;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type association request.
  */
 class MgtAssocRequestHeader
@@ -229,7 +229,7 @@ class MgtAssocRequestHeader
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type reassociation request.
  */
 class MgtReassocRequestHeader
@@ -322,7 +322,7 @@ class MgtReassocRequestHeader
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type association and reassociation response.
  */
 class MgtAssocResponseHeader
@@ -421,7 +421,7 @@ class MgtAssocResponseHeader
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type probe request.
  */
 class MgtProbeRequestHeader : public WifiMgtHeader<MgtProbeRequestHeader, ProbeRequestElems>
@@ -440,7 +440,7 @@ class MgtProbeRequestHeader : public WifiMgtHeader<MgtProbeRequestHeader, ProbeR
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type probe response.
  */
 class MgtProbeResponseHeader
@@ -531,7 +531,7 @@ class MgtProbeResponseHeader
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type beacon.
  */
 class MgtBeaconHeader : public MgtProbeResponseHeader

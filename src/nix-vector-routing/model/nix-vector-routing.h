@@ -39,14 +39,14 @@ namespace ns3
 {
 
 /**
- * @defgroup nix-vector-routing Nix-Vector Routing
+ * @defgroup NixVectorRouting Nix-Vector Routing
  *
  * Nix-vector routing is a simulation specific routing protocol and is
  * intended for large network topologies.
  */
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * Nix-vector routing protocol
  *
  * @internal
@@ -509,7 +509,7 @@ class NixVectorRouting : public std::enable_if_t<std::is_same_v<Ipv4RoutingProto
 };
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * Create the typedef Ipv4NixVectorRouting with T as Ipv4RoutingProtocol
  *
  * Note: This typedef enables also backwards compatibility with original Ipv4NixVectorRouting.
@@ -517,7 +517,7 @@ class NixVectorRouting : public std::enable_if_t<std::is_same_v<Ipv4RoutingProto
 typedef NixVectorRouting<Ipv4RoutingProtocol> Ipv4NixVectorRouting;
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * Create the typedef Ipv6NixVectorRouting with T as Ipv6RoutingProtocol
  */
 typedef NixVectorRouting<Ipv6RoutingProtocol> Ipv6NixVectorRouting;

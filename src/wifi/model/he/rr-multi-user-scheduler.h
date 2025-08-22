@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * RrMultiUserScheduler is a simple OFDMA scheduler that indicates to perform a DL OFDMA
  * transmission if the AP has frames to transmit to at least one station.

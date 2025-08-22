@@ -24,7 +24,7 @@ class WifiMac;
 class WifiRemoteStationManager;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiProtectionManager is an abstract base class. Each subclass defines a logic
  * to select the protection method for a given frame.

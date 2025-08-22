@@ -22,7 +22,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Carries information about the LOS/NLOS channel state
  *
@@ -215,7 +215,7 @@ class ChannelCondition : public Object
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Models the channel condition
  *
@@ -269,7 +269,7 @@ class ChannelConditionModel : public Object
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Models an always in-LoS condition model
  */
@@ -320,7 +320,7 @@ class AlwaysLosChannelConditionModel : public ChannelConditionModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Models a never in-LoS condition model
  */
@@ -371,7 +371,7 @@ class NeverLosChannelConditionModel : public ChannelConditionModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Models a never in-LoS condition model caused by a blocking vehicle
  */
@@ -423,7 +423,7 @@ class NeverLosVehicleChannelConditionModel : public ChannelConditionModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Base class for the 3GPP channel condition models
  *
@@ -586,7 +586,7 @@ class ThreeGppChannelConditionModel : public ChannelConditionModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the RMa scenario
  *
@@ -626,7 +626,7 @@ class ThreeGppRmaChannelConditionModel : public ThreeGppChannelConditionModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the UMa scenario
  *
@@ -666,7 +666,7 @@ class ThreeGppUmaChannelConditionModel : public ThreeGppChannelConditionModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the UMi-Street canyon scenario
  *
@@ -706,7 +706,7 @@ class ThreeGppUmiStreetCanyonChannelConditionModel : public ThreeGppChannelCondi
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the Indoor Mixed Office scenario
  *
@@ -746,7 +746,7 @@ class ThreeGppIndoorMixedOfficeChannelConditionModel : public ThreeGppChannelCon
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the Indoor Open Office scenario
  *
@@ -786,7 +786,7 @@ class ThreeGppIndoorOpenOfficeChannelConditionModel : public ThreeGppChannelCond
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the NTN Dense Urban Scenario
  *
@@ -823,7 +823,7 @@ class ThreeGppNTNDenseUrbanChannelConditionModel : public ThreeGppChannelConditi
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the NTN Urban Scenario
  *
@@ -860,7 +860,7 @@ class ThreeGppNTNUrbanChannelConditionModel : public ThreeGppChannelConditionMod
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the NTN Suburban Scenario
  *
@@ -897,7 +897,7 @@ class ThreeGppNTNSuburbanChannelConditionModel : public ThreeGppChannelCondition
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the NTN Rural Scenario
  *

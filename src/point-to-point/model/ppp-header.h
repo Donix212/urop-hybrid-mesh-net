@@ -13,7 +13,7 @@ namespace ns3
 {
 
 /**
- * @ingroup point-to-point
+ * @ingroup PointToPoint
  * @brief Packet header for PPP
  *
  * This class can be used to add a header to PPP packet.  Currently we do not

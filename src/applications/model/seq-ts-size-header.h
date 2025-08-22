@@ -14,7 +14,7 @@
 namespace ns3
 {
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @brief Header with a sequence, a timestamp, and a "size" attribute
  *
  * This header adds a size attribute to the sequence number and timestamp

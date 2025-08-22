@@ -26,7 +26,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @brief Channel Matrix Generation following 3GPP TR 38.901
  *
  * The class implements the channel matrix generation procedure

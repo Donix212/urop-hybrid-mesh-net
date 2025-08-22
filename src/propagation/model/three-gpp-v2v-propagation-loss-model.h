@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 37.885, Table 6.2.1-1
  *        for the Urban scenario.
@@ -124,7 +124,7 @@ class ThreeGppV2vUrbanPropagationLossModel : public ThreeGppPropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Implements the pathloss model defined in 3GPP TR 37.885, Table 6.2.1-1
  *        for the Highway scenario.

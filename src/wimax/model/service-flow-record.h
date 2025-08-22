@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class implements a structure to manage some parameters and statistics related to a
  * service flow
  */

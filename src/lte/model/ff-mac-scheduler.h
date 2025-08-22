@@ -25,7 +25,7 @@ class LteFfrSapProvider;
 class LteFfrSapUser;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @defgroup ff-api FF MAC Schedulers
  */
 

@@ -24,7 +24,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("BuildingPositionAllocatorTest");
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  * @ingroup tests
  * @defgroup building-test Buildings module tests
  */

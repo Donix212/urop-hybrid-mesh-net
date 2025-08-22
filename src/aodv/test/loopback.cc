@@ -35,7 +35,7 @@ namespace aodv
 {
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  *
  * @brief AODV loopback UDP echo test case
  */

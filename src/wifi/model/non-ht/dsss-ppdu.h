@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::DsssPpdu class.
  */
 
@@ -26,7 +26,7 @@ class WifiPsdu;
 
 /**
  * @brief DSSS (HR/DSSS) PPDU (11b)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * DsssPpdu stores a preamble, PHY headers and a PSDU of a PPDU with DSSS modulation.
  */

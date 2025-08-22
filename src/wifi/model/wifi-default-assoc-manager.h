@@ -17,7 +17,7 @@ namespace ns3
 class StaWifiMac;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Default wifi Association Manager.
  */

@@ -15,7 +15,7 @@
 using namespace ns3;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * A simple example of an Tag implementation
  */
 class MyTag : public Tag

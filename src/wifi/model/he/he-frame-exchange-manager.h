@@ -37,7 +37,7 @@ bool IsTrigger(const WifiPsduMap& psduMap);
 bool IsTrigger(const WifiConstPsduMap& psduMap);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * HeFrameExchangeManager handles the frame exchange sequences
  * for HE stations.

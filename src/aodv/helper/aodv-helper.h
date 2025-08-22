@@ -18,7 +18,7 @@
 namespace ns3
 {
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief Helper class that adds AODV routing to nodes.
  */
 class AodvHelper : public Ipv4RoutingHelper

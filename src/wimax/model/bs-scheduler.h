@@ -29,7 +29,7 @@ class WimaxConnection;
 class Cid;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * BaseStation Scheduler
  */

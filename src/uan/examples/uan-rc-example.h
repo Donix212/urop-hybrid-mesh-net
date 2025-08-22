@@ -16,7 +16,7 @@
 using namespace ns3;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Container for the parameters describing a single experiment.
  *

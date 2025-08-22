@@ -17,7 +17,7 @@ namespace ns3
 struct AparfWifiRemoteStation;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * APARF Power and rate control algorithm
  *
  * This class implements the High Performance power and rate control algorithm

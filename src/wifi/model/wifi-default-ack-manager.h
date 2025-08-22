@@ -18,7 +18,7 @@ class WifiTxParameters;
 class WifiMpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiDefaultAckManager is the default ack manager.
  */

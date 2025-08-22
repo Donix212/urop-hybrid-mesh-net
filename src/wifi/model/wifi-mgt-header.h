@@ -70,7 +70,7 @@ using GetStoredIeT = typename GetStoredIe<T>::type;
 } // namespace internal
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames.
  * @tparam Derived \explicit the type of derived management frame
  * @tparam Tuple \explicit A tuple of the types of Information Elements included in the mgt frame
@@ -79,7 +79,7 @@ template <typename Derived, typename Tuple>
 class WifiMgtHeader;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Base class for implementing management frame headers. This class adopts the CRTP idiom,
  * mainly to allow subclasses to specialize the method used to initialize Information
  * Elements before deserialization (<i>InitForDeserialization</i>).
@@ -192,7 +192,7 @@ class WifiMgtHeader<Derived, std::tuple<Elems...>> : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *  Inspect a type to deduce whether it is an Information Element that can be included in a
  *  Per-STA Profile subelement of a Multi-Link Element.
  *  @tparam T \explicit The type to inspect.
@@ -207,7 +207,7 @@ template <class T>
 inline constexpr bool CanBeInPerStaProfileV = CanBeInPerStaProfile<T>::value;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames that can be included in a Per-STA Profile
  * subelement of a Multi-Link Element.
  * @tparam Derived \explicit the type of derived management frame
@@ -217,7 +217,7 @@ template <typename Derived, typename Tuple>
 class MgtHeaderInPerStaProfile;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Add methods needed to serialize/deserialize a management header into a Per-STA Profile
  * subelement of a Multi-Link Element.

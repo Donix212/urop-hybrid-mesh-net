@@ -30,7 +30,7 @@ namespace zigbee
 {
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *  Route record states
  */
 enum RouteStatus
@@ -43,7 +43,7 @@ enum RouteStatus
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * The relationship between the neighbor and the current device
  */
 enum Relationship
@@ -57,7 +57,7 @@ enum Relationship
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * The network layer device type
  */
 enum NwkDeviceType
@@ -68,7 +68,7 @@ enum NwkDeviceType
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  * Routing table entry
  * Zigbee Specification r22.1.0, Table 3-66
  */

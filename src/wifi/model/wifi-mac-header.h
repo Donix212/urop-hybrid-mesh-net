@@ -79,7 +79,7 @@ enum WifiMacType
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Implements the IEEE 802.11 MAC header
  */

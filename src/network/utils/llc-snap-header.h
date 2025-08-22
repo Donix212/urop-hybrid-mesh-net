@@ -23,7 +23,7 @@ namespace ns3
 static const uint16_t LLC_SNAP_HEADER_LENGTH = 8;
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief Header for the LLC/SNAP encapsulation
  *

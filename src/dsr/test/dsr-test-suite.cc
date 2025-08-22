@@ -42,7 +42,7 @@ using namespace dsr;
 
 // -----------------------------------------------------------------------------
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @defgroup dsr-test DSR routing module tests
  */
 

@@ -28,7 +28,7 @@ class WimaxConnection;
 class SubscriberStationNetDevice;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief SsServiceFlowManager class
  */
 class SsServiceFlowManager : public ServiceFlowManager

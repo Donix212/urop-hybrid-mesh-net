@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief the ITU-R 1411 NLOS over rooftop propagation model
  *

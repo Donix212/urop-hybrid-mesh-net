@@ -62,7 +62,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup errormodel Error Model
  */
 /**

@@ -25,7 +25,7 @@ class Ipv4Route;
 class NetDevice;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup ipv4Routing IPv4 Routing Protocols.
  *
  * The classes in this group implement different routing protocols

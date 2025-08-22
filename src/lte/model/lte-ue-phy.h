@@ -33,7 +33,7 @@ class LteEnbPhy;
 class LteHarqPhy;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * The LteSpectrumPhy models the physical layer of LTE
  */

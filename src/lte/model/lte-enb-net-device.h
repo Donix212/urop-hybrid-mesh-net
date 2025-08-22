@@ -40,7 +40,7 @@ class LteFfrAlgorithm;
 class LteEnbComponentCarrierManager;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * The eNodeB device implementation
  */

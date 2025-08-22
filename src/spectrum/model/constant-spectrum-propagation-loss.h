@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * A Constant (fixed) propagation loss. The loss is not dependent on the distance.
  */

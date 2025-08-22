@@ -24,7 +24,7 @@ class SpectrumValue;
 class SpectrumChannel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Create a Waveform generator, which can be used to inject specific noise in the channel.
  */

@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * QosFrameExchangeManager handles the frame exchange sequences
  * for QoS stations.

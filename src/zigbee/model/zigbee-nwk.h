@@ -38,7 +38,7 @@ namespace zigbee
 {
 
 /**
- * @defgroup zigbee ZIGBEE models
+ * @defgroup Zigbee ZIGBEE models
  *
  * This section documents the API of the Zigbee Specification related models. For a generic
  * functional description, please refer to the ns-3 manual.
@@ -49,7 +49,7 @@ static constexpr uint32_t ALL_CHANNELS = 0x07FFF800; //!< Bitmap representing al
                                                      //!< Page 0 in Zigbee (250kbps O-QPSK)
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Indicates a pending NWK primitive
  */
@@ -67,7 +67,7 @@ enum PendingPrimitiveNwk : std::uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Table 3.2 (Address Mode) NLDE-DATA-Request parameters
  */
@@ -137,7 +137,7 @@ enum RouteDiscoveryStatus : std::uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  *  Network layer status values
  *  Combines Zigbee Specification r22.1.0 Table 3-73 and
@@ -235,7 +235,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec);
 std::ostream& operator<<(std::ostream& os, const uint8_t& num);
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  *  Status codes for network status command frame and route discovery failures.
  *
@@ -265,7 +265,7 @@ enum NetworkStatusCode : std::uint8_t
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  Channel List Structure. See Zigbee Specification 3.2.2.2.1
  */
@@ -283,7 +283,7 @@ struct ChannelList
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * NLDE-DATA.confirm params. See Zigbee Specification 3.2.1.2
  */
@@ -297,7 +297,7 @@ struct NldeDataConfirmParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * NLDE-DATA.indication params. See Zigbee Specification 3.2.1.3.1
  */
@@ -315,7 +315,7 @@ struct NldeDataIndicationParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * NLDE-DATA.request params. See Zigbee Specification 3.2.1.1
  */
@@ -340,7 +340,7 @@ struct NldeDataRequestParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-NETWORK-FORMATION.request params. See Zigbee Specification 3.2.2.5.1
  */
@@ -372,7 +372,7 @@ struct NlmeNetworkFormationRequestParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * A group of pending parameters arranged into a structure during the execution of
  * a NLME-NETWORK-FORMATION.request primitive.
@@ -385,7 +385,7 @@ struct NetFormPendingParamsGen : public SimpleRefCount<NetFormPendingParamsGen>
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-NETWORK-FORMATION.confirm params. See Zigbee Specification 3.2.2.6.1
  */
@@ -396,7 +396,7 @@ struct NlmeNetworkFormationConfirmParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-ROUTE-DISCOVERY.request params. See Zigbee Specification 3.2.2.33
  */
@@ -411,7 +411,7 @@ struct NlmeRouteDiscoveryRequestParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-ROUTE-DISCOVERY.confirm params. See Zigbee Specification r22.1.0, 3.2.2.34
  */
@@ -425,7 +425,7 @@ struct NlmeRouteDiscoveryConfirmParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-DIRECT-JOIN.request params.
  *  See Zigbee Specification r22.1.0, 3.2.2.16
@@ -438,7 +438,7 @@ struct NlmeDirectJoinRequestParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-DIRECT-JOIN.confirm params.
  *  See Zigbee Specification r22.1.0, 3.2.2.17
@@ -452,7 +452,7 @@ struct NlmeDirectJoinConfirmParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-NETWORK-DISCOVERY.request params.
  *  See Zigbee Specification r22.1.0, 3.2.2.3
@@ -465,7 +465,7 @@ struct NlmeNetworkDiscoveryRequestParams
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Network Descriptor, Zigbee Specification  r22.1.0, 3.2.2.4, Table 3-12
  */
@@ -492,7 +492,7 @@ struct NetworkDescriptor
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-NETWORK-DISCOVERY.confirm params. See Zigbee Specification r22.1.0, 3.2.2.4
  */
@@ -506,7 +506,7 @@ struct NlmeNetworkDiscoveryConfirmParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * NLME-JOIN.request params.
  * See Zigbee Specification r22.1.0, 3.2.2.13
@@ -528,7 +528,7 @@ struct NlmeJoinRequestParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-JOIN.confirm params.
  *  See Zigbee Specification r22.1.0, 3.2.2.15
@@ -560,7 +560,7 @@ struct NlmeJoinConfirmParams
 };
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  NLME-JOIN.indication params.
  *  See Zigbee Specification r22.1.0, 3.2.2.14
@@ -579,7 +579,7 @@ struct NlmeJoinIndicationParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * NLME-START-ROUTER.request params.
  * See Zigbee Specification r22.1.0, 3.2.2.13
@@ -592,7 +592,7 @@ struct NlmeStartRouterRequestParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * NLME-START-ROUTER.confirm params.
  * See Zigbee Specification r22.1.0, 3.2.2.10
@@ -608,7 +608,7 @@ struct NlmeStartRouterConfirmParams
 //////////////////////
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * This callback is called after a NSDU has successfully received and
  *  NWK push it to deliver it to the next higher layer.
@@ -617,7 +617,7 @@ struct NlmeStartRouterConfirmParams
 typedef Callback<void, NldeDataIndicationParams, Ptr<Packet>> NldeDataIndicationCallback;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * This callback is used to notify the next higher layer with a confirmation in response to
  * a previously issued NLDE-DATA.request.
@@ -626,7 +626,7 @@ typedef Callback<void, NldeDataIndicationParams, Ptr<Packet>> NldeDataIndication
 typedef Callback<void, NldeDataConfirmParams> NldeDataConfirmCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with a confirmation in response to
  *  a previously issued NLME-NETWORK-FORMATION.request.
@@ -634,7 +634,7 @@ typedef Callback<void, NldeDataConfirmParams> NldeDataConfirmCallback;
 typedef Callback<void, NlmeNetworkFormationConfirmParams> NlmeNetworkFormationConfirmCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with a confirmation in response to
  *  a previously issued NLME-NETWORK-DISCOVERY.request.
@@ -642,7 +642,7 @@ typedef Callback<void, NlmeNetworkFormationConfirmParams> NlmeNetworkFormationCo
 typedef Callback<void, NlmeNetworkDiscoveryConfirmParams> NlmeNetworkDiscoveryConfirmCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with a confirmation in response to
  *  a previously issued NLME-ROUTE-DISCOVERY.request.
@@ -650,7 +650,7 @@ typedef Callback<void, NlmeNetworkDiscoveryConfirmParams> NlmeNetworkDiscoveryCo
 typedef Callback<void, NlmeRouteDiscoveryConfirmParams> NlmeRouteDiscoveryConfirmCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with a confirmation in response to
  *  a previously issued NLME-DIRECT-JOIN.request.
@@ -658,7 +658,7 @@ typedef Callback<void, NlmeRouteDiscoveryConfirmParams> NlmeRouteDiscoveryConfir
 typedef Callback<void, NlmeDirectJoinConfirmParams> NlmeDirectJoinConfirmCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with a confirmation in response to
  *  a previously issued NLME-JOIN.request.
@@ -666,7 +666,7 @@ typedef Callback<void, NlmeDirectJoinConfirmParams> NlmeDirectJoinConfirmCallbac
 typedef Callback<void, NlmeJoinConfirmParams> NlmeJoinConfirmCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with an indication that a new
  *  device has successfully joined its network by association or rejoining.
@@ -674,7 +674,7 @@ typedef Callback<void, NlmeJoinConfirmParams> NlmeJoinConfirmCallback;
 typedef Callback<void, NlmeJoinIndicationParams> NlmeJoinIndicationCallback;
 
 /**
- *  @ingroup zigbee
+ *  @ingroup Zigbee
  *
  *  This callback is used to notify the next higher layer with a confirmation in response to
  *  a previously issued NLME-START-ROUTER.request.
@@ -682,7 +682,7 @@ typedef Callback<void, NlmeJoinIndicationParams> NlmeJoinIndicationCallback;
 typedef Callback<void, NlmeStartRouterConfirmParams> NlmeStartRouterConfirmCallback;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Class that implements the Zigbee Specification Network Layer
  */

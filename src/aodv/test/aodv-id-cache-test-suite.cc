@@ -23,7 +23,7 @@ namespace aodv
 
 /**
  * @defgroup aodv-test AODV module tests
- * @ingroup aodv
+ * @ingroup Aodv
  * @ingroup tests
  */
 

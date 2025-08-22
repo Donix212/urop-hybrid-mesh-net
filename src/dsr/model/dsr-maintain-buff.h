@@ -199,7 +199,7 @@ struct PassiveKey
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR Maintain Buffer Entry
  */
 class DsrMaintainBuffEntry
@@ -401,7 +401,7 @@ class DsrMaintainBuffEntry
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR maintain buffer
  */
 /************************************************************************************************************************/

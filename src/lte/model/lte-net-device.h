@@ -23,12 +23,12 @@ class Node;
 class Packet;
 
 /**
- * @defgroup lte LTE Models
+ * @defgroup Lte LTE Models
  *
  */
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * LteNetDevice provides  basic implementation for all LTE network devices
  */

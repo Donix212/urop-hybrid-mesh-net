@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The HE 6 GHz Band Capabilities (IEEE 802.11ax-2021 9.4.2.263)
  */

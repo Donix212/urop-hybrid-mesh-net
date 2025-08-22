@@ -15,12 +15,12 @@ namespace ns3
 {
 
 /**
- * @defgroup  visualizer Visualizer
+ * @defgroup  Visualizer Visualizer
  *
  */
 
 /**
- * @ingroup visualizer
+ * @ingroup Visualizer
  * @ingroup simulator
  *
  * @brief A replacement simulator that starts the visualizer

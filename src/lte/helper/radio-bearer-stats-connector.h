@@ -24,7 +24,7 @@ namespace ns3
 class RadioBearerStatsCalculator;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * This class is very useful when user needs to collect
  * statistics from PDCP and RLC. It automatically connects

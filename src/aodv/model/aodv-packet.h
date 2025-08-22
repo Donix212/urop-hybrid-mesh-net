@@ -30,7 +30,7 @@ namespace aodv
 {
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief MessageType enumeration
  */
 enum MessageType
@@ -42,7 +42,7 @@ enum MessageType
 };
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief AODV types
  */
 class TypeHeader : public Header
@@ -103,7 +103,7 @@ class TypeHeader : public Header
 std::ostream& operator<<(std::ostream& os, const TypeHeader& h);
 
 /**
-* @ingroup aodv
+* @ingroup Aodv
 * @brief   Route Request (RREQ) Message Format
   \verbatim
   0                   1                   2                   3
@@ -325,7 +325,7 @@ class RreqHeader : public Header
 std::ostream& operator<<(std::ostream& os, const RreqHeader&);
 
 /**
-* @ingroup aodv
+* @ingroup Aodv
 * @brief Route Reply (RREP) Message Format
   \verbatim
   0                   1                   2                   3
@@ -513,7 +513,7 @@ class RrepHeader : public Header
 std::ostream& operator<<(std::ostream& os, const RrepHeader&);
 
 /**
-* @ingroup aodv
+* @ingroup Aodv
 * @brief Route Reply Acknowledgment (RREP-ACK) Message Format
   \verbatim
   0                   1
@@ -559,7 +559,7 @@ class RrepAckHeader : public Header
 std::ostream& operator<<(std::ostream& os, const RrepAckHeader&);
 
 /**
-* @ingroup aodv
+* @ingroup Aodv
 * @brief Route Error (RERR) Message Format
   \verbatim
   0                   1                   2                   3

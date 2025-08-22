@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * A tag to be attached to a response to a multi-user UL frame, that carries the SNR
  * values with which the individual frames have been received.

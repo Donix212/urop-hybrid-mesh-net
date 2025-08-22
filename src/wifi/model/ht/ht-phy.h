@@ -14,7 +14,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::HtPhy class.
  */
 
@@ -31,7 +31,7 @@ constexpr uint8_t HT_MAX_NSS = 4;
 
 /**
  * @brief PHY entity for HT (11n)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * HT PHY is based on OFDM PHY.
  * Only HT-Mixed is supported (support for HT-Greenfield has been removed).

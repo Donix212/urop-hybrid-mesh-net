@@ -39,7 +39,7 @@ namespace dsr
  */
 
 /**
-* @ingroup dsr
+* @ingroup Dsr
 * @brief Dsr fixed size header Format
   \verbatim
    |      0        |      1        |      2        |      3        |
@@ -53,7 +53,7 @@ namespace dsr
 */
 
 /**
-* @ingroup dsr
+* @ingroup Dsr
 * @brief The modified version of Dsr fixed size header Format
   \verbatim
    |      0        |      1        |      2        |      3        |

@@ -26,7 +26,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * BasicEnergyHarvester increases remaining energy stored in an associated
  * Energy Source. The BasicEnergyHarvester implements a simple model in which
  * the amount of power provided by the harvester varies over time according

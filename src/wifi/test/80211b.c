@@ -27,7 +27,7 @@
  */
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @defgroup wifi-test wifi module tests
  */
 

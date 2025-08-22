@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief a (time, location) pair.
  * @see attribute_Waypoint
  */

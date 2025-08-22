@@ -17,7 +17,7 @@
 
 /**
  * @defgroup deprecation Deprecation
- * @ingroup core
+ * @ingroup Core
  */
 
 /**

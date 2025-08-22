@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiProtection is an abstract base struct. Each derived struct defines a protection
  * method and stores the information needed to perform protection according to
@@ -65,7 +65,7 @@ struct WifiProtection
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiNoProtection specifies that no protection method is used.
  */
@@ -78,7 +78,7 @@ struct WifiNoProtection : public WifiProtection
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiRtsCtsProtection specifies that RTS/CTS protection method is used.
  */
@@ -94,7 +94,7 @@ struct WifiRtsCtsProtection : public WifiProtection
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiCtsToSelfProtection specifies that CTS-to-self protection method is used.
  */
@@ -109,7 +109,7 @@ struct WifiCtsToSelfProtection : public WifiProtection
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiMuRtsCtsProtection specifies that MU-RTS/CTS protection method is used.
  */

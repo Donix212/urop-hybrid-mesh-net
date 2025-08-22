@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief Holds a vector of ns3::QueueDisc pointers.
  *

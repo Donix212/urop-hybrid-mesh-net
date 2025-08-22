@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup antenna
+ * @ingroup Antenna
  *
  * @brief Class implementing the phased array model virtual base class.
  */

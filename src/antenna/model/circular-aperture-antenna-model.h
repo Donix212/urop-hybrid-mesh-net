@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup antenna
+ * @ingroup Antenna
  * Class CircularApertureAntennaModel declaration
  */
 

@@ -17,7 +17,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::DsssPhy class.
  */
 
@@ -26,7 +26,7 @@ namespace ns3
 
 /**
  * @brief PHY entity for HR/DSSS (11b)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Refer to IEEE 802.11-2016, clause 16 (HR/DSSS).
  * Note that DSSS rates (clause 15) are a subset

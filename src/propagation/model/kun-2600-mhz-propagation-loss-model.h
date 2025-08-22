@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Empirical propagation model for the 2.6 GHz frequency
  *

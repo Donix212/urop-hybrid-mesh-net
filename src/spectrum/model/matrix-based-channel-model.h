@@ -25,7 +25,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * This is an interface for a channel model that can be described
  * by a channel matrix, e.g., the 3GPP Spatial Channel Models,

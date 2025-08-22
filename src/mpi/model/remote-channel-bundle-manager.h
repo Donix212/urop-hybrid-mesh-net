@@ -9,7 +9,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of class ns3::RemoteChannelBundleManager.
  */
 
@@ -27,7 +27,7 @@ namespace ns3
 class RemoteChannelBundle;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Singleton for managing the RemoteChannelBundles for each process.
  *

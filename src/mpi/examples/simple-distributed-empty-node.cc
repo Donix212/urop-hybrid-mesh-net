@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * This test is equivalent to simple-distributed but tests boundary cases
  * when one of the ranks has no Nodes on it.   When run on two tasks

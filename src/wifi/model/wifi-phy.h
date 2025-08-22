@@ -48,7 +48,7 @@ class WifiMacHeader;
 
 /**
  * @brief 802.11 PHY layer model
- * @ingroup wifi
+ * @ingroup Wifi
  *
  */
 class WifiPhy : public Object

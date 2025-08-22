@@ -27,7 +27,7 @@ class LteNetDevice;
 class LteUePhy;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * LteEnbPhy models the physical layer for the eNodeB
  */
 class LteEnbPhy : public LtePhy

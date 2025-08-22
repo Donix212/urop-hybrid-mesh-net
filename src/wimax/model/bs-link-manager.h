@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * BaseStation Link Manager
  */

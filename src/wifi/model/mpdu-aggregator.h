@@ -31,7 +31,7 @@ class HtFrameExchangeManager;
 
 /**
  * @brief Aggregator used to construct A-MPDUs
- * @ingroup wifi
+ * @ingroup Wifi
  */
 class MpduAggregator : public Object
 {

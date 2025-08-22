@@ -37,14 +37,14 @@ namespace lrwpan
 class LrWpanCsmaCa;
 
 /**
- * @defgroup lr-wpan LR-WPAN models
+ * @defgroup LrWpan LR-WPAN models
  *
  * This section documents the API of the IEEE 802.15.4-related models.  For a generic functional
  * description, please refer to the ns-3 manual.
  */
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Tx options
  */
@@ -57,7 +57,7 @@ enum TxOption
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * MAC states
  */
@@ -85,7 +85,7 @@ enum MacState
 std::ostream& operator<<(std::ostream& os, const MacState& state);
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Superframe status
  */
@@ -98,7 +98,7 @@ enum SuperframeStatus
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Superframe type
  */
@@ -109,7 +109,7 @@ enum SuperframeType
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Indicates a pending MAC primitive
  */
@@ -126,7 +126,7 @@ namespace TracedValueCallback
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * TracedValue callback signature for MacState.
  *
  * @param [in] oldValue original value of the traced variable
@@ -135,7 +135,7 @@ namespace TracedValueCallback
 typedef void (*MacState)(MacState oldValue, MacState newValue);
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * TracedValue callback signature for SuperframeStatus.
  *
  * @param [in] oldValue original value of the traced variable
@@ -146,7 +146,7 @@ typedef void (*SuperframeStatus)(SuperframeStatus oldValue, SuperframeStatus new
 } // namespace TracedValueCallback
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Class that implements the LR-WPAN MAC state machine
  */

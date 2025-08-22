@@ -38,7 +38,7 @@ namespace dsdv
 {
 
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief DSDV routing protocol.
  */
 class RoutingProtocol : public Ipv4RoutingProtocol

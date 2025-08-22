@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * SpectrumPhy implementation that creates a customizable TV transmitter which
  * transmits a PSD spectrum specified by user-set attributes.

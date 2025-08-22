@@ -27,7 +27,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup hash Hash Functions
  *
  * @brief Generic Hash function interface.

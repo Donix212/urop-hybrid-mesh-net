@@ -18,7 +18,7 @@ namespace ns3
 
 /**
  * @brief Thompson Sampling rate control algorithm
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class implements Thompson Sampling rate control algorithm.
  *

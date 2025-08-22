@@ -29,7 +29,7 @@
 namespace ns3
 {
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief Helper class that adds DSDV routing to nodes.
  */
 class DsdvHelper : public Ipv4RoutingHelper

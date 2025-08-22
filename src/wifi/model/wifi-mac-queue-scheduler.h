@@ -24,7 +24,7 @@ class WifiMpdu;
 class WifiMac;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Enumeration of the reasons to block container queues.
  */
@@ -69,7 +69,7 @@ operator<<(std::ostream& os, WifiQueueBlockedReason reason)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiMacQueueScheduler is an abstract base class defining the public interface
  * for a wifi MAC queue scheduler.

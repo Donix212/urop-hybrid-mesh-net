@@ -22,7 +22,7 @@ namespace ns3
 class WifiMpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Type of elements stored in a WifiMacQueue container.
  *
  * Such elements can be accessed by the WifiMacQueue (via iterators) and

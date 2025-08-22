@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class implements the mac to mac header needed to dump a wimax pcap file
  * The header format was reverse-engineered by looking  at existing live pcap traces which
  * could be opened with wireshark  i.e., we have no idea where this is coming from.

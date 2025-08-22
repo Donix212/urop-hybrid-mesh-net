@@ -35,7 +35,7 @@ class Time;
 namespace dsr
 {
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief header for Dsr Options.
  */
 class DsrOptionHeader : public Header
@@ -135,7 +135,7 @@ class DsrOptionHeader : public Header
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option Pad1
  */
 class DsrOptionPad1Header : public DsrOptionHeader
@@ -183,7 +183,7 @@ class DsrOptionPad1Header : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option Padn
  */
 class DsrOptionPadnHeader : public DsrOptionHeader
@@ -232,7 +232,7 @@ class DsrOptionPadnHeader : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option Route Request
  *
  * @verbatim
@@ -384,7 +384,7 @@ class DsrOptionRreqHeader : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option Route Reply
  *
  * @verbatim
@@ -522,7 +522,7 @@ class DsrOptionRrepHeader : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option Source Route
  *
  * @verbatim
@@ -674,7 +674,7 @@ class DsrOptionSRHeader : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @enum ErrorType
  * @brief Error type used in several DSR Option Headers
  */
@@ -686,7 +686,7 @@ enum ErrorType
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option Route Error
  *
  * @verbatim
@@ -826,7 +826,7 @@ class DsrOptionRerrHeader : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Route Error (RERR) Unreachable node address option Message Format
  *
  * @verbatim
@@ -965,7 +965,7 @@ class DsrOptionRerrUnreachHeader : public DsrOptionRerrHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Route Error (RERR) Unsupported option Message Format
  *
  * The type-specific info field of DsrOptionRerrHeader contains
@@ -1092,7 +1092,7 @@ class DsrOptionRerrUnsupportedHeader : public DsrOptionRerrHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option ack request
  *
  * @verbatim
@@ -1171,7 +1171,7 @@ class DsrOptionAckReqHeader : public DsrOptionHeader
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief Header of Dsr Option ack
  *
  * @verbatim

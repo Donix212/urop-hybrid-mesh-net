@@ -66,7 +66,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * Bridge example connecting two broadcast domains.
  */
 

@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * @brief Wifi MAC high model for an ad-hoc Wifi MAC
  */

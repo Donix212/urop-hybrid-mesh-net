@@ -240,7 +240,7 @@ typedef uint8_t WifiInformationElementId;
 
 /**
  * @brief Information element, as defined in 802.11-2007 standard
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The IEEE 802.11 standard includes the notion of Information
  * Elements, which are encodings of management information to be

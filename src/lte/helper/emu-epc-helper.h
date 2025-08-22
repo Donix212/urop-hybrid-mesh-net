@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Create an EPC network using EmuFdNetDevice
  *

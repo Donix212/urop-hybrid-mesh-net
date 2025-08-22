@@ -27,7 +27,7 @@ namespace energy
 class EnergySource;
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  * @brief Energy harvester base class.
  */

@@ -30,7 +30,7 @@ class UdpSocketImpl;
 class NetDevice;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup udp UDP
  *
  * This  is  an  implementation of the User Datagram Protocol described in

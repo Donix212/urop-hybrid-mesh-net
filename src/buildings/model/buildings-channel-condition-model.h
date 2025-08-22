@@ -18,8 +18,8 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup buildings
- * @ingroup propagation
+ * @ingroup Buildings
+ * @ingroup Propagation
  *
  * @brief Determines the channel condition based on the buildings deployed in the
  * scenario

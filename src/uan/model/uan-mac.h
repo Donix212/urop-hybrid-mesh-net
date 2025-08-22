@@ -27,7 +27,7 @@ class UanTxMode;
 class Mac8Address;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Virtual base class for all UAN MAC protocols.
  */

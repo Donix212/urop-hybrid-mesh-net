@@ -33,7 +33,7 @@ namespace aodv
 {
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief Route record states
  */
 enum RouteFlags
@@ -44,7 +44,7 @@ enum RouteFlags
 };
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief Routing table entry
  */
 class RoutingTableEntry
@@ -406,7 +406,7 @@ class RoutingTableEntry
 };
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief The Routing table used by AODV protocol
  */
 class RoutingTable

@@ -16,7 +16,7 @@
 namespace ns3
 {
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Service Access Point (SAP) offered by the component carrier manager (CCM)
  *  by MAC to CCM.
@@ -48,7 +48,7 @@ class LteCcmMacSapProvider
 }; // end of class LteCcmMacSapProvider
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Service Access Point (SAP) offered by MAC to the
  *        component carrier manager (CCM).

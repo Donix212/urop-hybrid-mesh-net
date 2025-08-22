@@ -27,7 +27,7 @@ namespace ns3
 namespace aodv
 {
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  *
  * @brief Unique packets identification cache used for simple duplicate detection.
  */

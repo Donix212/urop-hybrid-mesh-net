@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @brief Base class for source applications.
  *
  * This class can be used as a base class for source applications.

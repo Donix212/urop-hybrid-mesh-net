@@ -11,7 +11,7 @@
 
 /**
  * @defgroup warnings Compiler warnings
- * @ingroup core
+ * @ingroup Core
  *
  * Macros useful to silence compiler warnings on selected code parts.
  */

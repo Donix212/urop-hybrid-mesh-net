@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Identifies the PHY band.
  */
 enum WifiPhyBand

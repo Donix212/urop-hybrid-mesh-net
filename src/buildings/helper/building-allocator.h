@@ -24,7 +24,7 @@ namespace ns3
 class Building;
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  * @brief Allocate buildings on a rectangular 2d grid.
  *
  * This class allows to create a set of buildings positioned on a

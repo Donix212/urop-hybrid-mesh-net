@@ -50,7 +50,7 @@ Progress()
 }
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * 2D array used in nix-vector-routing example "nms-p2p-nix.cc"
  */
 template <typename T>
@@ -98,7 +98,7 @@ class Array2D
 };
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * 3D array used in nix-vector-routing example "nms-p2p-nix.cc"
  */
 template <typename T>

@@ -21,7 +21,7 @@ class Packet;
 class MeshPointDevice;
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  *
  * @brief Interface for L2 mesh routing protocol and mesh point communication.
  *

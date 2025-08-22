@@ -26,7 +26,7 @@ class Packet;
 class ThreeGppHttpVariables;
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup http ThreeGppHttpClientServer
  *
  * This traffic generator simulates web browsing traffic using the Hypertext

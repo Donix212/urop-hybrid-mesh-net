@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * Linux pfifo_fast is the default priority queue enabled on Linux
  * systems. Packets are enqueued in three FIFO droptail queues according

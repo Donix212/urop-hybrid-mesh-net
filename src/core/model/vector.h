@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup geometry Geometry primitives
  * @brief Primitives for geometry, such as vectors and angles.
  */

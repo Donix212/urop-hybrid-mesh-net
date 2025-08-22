@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup singleton Singleton
  *
  * Template class implementing the Singleton design pattern.

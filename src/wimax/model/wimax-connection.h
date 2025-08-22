@@ -27,7 +27,7 @@ class ServiceFlow;
 class Cid;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * Class to represent WiMAX connections
  */
 class WimaxConnection : public Object

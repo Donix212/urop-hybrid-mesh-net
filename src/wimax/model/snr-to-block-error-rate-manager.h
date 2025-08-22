@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief This class handles the  SNR to BlcER traces.
  *
  * A path to a repository containing trace files should be provided.

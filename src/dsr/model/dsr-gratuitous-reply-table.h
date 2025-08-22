@@ -58,7 +58,7 @@ struct GraReplyEntry
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief maintain the gratuitous reply
  */
 class DsrGraReply : public Object

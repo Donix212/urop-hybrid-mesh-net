@@ -9,7 +9,7 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * ns3::ShowProgress implementation.
  */
 

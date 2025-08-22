@@ -52,7 +52,7 @@ struct HeMuUserInfo
 using RuAllocation = std::vector<uint16_t>;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Enum for the different values for CENTER_26_TONE_RU
  */
 enum Center26ToneRuIndication : uint8_t

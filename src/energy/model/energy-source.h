@@ -30,17 +30,17 @@ namespace energy
 class EnergyHarvester;
 
 /**
- * @defgroup energy Energy Models
+ * @defgroup Energy Energy Models
  */
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @ingroup tests
  * @defgroup energy-tests Energy module tests
  */
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  * @brief Energy source base class.
  *

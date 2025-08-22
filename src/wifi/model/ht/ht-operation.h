@@ -31,7 +31,7 @@ enum HtProtectionType
 
 /**
  * @brief The HT Operation Information Element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class knows how to serialize and deserialize
  * the HT Operation Information Element

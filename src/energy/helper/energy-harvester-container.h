@@ -24,7 +24,7 @@ namespace energy
 class EnergyHarvester;
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Holds a vector of ns3::EnergyHarvester pointers.
  *
  * EnergyHarvesterContainer returns a list of EnergyHarvester pointers

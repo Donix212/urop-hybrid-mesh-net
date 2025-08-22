@@ -19,7 +19,7 @@ class WifiMpdu;
 class WifiMacHeader;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * WifiDefaultProtectionManager is the default protection manager, which selects
  * the protection method for a frame based on its size.

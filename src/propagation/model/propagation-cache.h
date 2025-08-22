@@ -15,7 +15,7 @@
 namespace ns3
 {
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  * @brief Constructs a cache of objects, where each object is responsible for a single propagation
  * path loss calculations. Propagation path a-->b and b-->a is the same thing. Propagation path is
  * identified by a couple of MobilityModels and a spectrum model UID

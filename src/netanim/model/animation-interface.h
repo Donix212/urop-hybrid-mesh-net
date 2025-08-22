@@ -66,7 +66,7 @@ class WifiPsdu;
  */
 
 /**
- * @ingroup netanim
+ * @ingroup NetAnim
  *
  * @brief Interface to network animator
  *
@@ -1468,7 +1468,7 @@ class AnimationInterface
 };
 
 /**
- * @ingroup netanim
+ * @ingroup NetAnim
  *
  * @brief Byte tag using by Anim to uniquely identify packets
  *

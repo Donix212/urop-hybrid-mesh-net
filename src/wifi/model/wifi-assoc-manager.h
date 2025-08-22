@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Abstract base class for the Association Manager, which manages
  * scanning and association for single link devices and ML discovery

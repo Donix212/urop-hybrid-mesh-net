@@ -20,7 +20,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Signal parameters for LrWpan.
  */

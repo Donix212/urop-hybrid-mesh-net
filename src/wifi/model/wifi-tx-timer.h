@@ -28,7 +28,7 @@ class Mac48Address;
 typedef std::unordered_map<uint16_t /* staId */, Ptr<WifiPsdu> /* PSDU */> WifiPsduMap;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class is used to handle the timer that a station starts when transmitting
  * a frame that solicits a response. The timeout can be rescheduled (multiple times)

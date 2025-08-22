@@ -29,7 +29,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * See IEEE 802.11 chapter 7.3.1.11
  * Header format: | category: 1 | action value: 1 |
@@ -291,7 +291,7 @@ class WifiActionHeader : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type Add Block Ack request.
  */
 class MgtAddBaRequestHeader : public Header
@@ -431,7 +431,7 @@ class MgtAddBaRequestHeader : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type Add Block Ack response.
  */
 class MgtAddBaResponseHeader : public Header
@@ -559,7 +559,7 @@ class MgtAddBaResponseHeader : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for management frames of type Delete Block Ack.
  */
 class MgtDelBaHeader : public Header
@@ -636,7 +636,7 @@ class MgtDelBaHeader : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the header for Action frames of type EML Operating Mode Notification.
  */
 class MgtEmlOmn : public Header
@@ -695,7 +695,7 @@ class MgtEmlOmn : public Header
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Implement the FILS (Fast Initial Link Setup) action frame.
  * See sec. 9.6.7.36 of IEEE 802.11-2020 and IEEE 802.11ax-2021.
  */

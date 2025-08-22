@@ -16,7 +16,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::VhtPpdu class.
  */
 
@@ -27,7 +27,7 @@ class WifiPsdu;
 
 /**
  * @brief VHT PPDU (11ac)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * VhtPpdu stores a preamble, PHY headers and a PSDU of a PPDU with VHT header
  */

@@ -21,7 +21,7 @@ class Building;
 class UniformRandomVariable;
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  *
  * Allocate each position by randomly choosing a building from the list
  * of all buildings, and then randomly choosing a position inside the building.
@@ -60,7 +60,7 @@ class RandomBuildingPositionAllocator : public PositionAllocator
 };
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  * @brief allocate outdoor positions
  *
  * Allocate positions outside of existing buildings using rejection sampling.

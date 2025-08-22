@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Identifies the IEEE 802.11 specifications that a Wifi device can be configured to use.
  */
 enum WifiStandard

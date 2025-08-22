@@ -24,7 +24,7 @@ class SpectrumChannel;
 class MobilityModel;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Generates a 2D map of the SINR from the strongest transmitter in the
  * downlink of an LTE FDD system. For instructions on usage, please refer to

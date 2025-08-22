@@ -31,7 +31,7 @@ class NetDevice;
 class Packet;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * WiMAX PHY entity
  */

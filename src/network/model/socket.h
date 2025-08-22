@@ -30,7 +30,7 @@ class Node;
 class Packet;
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup socket Socket
  */
 

@@ -19,7 +19,7 @@ struct IdealWifiRemoteStation;
 
 /**
  * @brief Ideal rate control algorithm
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class implements an 'ideal' rate control algorithm
  * similar to RBAR in spirit (see <i>A rate-adaptive MAC

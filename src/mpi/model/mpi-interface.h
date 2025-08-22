@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of class ns3::MpiInterface.
  */
 
@@ -23,11 +23,11 @@
 namespace ns3
 {
 /**
- * @defgroup mpi MPI Distributed Simulation
+ * @defgroup Mpi MPI Distributed Simulation
  */
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  * @ingroup tests
  * @defgroup mpi-tests MPI Distributed Simulation tests
  */
@@ -35,7 +35,7 @@ namespace ns3
 class ParallelCommunicationInterface;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Singleton used to interface to the communications infrastructure
  * when running NS3 in parallel.

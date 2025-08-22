@@ -24,7 +24,7 @@ namespace olsr
 {
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  *
  * Willingness for forwarding packets from other nodes.
  * The standard defines the following set of values.
@@ -69,7 +69,7 @@ operator<<(std::ostream& os, Willingness willingness)
     return os;
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// An Interface Association Tuple.
 struct IfaceAssocTuple
 {
@@ -95,7 +95,7 @@ operator<<(std::ostream& os, const IfaceAssocTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// A Link Tuple.
 struct LinkTuple
 {
@@ -126,7 +126,7 @@ operator<<(std::ostream& os, const LinkTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// A Neighbor Tuple.
 struct NeighborTuple
 {
@@ -164,7 +164,7 @@ operator<<(std::ostream& os, const NeighborTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// A 2-hop Tuple.
 struct TwoHopNeighborTuple
 {
@@ -192,7 +192,7 @@ operator==(const TwoHopNeighborTuple& a, const TwoHopNeighborTuple& b)
             a.twoHopNeighborAddr == b.twoHopNeighborAddr);
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// An MPR-Selector Tuple.
 struct MprSelectorTuple
 {
@@ -211,7 +211,7 @@ operator==(const MprSelectorTuple& a, const MprSelectorTuple& b)
 // The type "list of interface addresses"
 // typedef std::vector<nsaddr_t> addr_list_t;
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// A Duplicate Tuple
 struct DuplicateTuple
 {
@@ -233,7 +233,7 @@ operator==(const DuplicateTuple& a, const DuplicateTuple& b)
     return (a.address == b.address && a.sequenceNumber == b.sequenceNumber);
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// A Topology Tuple
 struct TopologyTuple
 {
@@ -263,7 +263,7 @@ operator<<(std::ostream& os, const TopologyTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// Association
 struct Association
 {
@@ -284,7 +284,7 @@ operator<<(std::ostream& os, const Association& tuple)
     return os;
 }
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// An Association Tuple
 struct AssociationTuple
 {

@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * A model for the error rate for different modulations.  For OFDM modulation,
  * the model description and validation can be found in

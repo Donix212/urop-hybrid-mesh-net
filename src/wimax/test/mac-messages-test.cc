@@ -13,7 +13,7 @@
 using namespace ns3;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @defgroup wimax-test wimax module tests
  */
 

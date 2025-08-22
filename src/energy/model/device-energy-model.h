@@ -22,7 +22,7 @@ namespace energy
 class EnergySource;
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Base class for device energy models.
  *
  * A device energy model should represent the energy consumption behavior of a

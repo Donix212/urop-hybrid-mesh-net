@@ -33,7 +33,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup highprec High Precision Q64.64
  *
  * Functions and class for high precision Q64.64 fixed point arithmetic.

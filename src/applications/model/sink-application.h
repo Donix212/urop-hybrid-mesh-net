@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @brief Base class for sink applications.
  *
  * This class can be used as a base class for sink applications.

@@ -24,7 +24,7 @@ class SpectrumValue;
 class SpectrumChannel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @brief create the AlohaNoackNetDevice
  */
 class AdhocAlohaNoackIdealPhyHelper

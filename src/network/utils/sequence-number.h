@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup seq-counters Sequence Counter
  * @brief "sequence number" classes
  */

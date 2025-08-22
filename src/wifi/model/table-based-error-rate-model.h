@@ -23,7 +23,7 @@ namespace ns3
 class WifiTxVector;
 
 /*
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief the interface for the table-driven OFDM error model
  *
  */

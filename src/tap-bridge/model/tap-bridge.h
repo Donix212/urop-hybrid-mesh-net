@@ -26,7 +26,7 @@ namespace ns3
 {
 
 /**
- * @ingroup tap-bridge
+ * @ingroup TapBridge
  * Class to perform the actual reading from a socket
  */
 class TapBridgeFdReader : public FdReader
@@ -38,7 +38,7 @@ class TapBridgeFdReader : public FdReader
 class Node;
 
 /**
- * @ingroup tap-bridge
+ * @ingroup TapBridge
  *
  * @brief A bridge to make it appear that a real host process is connected to
  * an ns-3 net device.

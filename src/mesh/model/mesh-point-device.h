@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  *
  * @brief Virtual net device modeling mesh point.
  *

@@ -34,7 +34,7 @@ namespace zigbee
 {
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * APS Destination Address Mode,
  * Zigbee Specification r22.1.0
@@ -56,7 +56,7 @@ enum class ApsDstAddressMode : std::uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * APS Source Address Mode,
  * Zigbee Specification r22.1.0
@@ -71,7 +71,7 @@ enum class ApsSrcAddressMode : std::uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * APS Security status
  * See Zigbee Specification r22.1.0, Table 2-4
@@ -85,7 +85,7 @@ enum class ApsSecurityStatus : std::uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * APS Sub-layer Status Values
  * See Zigbee Specification r22.1.0, Table 2-27
@@ -114,7 +114,7 @@ enum class ApsStatus : std::uint8_t
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Zigbee Specification r22.1.0, Section 2.2.4.1.1
  * APSDE-DATA.request params.
@@ -138,7 +138,7 @@ struct ApsdeDataRequestParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Zigbee Specification r22.1.0, Section 2.2.4.1.2
  * APSDE-DATA.confirm params.
@@ -156,7 +156,7 @@ struct ApsdeDataConfirmParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  *  Zigbee Specification r22.1.0, Section 2.2.4.1.3
  *  APSDE-DATA.indications params.
@@ -186,7 +186,7 @@ struct ApsdeDataIndicationParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Zigbee Specification r22.1.0, Sections 2.2.4.3.1 and 2.2.4.3.3
  * APSME-BIND.request and APSME-UNBIND.request params.
@@ -204,7 +204,7 @@ struct ApsmeBindRequestParams
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Zigbee Specification r22.1.0, Sections 2.2.4.3.2 and 2.2.4.3.4
  * APSME-BIND.confirm and APSME-UNBIND.confirm params
@@ -227,14 +227,14 @@ struct ApsmeBindConfirmParams
 //////////////////////
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * This callback is called to confirm a successfully transmission of an ASDU.
  */
 typedef Callback<void, ApsdeDataConfirmParams> ApsdeDataConfirmCallback;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * This callback is called after a ASDU has successfully received and
  *  APS push it to deliver it to the next higher layer (typically the application framework).
@@ -242,7 +242,7 @@ typedef Callback<void, ApsdeDataConfirmParams> ApsdeDataConfirmCallback;
 typedef Callback<void, ApsdeDataIndicationParams, Ptr<Packet>> ApsdeDataIndicationCallback;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * This callback is called to confirm a successfully addition of a destination
  * into the binding table.
@@ -250,7 +250,7 @@ typedef Callback<void, ApsdeDataIndicationParams, Ptr<Packet>> ApsdeDataIndicati
 typedef Callback<void, ApsmeBindConfirmParams> ApsmeBindConfirmCallback;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * This callback is called to confirm a successfully  unbind request performed
  * into the binding table.
@@ -258,7 +258,7 @@ typedef Callback<void, ApsmeBindConfirmParams> ApsmeBindConfirmCallback;
 typedef Callback<void, ApsmeBindConfirmParams> ApsmeUnbindConfirmCallback;
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Zigbee Specification r22.1.0, Section 2.2.3
  * Class that implements the Zigbee Specification Application Support Sub-layer (APS).
@@ -433,7 +433,7 @@ class ZigbeeAps : public Object
 };
 
 /**
- * @ingroup zigbee
+ * @ingroup Zigbee
  *
  * Helper class used to craft the transmission options bitmap used  by the
  * APSDE-DATA.request.

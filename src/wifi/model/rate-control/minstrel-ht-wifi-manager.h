@@ -160,7 +160,7 @@ typedef std::vector<GroupInfo> McsGroupData;
 
 /**
  * @brief Implementation of Minstrel-HT Rate Control Algorithm
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Minstrel-HT is a rate adaptation mechanism for the 802.11n/ac/ax standards
  * based on Minstrel, and is based on the approach of probing the channel

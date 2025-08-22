@@ -20,7 +20,7 @@ class EpcPgwApplication;
 class EpcMmeApplication;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @brief Create an EPC network with PointToPoint links between the core network nodes.
  *
  * This Helper will create an EPC network topology comprising of

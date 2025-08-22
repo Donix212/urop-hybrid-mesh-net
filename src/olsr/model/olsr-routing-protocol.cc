@@ -103,7 +103,7 @@ namespace olsr
 {
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  *
  * OLSR link types.
  * See \RFC{3626} section 18.5.
@@ -142,7 +142,7 @@ operator<<(std::ostream& os, LinkType linkType)
 }
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  *
  * OLSR neighbor types.
  * See \RFC{3626} section 18.6.

@@ -25,7 +25,7 @@ class FfMacScheduler;
 class LteFfrAlgorithm;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Defines a single carrier for enb, and contains pointers to LteEnbPhy,
  * LteEnbMac, LteFfrAlgorithm, and FfMacScheduler objects.

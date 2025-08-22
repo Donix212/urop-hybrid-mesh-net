@@ -26,7 +26,7 @@ class LtePdcpSapProvider;
 class Packet;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Class holding definition common to all UE/eNodeB SAP Users/Providers.
  *

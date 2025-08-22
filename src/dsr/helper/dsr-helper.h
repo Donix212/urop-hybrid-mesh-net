@@ -32,7 +32,7 @@ namespace ns3
 {
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  *
  * @brief DSR helper class to manage creation of DSR routing instance and
  *        to insert it on a node as a sublayer between transport and

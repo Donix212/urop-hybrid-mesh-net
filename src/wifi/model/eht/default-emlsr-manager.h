@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * DefaultEmlsrManager is the default EMLSR manager.
  */

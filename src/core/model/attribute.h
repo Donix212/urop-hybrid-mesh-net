@@ -31,7 +31,7 @@ class ObjectBase;
 
 /**
  *
- * @ingroup core
+ * @ingroup Core
  * @defgroup attributes Attributes
  *
  * The \c ns-3 attribute system is the mechanism used in \c ns-3 to

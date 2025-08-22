@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  *
  * @brief Helper class that adds Nix-vector routing to nodes.
  *
@@ -126,7 +126,7 @@ class NixVectorHelper : public std::enable_if_t<std::is_same_v<Ipv4RoutingHelper
 };
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * Create the typedef Ipv4NixVectorHelper with T as Ipv4RoutingHelper
  *
  * Note: This typedef enables also backwards compatibility with original Ipv4RoutingHelper.
@@ -134,7 +134,7 @@ class NixVectorHelper : public std::enable_if_t<std::is_same_v<Ipv4RoutingHelper
 typedef NixVectorHelper<Ipv4RoutingHelper> Ipv4NixVectorHelper;
 
 /**
- * @ingroup nix-vector-routing
+ * @ingroup NixVectorRouting
  * Create the typedef Ipv6NixVectorHelper with T as Ipv6RoutingHelper
  */
 typedef NixVectorHelper<Ipv6RoutingHelper> Ipv6NixVectorHelper;

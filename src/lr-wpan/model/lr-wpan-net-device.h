@@ -29,7 +29,7 @@ class LrWpanPhy;
 class LrWpanCsmaCa;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * @brief Network layer to device interface.
  *

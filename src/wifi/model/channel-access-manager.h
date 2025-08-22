@@ -40,7 +40,7 @@ enum AcIndex : uint8_t; // opaque enum declaration
  * @brief Enumeration values for the outcome of the check whether channel access is expected to be
  *        gained within a given time interval
  * @see ChannelAccessManager::GetExpectedAccessWithin
- * @ingroup wifi
+ * @ingroup Wifi
  */
 enum class WifiExpectedAccessReason : uint8_t
 {
@@ -62,7 +62,7 @@ enum class WifiExpectedAccessReason : uint8_t
 
 /**
  * @brief Manage a set of ns3::Txop
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Handle a set of independent ns3::Txop, each of which represents
  * a single DCF within a MAC stack. Each ns3::Txop has a priority

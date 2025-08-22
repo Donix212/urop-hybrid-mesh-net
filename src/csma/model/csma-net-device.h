@@ -32,14 +32,14 @@ class CsmaChannel;
 class ErrorModel;
 
 /**
- * @defgroup csma CSMA Network Device
+ * @defgroup Csma CSMA Network Device
  *
  * This section documents the API of the ns-3 csma module. For a generic functional description,
  * please refer to the ns-3 manual.
  */
 
 /**
- * @ingroup csma
+ * @ingroup Csma
  * @class CsmaNetDevice
  * @brief A Device for a Csma Network Link.
  *

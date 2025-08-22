@@ -36,7 +36,7 @@ NS_LOG_COMPONENT_DEFINE("DsdvManetExample");
 
 /**
  * @defgroup dsdv-examples DSDV Examples
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @ingroup examples
  */
 

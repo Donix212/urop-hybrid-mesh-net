@@ -21,7 +21,7 @@
 namespace ns3
 {
 /**
- * @ingroup applications
+ * @ingroup Applications
  * @defgroup udpclientserver UdpClientServer
  */
 

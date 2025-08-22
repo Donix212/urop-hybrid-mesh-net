@@ -24,7 +24,7 @@ class PositionAllocator;
 class MobilityModel;
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Helper class used to assign positions and mobility models to nodes
  * for a group mobility configuration.
  *

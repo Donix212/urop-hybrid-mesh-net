@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Headers for A-MPDU subframes
  */
 class AmpduSubframeHeader : public Header

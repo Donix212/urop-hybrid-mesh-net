@@ -26,7 +26,7 @@ class SSRecord;
 class ServiceFlow;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  *
  * Uplink Scheduler - simplified
  */

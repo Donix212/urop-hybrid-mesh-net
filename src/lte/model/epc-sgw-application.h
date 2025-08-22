@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * This application implements the Serving Gateway Entity (SGW)
  * according to the 3GPP TS 23.401 document.

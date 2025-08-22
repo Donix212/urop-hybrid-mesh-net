@@ -33,7 +33,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup randomvariable Random Variables
  *
  * @brief ns-3 random numbers are provided via instances of

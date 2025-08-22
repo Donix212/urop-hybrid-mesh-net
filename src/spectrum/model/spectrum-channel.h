@@ -30,7 +30,7 @@ class PacketBurst;
 class SpectrumValue;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Defines the interface for spectrum-aware channel implementations
  *

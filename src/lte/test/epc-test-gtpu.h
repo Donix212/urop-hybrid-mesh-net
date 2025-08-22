@@ -15,7 +15,7 @@
 using namespace ns3;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @ingroup tests
  * @defgroup lte-test lte module tests
  */

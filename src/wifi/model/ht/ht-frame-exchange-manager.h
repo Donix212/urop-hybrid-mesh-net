@@ -22,7 +22,7 @@ class MgtAddBaResponseHeader;
 class RecipientBlockAckAgreement;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * HtFrameExchangeManager handles the frame exchange sequences
  * for HT stations.

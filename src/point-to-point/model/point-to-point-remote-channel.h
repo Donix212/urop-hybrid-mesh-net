@@ -19,7 +19,7 @@ namespace ns3
 {
 
 /**
- * @ingroup point-to-point
+ * @ingroup PointToPoint
  *
  * @brief A Remote Point-To-Point Channel
  *

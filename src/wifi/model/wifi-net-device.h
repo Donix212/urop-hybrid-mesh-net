@@ -29,7 +29,7 @@ class HeConfiguration;
 class EhtConfiguration;
 
 /**
- * @defgroup wifi Wifi Models
+ * @defgroup Wifi Wifi Models
  *
  * This section documents the API of the ns-3 Wifi module. For a generic functional description,
  * please refer to the ns-3 manual.
@@ -37,7 +37,7 @@ class EhtConfiguration;
 
 /**
  * @brief Hold together all Wifi-related objects.
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class holds together ns3::Channel, ns3::WifiPhy,
  * ns3::WifiMac, and, ns3::WifiRemoteStationManager.

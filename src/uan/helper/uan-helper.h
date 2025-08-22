@@ -23,7 +23,7 @@ namespace ns3
 class UanChannel;
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * UAN configuration helper.
  */

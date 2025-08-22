@@ -26,7 +26,7 @@ namespace ns3
 using WifiSpectrumBandIndices = std::pair<uint32_t, uint32_t>;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  *  This class defines all functions to create a spectrum model for
  *  Wi-Fi based on a a spectral model aligned with an OFDM subcarrier
@@ -301,7 +301,7 @@ class WifiSpectrumValueHelper
 };
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * Struct defining a frequency range between minFrequency and maxFrequency.
  */
 struct FrequencyRange

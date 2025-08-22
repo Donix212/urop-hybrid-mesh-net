@@ -14,7 +14,7 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * log2() macro definition; to deal with \bugid{1467}.
  */
 

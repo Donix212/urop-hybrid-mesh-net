@@ -35,7 +35,7 @@ class WifiMacQueueScheduler;
 extern template class Queue<WifiMpdu, ns3::WifiMacQueueContainer>;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This queue implements the timeout procedure described in
  * (Section 9.19.2.6 "Retransmit procedures" paragraph 6; IEEE 802.11-2012).

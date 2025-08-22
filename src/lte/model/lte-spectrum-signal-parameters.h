@@ -21,7 +21,7 @@ class PacketBurst;
 class LteControlMessage;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Signal parameters for Lte
  */
@@ -47,7 +47,7 @@ struct LteSpectrumSignalParameters : public SpectrumSignalParameters
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Signal parameters for Lte Data Frame (PDSCH), and eventually after some
  * control messages through other control channel embedded in PDSCH
@@ -79,7 +79,7 @@ struct LteSpectrumSignalParametersDataFrame : public SpectrumSignalParameters
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Signal parameters for Lte DL Ctrl Frame (RS, PCFICH and PDCCH)
  */
@@ -105,7 +105,7 @@ struct LteSpectrumSignalParametersDlCtrlFrame : public SpectrumSignalParameters
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Signal parameters for Lte SRS Frame
  */

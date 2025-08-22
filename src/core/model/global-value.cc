@@ -18,7 +18,7 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * ns3::GlobalValue implementation.
  */
 

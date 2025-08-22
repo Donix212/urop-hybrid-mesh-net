@@ -20,7 +20,7 @@
 using namespace ns3;
 
 /**
- * @ingroup click
+ * @ingroup Click
  * @defgroup click-tests click module tests
  */
 

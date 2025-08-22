@@ -17,7 +17,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @brief Friis spectrum propagation loss model
  *
  * The propagation loss is calculated according to a simplified version of Friis'

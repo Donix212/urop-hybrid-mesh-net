@@ -17,7 +17,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the LQI (Link Quality Estination).
  *
  * The LQI Tag is added to each received packet, and can be

@@ -36,7 +36,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the Mac Header with the Frame Control and Sequence Number fields
  */
 class LrWpanMacHeader : public Header

@@ -32,7 +32,7 @@ namespace ns3
 {
 
 /**
- * @defgroup click Click Routing
+ * @defgroup Click Click Routing
  * This section documents the API of the ns-3 click module. For a generic functional description,
  * please refer to the ns-3 manual.
  */
@@ -40,7 +40,7 @@ namespace ns3
 class UniformRandomVariable;
 
 /**
- * @ingroup click
+ * @ingroup Click
  * @brief Class to allow a node to use Click for external routing
  */
 class Ipv4ClickRouting : public Ipv4RoutingProtocol

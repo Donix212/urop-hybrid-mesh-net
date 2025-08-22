@@ -32,7 +32,7 @@ class SsServiceFlowManager;
 class IpcsClassifier;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * SubscriberStationNetDevice subclass of WimaxNetDevice
  */
 class SubscriberStationNetDevice : public WimaxNetDevice

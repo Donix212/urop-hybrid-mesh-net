@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * SimpleOfdmSendParam class
  */
 class SimpleOfdmSendParam

@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::ErpOfdmPhy class.
  */
 
@@ -24,7 +24,7 @@ namespace ns3
 
 /**
  * @brief PHY entity for ERP-OFDM (11g)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * ERP-OFDM PHY is based on OFDM PHY.
  * ERP-DSSS/CCK mode is not supported.

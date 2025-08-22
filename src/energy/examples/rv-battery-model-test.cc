@@ -29,7 +29,7 @@ using namespace ns3::energy;
 NS_LOG_COMPONENT_DEFINE("RvBatteryModelTestSuite");
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  * This example was originally devised as a test, then it was converted
  * to an example.

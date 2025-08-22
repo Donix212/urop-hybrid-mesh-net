@@ -28,7 +28,7 @@ class Ipv6Route;
 class NetDevice;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup ipv6Routing IPv6 Routing Protocols.
  *
  * The classes in this group implement different routing protocols

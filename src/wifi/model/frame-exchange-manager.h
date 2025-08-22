@@ -43,7 +43,7 @@ struct WifiProtection;
 struct WifiAcknowledgment;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * FrameExchangeManager is a base class handling the basic frame exchange
  * sequences for non-QoS stations.

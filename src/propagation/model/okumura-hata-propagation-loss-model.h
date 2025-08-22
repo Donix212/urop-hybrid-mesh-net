@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief this class implements the Okumura Hata propagation loss model
  *

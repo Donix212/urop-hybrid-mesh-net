@@ -36,7 +36,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup length Length
  *
  * Management of lengths in real world units.

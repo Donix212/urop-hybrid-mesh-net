@@ -21,7 +21,7 @@ class WifiPsdu;
 class ErrorRateModel;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief handles interference calculations
  * @brief signal event for a PPDU.
  */
@@ -115,7 +115,7 @@ class Event : public SimpleRefCount<Event>
 std::ostream& operator<<(std::ostream& os, const Event& event);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief handles interference calculations
  */
 class InterferenceHelper : public Object

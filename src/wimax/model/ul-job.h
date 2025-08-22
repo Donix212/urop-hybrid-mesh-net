@@ -32,7 +32,7 @@ enum ReqType
 };
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief this class implements a structure to compute the priority of service flows
  */
 class UlJob : public Object

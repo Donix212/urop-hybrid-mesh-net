@@ -37,7 +37,7 @@ namespace ns3
 class TraceContainer;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief Cobalt packet queue disc
  *

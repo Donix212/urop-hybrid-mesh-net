@@ -32,7 +32,7 @@ class UlJob;
 class UplinkScheduler;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief This class manage the bandwidth request and grant mechanism.
  * The bandwidth request and grant mechanism is supported by the Bandwidth
  * Manager. Both BS and SS maintain a bandwidth manager. Furthermore BS's

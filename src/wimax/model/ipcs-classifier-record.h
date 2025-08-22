@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief IpcsClassifierRecord class
  */
 class IpcsClassifierRecord

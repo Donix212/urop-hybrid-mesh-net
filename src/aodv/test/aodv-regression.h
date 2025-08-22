@@ -17,7 +17,7 @@
 using namespace ns3;
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  *
  * @brief AODV chain regression test
  *

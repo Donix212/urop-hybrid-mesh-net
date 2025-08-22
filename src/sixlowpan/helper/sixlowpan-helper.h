@@ -22,7 +22,7 @@ class AttributeValue;
 class Time;
 
 /**
- * @ingroup sixlowpan
+ * @ingroup SixLowPan
  *
  * @brief Setup a sixlowpan stack to be used as a shim between IPv6 and a generic NetDevice.
  */

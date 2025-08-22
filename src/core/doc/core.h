@@ -12,12 +12,12 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * This file provides some doxygen documentation for the core module.
  */
 
 /**
- * @defgroup core Core
+ * @defgroup Core Core
  * @brief The "core" module contains:
  *    - a time management class to hold a time and convert between various
  *      time units: ns3::Time
@@ -46,33 +46,33 @@
  */
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup debugging Debugging tools
  *
  * Assertions, breakpoints, logging, and abnormal program termination
  */
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup core-examples Core module examples
  *  Programs which illustrate use of core module functionality.
  */
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup core-helpers Core module helper classes
  * Helper classes for the Core module
  */
 
 /**
  * @ingroup tests
- * @ingroup core
+ * @ingroup Core
  * @defgroup core-tests Core module tests
  * TestSuites for the Core module
  */
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup system System Services
  *
  * System-independent interfaces to operating system services:

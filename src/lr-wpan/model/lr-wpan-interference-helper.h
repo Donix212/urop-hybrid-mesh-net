@@ -24,7 +24,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * @brief This class provides helper functions for LrWpan interference handling.
  */

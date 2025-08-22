@@ -46,7 +46,7 @@ enum WifiMacDropReason : uint8_t; // opaque enum declaration
 /**
  * @brief Handles the packet queue and stores DCF/EDCA access parameters
  * (one Txop per AC).
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class handles the packet queue and stores DCF/EDCA access
  * parameters (one Txop per AC). It generates backoff values and stores the channel access status

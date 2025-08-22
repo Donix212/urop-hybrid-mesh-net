@@ -21,7 +21,7 @@ class MacRxMiddle;
 class CtrlBAckResponseHeader;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Maintains the scoreboard and the receive reordering buffer used by a recipient
  * of a Block Ack agreement.
  */

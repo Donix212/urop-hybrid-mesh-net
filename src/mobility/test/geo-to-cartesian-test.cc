@@ -1474,7 +1474,7 @@ const double ZWGS84_MATLAB[216] = {
 };
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @ingroup tests
  * @defgroup mobility-test mobility module tests
  */

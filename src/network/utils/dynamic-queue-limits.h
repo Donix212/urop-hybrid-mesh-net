@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * DynamicQueueLimits would be used in conjunction with a producer/consumer
  * type queue (possibly a netdevice queue).

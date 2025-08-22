@@ -6,7 +6,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of classes ns3::SentBuffer and ns3::GrantedTimeWindowMpiInterface.
  */
 
@@ -35,7 +35,7 @@ namespace ns3
 const uint32_t MAX_MPI_MSG_SIZE = 2000;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Tracks non-blocking sends
  *
@@ -70,7 +70,7 @@ class Packet;
 class DistributedSimulatorImpl;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Interface between ns-3 and MPI
  *

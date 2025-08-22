@@ -58,7 +58,7 @@ typedef Callback<void,
 typedef Callback<void, Ptr<const WifiPsdu>> RxErrorCallback;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This objects implements the PHY state machine of the Wifi device.
  */

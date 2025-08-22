@@ -54,7 +54,7 @@ NS_LOG_COMPONENT_DEFINE("GlobalRouteManagerImplTestSuite");
 //
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @ingroup tests
  * @defgroup internet-test internet module tests
  */

@@ -24,7 +24,7 @@ class WifiPsdu;
 class WifiTxVector;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * AdvancedApEmlsrManager is an advanced AP EMLSR manager.
  */

@@ -20,7 +20,7 @@ class Node;
 class CallbackBase;
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief the list of simulation nodes.
  *

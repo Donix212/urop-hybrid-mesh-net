@@ -37,7 +37,7 @@ using RuBands = std::map<WifiSpectrumBandInfo, WifiRu::RuSpec>;
 
 /**
  * @brief 802.11 PHY layer model
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This PHY implements a spectrum-aware enhancement of the 802.11 SpectrumWifiPhy
  * model.

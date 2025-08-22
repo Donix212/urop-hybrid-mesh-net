@@ -29,7 +29,7 @@ class QueueDisc;
 class NetDeviceQueueInterface;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * QueueDiscClass is the base class for classes that are included in a queue
  * disc. It has a single attribute, QueueDisc, used to set the child queue disc
@@ -72,7 +72,7 @@ class QueueDiscClass : public Object
 };
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  * @brief Enumeration of the available policies to handle the queue disc size.
  *
  * - SINGLE_INTERNAL_QUEUE is intended to handle the maxSize attribute
@@ -101,7 +101,7 @@ enum QueueDiscSizePolicy
 };
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * QueueDisc is an abstract base class providing the interface and implementing
  * the operations common to all the queueing disciplines. Child classes

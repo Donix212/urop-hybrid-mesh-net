@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief the interface for Wifi's error models
  *
  */

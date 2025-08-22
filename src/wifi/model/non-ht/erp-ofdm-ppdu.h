@@ -14,7 +14,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::ErpOfdmPpdu class.
  */
 
@@ -25,7 +25,7 @@ class WifiPsdu;
 
 /**
  * @brief ERP-OFDM PPDU (11g)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * ErpOfdmPpdu stores a preamble, PHY headers and a PSDU of a PPDU with non-HT header,
  * i.e., PPDU that uses ERP-OFDM modulation.

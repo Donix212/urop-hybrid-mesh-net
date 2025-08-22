@@ -35,7 +35,7 @@ class AttributeValue;
 class TraceSourceAccessor;
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup object Object
  * @brief Base classes which provide memory management and object aggregation.
  */

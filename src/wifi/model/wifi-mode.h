@@ -25,7 +25,7 @@ class WifiTxVector;
 
 /**
  * @brief represent a single transmission mode
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * A WifiMode is implemented by a single integer which is used
  * to lookup in a global array the characteristics of the

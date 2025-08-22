@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Block ack window
  *
  * This class provides the basic functionalities of a window sliding over a

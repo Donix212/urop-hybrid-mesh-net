@@ -15,7 +15,7 @@ namespace ns3
 class QueueDiscItem;
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * PacketFilter is the abstract base class for filters used by queue discs
  * to classify packets.

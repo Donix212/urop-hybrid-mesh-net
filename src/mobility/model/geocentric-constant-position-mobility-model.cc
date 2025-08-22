@@ -13,7 +13,7 @@
 
 /**
  *  @file
- *  @ingroup mobility
+ *  @ingroup Mobility
  *  Class GeocentricConstantPositionMobilityModel implementation.
  */
 

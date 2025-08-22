@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The different BlockAck variants.
  */
 struct BlockAckType
@@ -60,7 +60,7 @@ struct BlockAckType
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The different BlockAckRequest variants.
  */
 struct BlockAckReqType

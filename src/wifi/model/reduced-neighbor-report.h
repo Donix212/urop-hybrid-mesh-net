@@ -22,7 +22,7 @@ class WifiPhyOperatingChannel;
 
 /**
  * @brief The Reduced Neighbor Report element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class knows how to serialize and deserialize the Reduced Neighbor Report element.
  */

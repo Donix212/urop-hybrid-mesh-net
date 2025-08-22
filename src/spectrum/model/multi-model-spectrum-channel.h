@@ -23,13 +23,13 @@ namespace ns3
 {
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * Container: SpectrumModelUid_t, SpectrumConverter
  */
 typedef std::map<SpectrumModelUid_t, SpectrumConverter> SpectrumConverterMap_t;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * The Tx spectrum model information. This class is used to convert
  * one spectrum model into another one.
  */
@@ -47,13 +47,13 @@ class TxSpectrumModelInfo
 };
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * Container: SpectrumModelUid_t, TxSpectrumModelInfo
  */
 typedef std::map<SpectrumModelUid_t, TxSpectrumModelInfo> TxSpectrumModelInfoMap_t;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * The Rx spectrum model information. This class is used to convert
  * one spectrum model into another one.
  */
@@ -71,13 +71,13 @@ class RxSpectrumModelInfo
 };
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * Container: SpectrumModelUid_t, RxSpectrumModelInfo
  */
 typedef std::map<SpectrumModelUid_t, RxSpectrumModelInfo> RxSpectrumModelInfoMap_t;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * This SpectrumChannel implementation can handle the presence of
  * SpectrumPhy instances which can use

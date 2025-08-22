@@ -22,7 +22,7 @@ class PointToPointNetDevice;
 class Packet;
 
 /**
- * @ingroup point-to-point
+ * @ingroup PointToPoint
  * @brief Simple Point To Point Channel.
  *
  * This class represents a very simple point to point channel.  Think full

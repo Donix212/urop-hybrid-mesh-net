@@ -51,7 +51,7 @@ class UanPhyCalcSinrDual : public UanPhyCalcSinr
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Two channel Phy.
  *

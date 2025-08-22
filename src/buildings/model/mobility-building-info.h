@@ -24,8 +24,8 @@ namespace ns3
 {
 
 /**
- * @ingroup buildings
- * @ingroup mobility
+ * @ingroup Buildings
+ * @ingroup Mobility
 
  * @brief mobility buildings information (to be used by mobility models)
  *

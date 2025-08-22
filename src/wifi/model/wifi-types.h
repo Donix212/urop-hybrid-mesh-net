@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Enumeration of the possible channel widths
  */
 enum class WifiChannelWidthType : uint8_t
@@ -41,7 +41,7 @@ enum class WifiChannelWidthType : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The type of an MPDU.
  */
 enum MpduType
@@ -82,7 +82,7 @@ struct RxSignalInfo
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Enumeration of frequency channel types
  */
 enum class FrequencyChannelType : uint8_t

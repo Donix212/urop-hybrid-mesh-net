@@ -32,7 +32,7 @@ class WifiAssocManager;
 class EmlsrManager;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Type of association performed by this device (provided that it is supported by the standard
  * configured for this device).
@@ -44,7 +44,7 @@ enum class WifiAssocType : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Scan type (active or passive)
  */
@@ -55,7 +55,7 @@ enum class WifiScanType : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Structure holding scan parameters
  */
@@ -85,7 +85,7 @@ struct WifiScanParams
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Enumeration for power management modes
  */
@@ -98,7 +98,7 @@ enum WifiPowerManagementMode : uint8_t
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The Wifi MAC high model for a non-AP STA in a BSS. The state
  * machine is as follows:

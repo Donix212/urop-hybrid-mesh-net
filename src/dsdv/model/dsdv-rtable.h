@@ -41,7 +41,7 @@ enum RouteFlags
 };
 
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief Routing table entry
  */
 class RoutingTableEntry
@@ -310,7 +310,7 @@ class RoutingTableEntry
 };
 
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief The Routing table used by DSDV protocol
  */
 class RoutingTable

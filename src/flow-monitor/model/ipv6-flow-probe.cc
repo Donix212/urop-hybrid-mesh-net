@@ -29,7 +29,7 @@ NS_LOG_COMPONENT_DEFINE("Ipv6FlowProbe");
 //////////////////////////////////////
 
 /**
- * @ingroup flow-monitor
+ * @ingroup FlowMonitor
  *
  * @brief Tag used to allow a fast identification of the packet
  *

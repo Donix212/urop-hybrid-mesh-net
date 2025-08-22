@@ -36,7 +36,7 @@ namespace aodv
 class RoutingProtocol;
 
 /**
- * @ingroup aodv
+ * @ingroup Aodv
  * @brief maintain list of active neighbors
  */
 class Neighbors

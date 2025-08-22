@@ -13,7 +13,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * ns3::BridgeChannel declaration.
  */
 
@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup bridge
+ * @ingroup Bridge
  *
  * @brief Virtual channel implementation for bridges (BridgeNetDevice).
  *

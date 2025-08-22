@@ -28,7 +28,7 @@ namespace ns3
 class NetDevice;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  * @brief 3GPP Spectrum Propagation Loss Model
  *
  * This class models the frequency dependent propagation phenomena in the way

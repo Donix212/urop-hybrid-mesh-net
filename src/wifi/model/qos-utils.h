@@ -53,7 +53,7 @@ struct WifiAddressHash
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * This enumeration defines the Access Categories as an enumeration
  * with values corresponding to the AC index (ACI) values specified
  * (Table 8-104 "ACI-to-AC coding"; IEEE 802.11-2012).
@@ -109,7 +109,7 @@ operator<<(std::ostream& os, const AcIndex& acIndex)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * This class stores the pair of TIDs of an Access Category.
  */
 class WifiAc
@@ -148,7 +148,7 @@ class WifiAc
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Operator> overload returning true if the AC on the left has higher priority
  * than the AC on the right.
  *
@@ -159,7 +159,7 @@ class WifiAc
 bool operator>(AcIndex left, AcIndex right);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Operator>= overload returning true if the AC on the left has higher or the same
  * priority than the AC on the right.
  *
@@ -170,7 +170,7 @@ bool operator>(AcIndex left, AcIndex right);
 bool operator>=(AcIndex left, AcIndex right);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Operator< overload returning true if the AC on the left has lower priority
  * than the AC on the right.
  *
@@ -181,7 +181,7 @@ bool operator>=(AcIndex left, AcIndex right);
 bool operator<(AcIndex left, AcIndex right);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Operator<= overload returning true if the AC on the left has lower or the same
  * priority than the AC on the right.
  *
@@ -198,7 +198,7 @@ bool operator<=(AcIndex left, AcIndex right);
 extern const std::map<AcIndex, WifiAc> wifiAcList;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Maps TID (Traffic ID) to Access classes.
  * For more details see (Table 9-1 "UP-to-AC mapping"; IEEE 802.11-2012).
  *
@@ -208,7 +208,7 @@ extern const std::map<AcIndex, WifiAc> wifiAcList;
 AcIndex QosUtilsMapTidToAc(uint8_t tid);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Next function is useful to correctly sort buffered packets under block ack.
  * When an BAR is received from originator station, completed "old"
  * (see section 9.10.3 in IEEE 802.11e) packets must be forwarded up before "new" packets.
@@ -221,7 +221,7 @@ AcIndex QosUtilsMapTidToAc(uint8_t tid);
 uint32_t QosUtilsMapSeqControlToUniqueInteger(uint16_t seqControl, uint16_t endSequence);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * This function checks if packet with sequence number <i>seqNumber</i> is an "old" packet.
  * The sequence number space is considered divided into two parts, one of which is "old" and
  * one of which is "new" by means of a boundary created by adding half the sequence number
@@ -260,7 +260,7 @@ uint32_t QosUtilsMapSeqControlToUniqueInteger(uint16_t seqControl, uint16_t endS
 bool QosUtilsIsOldPacket(uint16_t startingSeq, uint16_t seqNumber);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * This function is useful to get traffic id of different packet types.
  *
  * @param packet packet to check
@@ -270,7 +270,7 @@ bool QosUtilsIsOldPacket(uint16_t startingSeq, uint16_t seqNumber);
 uint8_t GetTid(Ptr<const Packet> packet, const WifiMacHeader hdr);
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief Determine the TX queue for a given packet
  * @param item the packet
  * @returns the access category

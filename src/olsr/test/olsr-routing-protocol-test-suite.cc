@@ -14,7 +14,7 @@
 #include "ns3/test.h"
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  * @defgroup olsr-test olsr module tests
  */
 

@@ -12,7 +12,7 @@
 // Header file used only to define the stats group in Doxygen
 
 /**
- * @defgroup stats Statistics
+ * @defgroup Stats Statistics
  *
  * The statistics module includes some useful features to ease data collection from experiments.
  * In particular the following features are included:
@@ -28,7 +28,7 @@
  */
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @defgroup aggregator Data Aggregators
  *
  * Data aggregators are classes used to collect data and produce output
@@ -36,7 +36,7 @@
  */
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @defgroup probes Probes
  *
  * Probes are used to probe an underlying ns3 TraceSource exporting
@@ -48,7 +48,7 @@
  */
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @defgroup gnuplot Gnuplot
  *
  * Classes in Gnuplot group are used to collect and prepare and output data
@@ -56,7 +56,7 @@
  */
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @defgroup dataoutput Data Output
  *
  * Classes in Data Output group are used to collect and prepare and output data
@@ -64,7 +64,7 @@
  */
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @ingroup tests
  * @defgroup stats-tests Statistics module tests
  */

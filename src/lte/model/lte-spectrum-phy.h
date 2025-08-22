@@ -127,7 +127,7 @@ typedef Callback<void, DlInfoListElement_s> LtePhyDlHarqFeedbackCallback;
 typedef Callback<void, UlInfoListElement_s> LtePhyUlHarqFeedbackCallback;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * @class LteSpectrumPhy
  *
  * The LteSpectrumPhy models the physical layer of LTE

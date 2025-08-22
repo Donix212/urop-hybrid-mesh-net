@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  *  UAN protocol descriptor
  */
@@ -29,7 +29,7 @@ struct UanProtocolBits
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Common packet header fields.
  *

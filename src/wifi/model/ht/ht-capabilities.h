@@ -23,7 +23,7 @@ namespace ns3
 
 /**
  * @brief The HT Capabilities Information Element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class knows how to serialize and deserialize the HT Capabilities Information Element
  */

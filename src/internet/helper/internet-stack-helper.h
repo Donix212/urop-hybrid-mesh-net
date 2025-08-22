@@ -27,24 +27,24 @@ class Ipv4RoutingHelper;
 class Ipv6RoutingHelper;
 
 /**
- * @defgroup internet Internet
+ * @defgroup Internet Internet
  *
  * This section documents the API of the ns-3 internet module. For a generic functional description,
  * please refer to the ns-3 manual.
  */
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup ipv4Helpers IPv4 Helper classes
  */
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup ipv6Helpers IPv6 Helper classes
  */
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  *
  * @brief aggregate IP/TCP/UDP functionality to existing Nodes.
  *

@@ -38,7 +38,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup tracing Tracing
  * @brief Publish/subscribe tools to collect and report changes to any
  *        values used by the various model components.

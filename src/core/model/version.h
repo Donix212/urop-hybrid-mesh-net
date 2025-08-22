@@ -23,7 +23,7 @@ namespace ns3
 {
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup buildversion Build version reporting
  *
  * Version information is pulled from the local git repository during the build

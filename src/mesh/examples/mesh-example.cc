@@ -104,7 +104,7 @@ RxTrace(Ptr<const Packet> p)
 }
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  * @brief MeshTest class
  */
 class MeshTest

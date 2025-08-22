@@ -56,7 +56,7 @@ class EpcS11Sap
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * MME side of the S11 Service Access Point (SAP), provides the MME
  * methods to be called when an S11 message is received by the MME.
@@ -139,7 +139,7 @@ class EpcS11SapMme : public EpcS11Sap
 };
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * SGW side of the S11 Service Access Point (SAP), provides the SGW
  * methods to be called when an S11 message is received by the SGW.

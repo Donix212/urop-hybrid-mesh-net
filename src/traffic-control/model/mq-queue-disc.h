@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * mq is a classful multi-queue aware dummy scheduler. It has as many child
  * queue discs as the number of device transmission queues. Packets are

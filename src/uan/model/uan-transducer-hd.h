@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Half duplex implementation of transducer object
  *

@@ -25,8 +25,8 @@ namespace ns3
 {
 
 /**
- * @ingroup buildings
- * @ingroup mobility
+ * @ingroup Buildings
+ * @ingroup Mobility
  *
  * @brief 2D random walk mobility model which avoids buildings.
  *

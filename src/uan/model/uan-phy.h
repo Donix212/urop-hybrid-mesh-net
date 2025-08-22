@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Class used for calculating SINR of packet in UanPhy.
  *
@@ -89,7 +89,7 @@ class UanPhyCalcSinr : public Object
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Calculate packet error probability, based on received SINR
  * and modulation (mode).
@@ -125,7 +125,7 @@ class UanPhyPer : public Object
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Interface for PHY event listener.
  *
@@ -163,7 +163,7 @@ class UanPhyListener
 };
 
 /**
- * @ingroup uan
+ * @ingroup Uan
  *
  * Base class for UAN Phy models.
  */

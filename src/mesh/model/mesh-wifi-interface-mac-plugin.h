@@ -21,7 +21,7 @@ namespace ns3
 class MeshWifiInterfaceMac;
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  *
  * @brief Common interface for mesh point interface MAC plugins
  *

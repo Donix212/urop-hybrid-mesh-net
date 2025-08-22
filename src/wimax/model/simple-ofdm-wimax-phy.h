@@ -33,7 +33,7 @@ class Packet;
 class SimpleOfdmWimaxChannel;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * @brief SimpleOfdmWimaxPhy class
  */
 class SimpleOfdmWimaxPhy : public WimaxPhy

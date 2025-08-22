@@ -15,7 +15,7 @@ namespace ns3
 {
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  *
  * @brief Quick and dirty delay and jitter estimation,
  * implementing the jitter algorithm originally from

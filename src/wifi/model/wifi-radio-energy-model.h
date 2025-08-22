@@ -24,7 +24,7 @@ namespace ns3
 class WifiTxCurrentModel;
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * A WifiPhy listener class for notifying the WifiRadioEnergyModel of Wifi radio
  * state change.
  *
@@ -89,7 +89,7 @@ class WifiRadioEnergyModelPhyListener : public WifiPhyListener
 };
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief A WiFi radio energy model.
  *
  * 4 states are defined for the radio: TX, RX, IDLE, SLEEP. Default state is

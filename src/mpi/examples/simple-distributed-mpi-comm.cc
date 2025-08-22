@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * This test is equivalent to simple-distributed with the addition of
  * initialization of MPI by user code (this script) and providing

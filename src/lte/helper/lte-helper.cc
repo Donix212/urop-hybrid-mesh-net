@@ -1166,7 +1166,7 @@ LteHelper::ActivateDedicatedEpsBearer(Ptr<NetDevice> ueDevice, EpsBearer bearer,
 }
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * DrbActivatior allows user to activate bearers for UEs
  * when EPC is not used. Activation function is hooked to

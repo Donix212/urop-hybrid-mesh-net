@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * ns3::BridgeNetDevice implementation.
  */
 

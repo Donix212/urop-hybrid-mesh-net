@@ -27,7 +27,7 @@ namespace lrwpan
 {
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * The device Capabilities.
  */
 enum DeviceType
@@ -37,7 +37,7 @@ enum DeviceType
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the Superframe Specification information field.
  * See IEEE 802.15.4-2011   Section 5.2.2.1.2 Figure 41
  */
@@ -149,7 +149,7 @@ class SuperframeField
 std::ostream& operator<<(std::ostream& os, const SuperframeField& superframeField);
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the GTS information fields.
  * See IEEE 802.15.4-2011   Section 5.2.2 Figure 39
  */
@@ -233,7 +233,7 @@ class GtsFields
 std::ostream& operator<<(std::ostream& os, const GtsFields& gtsFields);
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * Represent the Pending Address Specification field.
  * See IEEE 802.15.4-2011   Section 5.2.2.1.6. Figure 45
  */
@@ -327,7 +327,7 @@ class PendingAddrFields
 std::ostream& operator<<(std::ostream& os, const PendingAddrFields& pendingAddrFields);
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Represent the Capability Information Field.
  * See IEEE 802.15.4-2011   Section 5.3.1.2 Figure 50

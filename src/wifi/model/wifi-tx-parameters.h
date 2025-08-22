@@ -27,7 +27,7 @@ struct WifiProtection;
 struct WifiAcknowledgment;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class stores the TX parameters (TX vector, protection mechanism,
  * acknowledgment mechanism, TX duration, ...) for a frame of different types

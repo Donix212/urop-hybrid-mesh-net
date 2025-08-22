@@ -25,7 +25,7 @@ class QueueDisc;
 class NetDeviceQueueInterface;
 
 /**
- * @defgroup traffic-control Traffic Control model
+ * @defgroup TrafficControl Traffic Control model
  */
 
 /**
@@ -35,7 +35,7 @@ class NetDeviceQueueInterface;
  * processing packets and performing actions on them: scheduling, dropping,
  * marking, policing, etc.
  *
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * @brief Traffic control layer class
  *

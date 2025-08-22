@@ -22,7 +22,7 @@ namespace ns3
 {
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  *
  * @brief Network device transmission queue with lock
  *
@@ -88,7 +88,7 @@ class NetDeviceQueueLock : public NetDeviceQueue
 };
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  *
  * @brief This class performs the actual data reading from the netmap ring.
  */
@@ -117,7 +117,7 @@ class NetmapNetDeviceFdReader : public FdReader
 };
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  *
  * @brief a NetDevice to read/write network traffic from/into a netmap file descriptor.
  *

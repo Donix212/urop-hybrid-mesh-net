@@ -11,7 +11,7 @@
 
 /**
  * @file
- * @ingroup core
+ * @ingroup Core
  * @ingroup core-tests
  * @ingroup global-value-tests
  * GlobalValue test suite

@@ -23,7 +23,7 @@ class MobilityModel;
 class Building;
 
 /**
- * @ingroup buildings
+ * @ingroup Buildings
  *
  * Helper used to install a MobilityBuildingInfo into a set of nodes.
  */

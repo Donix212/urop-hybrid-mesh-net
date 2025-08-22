@@ -18,7 +18,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * ns3::BridgeNetDevice declaration.
  */
 
@@ -28,7 +28,7 @@ namespace ns3
 class Node;
 
 /**
- * @defgroup bridge Bridge Network Device
+ * @defgroup Bridge Bridge Network Device
  *
  * @brief a virtual net device that bridges multiple LAN segments
  *
@@ -56,7 +56,7 @@ class Node;
  */
 
 /**
- * @ingroup bridge
+ * @ingroup Bridge
  * @brief a virtual net device that bridges multiple LAN segments
  */
 class BridgeNetDevice : public NetDevice
@@ -201,7 +201,7 @@ class BridgeNetDevice : public NetDevice
     Time m_expirationTime;  //!< time it takes for learned MAC state to expire
 
     /**
-     * @ingroup bridge
+     * @ingroup Bridge
      * Structure holding the status of an address
      */
     struct LearnedState

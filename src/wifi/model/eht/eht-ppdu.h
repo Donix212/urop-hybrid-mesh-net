@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::EhtPpdu class.
  */
 
@@ -24,7 +24,7 @@ namespace ns3
 
 /**
  * @brief EHT PPDU (11be)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * EhtPpdu is currently identical to HePpdu
  */

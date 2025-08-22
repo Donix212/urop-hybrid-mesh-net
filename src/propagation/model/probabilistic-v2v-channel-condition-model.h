@@ -16,7 +16,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the V2V Urban scenario
  *
@@ -68,7 +68,7 @@ class ProbabilisticV2vUrbanChannelConditionModel : public ThreeGppChannelConditi
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Computes the channel condition for the V2V Highway scenario
  *

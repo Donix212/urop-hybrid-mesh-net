@@ -16,7 +16,7 @@ namespace ns3
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Assign WifiRadioEnergyModel to wifi devices.
  *
  * This installer installs WifiRadioEnergyModel for only WifiNetDevice objects.

@@ -27,7 +27,7 @@
  */
 
 /**
- * @ingroup core
+ * @ingroup Core
  * @defgroup testing Testing
  * @brief Tools to define and execute unit tests.
  *

@@ -39,7 +39,7 @@ class LrWpanErrorModel;
 struct LrWpanSpectrumSignalParameters;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Helper structure to manage the power measurement during ED.
  */
@@ -51,7 +51,7 @@ struct EdPower
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This data structure provides the Bit rate and Symbol rate for a given channel
  * See IEEE802.15.4-2006 Table 1 and 2 in section 6.1.1 and 6.1.2
@@ -63,7 +63,7 @@ struct PhyDataAndSymbolRates
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This data structure provides number of symbols for the PPDU headers: SHR and PHR
  * See IEEE802.15.4-2006 Figure 16, Table 19 and 20 in section 6.3
@@ -76,7 +76,7 @@ struct PhyPpduHeaderSymbolNumber
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This Phy option will be used to index various Tables in IEEE802.15.4-2011
  */
@@ -95,7 +95,7 @@ enum PhyOption
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * IEEE802.15.4-2006 PHY Emumerations Table 18
  * in section 6.2.3
@@ -138,7 +138,7 @@ std::ostream& operator<<(std::ostream& os, const TracedValue<PhyEnumeration>& st
 namespace TracedValueCallback
 {
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  * TracedValue callback signature for PhyEnumeration.
  *
  * @param [in] oldValue original value of the traced variable
@@ -148,7 +148,7 @@ typedef void (*PhyEnumeration)(PhyEnumeration oldValue, PhyEnumeration newValue)
 } // namespace TracedValueCallback
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * IEEE802.15.4-2006 PHY PIB Attribute Identifiers Table 23 in section 6.4.2
  */
@@ -165,7 +165,7 @@ enum PhyPibAttributeIdentifier
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * IEEE802.15.4-2006 PHY PIB Attributes Table 23 in section 6.4.2
  */
@@ -184,7 +184,7 @@ struct PhyPibAttributes : public SimpleRefCount<PhyPibAttributes>
 };
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PdDataIndication
  *
@@ -195,7 +195,7 @@ struct PhyPibAttributes : public SimpleRefCount<PhyPibAttributes>
 typedef Callback<void, uint32_t, Ptr<Packet>, uint8_t> PdDataIndicationCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PdDataConfirm
  *
@@ -204,7 +204,7 @@ typedef Callback<void, uint32_t, Ptr<Packet>, uint8_t> PdDataIndicationCallback;
 typedef Callback<void, PhyEnumeration> PdDataConfirmCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PlmeCcaConfirm
  *
@@ -213,7 +213,7 @@ typedef Callback<void, PhyEnumeration> PdDataConfirmCallback;
 typedef Callback<void, PhyEnumeration> PlmeCcaConfirmCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PlmeEdConfirm
  *
@@ -223,7 +223,7 @@ typedef Callback<void, PhyEnumeration> PlmeCcaConfirmCallback;
 typedef Callback<void, PhyEnumeration, uint8_t> PlmeEdConfirmCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PlmeGetAttributeConfirm
  *
@@ -235,7 +235,7 @@ typedef Callback<void, PhyEnumeration, PhyPibAttributeIdentifier, Ptr<PhyPibAttr
     PlmeGetAttributeConfirmCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PlmeSetTRXStateConfirm
  *
@@ -244,7 +244,7 @@ typedef Callback<void, PhyEnumeration, PhyPibAttributeIdentifier, Ptr<PhyPibAttr
 typedef Callback<void, PhyEnumeration> PlmeSetTRXStateConfirmCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * This method implements the PD SAP: PlmeSetAttributeConfirm
  *
@@ -254,7 +254,7 @@ typedef Callback<void, PhyEnumeration> PlmeSetTRXStateConfirmCallback;
 typedef Callback<void, PhyEnumeration, PhyPibAttributeIdentifier> PlmeSetAttributeConfirmCallback;
 
 /**
- * @ingroup lr-wpan
+ * @ingroup LrWpan
  *
  * Make LrWpanPhy a SpectrumPhy so we can enable the eventual modeling of
  * device interference

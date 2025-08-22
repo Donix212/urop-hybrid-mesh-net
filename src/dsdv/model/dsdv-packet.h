@@ -31,7 +31,7 @@ namespace ns3
 namespace dsdv
 {
 /**
- * @ingroup dsdv
+ * @ingroup Dsdv
  * @brief DSDV Update Packet Format
  * @verbatim
  |      0        |      1        |      2        |       3       |

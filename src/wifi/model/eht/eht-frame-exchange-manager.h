@@ -20,7 +20,7 @@ namespace ns3
 class MgtEmlOmn;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Reasons for an EMLSR client to drop an ICF
  */
 enum class WifiIcfDrop : uint8_t
@@ -61,7 +61,7 @@ operator<<(std::ostream& os, WifiIcfDrop reason)
 }
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * EhtFrameExchangeManager handles the frame exchange sequences
  * for EHT stations.

@@ -28,7 +28,7 @@ class VirtualNetDevice;
 class EpcX2;
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * @brief Base helper class to handle the creation of the EPC entities.
  *

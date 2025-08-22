@@ -30,7 +30,7 @@ class IpL4Protocol;
 class Ipv4Header;
 
 /**
- * @ingroup internet
+ * @ingroup Internet
  * @defgroup ipv4 IPv4 classes and sub-modules
  */
 /**

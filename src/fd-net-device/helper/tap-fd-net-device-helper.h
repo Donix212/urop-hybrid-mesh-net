@@ -23,7 +23,7 @@ namespace ns3
 {
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  * @brief build a set of FdNetDevice objects attached to a virtual TAP network
  * interface
  *

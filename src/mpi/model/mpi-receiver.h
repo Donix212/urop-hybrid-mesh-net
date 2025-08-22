@@ -6,7 +6,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * ns3::MpiReceiver declaration,
  * provides an interface to aggregate to MPI-compatible NetDevices.
  */
@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Class to aggregate to a NetDevice if it supports MPI capability
  *

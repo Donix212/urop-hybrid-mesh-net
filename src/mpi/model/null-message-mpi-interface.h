@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Declaration of classes ns3::NullMessageSentBuffer and ns3::NullMessageMpiInterface.
  */
 
@@ -32,7 +32,7 @@ class RemoteChannelBundle;
 class Packet;
 
 /**
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * @brief Interface between ns-3 and MPI for the Null Message
  * distributed simulation implementation.

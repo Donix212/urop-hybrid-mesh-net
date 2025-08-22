@@ -40,11 +40,11 @@ namespace olsr
 {
 
 ///
-/// @defgroup olsr OLSR Routing
+/// @defgroup Olsr OLSR Routing
 /// This section documents the API of the ns-3 OLSR module. For a generic
 /// functional description, please refer to the ns-3 manual.
 
-/// @ingroup olsr
+/// @ingroup Olsr
 /// An OLSR's routing table entry.
 struct RoutingTableEntry
 {
@@ -66,7 +66,7 @@ struct RoutingTableEntry
 class RoutingProtocol;
 
 ///
-/// @ingroup olsr
+/// @ingroup Olsr
 ///
 /// @brief OLSR routing protocol for IPv4
 ///

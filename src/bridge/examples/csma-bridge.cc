@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @ingroup bridge
+ * @ingroup Bridge
  * Bridge example connecting four nodes,
  * with the bridge acting as a simple switch.
  */

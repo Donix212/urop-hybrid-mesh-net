@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup olsr
+ * @ingroup Olsr
  *
  * @brief Helper class that adds OLSR routing to nodes.
  *

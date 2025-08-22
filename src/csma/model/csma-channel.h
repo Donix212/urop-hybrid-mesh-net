@@ -22,7 +22,7 @@ class Packet;
 class CsmaNetDevice;
 
 /**
- * @ingroup csma
+ * @ingroup Csma
  * @brief CsmaNetDevice Record
  *
  * Stores the information related to each net device that is
@@ -68,7 +68,7 @@ enum WireState
 };
 
 /**
- * @ingroup csma
+ * @ingroup Csma
  * @brief Csma Channel.
  *
  * This class represents a simple Csma channel that can be used

@@ -23,7 +23,7 @@ namespace ns3
 class ConstantVelocityMobilityModel;
 
 /**
- * @ingroup mobility
+ * @ingroup Mobility
  * @brief Helper class which can read ns-2 movement files and configure nodes mobility.
  *
  * This implementation is based on the ns2 movement documentation of ns2

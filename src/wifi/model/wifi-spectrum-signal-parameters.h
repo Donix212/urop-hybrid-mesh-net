@@ -20,7 +20,7 @@ namespace ns3
 class WifiPpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * Signal parameters for wifi
  */

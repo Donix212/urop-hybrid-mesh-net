@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @class MinMaxAvgTotalCalculator
  * @brief Template class MinMaxAvgTotalCalculator
  *
@@ -278,7 +278,7 @@ MinMaxAvgTotalCalculator<T>::Output(DataOutputCallback& callback) const
 }
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  * @class CounterCalculator
  * @brief Template class CounterCalculator
  *

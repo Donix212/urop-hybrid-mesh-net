@@ -20,7 +20,7 @@ namespace ns3
 
 /**
  * @ingroup ipv6
- * @ingroup traffic-control
+ * @ingroup TrafficControl
  *
  * Ipv6PacketFilter is the abstract base class for filters defined for IPv6 packets.
  */

@@ -17,7 +17,7 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup spectrum
+ * @ingroup Spectrum
  *
  * Signal parameters for HalfDuplexIdealPhy
  */

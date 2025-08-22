@@ -64,7 +64,7 @@
 
 /**
  * @ingroup system-tests
- * @ingroup csma
+ * @ingroup Csma
  * @defgroup system-tests-csma CSMA System Tests
  *
  * @brief CSMA System Tests

@@ -19,7 +19,7 @@ namespace ns3
 struct RrpaaWifiRemoteStation;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * Robust Rate and Power Adaptation Algorithm
  *
  * This class implements the RRPAA algorithm as described in <i>Rate, Power and Carrier-Sense

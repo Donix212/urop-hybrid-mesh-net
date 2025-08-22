@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Implementation of class ns3::NullMessageSimulatorImpl.
  */
 

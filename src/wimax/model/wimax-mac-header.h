@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class Represents the HT (Header Type) field of generic MAC and bandwidth request headers
  * @see GenericMacHeader
  * @see BandwidthRequestHeader
@@ -94,7 +94,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the Generic mac Header as described by IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems 6.3.2.1.1 Generic MAC header, page 36
@@ -240,7 +240,7 @@ class GenericMacHeader : public Header
 namespace ns3
 {
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the bandwidth-request mac Header as described by IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems 6.3.2.1.2 Bandwidth request header, page 38
@@ -369,7 +369,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the grant management sub-header as described by IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems 6.3.2.2.2 Grant Management subheader, page 40
@@ -452,7 +452,7 @@ class GrantManagementSubheader : public Header
 namespace ns3
 {
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * This class implements the fragmentation sub-header as described by IEEE Standard for
  * Local and metropolitan area networks Part 16: Air Interface for Fixed Broadband Wireless Access
  * Systems 6.3.2.2.1 Fragmentation subheader, page 39

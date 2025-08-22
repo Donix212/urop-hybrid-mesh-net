@@ -20,7 +20,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  * The LteSimpleNetDevice class implements the LTE simple net device.
  * This class is used to provide a limited LteNetDevice functionalities that
  * are necessary for testing purposes.

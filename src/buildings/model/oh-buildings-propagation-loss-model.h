@@ -18,8 +18,8 @@ namespace ns3
 class OkumuraHataPropagationLossModel;
 
 /**
- * @ingroup buildings
- * @ingroup propagation
+ * @ingroup Buildings
+ * @ingroup Propagation
  *
  *  this model combines the OkumuraHata model with the BuildingsPropagationLossModel
  *

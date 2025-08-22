@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  * @brief Model the transmit current as a function of the transmit power and mode
  *
@@ -42,7 +42,7 @@ class WifiTxCurrentModel : public Object
 };
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  *
  * @brief a linear model of the Wifi transmit current
  *

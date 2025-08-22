@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of:
  * - ns3::PhyEntity class
  * - ns3::SignalNoiseDbm, ns3::MpduInfo, and ns3::RxSignalInfo structs
@@ -54,7 +54,7 @@ class WifiPpdu;
 
 /**
  * @brief Abstract class for PHY entities
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class enables to have a unique set of APIs
  * to be used by each PHY entity, corresponding to

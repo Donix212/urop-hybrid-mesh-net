@@ -47,7 +47,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("VirtualNetDeviceExample");
 
 /**
- * @ingroup virtual-net-device
+ * @ingroup VirtualNetDevice
  *
  * Tunnel class - its goal is to create and manage the tunnels between endpoints.
  */

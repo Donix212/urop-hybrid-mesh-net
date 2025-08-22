@@ -136,7 +136,7 @@ struct WifiRemoteStationState
 };
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * @brief hold a list of per-remote-station state.
  *
  * \sa ns3::WifiRemoteStation.

@@ -21,7 +21,7 @@ namespace energy
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Rakhmatov Vrudhula non-linear battery model.
  *
  * This (energy source) model implements an analytical non-linear battery model.

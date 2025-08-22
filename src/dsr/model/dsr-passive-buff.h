@@ -30,7 +30,7 @@ namespace ns3
 namespace dsr
 {
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @brief DSR Passive Buffer Entry
  */
 class DsrPassiveBuffEntry
@@ -266,7 +266,7 @@ class DsrPassiveBuffEntry
 };
 
 /**
- * @ingroup dsr
+ * @ingroup Dsr
  * @class DsrPassiveBuffer
  * @brief DSR passive buffer
  */

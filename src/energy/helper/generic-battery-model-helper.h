@@ -18,7 +18,7 @@ namespace ns3
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Creates and assign an assortment of BatteryModels to Nodes.
  *
  */

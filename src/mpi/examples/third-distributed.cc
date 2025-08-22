@@ -19,7 +19,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  *
  * Distributed version of third.cc from the tutorial.
  *

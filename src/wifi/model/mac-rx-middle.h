@@ -24,7 +24,7 @@ class Mac48Address;
 class WifiMpdu;
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class handles duplicate detection and recomposition of fragments.
  */

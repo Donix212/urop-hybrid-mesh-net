@@ -26,7 +26,7 @@ class Address;
 class Time;
 
 /**
- * @ingroup network
+ * @ingroup Network
  *
  * @brief A network Node.
  *

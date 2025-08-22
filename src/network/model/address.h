@@ -21,7 +21,7 @@ namespace ns3
 {
 
 /**
- * @ingroup network
+ * @ingroup Network
  * @defgroup address Address
  *
  * Network Address abstractions, including MAC, IPv4 and IPv6.

@@ -26,7 +26,7 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("LteRrcProtocolIdeal");
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  */
 

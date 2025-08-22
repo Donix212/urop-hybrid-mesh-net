@@ -25,7 +25,7 @@ namespace ns3
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Creates EnergySource objects.
  *
  * This class creates and installs an energy source onto network nodes.
@@ -90,7 +90,7 @@ class EnergySourceHelper
 };
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Creates DeviceEnergyModel objects.
  *
  * This class helps to create and install DeviceEnergyModel onto NetDevice. A

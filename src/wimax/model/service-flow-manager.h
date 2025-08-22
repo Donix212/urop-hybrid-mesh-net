@@ -27,7 +27,7 @@ class SSRecord;
 class WimaxConnection;
 
 /**
- * @ingroup wimax
+ * @ingroup Wimax
  * The same service flow manager class serves both for BS and SS though some functions are exclusive
  * to only one of them.
  */

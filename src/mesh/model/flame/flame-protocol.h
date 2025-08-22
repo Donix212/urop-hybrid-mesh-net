@@ -16,7 +16,7 @@
 #include <map>
 
 /**
- * @ingroup mesh
+ * @ingroup Mesh
  * @defgroup flame FLAME
  *
  * @brief Forwarding LAyer for MEshing protocol

@@ -13,7 +13,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::EhtPhy class.
  */
 
@@ -27,7 +27,7 @@ namespace ns3
 
 /**
  * @brief PHY entity for EHT (11be)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * EHT PHY is based on HE PHY.
  *

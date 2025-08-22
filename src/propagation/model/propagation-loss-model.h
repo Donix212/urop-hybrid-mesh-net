@@ -22,11 +22,11 @@ namespace ns3
 {
 
 /**
- * @defgroup propagation Propagation Models
+ * @defgroup Propagation Propagation Models
  */
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  * @ingroup tests
  * @defgroup propagation-tests Propagation module tests
  */
@@ -34,7 +34,7 @@ namespace ns3
 class MobilityModel;
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Models the propagation loss through a transmission medium
  *
@@ -132,7 +132,7 @@ class PropagationLossModel : public Object
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief The propagation loss follows a random distribution.
  */
@@ -162,7 +162,7 @@ class RandomPropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief a Friis propagation loss model
  *
@@ -317,7 +317,7 @@ class FriisPropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief a Two-Ray Ground propagation loss model ported from NS2
  *
@@ -430,7 +430,7 @@ class TwoRayGroundPropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief a log distance propagation model.
  *
@@ -499,7 +499,7 @@ class LogDistancePropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief A log distance path loss propagation model with three distance
  * fields. This model is the same as ns3::LogDistancePropagationLossModel
@@ -575,7 +575,7 @@ class ThreeLogDistancePropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Nakagami-m fast fading propagation loss model.
  *
@@ -638,7 +638,7 @@ class NakagamiPropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief Return a constant received power level independent of the transmit
  *  power
@@ -684,7 +684,7 @@ class FixedRssLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief The propagation loss is fixed for each pair of nodes and doesn't depend on their actual
  * positions.
@@ -738,7 +738,7 @@ class MatrixPropagationLossModel : public PropagationLossModel
     typedef std::pair<const Ptr<MobilityModel>, const Ptr<MobilityModel>> MobilityPair;
 
     /**
-     * @ingroup propagation
+     * @ingroup Propagation
      *
      * @brief Hasher for a pair of mobility models.
      */
@@ -761,7 +761,7 @@ class MatrixPropagationLossModel : public PropagationLossModel
 };
 
 /**
- * @ingroup propagation
+ * @ingroup Propagation
  *
  * @brief The propagation loss depends only on the distance (range) between transmitter and
  * receiver.

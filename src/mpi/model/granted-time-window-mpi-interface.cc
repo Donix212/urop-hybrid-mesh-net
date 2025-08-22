@@ -6,7 +6,7 @@
 
 /**
  * @file
- * @ingroup mpi
+ * @ingroup Mpi
  * Implementation of classes ns3::SentBuffer and ns3::GrantedTimeWindowMpiInterface.
  */
 

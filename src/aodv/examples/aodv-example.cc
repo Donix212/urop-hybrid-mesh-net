@@ -24,7 +24,7 @@ using namespace ns3;
 
 /**
  * @defgroup aodv-examples AODV Examples
- * @ingroup aodv
+ * @ingroup Aodv
  * @ingroup examples
  */
 

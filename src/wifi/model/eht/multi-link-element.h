@@ -34,7 +34,7 @@ using AssocReqRefVariant = std::variant<std::reference_wrapper<MgtAssocRequestHe
 
 /**
  * @brief The Multi-Link element
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * The 802.11be Multi-Link element (see Sec.9.4.2.312 of 802.11be D5.0)
  *
@@ -45,7 +45,7 @@ class MultiLinkElement : public WifiInformationElement
 {
   public:
     /**
-     * @ingroup wifi
+     * @ingroup Wifi
      * Multi-Link element variants
      *
      * Note that Multi-Link element variants can be added to this enum only when
@@ -64,7 +64,7 @@ class MultiLinkElement : public WifiInformationElement
     };
 
     /**
-     * @ingroup wifi
+     * @ingroup Wifi
      * SubElement IDs
      */
     enum SubElementId : uint8_t
@@ -262,7 +262,7 @@ class MultiLinkElement : public WifiInformationElement
     mutable ContainingFrame m_containingFrame; //!< reference to the mgt frame containing this MLE
 
     /**
-     * @ingroup wifi
+     * @ingroup Wifi
      * Per-STA Profile Subelement of Multi-Link element.
      * See Sec. 9.4.2.312.2.3 of 802.11be D1.5
      *

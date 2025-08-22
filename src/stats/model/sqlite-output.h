@@ -17,7 +17,7 @@ namespace ns3
 {
 
 /**
- * @ingroup stats
+ * @ingroup Stats
  *
  * @brief A C++ interface towards an SQLITE database
  *

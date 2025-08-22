@@ -30,13 +30,13 @@ namespace ns3
 {
 
 /**
- * @defgroup fd-net-device File Descriptor Network Device
+ * @defgroup FdNetDevice File Descriptor Network Device
  * This section documents the API of the ns-3 fd-net-device module.
  * For a generic functional description, please refer to the ns-3 manual.
  */
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  * @brief This class performs the actual data reading from the sockets.
  */
 class FdNetDeviceFdReader : public FdReader
@@ -59,7 +59,7 @@ class FdNetDeviceFdReader : public FdReader
 class Node;
 
 /**
- * @ingroup fd-net-device
+ * @ingroup FdNetDevice
  *
  * @brief a NetDevice to read/write network traffic from/into a file descriptor.
  *

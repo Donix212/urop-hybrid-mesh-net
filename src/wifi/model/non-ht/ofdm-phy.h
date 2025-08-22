@@ -15,7 +15,7 @@
 
 /**
  * @file
- * @ingroup wifi
+ * @ingroup Wifi
  * Declaration of ns3::OfdmPhy class
  * and ns3::OfdmPhyVariant enum.
  */
@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup wifi
+ * @ingroup Wifi
  * The OFDM (11a) PHY variants.
  *
  * @see OfdmPhy
@@ -38,7 +38,7 @@ enum OfdmPhyVariant
 
 /**
  * @brief PHY entity for OFDM (11a)
- * @ingroup wifi
+ * @ingroup Wifi
  *
  * This class is also used for the 10 MHz and 5 MHz bandwidth
  * variants addressing vehicular communications (default is 20 MHz

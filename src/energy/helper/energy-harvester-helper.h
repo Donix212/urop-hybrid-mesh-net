@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup energy
+ * @ingroup Energy
  * @brief Creates EnergyHarvester objects.
  *
  * This class creates and installs energy harvesters onto network nodes.

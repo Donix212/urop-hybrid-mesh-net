@@ -24,7 +24,7 @@ namespace ns3
 {
 
 /**
- * @ingroup lte
+ * @ingroup Lte
  *
  * Takes care of storing the information generated at PHY layer regarding
  * transmission. Metrics saved are:

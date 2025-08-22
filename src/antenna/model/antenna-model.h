@@ -17,19 +17,19 @@ namespace ns3
 {
 
 /**
- * @defgroup antenna Antenna module
+ * @defgroup Antenna Antenna module
  * @brief This module contains several antenna
  * radiation pattern models.
  */
 
 /**
- * @ingroup antenna
+ * @ingroup Antenna
  * @ingroup tests
  * @defgroup antenna-tests Antenna module tests
  */
 
 /**
- * @ingroup antenna
+ * @ingroup Antenna
  *
  * @brief interface for antenna radiation pattern models
  *

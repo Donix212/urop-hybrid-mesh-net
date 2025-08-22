@@ -15,7 +15,7 @@
 namespace ns3
 {
 /**
- * @ingroup applications
+ * @ingroup Applications
  *
  * @brief Packet header to carry sequence number and timestamp
  *

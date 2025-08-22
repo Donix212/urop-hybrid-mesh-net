@@ -27,7 +27,7 @@ namespace ns3
 {
 
 /**
- * @ingroup visualizer
+ * @ingroup Visualizer
  *
  * @brief helper class to be used by the visualizer
  * @internal
