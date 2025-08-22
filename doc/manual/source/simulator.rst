@@ -9,6 +9,7 @@ This chapter explains some of the core ns-3 simulator concepts.
    :maxdepth: 2
 
    events
+   units
    callbacks
    object-model
    attributes
