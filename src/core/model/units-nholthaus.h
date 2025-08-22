@@ -1993,6 +1993,17 @@ namespace units
 			return *this;
 		}
 
+#if DECIBEL_IMPLICIT_CONVERSION_DISABLED_FOR_NS3
+                // The following code (disabled for ns-3) performs implicit
+                // conversions.  When enabled, and used with dB_t variables,
+                // unexpected conversons could occur, such as:
+                //    auto valueInDb = units::dimensionless::dB_t(3);
+                //    valueInDb = 6;  // is 6 in dB or linear scale?
+                //
+                // If the below code is enabled, the double value 6 will be
+                // interpreted in linear scale. valueInDb will be 7.78151 dB.
+                // By disabling the below code, the above double will be
+                // interpreted as 6 dB, and valueInDb will be 6 dB.
 		/**
 		* @brief		assignment
 		* @details		performs implicit conversions from built-in types ONLY for scalar units
@@ -2004,6 +2015,7 @@ namespace units
 			nls::m_value = rhs;
 			return *this;
 		}
+#endif
 
 		/**
 		 * @brief		less-than
