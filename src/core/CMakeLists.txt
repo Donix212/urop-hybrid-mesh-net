@@ -173,6 +173,7 @@ set(source_files
     model/global-value.cc
     model/trace-source-accessor.cc
     model/config.cc
+    model/db.cc
     model/callback.cc
     model/names.cc
     model/vector.cc
@@ -222,6 +223,7 @@ set(header_files
     model/callback.h
     model/command-line.h
     model/config.h
+    model/db.h
     model/default-deleter.h
     model/default-simulator-impl.h
     model/demangle.h
