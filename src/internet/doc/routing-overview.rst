@@ -90,7 +90,7 @@ The following unicast routing protocols are defined for IPv4 and IPv6:
 
 * classes Ipv4ListRouting and Ipv6ListRouting (used to store a prioritized list of routing protocols)
 * classes Ipv4StaticRouting and Ipv6StaticRouting (covering both unicast and multicast)
-* class Ipv4GlobalRouting (used to store routes computed by the global route
+* class Ipv[4,6]GlobalRouting (used to store routes computed by the global route
   manager, if that is used)
 * class Ipv4NixVectorRouting (a more efficient version of global routing that
   stores source routes in a packet header field)
@@ -174,7 +174,7 @@ constraints:
   centralized routing will be modified in the future to reduce computations and
   runtime performance.
 
-Presently, global centralized IPv4 unicast routing over both point-to-point and
+Presently, global centralized IPv[4,6] unicast routing over both point-to-point and
 shared (CSMA) links is supported.
 
 By default, when using the |ns3| helper API and the default InternetStackHelper,
@@ -196,15 +196,20 @@ following function call will cause all of the nodes that have an Ipv4 interface
 to receive forwarding tables entered automatically by the GlobalRouteManager::
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+  Ipv6GlobalRoutingHelper::PopulateRoutingTables();
 
 *Note:* A reminder that the wifi NetDevice will work but does not take any
 wireless effects into account. For wireless, we recommend OLSR dynamic routing
 described below.
 
+*Note:* For Ipv6, calls to globalRouting via the Ipv6GlobalRoutingHelper will enable Forwarding for all nodes in the simulation with globalRouting installed.
+        for a more hands on approach , it is recommended to use the GlobalRouteManager directly.
+
 It is possible to call this function again in the midst of a simulation using
 the following additional public function::
 
   Ipv4GlobalRoutingHelper::RecomputeRoutingTables();
+  Ipv6GlobalRoutingHelper::RecomputeRoutingTables();
 
 which flushes the old tables, queries the nodes for new interface information,
 and rebuilds the routes.
@@ -217,10 +222,10 @@ at time 5 seconds::
 
 
 There are two attributes that govern the behavior. The first is
-Ipv4GlobalRouting::RandomEcmpRouting. If set to true, packets are randomly
+Ipv[4,6]GlobalRouting::RandomEcmpRouting. If set to true, packets are randomly
 routed across equal-cost multipath routes. If set to false (default), only one
 route is consistently used. The second is
-Ipv4GlobalRouting::RespondToInterfaceEvents. If set to true, dynamically
+Ipv[4,6]GlobalRouting::RespondToInterfaceEvents. If set to true, dynamically
 recompute the global routes upon Interface notification events (up/down, or
 add/remove address). If set to false (default), routing may break unless the
 user manually calls RecomputeRoutingTables() after such events. The default is
@@ -231,7 +236,7 @@ Global Routing Implementation
 
 This section is for those readers who care about how this is implemented.  A
 singleton object (GlobalRouteManager) is responsible for populating the static
-routes on each node, using the public Ipv4 API of that node.  It queries each
+routes on each node, using the public Ipv[4,6]API of that node.  It queries each
 node in the topology for a "globalRouter" interface.  If found, it uses the API
 of that interface to obtain a "link state advertisement (LSA)" for the router.
 Link State Advertisements are used in OSPF routing, and we follow their
@@ -261,7 +266,7 @@ advertisements for all common types of network links:
 Therefore, we think that enabling these other link types will be more
 straightforward now that the underlying OSPF SPF framework is in place.
 
-Presently, we can handle IPv4 point-to-point, numbered links, as well as shared
+Presently, we can handle IPv[4,6] point-to-point, numbered links, as well as shared
 broadcast (CSMA) links.  Equal-cost multipath is also supported.  Although
 wireless link types are supported by the implementation, note that due
 to the nature of this implementation, any channel effects will not be
@@ -288,7 +293,7 @@ is finally used to populate the routes themselves.
 Limitations
 ~~~~~~~~~~~
 
-The following are the known limitations of the GlobalRouting implementation:
+The following are the known limitations of the GlobalRouting implementation both for Ipv4 and Ipv6:
 
 #. When calculating routes for networks using GlobalRouting,
    if multiple exit Interfaces are present from the root node to a network,
@@ -312,6 +317,14 @@ The following are the known limitations of the GlobalRouting implementation:
    the combination of both is not fully supported and may lead to unexpected results
    and in some specific cases routing loops.
    This limitation is tracked in issue #1242 of the issue tracker.
+
+The Following are the known limitations of the GlobalRouting implementation for Ipv6 ONLY:
+
+#. The GlobalRouting implementation for Ipv6 does not support non-Onlink Ipv6Addresses. The API will assert if it encounters such an address.
+#. The GlobalRouting implementation for Ipv6 does not support StrongEndSystem Models. Calls to GlobalRouting
+   via the Ipv6GlobalRoutingHelper will automatically disable StrongEndSystem model for all nodes in the system.
+   When using the GlobalRouteManager Make sure to disable Strong End System Models for all nodes in the system.
+
 
 RIP and RIPng
 +++++++++++++
