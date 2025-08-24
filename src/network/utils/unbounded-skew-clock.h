@@ -54,7 +54,6 @@ class UnboundedSkewClock : public LocalClock
     Time m_lastreadptime;                ///< Last read time
     std::vector<_Float32> m_skew_values; ///< Vector to store skew values
     uint32_t m_index;                    ///< Index to track current position in skew values vector
-    uint32_t m_total_skew;               ///< Total skew accumulated
 };
 
 } // namespace ns3

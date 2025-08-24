@@ -31,16 +31,18 @@ UnboundedSkewClock::GetTypeId()
 
 UnboundedSkewClock::UnboundedSkewClock()
     : m_index(0),
-      m_total_skew(0)
+        m_ptime(Simulator::Now()),
+        m_lastreadptime(Simulator::Now())
 {
     NS_LOG_FUNCTION(this);
     // Initialize skew values vector with some example skew values (in nanoseconds)
-    m_skew_values = {0.0, 0.01, 0.1, 1.0, 1.01, 1.1}; // Example skew values
+    m_skew_values = {0.0f, 0.01f, 0.1f, 1.0f, 1.01f, 1.1f}; // Example skew values
 }
 
 UnboundedSkewClock::UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, uint32_t u_numSkews)
     : m_index(0),
-      m_total_skew(0)
+        m_ptime(Simulator::Now()),
+        m_lastreadptime(Simulator::Now())
 {
     NS_LOG_FUNCTION(this);
     // Initialize skew values vector with values in the specified range
@@ -54,7 +56,7 @@ UnboundedSkewClock::UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, u
     uv->SetAttribute("Max", DoubleValue(u_maxSkew));
     for (uint32_t i = 0; i < u_numSkews; ++i)
     {
-        m_skew_values.push_back(uv->GetValue());
+        m_skew_values.push_back(static_cast<_Float32>(uv->GetValue()));
     }
     NS_LOG_INFO("Initialized skew values between " << u_minSkew << " and " << u_maxSkew);
 }
@@ -69,7 +71,7 @@ UnboundedSkewClock::Now()
 {
     NS_LOG_FUNCTION(this);
 
-    _Float32 current_skew = 1.0; // Default skew is 1.0 (no skew)
+    _Float32 current_skew = 1.0f; // Default skew is 1.0 (no skew)
     if (!m_skew_values.empty())
     {
         current_skew = m_skew_values[m_index];
