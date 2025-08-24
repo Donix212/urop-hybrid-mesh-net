@@ -12,6 +12,7 @@
 #include "net-device.h"
 
 #include "ns3/callback.h"
+#include "ns3/local-clock.h"
 #include "ns3/object.h"
 #include "ns3/ptr.h"
 
@@ -293,6 +294,7 @@ class Node : public Object
     std::vector<Ptr<Application>> m_applications;         //!< Applications associated to this node
     ProtocolHandlerList m_handlers;                       //!< Protocol handlers in the node
     DeviceAdditionListenerList m_deviceAdditionListeners; //!< Device addition listeners in the node
+    Ptr<LocalClock> m_localClock;                         //!< The local clock of this node
 };
 
 } // namespace ns3
