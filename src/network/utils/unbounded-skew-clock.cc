@@ -30,9 +30,10 @@ UnboundedSkewClock::GetTypeId()
 }
 
 UnboundedSkewClock::UnboundedSkewClock()
-    : m_index(0),
-        m_ptime(Simulator::Now()),
-        m_lastreadptime(Simulator::Now())
+    : m_ptime(Simulator::Now()),
+      m_lastreadptime(Simulator::Now()),
+      m_index(0)
+
 {
     NS_LOG_FUNCTION(this);
     // Initialize skew values vector with some example skew values (in nanoseconds)
@@ -40,9 +41,9 @@ UnboundedSkewClock::UnboundedSkewClock()
 }
 
 UnboundedSkewClock::UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, uint32_t u_numSkews)
-    : m_index(0),
-        m_ptime(Simulator::Now()),
-        m_lastreadptime(Simulator::Now())
+    : m_ptime(Simulator::Now()),
+      m_lastreadptime(Simulator::Now()),
+      m_index(0)
 {
     NS_LOG_FUNCTION(this);
     // Initialize skew values vector with values in the specified range
