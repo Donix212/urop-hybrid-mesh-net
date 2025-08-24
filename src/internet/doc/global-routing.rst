@@ -14,7 +14,7 @@ implementation that walks the simulation topology and runs a shortest path
 algorithm, and populates each node's routing tables. No actual protocol overhead
 (on the simulated links) is incurred with this approach.
 
-Presently, global centralized IPv4 unicast routing over both point-to-point and
+Presently, global centralized IPv[4,6] unicast routing over both point-to-point and
 shared (CSMA) links is supported.
 
 The following is a high level overview of the classes that are used to implement the Global Routing API:
@@ -54,6 +54,12 @@ passing through the designated router, and discarding the (shorter) path that di
 the combination of both is not fully supported and may lead to unexpected results and,
 in some specific cases, routing loops.
 This limitation is tracked in issue #1242 of the issue tracker.
+
+The Following are the known limitations of the GlobalRouting implementation for Ipv6 ONLY:
+
+#. The GlobalRouting implementation for Ipv6 does not support non-Onlink Ipv6Addresses. The API will assert if it encounters such an address.
+#. The GlobalRouting implementation for Ipv6 does not support StrongEndSystem Models. Calls to GlobalRouting
+   via the Ipv6GlobalRoutingHelper will disable StrongEndSystem model for all nodes in the system.
 
 Usage
 -----
