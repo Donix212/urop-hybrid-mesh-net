@@ -177,7 +177,7 @@ def extract_linked_libraries(library_name: str, prefix: str) -> tuple:
     try:
         with open(os.path.abspath(library_path), "rb") as f:
             linked_libs = re.findall(
-                b"\x00(lib.*?.%b)" % LIBRARY_EXTENSION.encode("utf-8"), f.read()
+                b"\x00(lib[^\\x00]*?\\.%b)(?![\\w.])" % LIBRARY_EXTENSION.encode("utf-8"), f.read()
             )
     except Exception as e:
         print(f"Failed to extract libraries used by {library_path} with exception:{e}")
@@ -533,7 +533,7 @@ def load_modules():
         cppyy.load_library(library)
         for module in modules:
             library_name_from_module = (
-                f"{version}-{module}{'-' if len(build_type)>0 else ''}{build_type}"
+                f"{version}-{module}{'-' if len(build_type)>0 else ''}{build_type}."
             )
             if library_name_from_module in library:
                 cppyy.include(f"ns3/{module}-module.h")
