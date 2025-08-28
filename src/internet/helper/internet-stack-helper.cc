@@ -12,6 +12,8 @@
 #include "ipv4-global-routing-helper.h"
 #include "ipv4-list-routing-helper.h"
 #include "ipv4-static-routing-helper.h"
+#include "ipv6-global-routing-helper.h"
+#include "ipv6-list-routing-helper.h"
 #include "ipv6-static-routing-helper.h"
 
 #include "ns3/arp-l3-protocol.h"
@@ -121,11 +123,15 @@ InternetStackHelper::Initialize()
     Ipv4StaticRoutingHelper staticRouting;
     Ipv4GlobalRoutingHelper globalRouting;
     Ipv4ListRoutingHelper listRouting;
-    Ipv6StaticRoutingHelper staticRoutingv6;
+    Ipv6StaticRoutingHelper staticRouting6;
+    Ipv6GlobalRoutingHelper globalRouting6;
+    Ipv6ListRoutingHelper listRouting6;
     listRouting.Add(staticRouting, 0);
     listRouting.Add(globalRouting, -10);
     SetRoutingHelper(listRouting);
-    SetRoutingHelper(staticRoutingv6);
+    listRouting6.Add(staticRouting6, 0);
+    listRouting6.Add(globalRouting6, -10);
+    SetRoutingHelper(listRouting6);
 }
 
 InternetStackHelper::~InternetStackHelper()
