@@ -16,5 +16,6 @@ This chapter covers some additional features provided by ns-3 which can be usefu
    statistics
    helpers
    gnuplot
+   stats-example-gnuplot-helper
    python
 
