@@ -9,6 +9,7 @@
 #ifndef AODV_REGRESSION_H
 #define AODV_REGRESSION_H
 
+#include "ns3/ipv4-interface-container.h"
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
 #include "ns3/socket.h"
@@ -168,23 +169,24 @@ class ChainRegressionTest : public TestCase
     ~ChainRegressionTest() override;
 
   private:
-    /// \internal It is important to have pointers here
-    NodeContainer* m_nodes;
 
-    /// PCAP file names prefix
-    const std::string m_prefix;
-    /// Total simulation time
-    const Time m_time;
-    /// Chain size
-    const uint32_t m_size;
-    /// Chain step, meters
-    const double m_step;
-    /// ARP alive timeout
-    const Time m_arpAliveTimeout;
-    /// Socket
-    Ptr<Socket> m_socket;
-    /// Sequence number
-    uint16_t m_seq;
+    NodeContainer* m_nodes; //!< Pointer to the node container for the test topology.
+    std::string m_prefix; //!< Unique file names prefix for the test case.
+    Time m_time; //!< Simulation time for the test.
+    uint32_t m_size; //!< Number of nodes in the chain.
+    double m_step; //!< Step size for node placement in meters.
+    Time m_arpAliveTimeout; //!< ARP cache alive timeout.
+    uint16_t m_seq; //!< ICMP sequence number.
+    Ipv4InterfaceContainer m_interfaces; //!< Assigned IP interfaces for the test nodes.
+    Ipv4Address m_lastNodeAddress; //!< IPv4 address of the last node in the chain.
+    Ptr<Socket> m_socket; //!< Socket used for sending/receiving pings.
+    uint32_t m_icmpReplyCount; //!< Number of ICMP echo replies received.
+
+    /**
+     * Handle an incoming ICMP echo reply.
+     * \param socket The socket on which the reply was received.
+     */
+    void HandleIcmpReply(Ptr<Socket> socket);
 
     /// Create test topology
     void CreateNodes();
