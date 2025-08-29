@@ -696,7 +696,6 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     {
         return; // NS With EARO that is invalid
     }
-
     Ipv6Address target = nsHdr.GetIpv6Target();
 
     // Check if hasEaro
