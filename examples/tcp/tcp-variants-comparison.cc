@@ -415,8 +415,9 @@ main(int argc, char* argv[])
     NS_LOG_LOGIC("TCP ADU size is: " << tcp_adu_size);
 
     // Set the simulation start and stop time
-    double start_time = 0.1;
-    double stop_time = start_time + duration;
+    Time start_time = Seconds(0.1);
+    Time duration = Seconds(100.0); // or use cmd value if set elsewhere
+    Time stop_time = start_time + duration;
 
     // 2 MB of TCP buffer
     Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue(1 << 21));
@@ -531,13 +532,13 @@ main(int argc, char* argv[])
         ftp.SetAttribute("MaxBytes", UintegerValue(data_mbytes * 1000000));
 
         ApplicationContainer sourceApp = ftp.Install(sources.Get(i));
-        sourceApp.Start(Seconds(start_time * i));
-        sourceApp.Stop(Seconds(stop_time - 3));
+        sourceApp.Start(start_time * i);
+        sourceApp.Stop(stop_time - Seconds(3));
 
         sinkHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
         ApplicationContainer sinkApp = sinkHelper.Install(sinks.Get(i));
-        sinkApp.Start(Seconds(start_time * i));
-        sinkApp.Stop(Seconds(stop_time));
+        sinkApp.Start(start_time * i);
+        sinkApp.Stop(stop_time);
     }
 
     // Set up tracing if enabled
@@ -562,31 +563,32 @@ main(int argc, char* argv[])
             firstRtt[index + 1] = true;
             firstRto[index + 1] = true;
 
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Time trace_time = start_time * index + MilliSeconds(10);
+            Simulator::Schedule(trace_time,
                                 &TraceCwnd,
                                 prefix_file_name + flowString + "-cwnd.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceSsThresh,
                                 prefix_file_name + flowString + "-ssth.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceRtt,
                                 prefix_file_name + flowString + "-rtt.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceRto,
                                 prefix_file_name + flowString + "-rto.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceNextTx,
                                 prefix_file_name + flowString + "-next-tx.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceInFlight,
                                 prefix_file_name + flowString + "-inflight.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceNextRx,
                                 prefix_file_name + flowString + "-next-rx.data",
                                 index + 1);
@@ -631,7 +633,7 @@ main(int argc, char* argv[])
         flowHelper.InstallAll();
     }
 
-    Simulator::Stop(Seconds(stop_time));
+    Simulator::Stop(stop_time);
     Simulator::Run();
 
     if (flow_monitor)

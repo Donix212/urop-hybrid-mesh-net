@@ -261,16 +261,8 @@ main(int argc, char* argv[])
     }
 
     // Write out the simulation configuration to a file
-    auto WriteConfig = [](const std::string& filename,
-                          uint32_t payloadSize,
-                          const DataRate& dataRate,
-                          const std::string& tcpVariant,
-                          const std::string& phyRate,
-                          const Time& simulationTime,
-                          bool pcapTracing,
-                          bool enableGnuplot,
-                          const std::string& outputPrefix) {
-        std::ofstream configFile(filename);
+    {
+        std::ofstream configFile(outputPrefix + "-config.txt");
         configFile << "payloadSize: " << payloadSize << std::endl;
         configFile << "dataRate: " << dataRate << std::endl;
         configFile << "tcpVariant: " << tcpVariant << std::endl;
@@ -281,15 +273,6 @@ main(int argc, char* argv[])
         configFile << "outputPrefix: " << outputPrefix << std::endl;
         configFile.close();
     };
-    WriteConfig(outputPrefix + "-config.txt",
-                payloadSize,
-                dataRate,
-                tcpVariant,
-                phyRate,
-                simulationTime,
-                pcapTracing,
-                enableGnuplot,
-                outputPrefix);
 
     return 0;
 }
