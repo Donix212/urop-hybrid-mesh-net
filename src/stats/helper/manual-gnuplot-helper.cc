@@ -1,37 +1,9 @@
-void
-ManualGnuplotHelper::AddDataPointToDatasetWithError(uint32_t plotId,
-                                                    uint32_t datasetId,
-                                                    double x,
-                                                    double y,
-                                                    double errorX,
-                                                    double errorY)
-{
-    NS_LOG_FUNCTION(this << plotId << datasetId << x << y << errorX << errorY);
-
-    auto plotIt = m_plots.find(plotId);
-    if (plotIt == m_plots.end())
-    {
-        NS_LOG_ERROR("Plot ID " << plotId << " not found");
-        return;
-    }
-
-    // Check if dataset index is valid
-    if (datasetId >= plotIt->second.datasets.size())
-    {
-        NS_LOG_ERROR("Dataset ID " << datasetId << " not found in plot " << plotId);
-        return;
-    }
-
-    // Add data with error bars to the specified dataset
-    plotIt->second.datasets[datasetId].Add(x, y, errorX, errorY);
-}
-
 /*
  * Copyright (c) 2025 ns-3 project
  *
  * SPDX-License-Identifier: GPL-2.0-only
  *
- * Author: Enhanced GnuPlot Examples Implementation
+ * Author: Arnav Kapoor (kapoorarnav43@gmail.com)
  */
 
 #include "manual-gnuplot-helper.h"
@@ -85,6 +57,34 @@ ManualGnuplotHelper::DoAddPlot(const std::string& plotName,
     plotInfo.datasets.push_back(dataset);
 
     return plotId;
+}
+
+void
+ManualGnuplotHelper::AddDataPointToDatasetWithError(uint32_t plotId,
+                                                    uint32_t datasetId,
+                                                    double x,
+                                                    double y,
+                                                    double errorX,
+                                                    double errorY)
+{
+    NS_LOG_FUNCTION(this << plotId << datasetId << x << y << errorX << errorY);
+
+    auto plotIt = m_plots.find(plotId);
+    if (plotIt == m_plots.end())
+    {
+        NS_LOG_ERROR("Plot ID " << plotId << " not found");
+        return;
+    }
+
+    // Check if dataset index is valid
+    if (datasetId >= plotIt->second.datasets.size())
+    {
+        NS_LOG_ERROR("Dataset ID " << datasetId << " not found in plot " << plotId);
+        return;
+    }
+
+    // Add data with error bars to the specified dataset
+    plotIt->second.datasets[datasetId].Add(x, y, errorX, errorY);
 }
 
 uint32_t
