@@ -416,8 +416,7 @@ main(int argc, char* argv[])
 
     // Set the simulation start and stop time
     Time start_time = Seconds(0.1);
-    Time duration = Seconds(100.0); // or use cmd value if set elsewhere
-    Time stop_time = start_time + duration;
+    Time stop_time = start_time + Seconds(duration);
 
     // 2 MB of TCP buffer
     Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue(1 << 21));
