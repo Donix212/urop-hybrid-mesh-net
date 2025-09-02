@@ -30,12 +30,10 @@ NS_OBJECT_ENSURE_REGISTERED(SimpleNtpServer);
 TypeId
 SimpleNtpServer::GetTypeId()
 {
-    static TypeId tid =
-        TypeId("ns3::SimpleNtpServer")
-            .SetParent<SinkApplication>()
-            .SetGroupName("Applications")
-            .AddConstructor<SimpleNtpServer>()
-    ;
+    static TypeId tid = TypeId("ns3::SimpleNtpServer")
+                            .SetParent<SinkApplication>()
+                            .SetGroupName("Applications")
+                            .AddConstructor<SimpleNtpServer>();
     return tid;
 }
 
@@ -115,7 +113,7 @@ SimpleNtpServer::HandleRead(Ptr<Socket> socket)
         {
             SimpleNtpHeader simpleNtpHeader;
             packet->RemoveHeader(simpleNtpHeader);
-            
+
             Time t1 = GetNode()->GetLocalTime();
             Time t2 = GetNode()->GetLocalTime();
 

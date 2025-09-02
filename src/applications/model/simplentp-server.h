@@ -27,9 +27,9 @@ namespace ns3
 /**
  * @ingroup simplentpclientserver
  *
- * @brief 
+ * @brief
  * Uses UDP packets to simulate a simple NTP application
- * 
+ *
  */
 class SimpleNtpServer : public SinkApplication
 {
@@ -64,8 +64,8 @@ class SimpleNtpServer : public SinkApplication
      */
     void HandleRead(Ptr<Socket> socket);
 
-    Ptr<Socket> m_socket;            //!< Socket
-    uint64_t m_received;             //!< Number of received packets
+    Ptr<Socket> m_socket; //!< Socket
+    uint64_t m_received;  //!< Number of received packets
 };
 
 } // namespace ns3

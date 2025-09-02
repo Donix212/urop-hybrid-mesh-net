@@ -77,10 +77,10 @@ class SimpleNtpClient : public SourceApplication
     Time m_interval;  //!< Packet inter-send time
     uint32_t m_size;  //!< Size of the sent packet (including the SeqTsHeader)
 
-    uint32_t m_sent;                    //!< Counter for sent packets
-    uint64_t m_totalTx;                 //!< Total bytes sent
-    Ptr<Socket> m_socket;               //!< Socket
-    EventId m_sendEvent;                //!< Event to send the next packet
+    uint32_t m_sent;      //!< Counter for sent packets
+    uint64_t m_totalTx;   //!< Total bytes sent
+    Ptr<Socket> m_socket; //!< Socket
+    EventId m_sendEvent;  //!< Event to send the next packet
     Address m_peer;
 
 #ifdef NS3_LOG_ENABLE

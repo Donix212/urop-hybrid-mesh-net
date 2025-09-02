@@ -10,10 +10,10 @@
 
 #include "ns3/double.h"
 #include "ns3/log.h"
+#include "ns3/rng-seed-manager.h"
 #include "ns3/shuffle.h"
 #include "ns3/simulator.h"
 #include "ns3/type-id.h"
-#include "ns3/rng-seed-manager.h"
 
 namespace ns3
 {
@@ -83,7 +83,7 @@ UnboundedSkewClock::Now()
         current_skew = m_skew_values[m_index];
     }
     m_ptime += (Simulator::Now() - m_lastreadptime) * (current_skew); // Update current time
-    m_lastreadptime = Simulator::Now();   // Update last read time
+    m_lastreadptime = Simulator::Now();                               // Update last read time
     return m_ptime;
 }
 

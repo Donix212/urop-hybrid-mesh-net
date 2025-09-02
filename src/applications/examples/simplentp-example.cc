@@ -9,9 +9,9 @@
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
+#include "ns3/log.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
-#include "ns3/log.h"
 
 using namespace ns3;
 
@@ -20,11 +20,10 @@ NS_LOG_COMPONENT_DEFINE("SimpleNtpExample");
 int
 main(int argc, char* argv[])
 {
-
     LogComponentEnable("SimpleNtpExample", LOG_LEVEL_INFO);
     LogComponentEnable("SimpleNtpClient", LOG_LEVEL_INFO);
     LogComponentEnable("SimpleNtpServer", LOG_LEVEL_INFO);
-    
+
     NodeContainer n;
     n.Create(2);
 
@@ -56,18 +55,19 @@ main(int argc, char* argv[])
     Ptr<Node> nodeB = n.Get(1);
     Ptr<UnboundedSkewClock> clockB = CreateObject<UnboundedSkewClock>(0.99, 1.01, 10);
     nodeB->SetAttribute("LocalClock", PointerValue(clockB));
-    
+
     SimpleNtpServerHelper serverHelper;
     auto serverApp = serverHelper.Install(n.Get(1));
     serverApp.Start(Seconds(1));
     serverApp.Stop(Seconds(10));
 
     Time interPacketInterval = Seconds(1.);
-    SimpleNtpClientHelper clientHelper(InetSocketAddress(i.GetAddress(1), 123), interPacketInterval);
+    SimpleNtpClientHelper clientHelper(InetSocketAddress(i.GetAddress(1), 123),
+                                       interPacketInterval);
     auto clientApp = clientHelper.Install(n.Get(0));
     clientApp.Start(Seconds(1));
     clientApp.Stop(Seconds(10));
-    
+
     Simulator::Run();
     Simulator::Destroy();
 }

@@ -50,16 +50,15 @@ SimpleNtpClient::GetTypeId()
                           MakeTimeChecker())
             .AddAttribute("RemoteAddress",
                           "The destination address of the outbound packets (time server).",
-                           AddressValue(), 
-                           MakeAddressAccessor(&SimpleNtpClient::m_peer),
-                           MakeAddressChecker())
+                          AddressValue(),
+                          MakeAddressAccessor(&SimpleNtpClient::m_peer),
+                          MakeAddressChecker())
             .AddAttribute("PacketSize",
                           "Size of packets generated. The minimum packet size is 12 bytes which is "
                           "the size of the header carrying the sequence number and the time stamp.",
                           UintegerValue(1024),
                           MakeUintegerAccessor(&SimpleNtpClient::m_size),
-                          MakeUintegerChecker<uint32_t>(12, 65507))
-    ;
+                          MakeUintegerChecker<uint32_t>(12, 65507));
     return tid;
 }
 
@@ -209,7 +208,7 @@ SimpleNtpClient::CalculateOffset(Ptr<Socket> socket)
         {
             SimpleNtpHeader simpleNtpHeader;
             packet->RemoveHeader(simpleNtpHeader);
-            
+
             Time t0 = simpleNtpHeader.GetOriginateTimestamp();
             Time t1 = simpleNtpHeader.GetServerReceiveTimestamp();
             Time t2 = simpleNtpHeader.GetTransmitTimestamp();
