@@ -4,6 +4,7 @@ build_lib(
     helper/bulk-send-helper.cc
     helper/on-off-helper.cc
     helper/packet-sink-helper.cc
+    helper/simplentp-helper.cc
     helper/three-gpp-http-helper.cc
     helper/udp-client-server-helper.cc
     helper/udp-echo-helper.cc
@@ -15,6 +16,9 @@ build_lib(
     model/seq-ts-echo-header.cc
     model/seq-ts-header.cc
     model/seq-ts-size-header.cc
+    model/simplentp-client.cc
+    model/simplentp-header.cc
+    model/simplentp-server.cc
     model/sink-application.cc
     model/source-application.cc
     model/three-gpp-http-client.cc
@@ -30,6 +34,7 @@ build_lib(
     helper/bulk-send-helper.h
     helper/on-off-helper.h
     helper/packet-sink-helper.h
+    helper/simplentp-helper.h
     helper/three-gpp-http-helper.h
     helper/udp-client-server-helper.h
     helper/udp-echo-helper.h
@@ -41,6 +46,9 @@ build_lib(
     model/seq-ts-echo-header.h
     model/seq-ts-header.h
     model/seq-ts-size-header.h
+    model/simplentp-client.h
+    model/simplentp-header.h
+    model/simplentp-server.h
     model/sink-application.h
     model/source-application.h
     model/three-gpp-http-client.h
@@ -55,6 +63,7 @@ build_lib(
   LIBRARIES_TO_LINK ${libinternet}
   TEST_SOURCES
     test/three-gpp-http-client-server-test.cc
+    test/simplentp-test-suite.cc
     test/bulk-send-application-test-suite.cc
     test/udp-client-server-test.cc
 )
