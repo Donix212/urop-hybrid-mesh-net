@@ -20,7 +20,11 @@
 #include "ns3/test.h"
 #include "ns3/simplentp-helper.h"
 #include "ns3/simplentp-server.h"
+#include "ns3/simplentp-client.h"
+#include "ns3/unbounded-skew-clock.h"
 #include "ns3/uinteger.h"
+#include "ns3/pointer.h"
+#include "ns3/log.h"
 
 #include <fstream>
 
@@ -82,13 +86,22 @@ SimpleNtpServerTestCase::DoRun()
 
     ipv4.SetBase("10.1.1.0", "255.255.255.0");
     Ipv4InterfaceContainer i = ipv4.Assign(d);
+
+    // Set clocks
+    Ptr<Node> nodeA = n.Get(0);
+    Ptr<UnboundedSkewClock> clockA = CreateObject<UnboundedSkewClock>(0.0, 1.0, 10);
+    nodeA->SetAttribute("LocalClock", PointerValue(clockA));
+
+    Ptr<Node> nodeB = n.Get(1);
+    Ptr<UnboundedSkewClock> clockB = CreateObject<UnboundedSkewClock>(0.0, 1.0, 10);
+    nodeA->SetAttribute("LocalClock", PointerValue(clockB));
     
-    SimpleNtpServerHelper serverHelper(InetSocketAddress(i.GetAddress(0), 123));
+    SimpleNtpServerHelper serverHelper;
     auto serverApp = serverHelper.Install(n.Get(1));
     serverApp.Start(Seconds(1));
     serverApp.Stop(Seconds(10));
 
-    Time interPacketInterval = Seconds(1.);
+    Time interPacketInterval = Seconds(1);
     SimpleNtpClientHelper clientHelper(InetSocketAddress(i.GetAddress(0), 123), interPacketInterval);
     auto clientApp = clientHelper.Install(n.Get(0));
     clientApp.Start(Seconds(2));
@@ -116,7 +129,7 @@ class SimpleNtpClientServerTestSuite : public TestSuite
 SimpleNtpClientServerTestSuite::SimpleNtpClientServerTestSuite()
     : TestSuite("applications-simple-ntp", Type::UNIT)
 {
-    AddTestCase(new SimpleNtpClientServerTestSuite, TestCase::Duration::QUICK);
+    AddTestCase(new SimpleNtpServerTestCase, TestCase::Duration::QUICK);
 }
 
 static SimpleNtpClientServerTestSuite

@@ -13,6 +13,7 @@
 #include "ns3/shuffle.h"
 #include "ns3/simulator.h"
 #include "ns3/type-id.h"
+#include "ns3/rng-seed-manager.h"
 
 namespace ns3
 {
@@ -52,6 +53,10 @@ UnboundedSkewClock::UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, u
         NS_LOG_ERROR("Invalid skew range: minSkew should be less than maxSkew.");
         return;
     }
+
+    RngSeedManager::SetSeed(time(nullptr));
+    RngSeedManager::SetRun(1);
+
     Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable>();
     uv->SetAttribute("Min", DoubleValue(u_minSkew));
     uv->SetAttribute("Max", DoubleValue(u_maxSkew));
@@ -77,8 +82,7 @@ UnboundedSkewClock::Now()
     {
         current_skew = m_skew_values[m_index];
     }
-    m_ptime += NanoSeconds((Simulator::Now() - m_lastreadptime).GetNanoSeconds() *
-                           current_skew); // Update current time
+    m_ptime += (Simulator::Now() - m_lastreadptime) * (current_skew); // Update current time
     m_lastreadptime = Simulator::Now();   // Update last read time
     return m_ptime;
 }

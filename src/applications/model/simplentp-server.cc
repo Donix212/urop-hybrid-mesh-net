@@ -124,8 +124,8 @@ SimpleNtpServer::HandleRead(Ptr<Socket> socket)
             simpleNtpHeaderSend.SetServerReceiveTimestamp(t1);
             simpleNtpHeaderSend.SetTransmitTimestamp(t2);
 
-            auto p = Create<Packet>(simpleNtpHeader.GetSerializedSize());
-            p->AddHeader(simpleNtpHeader);
+            auto p = Create<Packet>(simpleNtpHeaderSend.GetSerializedSize());
+            p->AddHeader(simpleNtpHeaderSend);
             socket->SendTo(p, 0, from);
 
             m_received++;

@@ -41,7 +41,7 @@ class SimpleNtpServerHelper : public ApplicationHelper
      * SimpleNtpServer applications.
      * @param address The address of the server.
      */
-    SimpleNtpServerHelper(const Address& address);
+    SimpleNtpServerHelper();
 }; // end of `class SimpleNTPServerHelper`
 
 } // namespace ns3

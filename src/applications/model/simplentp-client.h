@@ -25,6 +25,7 @@ namespace ns3
 
 class Socket;
 class Packet;
+class Address;
 
 /**
  * @ingroup simplentpclientserver
@@ -80,6 +81,7 @@ class SimpleNtpClient : public SourceApplication
     uint64_t m_totalTx;                 //!< Total bytes sent
     Ptr<Socket> m_socket;               //!< Socket
     EventId m_sendEvent;                //!< Event to send the next packet
+    Address m_peer;
 
 #ifdef NS3_LOG_ENABLE
     std::string m_peerString; //!< Remote peer address string
