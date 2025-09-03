@@ -14,7 +14,7 @@
 #ifndef REPLAY_CLOCK_H
 #define REPLAY_CLOCK_H
 
-#include "nstime.h"
+#include "ns3/nstime.h"
 
 #include <bitset>
 

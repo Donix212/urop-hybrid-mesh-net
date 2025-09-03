@@ -11,9 +11,8 @@
  * 02110-1301, USA.
  */
 
-#include "replay-clock.h"
-
-#include "log.h"
+#include "ns3/replay-clock.h"
+#include "ns3/log.h"
 
 #include <bit>
 
