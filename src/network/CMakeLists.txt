@@ -67,6 +67,8 @@ set(source_files
     utils/queue-size.cc
     utils/queue.cc
     utils/radiotap-header.cc
+    utils/replay-clock.cc
+    utils/replay-switch-clock.cc
     utils/simple-channel.cc
     utils/simple-net-device.cc
     utils/sll-header.cc
@@ -148,6 +150,8 @@ set(header_files
     utils/queue-size.h
     utils/queue.h
     utils/radiotap-header.h
+    utils/replay-clock.h
+    utils/replay-switch-clock.h
     utils/sequence-number.h
     utils/simple-channel.h
     utils/simple-net-device.h
@@ -174,6 +178,7 @@ build_lib(
     test/packet-test-suite.cc
     test/packetbb-test-suite.cc
     test/pcap-file-test-suite.cc
+    test/replay-clock-test-suite.cc
     test/sequence-number-test-suite.cc
     test/test-data-rate.cc
 )
