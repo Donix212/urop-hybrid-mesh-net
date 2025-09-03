@@ -18,8 +18,9 @@
 #ifndef REPLAY_SWITCH_CLOCK_H
 #define REPLAY_SWITCH_CLOCK_H
 
+#include "replay-clock.h"
+
 #include "ns3/log.h"
-#include "ns3/replay-clock.h"
 
 namespace ns3
 {
