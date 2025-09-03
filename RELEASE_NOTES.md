@@ -32,9 +32,15 @@ been tested on Linux. As of this release, the latest known version to work with 
 
 ns-3 has switched to the C++23 standard by default.
 
+- (antenna) !2516 - Reformatted documentation
 - (core) A stacktrace will now be printed on fatal errors in supported platforms.
+- (wifi) !2524 - Fix corrupted radiotap header when EHT is used.
 
 ### Bugs fixed
+
+- (internet) #1251 - Added check for longest prefix match in GlobalRouting
+- (wifi) Block transmission on other EMLSR links as soon as it is detected that the main PHY is receiving an A-MPDU, to prevent that the EMLSR client starts an UL TXOP before the end of the A-MPDU
+- (wifi) EMLSR clients can switch to listening operations when receiving the MAC header of a broadcast frame that is not a Trigger Frame nor a Multi-STA BA
 
 ## Release 3.45
 
@@ -76,6 +82,7 @@ to work with the release.
 
 - (bindings) #1187 - Fix library filtering to skip non-ns-3 libraries with "ns3" in their names.
 - (flow-monitor) #1202 - Create XML file in text mode
+- (internet) !2486 - Fix #809 - Ping for v4,v6 works now if fragmentation occurs.
 - (mobility) !2397 - Fix Rectangle::GetClosestSideOrCorner. It could assign the incorrect side when the checked position was outside the rectangle.
 - (wifi) #2368 - Fix various issues related to Content Channels and RU allocation. Fixes mostly covers cases where OFDMA is used with central 26 tones, where a single user is being assigned the whole PPDU bandwidth or where a RU is larger than 20 MHz.
 - (wifi) Various fixes to the EMLSR model have been made

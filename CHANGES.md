@@ -16,13 +16,20 @@ This file is a best-effort approach to solving this issue; we will do our best b
 
 ### New API
 
+* (wifi) Added a new `EarlyTxopEndDetect` attribute to `EhtFrameExchangeManager` to control whether the Duration/ID value of the frame being transmitted or received by a device shall be used to early detect the end of an ongoing TXOP (held by another device).
+
 ### Changes to existing API
 
-* (lr-wpan) Debloat MAC PD-DATA.indication
+* (antenna) Reformatted documentation
+* (lr-wpan) Debloat MAC PD-DATA.indication and reduce packet copies.
+* (zigbee) Added group table
+* (internet) Added check for longest prefix match in GlobalRouting
 
 ### Changes to build system
 
 ### Changed behavior
+
+* (internet) The Ipv[4,6]RawSocket now reflects the Linux implementation, meaning that fragmented packets are reassembled (fragments are not anymore received by the socket), and packets that are simply forwarded are not received by the socket either (fixes #809).
 
 ## Changes from ns-3.44 to ns-3.45
 
