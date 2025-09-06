@@ -22,7 +22,7 @@ TcpSocketFactoryImpl::TcpSocketFactoryImpl()
 
 TcpSocketFactoryImpl::~TcpSocketFactoryImpl()
 {
-    NS_ASSERT(!m_tcp);
+    NS_ABORT_UNLESS(!m_tcp);
 }
 
 void

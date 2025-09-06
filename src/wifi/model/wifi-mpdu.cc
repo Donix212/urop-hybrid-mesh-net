@@ -40,7 +40,7 @@ WifiMpdu::WifiMpdu(Ptr<const Packet> p, const WifiMacHeader& header, Time stamp)
 WifiMpdu::~WifiMpdu()
 {
     // Aliases can be queued (i.e., the original copy is queued) when destroyed
-    NS_ASSERT(std::holds_alternative<Ptr<WifiMpdu>>(m_instanceInfo) || !IsQueued());
+    NS_ABORT_UNLESS(std::holds_alternative<Ptr<WifiMpdu>>(m_instanceInfo) || !IsQueued());
 }
 
 bool

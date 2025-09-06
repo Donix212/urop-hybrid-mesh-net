@@ -501,7 +501,7 @@ TcpSocketBase::~TcpSocketBase()
     m_node = nullptr;
     if (m_endPoint != nullptr)
     {
-        NS_ASSERT(m_tcp);
+        NS_ABORT_UNLESS(m_tcp);
         /*
          * Upon Bind, an Ipv4Endpoint is allocated and set to m_endPoint, and
          * DestroyCallback is set to TcpSocketBase::Destroy. If we called
@@ -509,16 +509,16 @@ TcpSocketBase::~TcpSocketBase()
          * which in turn destroys my m_endPoint, and in turn invokes
          * TcpSocketBase::Destroy to nullify m_node, m_endPoint, and m_tcp.
          */
-        NS_ASSERT(m_endPoint != nullptr);
+        NS_ABORT_UNLESS(m_endPoint != nullptr);
         m_tcp->DeAllocate(m_endPoint);
-        NS_ASSERT(m_endPoint == nullptr);
+        NS_ABORT_UNLESS(m_endPoint == nullptr);
     }
     if (m_endPoint6 != nullptr)
     {
-        NS_ASSERT(m_tcp);
-        NS_ASSERT(m_endPoint6 != nullptr);
+        NS_ABORT_UNLESS(m_tcp);
+        NS_ABORT_UNLESS(m_endPoint6 != nullptr);
         m_tcp->DeAllocate(m_endPoint6);
-        NS_ASSERT(m_endPoint6 == nullptr);
+        NS_ABORT_UNLESS(m_endPoint6 == nullptr);
     }
     m_tcp = nullptr;
     CancelAllTimers();

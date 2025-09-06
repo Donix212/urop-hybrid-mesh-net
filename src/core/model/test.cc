@@ -278,7 +278,7 @@ TestCase::TestCase(std::string name)
 TestCase::~TestCase()
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_runner == nullptr);
+    NS_ABORT_UNLESS(m_runner == nullptr);
     m_parent = nullptr;
     delete m_result;
     for (auto i = m_children.begin(); i != m_children.end(); ++i)

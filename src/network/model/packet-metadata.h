@@ -746,7 +746,7 @@ PacketMetadata::operator=(const PacketMetadata& o)
 
 PacketMetadata::~PacketMetadata()
 {
-    NS_ASSERT(m_data != nullptr);
+    NS_ABORT_UNLESS(m_data != nullptr);
     m_data->m_count--;
     if (m_data->m_count == 0)
     {

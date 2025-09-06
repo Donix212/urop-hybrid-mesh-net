@@ -84,11 +84,7 @@ XmlConfigSave::~XmlConfigSave()
      * write any other elements, we simply call xmlTextWriterEndDocument,
      * which will do all the work. */
     rc = xmlTextWriterEndDocument(m_writer);
-    if (rc < 0)
-    {
-        NS_FATAL_ERROR("Error at xmlTextWriterEndDocument\n");
-    }
-
+    NS_ABORT_MSG_IF(rc < 0, "Error at xmlTextWriterEndDocument\n");
     xmlFreeTextWriter(m_writer);
     m_writer = nullptr;
 }
