@@ -99,8 +99,8 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
     {                                                                                              \
         std::stringstream fatalErrorStream;                                                        \
         fatalErrorStream << pre << "msg=\"" << msg << "\", ";                                      \
-        NS_LOG_APPEND_TIME_PREFIX_IMPL;                                                            \
-        NS_LOG_APPEND_NODE_PREFIX_IMPL;                                                            \
+        NS_LOG_APPEND_TIME_PREFIX_IMPL(fatalErrorStream);                                          \
+        NS_LOG_APPEND_NODE_PREFIX_IMPL(fatalErrorStream);                                          \
         fatalErrorStream << "file=" << std::string(__FILE__) << ", line=" << __LINE__;             \
         fatalErrorStream << "\n" << NS_GET_STACKTRACE;                                             \
         ::ns3::FatalImpl::FlushStreams();                                                          \
