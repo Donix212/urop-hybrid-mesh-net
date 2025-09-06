@@ -708,40 +708,48 @@ ChannelAccessManager::AccessTimeout()
     DoRestartAccessTimeoutIfNeeded();
 }
 
-std::multimap<Time, WifiExpectedAccessReason>
-ChannelAccessManager::DoGetAccessGrantStart(bool ignoreNav) const
+Time
+ChannelAccessManager::GetAccessGrantStart(bool ignoreNav) const
 {
     NS_LOG_FUNCTION(this << ignoreNav);
     const auto now = Simulator::Now();
+    Time accessGrantStart;
 
-    std::multimap<Time, WifiExpectedAccessReason> ret;
+    auto updateAccessTime = [&accessGrantStart](Time t) {
+        if (t > accessGrantStart)
+        {
+            accessGrantStart = t;
+        }
+    };
 
     // an EDCA TXOP is obtained based solely on activity of the primary channel
     // (Sec. 10.23.2.5 of IEEE 802.11-2020)
     const auto busyAccessStart = m_lastBusyEnd.at(WIFI_CHANLIST_PRIMARY);
-    ret.emplace(busyAccessStart, WifiExpectedAccessReason::BUSY_END);
+    updateAccessTime(busyAccessStart);
 
     auto rxAccessStart = m_lastRx.end;
     if ((m_lastRx.end <= now) && !m_lastRxReceivedOk)
     {
         rxAccessStart += GetEifsNoDifs();
     }
-    ret.emplace(rxAccessStart, WifiExpectedAccessReason::RX_END);
+    updateAccessTime(rxAccessStart);
+    updateAccessTime(m_lastTxEnd);
 
-    ret.emplace(m_lastTxEnd, WifiExpectedAccessReason::TX_END);
-
-    const auto navAccessStart = ignoreNav ? Time{0} : m_lastNavEnd;
-    ret.emplace(navAccessStart, WifiExpectedAccessReason::NAV_END);
-
-    ret.emplace(m_lastAckTimeoutEnd, WifiExpectedAccessReason::ACK_TIMER_END);
-    ret.emplace(m_lastCtsTimeoutEnd, WifiExpectedAccessReason::CTS_TIMER_END);
-    ret.emplace(m_lastSwitchingEnd, WifiExpectedAccessReason::SWITCHING_END);
+    Time navAccessStart;
+    if (!ignoreNav)
+    {
+        navAccessStart = m_lastNavEnd;
+        updateAccessTime(navAccessStart);
+    }
+    updateAccessTime(m_lastAckTimeoutEnd);
+    updateAccessTime(m_lastCtsTimeoutEnd);
+    updateAccessTime(m_lastSwitchingEnd);
 
     const auto noPhyStart = m_phy ? m_lastNoPhy.end : now;
-    ret.emplace(noPhyStart, WifiExpectedAccessReason::NO_PHY_END);
+    updateAccessTime(noPhyStart);
 
-    ret.emplace(m_lastSleepEnd, WifiExpectedAccessReason::SLEEP_END);
-    ret.emplace(m_lastOffEnd, WifiExpectedAccessReason::OFF_END);
+    updateAccessTime(m_lastSleepEnd);
+    updateAccessTime(m_lastOffEnd);
 
     NS_LOG_INFO("rx access start=" << rxAccessStart.As(Time::US)
                                    << ", busy access start=" << busyAccessStart.As(Time::US)
@@ -751,20 +759,9 @@ ChannelAccessManager::DoGetAccessGrantStart(bool ignoreNav) const
                                    << ", no PHY start=" << noPhyStart.As(Time::US)
                                    << ", sleep access start=" << m_lastSleepEnd.As(Time::US)
                                    << ", off access start=" << m_lastOffEnd.As(Time::US));
-    return ret;
-}
 
-Time
-ChannelAccessManager::GetAccessGrantStart(bool ignoreNav) const
-{
-    NS_LOG_FUNCTION(this << ignoreNav);
-
-    auto timeReasonMap = DoGetAccessGrantStart(ignoreNav);
-    NS_ASSERT(!timeReasonMap.empty());
-    const auto accessGrantedStart = timeReasonMap.crbegin()->first;
-    NS_LOG_INFO("access grant start=" << accessGrantedStart.As(Time::US));
-
-    return accessGrantedStart + GetSifs();
+    NS_LOG_INFO("access grant start=" << accessGrantStart.As(Time::US));
+    return accessGrantStart + GetSifs();
 }
 
 Time
@@ -808,34 +805,57 @@ WifiExpectedAccessReason
 ChannelAccessManager::GetExpectedAccessWithin(const Time& delay) const
 {
     NS_LOG_FUNCTION(this << delay.As(Time::US));
-
     const auto now = Simulator::Now();
     const auto deadline = now + delay;
-    const auto timeReasonMap = DoGetAccessGrantStart(false);
-    NS_ASSERT(!timeReasonMap.empty());
-    auto accessGrantStart = timeReasonMap.crbegin()->first;
+    const auto sifs = GetSifs();
 
-    if (accessGrantStart >= deadline)
-    {
-        // return the earliest reason for which access cannot be granted in time
-        for (const auto& [time, reason] : timeReasonMap)
-        {
-            if (time >= deadline)
-            {
-                NS_ASSERT(reason != WifiExpectedAccessReason::ACCESS_EXPECTED);
-                NS_ASSERT(reason != WifiExpectedAccessReason::NOTHING_TO_TX);
-                NS_ASSERT(reason != WifiExpectedAccessReason::NOT_REQUESTED);
-                NS_ASSERT(reason != WifiExpectedAccessReason::BACKOFF_END);
-                NS_LOG_DEBUG("Access grant start (" << accessGrantStart.As(Time::US)
-                                                    << ") too late for reason " << reason);
-                return reason;
-            }
-        }
-        NS_ABORT_MSG("No reason found that exceeds the deadline!");
-    }
-
-    accessGrantStart += GetSifs();
+    Time accessGrantStart;
+    auto minOverDeadline = Time::Max();
     auto reason = WifiExpectedAccessReason::NOT_REQUESTED;
+
+    auto evaluateAccessBlocker = [&](Time t, WifiExpectedAccessReason blocking_reason) {
+        t = t + sifs; // add interframe space here for correct comparison to deadline
+        if (t > accessGrantStart)
+        {
+            accessGrantStart = t;
+        }
+        if (t >= deadline && t < minOverDeadline)
+        {
+            minOverDeadline = t;
+            reason = blocking_reason;
+        }
+    };
+
+    // an EDCA TXOP is obtained based solely on activity of the primary channel
+    // (Sec. 10.23.2.5 of IEEE 802.11-2020)
+    evaluateAccessBlocker(m_lastBusyEnd.at(WIFI_CHANLIST_PRIMARY),
+                          WifiExpectedAccessReason::BUSY_END);
+
+    auto rxAccessStart = m_lastRx.end;
+    if ((m_lastRx.end <= now) && !m_lastRxReceivedOk)
+    {
+        rxAccessStart += GetEifsNoDifs();
+    }
+    evaluateAccessBlocker(rxAccessStart, WifiExpectedAccessReason::RX_END);
+    evaluateAccessBlocker(m_lastTxEnd, WifiExpectedAccessReason::TX_END);
+    evaluateAccessBlocker(m_lastNavEnd, WifiExpectedAccessReason::NAV_END);
+    evaluateAccessBlocker(m_lastAckTimeoutEnd, WifiExpectedAccessReason::ACK_TIMER_END);
+    evaluateAccessBlocker(m_lastCtsTimeoutEnd, WifiExpectedAccessReason::CTS_TIMER_END);
+    evaluateAccessBlocker(m_lastSwitchingEnd, WifiExpectedAccessReason::SWITCHING_END);
+
+    const auto noPhyStart = m_phy ? m_lastNoPhy.end : now;
+    evaluateAccessBlocker(noPhyStart, WifiExpectedAccessReason::NO_PHY_END);
+
+    evaluateAccessBlocker(m_lastSleepEnd, WifiExpectedAccessReason::SLEEP_END);
+    evaluateAccessBlocker(m_lastOffEnd, WifiExpectedAccessReason::OFF_END);
+
+    // If the latest blocking time is after the deadline, return reason for it
+    if (reason != WifiExpectedAccessReason::NOT_REQUESTED)
+    {
+        NS_LOG_DEBUG("Access grant start (" << minOverDeadline.As(Time::US)
+                                            << ") too late for reason " << reason);
+        return reason;
+    }
 
     for (auto txop : m_txops)
     {
