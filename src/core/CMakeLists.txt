@@ -329,6 +329,7 @@ set(test_sources
     test/sample-test-suite.cc
     test/simulator-test-suite.cc
     test/splitstring-test-suite.cc
+    test/test-macros-test-suite.cc
     test/threaded-test-suite.cc
     test/time-test-suite.cc
     test/timer-test-suite.cc
