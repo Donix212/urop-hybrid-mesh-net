@@ -144,6 +144,11 @@ class FlameProtocol : public MeshL2RoutingProtocol
      */
     Mac48Address GetAddress();
     /**
+     * Get routing table (for testing and debugging)
+     * @returns pointer to the routing table
+     */
+    Ptr<FlameRtable> GetRoutingTable() const;
+    /**
      * Statistics
      * @param os the output stream
      */

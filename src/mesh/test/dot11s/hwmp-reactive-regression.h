@@ -6,6 +6,7 @@
  * Authors: Kirill Andreev <andreev@iitp.ru>
  */
 #include "ns3/ipv4-interface-container.h"
+#include "ns3/net-device-container.h"
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
 #include "ns3/pcap-file.h"
@@ -73,6 +74,7 @@ class HwmpReactiveRegressionTest : public TestCase
     /// Simulation time
     Time m_time;
     Ipv4InterfaceContainer m_interfaces; ///< interfaces
+    NetDeviceContainer m_meshDevices;    ///< mesh devices
 
     /// Create nodes function
     void CreateNodes();
@@ -90,6 +92,8 @@ class HwmpReactiveRegressionTest : public TestCase
 
     /// sent packets counter
     uint32_t m_sentPktsCounter;
+    /// received packets counter
+    uint32_t m_receivedPktsCounter;
 
     /**
      * Send data

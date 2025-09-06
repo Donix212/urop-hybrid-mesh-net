@@ -162,6 +162,16 @@ class PeerManagementProtocol : public Object
      */
     std::vector<Ptr<PeerLink>> GetPeerLinks() const;
     /**
+     * Get list of all peer links regardless of state (for testing)
+     * @return a list of all peer links (established and non-established)
+     */
+    std::vector<Ptr<PeerLink>> GetAllPeerLinks() const;
+    /**
+     * Get count of established peer links (for testing)
+     * @return number of established peer links
+     */
+    uint32_t GetEstablishedPeerLinksCount() const;
+    /**
      * Get list of active peers of my given interface
      * @param interface the interface
      * @return a list of all the active peer links on an interface

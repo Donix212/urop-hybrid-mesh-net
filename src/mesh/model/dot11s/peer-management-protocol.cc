@@ -373,6 +373,38 @@ PeerManagementProtocol::GetPeerLinks() const
     return links;
 }
 
+std::vector<Ptr<PeerLink>>
+PeerManagementProtocol::GetAllPeerLinks() const
+{
+    std::vector<Ptr<PeerLink>> allLinks;
+
+    for (auto iface = m_peerLinks.begin(); iface != m_peerLinks.end(); ++iface)
+    {
+        for (auto i = iface->second.begin(); i != iface->second.end(); i++)
+        {
+            allLinks.push_back(*i);
+        }
+    }
+    return allLinks;
+}
+
+uint32_t
+PeerManagementProtocol::GetEstablishedPeerLinksCount() const
+{
+    uint32_t count = 0;
+    for (auto iface = m_peerLinks.begin(); iface != m_peerLinks.end(); ++iface)
+    {
+        for (auto i = iface->second.begin(); i != iface->second.end(); i++)
+        {
+            if ((*i)->LinkIsEstab())
+            {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
 bool
 PeerManagementProtocol::IsActiveLink(uint32_t interface, Mac48Address peerAddress)
 {
