@@ -23,8 +23,8 @@ namespace ns3
 ReplaySwitchClock::ReplaySwitchClock()
 {
     // Initialize member variables if needed
-    m_clusterClock = ReplayClock(); // Initialize with default ReplayClock
-    m_switchClock = ReplayClock();  // Initialize with default ReplayClock
+    m_clusterClock = CreateObject<ReplayClock>(); // Initialize with default ReplayClock
+    m_switchClock = CreateObject<ReplayClock>();  // Initialize with default ReplayClock
 }
 
 ReplaySwitchClock::~ReplaySwitchClock()
@@ -33,17 +33,12 @@ ReplaySwitchClock::~ReplaySwitchClock()
 }
 
 void
-ReplaySwitchClock::ReconcileClusterClock(ReplayClock clusterClock,
-                                         int64_t c_nodeId,
-                                         int64_t s_nodeId,
-                                         int64_t physicalTime,
-                                         int64_t u_epsilon,
-                                         int64_t u_interval)
+ReplaySwitchClock::ReconcileClusterClock(int64_t u_epsilon, Time u_interval)
 {
     // Logic to reconcile the cluster clock with the switch clock
     // This could involve merging offsets, updating HLC, etc.
 
-    m_clusterClock.Recv(clusterClock, c_nodeId, physicalTime, s_nodeId, u_epsilon, u_interval);
+    m_clusterClock->Recv(m_switchClock, u_epsilon, u_interval);
 }
 
 } // namespace ns3

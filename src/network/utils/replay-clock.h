@@ -14,6 +14,9 @@
 #ifndef REPLAY_CLOCK_H
 #define REPLAY_CLOCK_H
 
+#include "local-clock.h"
+
+#include "ns3/log.h"
 #include "ns3/nstime.h"
 
 #include <bitset>
@@ -21,9 +24,11 @@
 namespace ns3
 {
 
-class ReplayClock
+class ReplayClock : public LocalClock
 {
   public:
+    static TypeId GetTypeId();
+
     /**
      * @brief Default constructor for ReplayClock.
      *
@@ -32,16 +37,16 @@ class ReplayClock
     ReplayClock();
 
     /**
-     * @brief Constructor for ReplayClock.
+     * @brief Parameterized constructor for ReplayClock.
      *
-     * This constructor initializes a ReplayClock instance with the given parameters.
-     *
-     * @param hlc The Hybrid Logical Clock value to set.
-     * @param bitmap The bitmap representing the clock's state.
-     * @param offsets The offsets for the clock.
-     * @param counters The counters for the clock.
+     * This constructor initializes a ReplayClock instance with parameter values.
      */
-    ReplayClock(int64_t hlc, std::bitset<64> bitmap, std::bitset<64> offsets, int64_t counters);
+    ReplayClock(uint32_t nodeId,
+                Ptr<LocalClock> localClock,
+                Ptr<LocalClock> hlc,
+                const std::bitset<64>& bitmap,
+                const std::bitset<64>& offsets,
+                uint8_t counters);
 
     /**
      * @brief Destructor for ReplayClock.
@@ -50,7 +55,25 @@ class ReplayClock
      */
     virtual ~ReplayClock();
 
+    /**
+     * @brief Get the current time from the local clock.
+     * @return Current time
+     */
+    virtual Time Now() override;
+
     // Getters
+
+    /**
+     * @brief Get the NodeID.
+     *
+     * This function retrieves the NodeID.
+     *
+     * @return The HLC value as a int64 object.
+     */
+    int32_t GetNodeId() const
+    {
+        return m_nodeId;
+    }
 
     /**
      * @brief Get the HLC (Hybrid Logical Clock) for the clock.
@@ -59,7 +82,7 @@ class ReplayClock
      *
      * @return The HLC value as a int64 object.
      */
-    int64_t GetHLC() const
+    Ptr<LocalClock> GetHLC() const
     {
         return m_hlc;
     }
@@ -109,7 +132,7 @@ class ReplayClock
      *
      * @param hlc The new HLC value to set.
      */
-    void SetHLC(int64_t hlc)
+    void SetHLC(Ptr<LocalClock> hlc)
     {
         m_hlc = hlc;
     }
@@ -190,7 +213,9 @@ class ReplayClock
      * @param other The ReplayClock instance to copy from.
      */
     ReplayClock(const ReplayClock& other)
-        : m_hlc(other.m_hlc),
+        : m_nodeId(other.m_nodeId),
+          m_localClock(other.m_localClock),
+          m_hlc(other.m_hlc),
           m_bitmap(other.m_bitmap),
           m_offsets(other.m_offsets),
           m_counters(other.m_counters)
@@ -209,12 +234,21 @@ class ReplayClock
     {
         if (this != &other)
         {
+            m_nodeId = other.m_nodeId;
+            m_localClock = other.m_localClock;
             m_hlc = other.m_hlc;
             m_bitmap = other.m_bitmap;
             m_offsets = other.m_offsets;
             m_counters = other.m_counters;
         }
         return *this;
+    }
+
+    void NotifyConstructionCompleted()
+    {
+        Object::NotifyConstructionCompleted();
+        m_bitmap = std::bitset<64>(m_bitmapInt);
+        m_offsets = std::bitset<64>(m_offsetsInt);
     }
 
     // Helper functions
@@ -225,12 +259,10 @@ class ReplayClock
      * This function updates the clock's HLC, bitmap, and offsets based on the provided physical
      * time and node ID.
      *
-     * @param physicalTimeInt The physical time in nanoseconds.
-     * @param nodeId The ID of the node.
+     * @param physicalTime The physical time to shift by
      * @param u_epsilon The epsilon value for offset calculations.
-     * @param u_interval The interval for HLC calculations.
      */
-    void Shift(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon);
+    void Shift(Time physicalTime, int64_t u_epsilon);
 
     /**
      * @brief Merge the current clock with another clock from the same epoch.
@@ -313,12 +345,10 @@ class ReplayClock
      * This function prepares the current clock state to send as a message based on the physical
      * time and node ID.
      *
-     * @param physicalTime The physical time to base the clock on.
-     * @param nodeId The ID of the node sending the clock.
      * @param u_epsilon The epsilon value for offset calculations.
      * @param u_interval The interval for HLC calculations.
      */
-    void Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval);
+    void Send(int64_t u_epsilon, Time u_interval);
 
     /**
      * @brief Receive a clock state from another node.
@@ -327,28 +357,24 @@ class ReplayClock
      * accordingly.
      *
      * @param o_replayClock The replay clock received from another node.
-     * @param o_nodeId The ID of the node that sent the clock.
-     * @param physicalTime The physical time associated with the received clock.
-     * @param nodeId The ID of the current node receiving the clock.
      * @param u_epsilon The epsilon value for offset calculations.
      * @param u_interval The interval for HLC calculations.
      */
-    void Recv(ReplayClock o_replayClock,
-              int64_t o_nodeId,
-              int64_t physicalTime,
-              int64_t nodeId,
-              int64_t u_epsilon,
-              int64_t u_interval);
+    void Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_interval);
 
   private:
     // Top level clock variables
 
-    int64_t m_hlc;             //!< Hybrid Logical Clock value
-    std::bitset<64> m_bitmap;  //!< Logical clock value
-    std::bitset<64> m_offsets; //!< Offset for the clock
-    int64_t m_counters;        //!< Counter for the clock
+    uint32_t m_nodeId;            //!< NodeID
+    Ptr<LocalClock> m_localClock; //!< Physical clock of the node
+    Ptr<LocalClock> m_hlc;        //!< Hybrid Logical Clock value
+    std::bitset<64> m_bitmap;     //!< Logical clock value
+    std::bitset<64> m_offsets;    //!< Offset for the clock
+    int8_t m_counters;            //!< Counter for the clock
+    uint64_t m_bitmapInt;         //!< Holder for bitset
+    uint64_t m_offsetsInt;        //!< Holder for offsets
 };
 
 } // namespace ns3
 
-#endif // REPLAY_CLOCK_H
+#endif /* REPLAY_CLOCK_H */

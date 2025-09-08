@@ -11,330 +11,580 @@
  * 02110-1301, USA.
  */
 
+#include "ns3/local-clock.h"
 #include "ns3/log.h"
+#include "ns3/pointer.h"
 #include "ns3/replay-clock.h"
 #include "ns3/test.h"
+#include "ns3/uinteger.h"
 
-namespace ns3
-{
+using namespace ns3;
 
-namespace tests
+/**
+ * @ingroup network-test
+ * @ingroup tests
+ *
+ * @brief Test the replay clock
+ *
+ */
+
+class TestLocalClock : public LocalClock
 {
+  public:
+    static TypeId GetTypeId()
+    {
+        static TypeId tid = TypeId("ns3::TestLocalClock")
+                                .SetParent<LocalClock>()
+                                .SetGroupName("Network")
+                                .AddConstructor<TestLocalClock>()
+                                .AddAttribute("PhysicalTime",
+                                              "ptime to start with",
+                                              TimeValue(NanoSeconds(0)),
+                                              MakeTimeAccessor(&TestLocalClock::ptime),
+                                              MakeTimeChecker());
+        return tid;
+    }
+
+    TestLocalClock()
+    {
+    }
+
+    TestLocalClock(Time time)
+    {
+        ptime = time;
+    }
+
+    ~TestLocalClock()
+    {
+    }
+
+    /**
+     * @brief Get the current time from the local clock.
+     * @return Current time
+     */
+    virtual Time Now() override
+    {
+        return ptime;
+    }
+
+    virtual void SetLocalClock(Time time) override
+    {
+        ptime = time;
+    }
+
+  private:
+    Time ptime;
+};
 
 class ReplayClockTestCase : public TestCase
 {
   public:
-    ReplayClockTestCase()
-        : TestCase("ReplayClock Test Case")
-    {
-    }
+    /**
+     * Constructor
+     * @param name test name
+     */
+    ReplayClockTestCase(std::string name);
+    ~ReplayClockTestCase();
 
-    ~ReplayClockTestCase()
-    {
-        // Destructor implementation (if needed)
-    }
+    /**
+     * Checks if clock parameters are equal
+     * @param rc Replay Clock to test
+     * @param hlc HLC time to check
+     * @param bitmap Bitmap to check
+     * @param offsets Offsets to check
+     * @param counters Counters to check
+     *
+     */
+    void CheckParams(Ptr<ReplayClock> rc,
+                     Ptr<TestLocalClock> hlc,
+                     std::bitset<64> bitmap,
+                     std::bitset<64> offsets,
+                     int64_t counters);
+};
+
+ReplayClockTestCase::ReplayClockTestCase(std::string name)
+    : TestCase(name)
+{
+}
+
+ReplayClockTestCase::~ReplayClockTestCase()
+{
+}
+
+void
+ReplayClockTestCase::CheckParams(Ptr<ReplayClock> rc,
+                                 Ptr<TestLocalClock> hlc,
+                                 std::bitset<64> bitmap,
+                                 std::bitset<64> offsets,
+                                 int64_t counters)
+{
+    NS_TEST_ASSERT_MSG_EQ(rc->GetHLC()->Now(), hlc->Now(), "HLC of clock not equal!");
+    NS_TEST_ASSERT_MSG_EQ(rc->GetBitmap(), bitmap, "Bitmap not equal!");
+    NS_TEST_ASSERT_MSG_EQ(rc->GetOffsets(), offsets, "Offsets not equal!");
+    NS_TEST_ASSERT_MSG_EQ(rc->GetCounters(), counters, "Counters not equal!");
+}
+
+/**
+ * @ingroup network-test
+ * @ingroup tests
+ *
+ * @brief Test initialization
+ *
+ */
+class InitCase : public ReplayClockTestCase
+{
+  public:
+    InitCase();
 
   private:
     void DoRun() override;
-
-    /**
-     * @brief Test the initial state of ReplayClock.
-     *
-     * This function checks if the initial state of the ReplayClock is as expected.
-     */
-    void TestInitialState();
-
-    /**
-     * @brief Test the shift functionality of ReplayClock.
-     *
-     * This function tests if the shift operation updates the clock's HLC, bitmap, and offsets
-     * correctly.
-     */
-    void TestShiftFunctionality();
-
-    /**
-     * @brief Test the merge functionality of ReplayClock.
-     *
-     * This function tests if the merge operation updates the clock's state correctly when merging
-     * with another clock from the same epoch.
-     */
-    void TestMergeSameEpoch();
-
-    /**
-     * @brief Test the offsets functionality of ReplayClock.
-     *
-     * This function tests if the offsets are set, removed, and retrieved correctly.
-     */
-    void TestOffsetsFunctionality();
-
-    /**
-     * @brief Test the copy constructor and assignment operator of ReplayClock.
-     *
-     * This function tests if the copy constructor and assignment operator work correctly by
-     * comparing the state of two ReplayClock instances.
-     */
-    void TestCopyAndAssignment();
-
-    /**
-     * @brief Test the send functionality of ReplayClock.
-     *
-     * This function tests if the send operation prepares the clock state correctly based on the
-     * physical time and node ID.
-     */
-    void TestSend();
-
-    /**
-     * @brief Test the receive functionality of ReplayClock.
-     *
-     * This function tests if the receive operation updates the clock state correctly when receiving
-     * a clock from another node.
-     */
-    void TestRecv();
 };
 
-/**
- * @brief Run the ReplayClock test case.
- *
- * This function runs all the tests defined in the ReplayClockTestCase class.
- */
-void
-ReplayClockTestCase::DoRun()
+InitCase::InitCase()
+    : ReplayClockTestCase("Testing initialization parameters.")
 {
-    TestInitialState();
+}
 
-    TestOffsetsFunctionality();
+void
+InitCase::DoRun()
+{
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("HLC", PointerValue(hlc));
 
-    TestCopyAndAssignment();
+    Ptr<TestLocalClock> t_hlc = CreateObject<TestLocalClock>();
+    std::bitset<64> t_bitmap(0);
+    std::bitset<64> t_offsets(0);
+    int64_t t_counters(0);
 
-    TestShiftFunctionality();
-
-    TestMergeSameEpoch();
-
-    TestSend();
-
-    TestRecv();
+    CheckParams(rc, t_hlc, t_bitmap, t_offsets, t_counters);
 }
 
 /**
- * @brief Test the initial state of ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
  *
- * This function checks if the initial state of the ReplayClock is as expected.
+ * @brief Test offsets
+ *
  */
-void
-ReplayClockTestCase::TestInitialState()
+class OffsetCase1 : public ReplayClockTestCase
 {
-    ReplayClock m_replayClock;
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(), 0, "TestInitialState::Initial HLC should be 0");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
-                          std::bitset<64>(0),
-                          "TestInitialState::Initial bitmap should be 0");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
-                          std::bitset<64>(0),
-                          "TestInitialState::Initial offsets should be 0");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(),
-                          0,
-                          "TestInitialState::Initial counters should be 0");
+  public:
+    OffsetCase1();
+
+  private:
+    void DoRun() override;
+};
+
+OffsetCase1::OffsetCase1()
+    : ReplayClockTestCase("Testing offset init functionality.")
+{
+}
+
+void
+OffsetCase1::DoRun()
+{
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("HLC", PointerValue(hlc));
+    rc->SetBitmap(std::bitset<64>(13));
+    rc->SetOffsets(std::bitset<64>(49408));
+    rc->SetAttribute("Counters", UintegerValue(2));
+
+    Ptr<TestLocalClock> t_hlc = CreateObject<TestLocalClock>();
+    t_hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+    std::bitset<64> t_bitmap(13);
+    std::bitset<64> t_offsets(49408);
+    int64_t t_counters(2);
+
+    CheckParams(rc, t_hlc, t_bitmap, t_offsets, t_counters);
 }
 
 /**
- * @brief Test the offsets functionality of ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
  *
- * This function tests if the offsets are set, removed, and retrieved correctly.
+ * @brief Test offsets
+ *
  */
-void
-ReplayClockTestCase::TestOffsetsFunctionality()
+class OffsetCase2 : public ReplayClockTestCase
 {
-    ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
-    int64_t index = 1;
-    int64_t value = 5;
-    int64_t u_epsilon = 100;
+  public:
+    OffsetCase2();
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
-                          std::bitset<64>(49408),
-                          "TestOffsetsFunctionality::Offset should be initialized correctly");
+  private:
+    void DoRun() override;
+};
 
-    NS_TEST_EXPECT_MSG_EQ(
-        m_replayClock.GetOffsetAtIndex(index, u_epsilon),
-        2,
-        "TestOffsetsFunctionality::Offset at index should be retrieved correctly");
+OffsetCase2::OffsetCase2()
+    : ReplayClockTestCase("Testing offset get functionality.")
+{
+}
 
-    m_replayClock.SetOffsetAtIndex(index, value, u_epsilon);
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+void
+OffsetCase2::DoRun()
+{
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("HLC", PointerValue(hlc));
+    rc->SetBitmap(std::bitset<64>(13));
+    rc->SetOffsets(std::bitset<64>(49408));
+    rc->SetAttribute("Counters", UintegerValue(2));
+
+    uint64_t index = 1;
+    uint64_t u_epsilon = 100;
+
+    NS_TEST_ASSERT_MSG_EQ(rc->GetOffsetAtIndex(index, u_epsilon),
+                          2,
+                          "OffsetCase2::Offset at index not retrieved correctly.");
+}
+
+/**
+ * @ingroup network-test
+ * @ingroup tests
+ *
+ * @brief Test offsets
+ *
+ */
+class OffsetCase3 : public ReplayClockTestCase
+{
+  public:
+    OffsetCase3();
+
+  private:
+    void DoRun() override;
+};
+
+OffsetCase3::OffsetCase3()
+    : ReplayClockTestCase("Testing offset set functionality.")
+{
+}
+
+void
+OffsetCase3::DoRun()
+{
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("HLC", PointerValue(hlc));
+    rc->SetBitmap(std::bitset<64>(13));
+    rc->SetOffsets(std::bitset<64>(49408));
+    rc->SetAttribute("Counters", UintegerValue(2));
+
+    uint64_t index = 1;
+    uint64_t value = 5;
+    uint64_t u_epsilon = 100;
+
+    rc->SetOffsetAtIndex(index, value, u_epsilon);
+    NS_TEST_ASSERT_MSG_EQ(rc->GetOffsets(),
                           std::bitset<64>(49792),
-                          "TestOffsetsFunctionality::Offset should be set correctly");
+                          "OffsetCase2::Offset at index not set correctly.");
+}
 
-    m_replayClock.RemoveOffsetAtIndex(index, u_epsilon);
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+/**
+ * @ingroup network-test
+ * @ingroup tests
+ *
+ * @brief Test offsets
+ *
+ */
+class OffsetCase4 : public ReplayClockTestCase
+{
+  public:
+    OffsetCase4();
+
+  private:
+    void DoRun() override;
+};
+
+OffsetCase4::OffsetCase4()
+    : ReplayClockTestCase("Testing offset remove functionality.")
+{
+}
+
+void
+OffsetCase4::DoRun()
+{
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("HLC", PointerValue(hlc));
+    rc->SetBitmap(std::bitset<64>(13));
+    rc->SetOffsets(std::bitset<64>(49408));
+    rc->SetAttribute("Counters", UintegerValue(2));
+
+    uint64_t index = 1;
+    uint64_t u_epsilon = 100;
+
+    rc->RemoveOffsetAtIndex(index, u_epsilon);
+    NS_TEST_ASSERT_MSG_EQ(rc->GetOffsets(),
                           std::bitset<64>(384),
-                          "TestOffsetsFunctionality::Offset should be removed correctly");
+                          "OffsetCase2::Offset at index not removed correctly.");
 }
 
 /**
- * @brief Test the copy constructor and assignment operator of ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
  *
- * This function tests if the copy constructor and assignment operator work correctly by comparing
- * the state of two ReplayClock instances.
+ * @brief Test shift functionality
+ *
  */
-void
-ReplayClockTestCase::TestCopyAndAssignment()
+class ShiftCase : public ReplayClockTestCase
 {
-    ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
+  public:
+    ShiftCase();
 
-    ReplayClock copyClock = m_replayClock; // Copy constructor
-    NS_TEST_EXPECT_MSG_EQ(copyClock.GetHLC(),
-                          m_replayClock.GetHLC(),
-                          "TestCopyAndAssignment::Copy constructor should copy HLC correctly");
+  private:
+    void DoRun() override;
+};
 
-    ReplayClock assignedClock;
-    assignedClock = m_replayClock; // Assignment operator
-    NS_TEST_EXPECT_MSG_EQ(assignedClock.GetHLC(),
-                          m_replayClock.GetHLC(),
-                          "TestCopyAndAssignment::Assignment operator should copy HLC correctly");
+ShiftCase::ShiftCase()
+    : ReplayClockTestCase("Testing Shift functionality.")
+{
 }
 
-/**
- * @brief Test the shift functionality of ReplayClock.
- *
- * This function tests if the shift operation updates the clock's HLC, bitmap, and offsets
- * correctly.
- */
 void
-ReplayClockTestCase::TestShiftFunctionality()
+ShiftCase::DoRun()
 {
-    ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
-    int64_t physicalTime = 250;
-    int64_t nodeId = 0;
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("NodeId", UintegerValue(0));
+    rc->SetAttribute("HLC", PointerValue(hlc));
+    rc->SetBitmap(std::bitset<64>(13));
+    rc->SetOffsets(std::bitset<64>(49408));
+    rc->SetAttribute("Counters", UintegerValue(2));
+
+    Time physicalTime = MicroSeconds(250);
     int64_t u_epsilon = 100;
 
-    m_replayClock.Shift(physicalTime, nodeId, u_epsilon);
+    rc->Shift(physicalTime, u_epsilon);
 
     NS_TEST_EXPECT_MSG_EQ(
-        m_replayClock.GetHLC(),
-        250,
+        rc->GetHLC()->Now(),
+        MicroSeconds(250),
         "TestShiftFunctionality::HLC should be updated to the physical time divided by u_interval");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+    NS_TEST_EXPECT_MSG_EQ(rc->GetBitmap(),
                           std::bitset<64>(13),
                           "TestShiftFunctionality::Bitmap should not change");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+    NS_TEST_EXPECT_MSG_EQ(rc->GetOffsets(),
                           std::bitset<64>(875058),
                           "TestShiftFunctionality::Offsets should change to [52, 53, 0]");
 }
 
 /**
- * @brief Test the merge functionality of ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
  *
- * This function tests if the merge operation updates the clock's state correctly when merging with
- * another clock from the same epoch.
+ * @brief Test merge functionality
+ *
  */
-void
-ReplayClockTestCase::TestMergeSameEpoch()
+class MergeSameEpochCase : public ReplayClockTestCase
 {
-    ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
-    ReplayClock otherClock(200, std::bitset<64>(4), std::bitset<64>(0), 1);
-    int64_t u_epsilon = 100;
+  public:
+    MergeSameEpochCase();
 
-    m_replayClock.MergeSameEpoch(otherClock, u_epsilon);
+  private:
+    void DoRun() override;
+};
+
+MergeSameEpochCase::MergeSameEpochCase()
+    : ReplayClockTestCase("Testing MergeSameEpoch functionality.")
+{
+}
+
+void
+MergeSameEpochCase::DoRun()
+{
+    Ptr<TestLocalClock> hlcA = CreateObject<TestLocalClock>();
+    hlcA->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rcA = CreateObject<ReplayClock>();
+    rcA->SetAttribute("NodeId", UintegerValue(0));
+    rcA->SetAttribute("HLC", PointerValue(hlcA));
+    rcA->SetBitmap(std::bitset<64>(13));
+    rcA->SetOffsets(std::bitset<64>(49408));
+    rcA->SetAttribute("Counters", UintegerValue(2));
+
+    Ptr<TestLocalClock> hlcB = CreateObject<TestLocalClock>();
+    hlcB->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rcB = CreateObject<ReplayClock>();
+    rcB->SetAttribute("NodeId", UintegerValue(1));
+    rcB->SetAttribute("HLC", PointerValue(hlcB));
+    rcB->SetBitmap(std::bitset<64>(4));
+    rcB->SetOffsets(std::bitset<64>(0));
+    rcB->SetAttribute("Counters", UintegerValue(1));
+
+    uint64_t u_epsilon = 100;
+    rcA->MergeSameEpoch(*rcB, u_epsilon);
 
     NS_TEST_EXPECT_MSG_EQ(
-        m_replayClock.GetHLC(),
-        200,
+        rcA->GetHLC()->Now(),
+        MicroSeconds(200),
         "TestMergeSameEpoch::HLC should be updated to the maximum HLC of both clocks");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+    NS_TEST_EXPECT_MSG_EQ(rcA->GetBitmap(),
                           std::bitset<64>(13),
-                          "TestMergeSameEpoch::Bitmap should merge correctly");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+                          "TestMergeSameEpoch::Bitmap should not change");
+    NS_TEST_EXPECT_MSG_EQ(rcA->GetOffsets(),
                           std::bitset<64>(49152),
                           "TestMergeSameEpoch::Offsets should merge correctly");
 }
 
 /**
- * @brief Test the send functionality of ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
  *
- * This function tests if the send operation prepares the clock state correctly based on the
- * physical time and node ID.
+ * @brief Test send functionality
+ *
  */
-void
-ReplayClockTestCase::TestSend()
+class SendCase : public ReplayClockTestCase
 {
-    ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
-    int64_t physicalTime = 2500;
-    int64_t nodeId = 2;
-    int64_t u_epsilon = 100;
-    int64_t u_interval = 10;
+  public:
+    SendCase();
 
-    m_replayClock.Send(physicalTime, nodeId, u_epsilon, u_interval);
+  private:
+    void DoRun() override;
+};
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(),
-                          physicalTime / u_interval,
+SendCase::SendCase()
+    : ReplayClockTestCase("Testing Send functionality.")
+{
+}
+
+void
+SendCase::DoRun()
+{
+    Ptr<TestLocalClock> pt = CreateObject<TestLocalClock>();
+    pt->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(2500)));
+
+    Ptr<TestLocalClock> hlc = CreateObject<TestLocalClock>();
+    hlc->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rc = CreateObject<ReplayClock>();
+    rc->SetAttribute("NodeId", UintegerValue(2));
+    rc->SetAttribute("LocalClock", PointerValue(pt));
+    rc->SetAttribute("HLC", PointerValue(hlc));
+    rc->SetBitmap(std::bitset<64>(13));
+    rc->SetOffsets(std::bitset<64>(49408));
+    rc->SetAttribute("Counters", UintegerValue(2));
+
+    uint64_t u_epsilon = 100;
+    Time u_interval = MicroSeconds(10);
+
+    rc->Send(u_epsilon, u_interval);
+
+    NS_TEST_EXPECT_MSG_EQ(rc->GetHLC()->Now(),
+                          MicroSeconds(250),
                           "TestSend::HLC should match the physical time after send");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+    NS_TEST_EXPECT_MSG_EQ(rc->GetBitmap(),
                           std::bitset<64>(13),
                           "TestSend::Bitmap should have the nodeId set after send");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+    NS_TEST_EXPECT_MSG_EQ(rc->GetOffsets(),
                           std::bitset<64>(868402),
                           "TestSend::Offsets should be reset after send");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(),
-                          0,
-                          "TestSend::Counters should be reset after send");
+    NS_TEST_EXPECT_MSG_EQ(rc->GetCounters(), 0, "TestSend::Counters should be reset after send");
 }
 
 /**
- * @brief Test the receive functionality of ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
  *
- * This function tests if the receive operation updates the clock state correctly when receiving a
- * clock from another node.
+ * @brief Test recv functionality
+ *
  */
-void
-ReplayClockTestCase::TestRecv()
+class RecvCase : public ReplayClockTestCase
 {
-    ReplayClock m_replayClock(200, std::bitset<64>(13), std::bitset<64>(49408), 2);
-    ReplayClock otherClock(220, std::bitset<64>(18), std::bitset<64>(512), 3);
-    int64_t o_nodeId = 2;
-    int64_t physicalTime = 2300;
-    int64_t nodeId = 0;
-    int64_t u_epsilon = 100;
-    int64_t u_interval = 10;
+  public:
+    RecvCase();
 
-    m_replayClock.Recv(otherClock, o_nodeId, physicalTime, nodeId, u_epsilon, u_interval);
+  private:
+    void DoRun() override;
+};
 
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetHLC(),
-                          230,
+RecvCase::RecvCase()
+    : ReplayClockTestCase("Testing Recv functionality.")
+{
+}
+
+void
+RecvCase::DoRun()
+{
+    Ptr<TestLocalClock> ptA = CreateObject<TestLocalClock>();
+    ptA->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(2300)));
+
+    Ptr<TestLocalClock> hlcA = CreateObject<TestLocalClock>();
+    hlcA->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(200)));
+
+    Ptr<ReplayClock> rcA = CreateObject<ReplayClock>();
+    rcA->SetAttribute("NodeId", UintegerValue(0));
+    rcA->SetAttribute("LocalClock", PointerValue(ptA));
+    rcA->SetAttribute("HLC", PointerValue(hlcA));
+    rcA->SetBitmap(std::bitset<64>(13));
+    rcA->SetOffsets(std::bitset<64>(49408));
+    rcA->SetAttribute("Counters", UintegerValue(2));
+
+    Ptr<TestLocalClock> hlcB = CreateObject<TestLocalClock>();
+    hlcB->SetAttribute("PhysicalTime", TimeValue(MicroSeconds(220)));
+
+    Ptr<ReplayClock> rcB = CreateObject<ReplayClock>();
+    rcB->SetAttribute("NodeId", UintegerValue(2));
+    rcB->SetAttribute("HLC", PointerValue(hlcB));
+    rcB->SetBitmap(std::bitset<64>(18));
+    rcB->SetOffsets(std::bitset<64>(512));
+    rcB->SetAttribute("Counters", UintegerValue(3));
+
+    uint64_t u_epsilon = 100;
+    Time u_interval = MicroSeconds(10);
+
+    rcA->Recv(rcB, u_epsilon, u_interval);
+
+    NS_TEST_EXPECT_MSG_EQ(rcA->GetHLC()->Now(),
+                          MicroSeconds(230),
                           "TestRecv::HLC should be updated to the maximum HLC after receive");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetBitmap(),
+    NS_TEST_EXPECT_MSG_EQ(rcA->GetBitmap(),
                           std::bitset<64>(31),
                           "TestRecv::Bitmap should have the nodeId set after receive");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetOffsets(),
+    NS_TEST_EXPECT_MSG_EQ(rcA->GetOffsets(),
                           std::bitset<64>(3827827968),
                           "TestRecv::Offsets should be updated correctly after receive");
-    NS_TEST_EXPECT_MSG_EQ(m_replayClock.GetCounters(),
+    NS_TEST_EXPECT_MSG_EQ(rcA->GetCounters(),
                           0,
                           "TestRecv::Counters should be updated correctly after receive");
 }
 
 /**
- * @ingroup testing-example
- * This is an example TestSuite for ReplayClock.
+ * @ingroup network-test
+ * @ingroup tests
+ *
+ * @brief ReplayClock TestSuite
  */
 class ReplayClockTestSuite : public TestSuite
 {
   public:
-    /** Constructor. */
     ReplayClockTestSuite();
 };
 
 ReplayClockTestSuite::ReplayClockTestSuite()
-    : TestSuite("replay-clock")
+    : TestSuite("replay-clock", Type::UNIT)
 {
-    AddTestCase(new ReplayClockTestCase);
+    LogComponentEnable("ReplayClock", LOG_LEVEL_INFO);
+    AddTestCase(new InitCase());
+    AddTestCase(new OffsetCase1());
+    AddTestCase(new OffsetCase2());
+    AddTestCase(new OffsetCase3());
+    AddTestCase(new OffsetCase4());
+    AddTestCase(new ShiftCase());
+    AddTestCase(new MergeSameEpochCase());
+    AddTestCase(new SendCase());
+    AddTestCase(new RecvCase());
 }
 
-// Do not forget to allocate an instance of this TestSuite
-/**
- * @ingroup replay-clock
- * ReplayClockTestSuite instance variable.
- */
-static ReplayClockTestSuite g_sampleReplayClockTestSuite;
-
-} // namespace tests
-
-} // namespace ns3
+static ReplayClockTestSuite sReplayClockTestSuite; //!< Static variable for test initialization

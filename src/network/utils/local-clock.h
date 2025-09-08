@@ -30,6 +30,11 @@ class LocalClock : public Object
      */
     virtual Time Now() = 0;
 
+    virtual void SetLocalClock(Time ptime)
+    {
+        m_ptime = ptime;
+    }
+
   private:
     Time m_ptime; ///< Current time
 };

@@ -25,7 +25,7 @@
 namespace ns3
 {
 
-class ReplaySwitchClock
+class ReplaySwitchClock : public LocalClock
 {
   public:
     /**
@@ -45,29 +45,22 @@ class ReplaySwitchClock
      */
     virtual ~ReplaySwitchClock();
 
+    virtual Time Now()
+    {
+        return std::max(m_clusterClock->Now(), m_switchClock->Now());
+    }
+
     /**
      * @brief Reconcile the cluster clock with the switch clock.
      *
      * This function updates the switch clock based on the cluster clock and reconciles the offsets.
-     *
-     * @param clusterClock The cluster clock to reconcile with.
-     * @param c_nodeId The ID of the cluster node.
-     * @param s_nodeId The ID of the switch node.
-     * @param physicalTime The physical time in nanoseconds.
-     * @param u_epsilon The epsilon value for offset calculations.
-     * @param u_interval The interval for HLC calculations.
      */
-    void ReconcileClusterClock(ReplayClock clusterClock,
-                               int64_t c_nodeId,
-                               int64_t s_nodeId,
-                               int64_t physicalTime,
-                               int64_t u_epsilon,
-                               int64_t u_interval);
+    void ReconcileClusterClock(int64_t u_epsilon, Time u_interval);
 
   private:
     // Add private member variables here
-    ReplayClock m_clusterClock; //!< Cluster clock for the switch
-    ReplayClock m_switchClock;  //!< Switch clock for the switch
+    Ptr<ReplayClock> m_clusterClock; //!< Cluster clock for the switch
+    Ptr<ReplayClock> m_switchClock;  //!< Switch clock for the switch
 };
 
 } // namespace ns3

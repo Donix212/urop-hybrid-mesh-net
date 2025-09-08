@@ -13,7 +13,11 @@
 
 #include "replay-clock.h"
 
+#include "unbounded-skew-clock.h"
+
 #include "ns3/log.h"
+#include "ns3/pointer.h"
+#include "ns3/uinteger.h"
 
 #include <bit>
 
@@ -22,25 +26,69 @@ namespace ns3
 
 NS_LOG_COMPONENT_DEFINE("ReplayClock");
 
+TypeId
+ReplayClock::GetTypeId()
+{
+    static TypeId tid = TypeId("ns3::ReplayClock")
+                            .SetParent<LocalClock>()
+                            .SetGroupName("Network")
+                            .AddConstructor<ReplayClock>()
+                            .AddAttribute("NodeId",
+                                          "Node ID must be specified",
+                                          UintegerValue(0),
+                                          MakeUintegerAccessor(&ReplayClock::m_nodeId),
+                                          MakeUintegerChecker<uint32_t>())
+                            .AddAttribute("LocalClock",
+                                          "Pointer to LocalClock must be specified",
+                                          PointerValue(),
+                                          MakePointerAccessor(&ReplayClock::m_localClock),
+                                          MakePointerChecker<LocalClock>())
+                            .AddAttribute("HLC",
+                                          "Pointer to HLC must be specified",
+                                          PointerValue(),
+                                          MakePointerAccessor(&ReplayClock::m_hlc),
+                                          MakePointerChecker<LocalClock>())
+                            .AddAttribute("Bitmap",
+                                          "Bitmap must be specified",
+                                          UintegerValue(0),
+                                          MakeUintegerAccessor(&ReplayClock::m_bitmapInt),
+                                          MakeUintegerChecker<uint64_t>())
+                            .AddAttribute("Offsets",
+                                          "Offsets must be specified",
+                                          UintegerValue(0),
+                                          MakeUintegerAccessor(&ReplayClock::m_offsetsInt),
+                                          MakeUintegerChecker<uint64_t>())
+                            .AddAttribute("Counters",
+                                          "Counters must be specified",
+                                          UintegerValue(0),
+                                          MakeUintegerAccessor(&ReplayClock::m_counters),
+                                          MakeUintegerChecker<uint64_t>());
+
+    return tid;
+}
+
 ReplayClock::ReplayClock()
 {
     NS_LOG_FUNCTION(this);
-    m_hlc = 0;
+    m_hlc = CreateObject<UnboundedSkewClock>();
     m_bitmap = 0;
     m_offsets = 0;
     m_counters = 0;
 }
 
-ReplayClock::ReplayClock(int64_t hlc,
-                         std::bitset<64> bitmap,
-                         std::bitset<64> offsets,
-                         int64_t counters)
+ReplayClock::ReplayClock(uint32_t nodeId,
+                         Ptr<LocalClock> localClock,
+                         Ptr<LocalClock> hlc,
+                         const std::bitset<64>& bitmap,
+                         const std::bitset<64>& offsets,
+                         uint8_t counters)
+    : m_nodeId(nodeId),
+      m_localClock(localClock),
+      m_hlc(hlc),
+      m_bitmap(bitmap),
+      m_offsets(offsets),
+      m_counters(counters)
 {
-    NS_LOG_FUNCTION(this);
-    m_hlc = hlc;
-    m_bitmap = bitmap;
-    m_offsets = offsets;
-    m_counters = counters;
 }
 
 ReplayClock::~ReplayClock()
@@ -48,17 +96,27 @@ ReplayClock::~ReplayClock()
     NS_LOG_FUNCTION(this);
 }
 
-void
-ReplayClock::Shift(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon)
+Time
+ReplayClock::Now()
 {
-    NS_LOG_FUNCTION(this << physicalTime << nodeId << u_epsilon);
+    NS_LOG_FUNCTION(this);
+    // Change this
+    return m_localClock->Now();
+}
+
+void
+ReplayClock::Shift(Time physicalTime, int64_t u_epsilon)
+{
+    NS_LOG_FUNCTION(this << physicalTime << m_nodeId << u_epsilon);
     int64_t index = 0;
     int64_t bitmap = m_bitmap.to_ullong();
     while (bitmap > 0)
     {
         int16_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
         int64_t offsetAtIndex = GetOffsetAtIndex(index, u_epsilon);
-        int64_t newOffsetAtIndex = std::min(physicalTime - (m_hlc - offsetAtIndex), u_epsilon);
+        int64_t newOffsetAtIndex = std::min(physicalTime.GetMicroSeconds() -
+                                                (m_hlc->Now().GetMicroSeconds() - offsetAtIndex),
+                                            u_epsilon);
         if (newOffsetAtIndex == u_epsilon)
         {
             RemoveOffsetAtIndex(index, u_epsilon);
@@ -73,8 +131,7 @@ ReplayClock::Shift(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon)
         bitmap &= (bitmap - 1);
         index++;
     }
-
-    m_hlc = physicalTime;
+    m_hlc->SetLocalClock(physicalTime);
 }
 
 void
@@ -199,23 +256,24 @@ void
 ReplayClock::PrintClock()
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_INFO("HLC: " << m_hlc);
+    NS_LOG_INFO("HLC: " << m_hlc->Now());
     NS_LOG_INFO("Bitmap: " << m_bitmap);
     NS_LOG_INFO("Offsets: " << m_offsets);
     NS_LOG_INFO("Counters: " << m_counters);
 }
 
 void
-ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64_t u_interval)
+ReplayClock::Send(int64_t u_epsilon, Time u_interval)
 {
-    NS_LOG_FUNCTION(this << physicalTime << nodeId);
+    NS_LOG_FUNCTION(this << m_localClock->Now() << m_nodeId);
 
-    int64_t newHLC = std::max(physicalTime / u_interval, m_hlc);
-    int64_t newOffset = newHLC - m_hlc;
+    int64_t newHLC = std::max(m_localClock->Now().GetMicroSeconds() / u_interval.GetMicroSeconds(),
+                              m_hlc->Now().GetMicroSeconds());
+    int64_t newOffset = newHLC - m_hlc->Now().GetMicroSeconds();
 
-    int64_t offsetAtNodeId = GetOffsetAtIndex(nodeId, u_epsilon);
+    int64_t offsetAtNodeId = GetOffsetAtIndex(m_nodeId, u_epsilon);
 
-    if (newHLC == m_hlc)
+    if (newHLC == m_hlc->Now().GetMicroSeconds())
     {
         newOffset = std::min(newOffset, offsetAtNodeId);
 
@@ -224,8 +282,8 @@ ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64
 
         while (bitmap > 0)
         {
-            int16_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
-            if (processId == nodeId)
+            uint32_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
+            if (processId == m_nodeId)
             {
                 SetOffsetAtIndex(index, newOffset, u_epsilon);
                 m_bitmap[processId] = 1;
@@ -235,7 +293,7 @@ ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64
         }
 
         m_counters = 0;
-        m_bitmap[nodeId] = 1;
+        m_bitmap[m_nodeId] = 1;
     }
     else
     {
@@ -246,9 +304,10 @@ ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64
 
         while (bitmap > 0)
         {
-            int16_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
+            uint32_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
             int64_t offsetAtIndex = GetOffsetAtIndex(index, u_epsilon);
-            int64_t newOffsetAtIndex = std::min(newHLC - (m_hlc - offsetAtIndex), u_epsilon);
+            int64_t newOffsetAtIndex =
+                std::min(newHLC - (m_hlc->Now().GetMicroSeconds() - offsetAtIndex), u_epsilon);
 
             if (newOffsetAtIndex >= u_epsilon)
             {
@@ -257,7 +316,7 @@ ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64
             }
             else
             {
-                if (processId == nodeId)
+                if (processId == m_nodeId)
                 {
                     SetOffsetAtIndex(index, 0, u_epsilon);
                     m_bitmap[processId] = 1;
@@ -273,43 +332,40 @@ ReplayClock::Send(int64_t physicalTime, int64_t nodeId, int64_t u_epsilon, int64
             index++;
         }
 
-        m_hlc = newHLC;
-        m_bitmap[nodeId] = 1;
+        m_hlc->SetLocalClock(MicroSeconds(newHLC));
+        m_bitmap[m_nodeId] = 1;
     }
 }
 
 void
-ReplayClock::Recv(ReplayClock o_replayClock,
-                  int64_t o_nodeId,
-                  int64_t physicalTime,
-                  int64_t nodeId,
-                  int64_t u_epsilon,
-                  int64_t u_interval)
+ReplayClock::Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_interval)
 {
     NS_LOG_FUNCTION(this);
 
-    int64_t newHLC = std::max((physicalTime / u_interval), m_hlc);
-    newHLC = std::max(newHLC, o_replayClock.m_hlc);
+    int64_t newHLC =
+        std::max((m_localClock->Now().GetMicroSeconds() / u_interval.GetMicroSeconds()),
+                 m_hlc->Now().GetMicroSeconds());
+    newHLC = std::max(newHLC, o_replayClock->m_hlc->Now().GetMicroSeconds());
 
     ReplayClock a = *this;
-    ReplayClock b = o_replayClock;
+    ReplayClock b = *o_replayClock;
 
-    a.Shift(newHLC, nodeId, u_epsilon);
-    b.Shift(newHLC, o_nodeId, u_epsilon);
+    a.Shift(MicroSeconds(newHLC), u_epsilon);
+    b.Shift(MicroSeconds(newHLC), u_epsilon);
 
     a.MergeSameEpoch(b, u_epsilon);
 
-    if (EqualOffset(a) && o_replayClock.EqualOffset(a))
+    if (EqualOffset(a) && o_replayClock->EqualOffset(a))
     {
-        a.m_counters = std::max(a.m_counters, o_replayClock.m_counters) + 1;
+        a.m_counters = std::max(a.m_counters, o_replayClock->m_counters) + 1;
     }
-    else if (EqualOffset(a) && !o_replayClock.EqualOffset(a))
+    else if (EqualOffset(a) && !o_replayClock->EqualOffset(a))
     {
         a.m_counters += 1;
     }
-    else if (!EqualOffset(a) && o_replayClock.EqualOffset(a))
+    else if (!EqualOffset(a) && o_replayClock->EqualOffset(a))
     {
-        a.m_counters = o_replayClock.m_counters + 1;
+        a.m_counters = o_replayClock->m_counters + 1;
     }
     else
     {
@@ -323,8 +379,8 @@ ReplayClock::Recv(ReplayClock o_replayClock,
 
     while (bitmap > 0)
     {
-        int16_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
-        if (processId == nodeId)
+        uint32_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
+        if (processId == m_nodeId)
         {
             SetOffsetAtIndex(index, 0, u_epsilon);
         }
@@ -333,7 +389,7 @@ ReplayClock::Recv(ReplayClock o_replayClock,
         index++;
     }
 
-    m_bitmap[nodeId] = 1;
+    m_bitmap[m_nodeId] = 1;
 }
 
 } // namespace ns3
