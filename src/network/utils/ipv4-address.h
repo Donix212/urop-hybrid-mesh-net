@@ -201,6 +201,14 @@ class Ipv4Address
      */
     static Ipv4Address GetLoopback();
 
+    /**
+     * @brief Three-way comparison operator.
+     *
+     * @param a the second operand
+     * @returns std::strong_ordering on the two operands
+     */
+    auto operator<=>(const Ipv4Address& a) const = default;
+
   private:
     /**
      * @brief Get the underlying address type (automatically assigned).
@@ -210,33 +218,6 @@ class Ipv4Address
     static uint8_t GetType();
     uint32_t m_address; //!< IPv4 address
     bool m_initialized; //!< IPv4 address has been explicitly initialized to a valid value.
-
-    /**
-     * @brief Equal to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the operands are equal.
-     */
-    friend bool operator==(const Ipv4Address& a, const Ipv4Address& b);
-
-    /**
-     * @brief Not equal to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the operands are not equal.
-     */
-    friend bool operator!=(const Ipv4Address& a, const Ipv4Address& b);
-
-    /**
-     * @brief Less than to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the first operand is less than the second.
-     */
-    friend bool operator<(const Ipv4Address& a, const Ipv4Address& b);
 };
 
 /**
@@ -314,22 +295,12 @@ class Ipv4Mask
     static Ipv4Mask GetOnes();
 
     /**
-     * @brief Equal to operator.
+     * @brief Three-way comparison operator.
      *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the operands are equal.
+     * @param a the second operand
+     * @returns std::strong_ordering on the two operands
      */
-    friend bool operator==(const Ipv4Mask& a, const Ipv4Mask& b);
-
-    /**
-     * @brief Not equal to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the operands are not equal.
-     */
-    friend bool operator!=(const Ipv4Mask& a, const Ipv4Mask& b);
+    auto operator<=>(const Ipv4Mask& a) const = default;
 
   private:
     uint32_t m_mask; //!< IP mask
@@ -371,24 +342,6 @@ std::istream& operator>>(std::istream& is, Ipv4Address& address);
  */
 std::istream& operator>>(std::istream& is, Ipv4Mask& mask);
 
-inline bool
-operator==(const Ipv4Address& a, const Ipv4Address& b)
-{
-    return a.m_address == b.m_address;
-}
-
-inline bool
-operator!=(const Ipv4Address& a, const Ipv4Address& b)
-{
-    return a.m_address != b.m_address;
-}
-
-inline bool
-operator<(const Ipv4Address& a, const Ipv4Address& b)
-{
-    return a.m_address < b.m_address;
-}
-
 /**
  * @ingroup address
  *
@@ -407,18 +360,6 @@ class Ipv4AddressHash
      */
     size_t operator()(const Ipv4Address& x) const;
 };
-
-inline bool
-operator==(const Ipv4Mask& a, const Ipv4Mask& b)
-{
-    return a.m_mask == b.m_mask;
-}
-
-inline bool
-operator!=(const Ipv4Mask& a, const Ipv4Mask& b)
-{
-    return a.m_mask != b.m_mask;
-}
 
 } // namespace ns3
 

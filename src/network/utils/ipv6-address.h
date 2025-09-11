@@ -392,6 +392,14 @@ class Ipv6Address
      */
     void GetBytes(uint8_t buf[16]) const;
 
+    /**
+     * @brief Three-way comparison operator.
+     *
+     * @param a the second operand
+     * @returns std::strong_ordering on the two operands
+     */
+    auto operator<=>(const Ipv6Address& a) const = default;
+
   private:
     /**
      * @brief Return the Type of address.
@@ -404,33 +412,6 @@ class Ipv6Address
      */
     uint8_t m_address[16];
     bool m_initialized; //!< IPv6 address has been explicitly initialized to a valid value.
-
-    /**
-     * @brief Equal to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the operands are equal.
-     */
-    friend bool operator==(const Ipv6Address& a, const Ipv6Address& b);
-
-    /**
-     * @brief Not equal to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the operands are not equal.
-     */
-    friend bool operator!=(const Ipv6Address& a, const Ipv6Address& b);
-
-    /**
-     * @brief Less than to operator.
-     *
-     * @param a the first operand.
-     * @param b the first operand.
-     * @returns true if the first operand is less than the second.
-     */
-    friend bool operator<(const Ipv6Address& a, const Ipv6Address& b);
 };
 
 /**
@@ -571,6 +552,14 @@ class Ipv6Prefix
      */
     static Ipv6Prefix GetZero();
 
+    /**
+     * @brief Three-way comparison operator.
+     *
+     * @param a the second operand
+     * @returns std::strong_ordering on the two operands
+     */
+    auto operator<=>(const Ipv6Prefix& a) const = default;
+
   private:
     /**
      * @brief The prefix representation.
@@ -581,24 +570,6 @@ class Ipv6Prefix
      * @brief The prefix length.
      */
     uint8_t m_prefixLength;
-
-    /**
-     * @brief Equal to operator.
-     *
-     * @param a the first operand
-     * @param b the first operand
-     * @returns true if the operands are equal
-     */
-    friend bool operator==(const Ipv6Prefix& a, const Ipv6Prefix& b);
-
-    /**
-     * @brief Not equal to operator.
-     *
-     * @param a the first operand
-     * @param b the first operand
-     * @returns true if the operands are not equal
-     */
-    friend bool operator!=(const Ipv6Prefix& a, const Ipv6Prefix& b);
 };
 
 ATTRIBUTE_HELPER_HEADER(Ipv6Address);
@@ -639,36 +610,6 @@ std::istream& operator>>(std::istream& is, Ipv6Address& address);
  * @returns the reference to the input stream
  */
 std::istream& operator>>(std::istream& is, Ipv6Prefix& prefix);
-
-inline bool
-operator==(const Ipv6Address& a, const Ipv6Address& b)
-{
-    return !std::memcmp(a.m_address, b.m_address, 16);
-}
-
-inline bool
-operator!=(const Ipv6Address& a, const Ipv6Address& b)
-{
-    return std::memcmp(a.m_address, b.m_address, 16);
-}
-
-inline bool
-operator<(const Ipv6Address& a, const Ipv6Address& b)
-{
-    return std::memcmp(a.m_address, b.m_address, 16) < 0;
-}
-
-inline bool
-operator==(const Ipv6Prefix& a, const Ipv6Prefix& b)
-{
-    return !std::memcmp(a.m_prefix, b.m_prefix, 16);
-}
-
-inline bool
-operator!=(const Ipv6Prefix& a, const Ipv6Prefix& b)
-{
-    return std::memcmp(a.m_prefix, b.m_prefix, 16);
-}
 
 /**
  * @class Ipv6AddressHash
