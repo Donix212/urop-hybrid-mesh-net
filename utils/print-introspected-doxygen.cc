@@ -144,7 +144,7 @@ BoldWithId(const std::string id, const std::string displayText)
 {
     if (outputText)
     {
-        return displayText;
+        return displayText + " ";
     }
     return boldWithIdStart + id + boldWithIdMid + displayText + boldWithIdStop + " ";
 }
@@ -160,7 +160,7 @@ SpanWithId(const std::string id, const std::string displayText)
 {
     if (outputText)
     {
-        return displayText;
+        return displayText + " ";
     }
     return spanWithIdStart + id + spanWithIdMid + displayText + spanWithIdStop + " ";
 }
@@ -176,7 +176,7 @@ HeadingWithId(const std::string id, const std::string displayText)
 {
     if (outputText)
     {
-        return displayText;
+        return displayText + " ";
     }
     return headingWithIdStart + id + headingWithIdMid + displayText + headingWithIdStop + " ";
 }
@@ -1050,8 +1050,8 @@ PrintSize(std::ostream& os, const TypeId tid)
 
     std::size_t arch = (sizeof(void*) * CHAR_BIT);
 
-    os << BoldWithId("size", "Size") << " of this type is " << tid.GetSize() << " bytes (on a "
-       << arch << "-bit architecture)." << std::endl;
+    os << BoldWithId("size", "Size") << "of this type is " << tid.GetSize() << " bytes (on a "
+       << arch << "-bit architecture)." << breakBoth << std::endl;
 } // PrintSize()
 
 /**
@@ -1083,7 +1083,7 @@ PrintTypeIdBlock(std::ostream& os, const TypeId tid)
     }
     else
     {
-        os << BoldWithId("group", "Group:") << tid.GetGroupName() << "\n" << std::endl;
+        os << BoldWithId("group", "Group:") << tid.GetGroupName() << breakBoth << std::endl;
     }
 
     PrintSize(os, tid);
