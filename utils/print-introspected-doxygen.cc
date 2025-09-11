@@ -44,27 +44,36 @@ bool outputText = false;
  * Markup tokens.
  * @{
  */
-std::string anchor;        ///< hyperlink anchor
-std::string argument;      ///< function argument
-std::string boldStart;     ///< start of bold span
-std::string boldStop;      ///< end of bold span
-std::string breakBoth;     ///< linebreak
-std::string breakHtmlOnly; ///< linebreak for html output only
-std::string breakTextOnly; ///< linebreak for text output only
-std::string brief;         ///< brief tag
-std::string classStart;    ///< start of a class
-std::string classStop;     ///< end of a class
-std::string codeWord;      ///< format next word as source code
-std::string commentStart;  ///< start of code comment
-std::string commentStop;   ///< end of code comment
-std::string copyDoc;       ///< copy (or refer) to docs elsewhere
-std::string file;          ///< file
-std::string flagSpanStart; ///< start of Attribute flag value
-std::string flagSpanStop;  ///< end of Attribute flag value
-std::string functionStart; ///< start of a method/function
-std::string functionStop;  ///< end of a method/function
-std::string headingStart;  ///< start of section heading (h3)
-std::string headingStop;   ///< end of section heading (h3)
+std::string anchor;             ///< hyperlink anchor
+std::string argument;           ///< function argument
+std::string boldStart;          ///< start of bold span
+std::string boldStop;           ///< end of bold span
+std::string boldWithIdStart;    ///< start of bold with id
+std::string boldWithIdMid;      ///< middle of bold span with id
+std::string boldWithIdStop;     ///< end of bold span with id
+std::string breakBoth;          ///< linebreak
+std::string breakHtmlOnly;      ///< linebreak for html output only
+std::string breakTextOnly;      ///< linebreak for text output only
+std::string brief;              ///< brief tag
+std::string classStart;         ///< start of a class
+std::string classStop;          ///< end of a class
+std::string codeWord;           ///< format next word as source code
+std::string commentStart;       ///< start of code comment
+std::string commentStop;        ///< end of code comment
+std::string copyDoc;            ///< copy (or refer) to docs elsewhere
+std::string file;               ///< file
+std::string flagSpanStart;      ///< start of Attribute flag value
+std::string flagSpanStop;       ///< end of Attribute flag value
+std::string functionStart;      ///< start of a method/function
+std::string functionStop;       ///< end of a method/function
+std::string headingStart;       ///< start of section heading (h3)
+std::string headingStop;        ///< end of section heading (h3)
+std::string headingWithIdStart; ///< start of section heading with id (h3)
+std::string headingWithIdMid;   ///< middle of section heading with id (h3)
+std::string headingWithIdStop;  ///< end of section heading with id (h3)
+std::string spanWithIdStart;    ///< start of span with id
+std::string spanWithIdMid;      ///< middle of span with id
+std::string spanWithIdStop;     ///< end of span with id
 // Linking:  [The link text displayed](\ref TheTarget)
 std::string hrefStart;        ///< start of a link
 std::string hrefMid;          ///< middle part of a link
@@ -124,6 +133,54 @@ SortedTraceSourceInfo(const TypeId tid)
     return index;
 }
 
+/**
+ * Generate bold (b) HTML markup with id if not generating text only.
+ * @param id The element id
+ * @param displayText The text to display
+ * @return The bold markup with id or just displayText if outputText is true
+ */
+std::string
+BoldWithId(const std::string id, const std::string displayText)
+{
+    if (outputText)
+    {
+        return displayText;
+    }
+    return boldWithIdStart + id + boldWithIdMid + displayText + boldWithIdStop + " ";
+}
+
+/**
+ * Generate span (span) HTML markup with id if not generating text only.
+ * @param id The element id
+ * @param displayText The text to display
+ * @return The span markup with id or just displayText if outputText is true
+ */
+std::string
+SpanWithId(const std::string id, const std::string displayText)
+{
+    if (outputText)
+    {
+        return displayText;
+    }
+    return spanWithIdStart + id + spanWithIdMid + displayText + spanWithIdStop + " ";
+}
+
+/**
+ * Generate heading (h3) markup with id if not generating text only.
+ * @param id The element id
+ * @param displayText The text to display
+ * @return The heading markup with id or just displayText if outputText is true
+ */
+std::string
+HeadingWithId(const std::string id, const std::string displayText)
+{
+    if (outputText)
+    {
+        return displayText;
+    }
+    return headingWithIdStart + id + headingWithIdMid + displayText + headingWithIdStop + " ";
+}
+
 } // unnamed namespace
 
 /**
@@ -139,6 +196,9 @@ SetMarkup()
         argument = "  Arg: ";
         boldStart = "";
         boldStop = "";
+        boldWithIdStart = "";
+        boldWithIdMid = "";
+        boldWithIdStop = "";
         breakBoth = "\n";
         breakHtmlOnly = "";
         breakTextOnly = "\n";
@@ -156,6 +216,12 @@ SetMarkup()
         functionStop = "\n\n";
         headingStart = "";
         headingStop = "";
+        headingWithIdStart = "";
+        headingWithIdMid = "";
+        headingWithIdStop = "";
+        spanWithIdStart = "";
+        spanWithIdMid = "";
+        spanWithIdStop = "";
         // Linking:  The link text displayed (see TheTarget)
         hrefStart = "";
         hrefMid = " (see ";
@@ -184,6 +250,9 @@ SetMarkup()
         argument = "\\param ";
         boldStart = "<b>";
         boldStop = "</b>";
+        boldWithIdStart = "<b id=\"";
+        boldWithIdMid = "\">";
+        boldWithIdStop = "</b>";
         breakBoth = "<br>";
         breakHtmlOnly = "<br>";
         breakTextOnly = "";
@@ -201,6 +270,12 @@ SetMarkup()
         functionStop = "";
         headingStart = "<h3>";
         headingStop = "</h3>";
+        headingWithIdStart = "<h3 id=\"";
+        headingWithIdMid = "\">";
+        headingWithIdStop = "</h3>";
+        spanWithIdStart = "<span id=\"";
+        spanWithIdMid = "\">";
+        spanWithIdStop = "</span>";
         // Linking:  [The link text displayed](\ref TheTarget)
         hrefStart = "[";
         hrefMid = "](\\ref ";
@@ -717,11 +792,12 @@ PrintConfigPaths(std::ostream& os, const TypeId tid)
     // Config --------------
     if (paths.empty())
     {
-        os << "Introspection did not find any typical Config paths." << breakBoth << std::endl;
+        os << SpanWithId("config-paths", "Introspection did not find any typical Config paths.")
+           << breakBoth << std::endl;
     }
     else
     {
-        os << headingStart << "Config Paths" << headingStop << std::endl;
+        os << HeadingWithId("config-paths", "Config Paths") << std::endl;
         os << std::endl;
         os << tid.GetName() << " is accessible through the following paths"
            << " with Config::Set and Config::Connect:" << std::endl;
@@ -862,11 +938,12 @@ PrintAttributes(std::ostream& os, const TypeId tid)
     NS_LOG_FUNCTION(tid);
     if (tid.GetAttributeN() == 0)
     {
-        os << "No Attributes are defined for this type." << breakBoth << std::endl;
+        os << SpanWithId("attributes", "No Attributes are defined for this type.") << breakBoth
+           << std::endl;
     }
     else
     {
-        os << headingStart << "Attributes" << headingStop << std::endl;
+        os << HeadingWithId("attributes", "Attributes") << std::endl;
         PrintAttributesTid(os, tid);
     }
 
@@ -935,11 +1012,12 @@ PrintTraceSources(std::ostream& os, const TypeId tid)
     NS_LOG_FUNCTION(tid);
     if (tid.GetTraceSourceN() == 0)
     {
-        os << "No TraceSources are defined for this type." << breakBoth << std::endl;
+        os << SpanWithId("trace-sources", "No TraceSources are defined for this type.") << breakBoth
+           << std::endl;
     }
     else
     {
-        os << headingStart << "TraceSources" << headingStop << std::endl;
+        os << HeadingWithId("trace-sources", "TraceSources") << std::endl;
         PrintTraceSourcesTid(os, tid);
     }
 
@@ -972,7 +1050,7 @@ PrintSize(std::ostream& os, const TypeId tid)
 
     std::size_t arch = (sizeof(void*) * CHAR_BIT);
 
-    os << boldStart << "Size" << boldStop << " of this type is " << tid.GetSize() << " bytes (on a "
+    os << BoldWithId("size", "Size") << " of this type is " << tid.GetSize() << " bytes (on a "
        << arch << "-bit architecture)." << std::endl;
 } // PrintSize()
 
@@ -998,9 +1076,14 @@ PrintTypeIdBlock(std::ostream& os, const TypeId tid)
     PrintAttributes(os, tid);
     PrintTraceSources(os, tid);
 
-    if (!tid.GetGroupName().empty())
+    if (tid.GetGroupName().empty())
     {
-        os << boldStart << "Group:" << boldStop << " " << tid.GetGroupName() << "\n" << std::endl;
+        os << SpanWithId("group", "Group " + tid.GetGroupName() + " does not belong to a group.")
+           << std::endl;
+    }
+    else
+    {
+        os << BoldWithId("group", "Group:") << tid.GetGroupName() << "\n" << std::endl;
     }
 
     PrintSize(os, tid);
