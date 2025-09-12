@@ -71,9 +71,6 @@ std::string headingStop;        ///< end of section heading (h3)
 std::string headingWithIdStart; ///< start of section heading with id (h3)
 std::string headingWithIdMid;   ///< middle of section heading with id (h3)
 std::string headingWithIdStop;  ///< end of section heading with id (h3)
-std::string spanWithIdStart;    ///< start of span with id
-std::string spanWithIdMid;      ///< middle of span with id
-std::string spanWithIdStop;     ///< end of span with id
 // Linking:  [The link text displayed](\ref TheTarget)
 std::string hrefStart;        ///< start of a link
 std::string hrefMid;          ///< middle part of a link
@@ -90,6 +87,9 @@ std::string referenceNo;      ///< block automatic references
 std::string returns;          ///< the return value
 std::string sectionStart;     ///< start of a section or group
 std::string seeAlso;          ///< Reference to other docs
+std::string spanWithIdStart;  ///< start of span with id
+std::string spanWithIdMid;    ///< middle of span with id
+std::string spanWithIdStop;   ///< end of span with id
 std::string subSectionStart;  ///< start a new subsection
 std::string templArgDeduced;  ///< template argument deduced from function
 std::string templArgExplicit; ///< template argument required
@@ -150,22 +150,6 @@ BoldWithId(const std::string id, const std::string displayText)
 }
 
 /**
- * Generate span (span) HTML markup with id if not generating text only.
- * @param id The element id
- * @param displayText The text to display
- * @return The span markup with id or just displayText if outputText is true
- */
-std::string
-SpanWithId(const std::string id, const std::string displayText)
-{
-    if (outputText)
-    {
-        return displayText + " ";
-    }
-    return spanWithIdStart + id + spanWithIdMid + displayText + spanWithIdStop + " ";
-}
-
-/**
  * Generate heading (h3) markup with id if not generating text only.
  * @param id The element id
  * @param displayText The text to display
@@ -179,6 +163,22 @@ HeadingWithId(const std::string id, const std::string displayText)
         return displayText + " ";
     }
     return headingWithIdStart + id + headingWithIdMid + displayText + headingWithIdStop + " ";
+}
+
+/**
+ * Generate span (span) HTML markup with id if not generating text only.
+ * @param id The element id
+ * @param displayText The text to display
+ * @return The span markup with id or just displayText if outputText is true
+ */
+std::string
+SpanWithId(const std::string id, const std::string displayText)
+{
+    if (outputText)
+    {
+        return displayText + " ";
+    }
+    return spanWithIdStart + id + spanWithIdMid + displayText + spanWithIdStop + " ";
 }
 
 } // unnamed namespace
@@ -219,9 +219,6 @@ SetMarkup()
         headingWithIdStart = "";
         headingWithIdMid = "";
         headingWithIdStop = "";
-        spanWithIdStart = "";
-        spanWithIdMid = "";
-        spanWithIdStop = "";
         // Linking:  The link text displayed (see TheTarget)
         hrefStart = "";
         hrefMid = " (see ";
@@ -238,6 +235,9 @@ SetMarkup()
         returns = "  Returns: ";
         sectionStart = "Section:  ";
         seeAlso = "  See: ";
+        spanWithIdStart = "";
+        spanWithIdMid = "";
+        spanWithIdStop = "";
         subSectionStart = "Subsection ";
         templArgDeduced = "[deduced]  ";
         templArgExplicit = "[explicit] ";
@@ -273,9 +273,6 @@ SetMarkup()
         headingWithIdStart = "<h3 id=\"";
         headingWithIdMid = "\">";
         headingWithIdStop = "</h3>";
-        spanWithIdStart = "<span id=\"";
-        spanWithIdMid = "\">";
-        spanWithIdStop = "</span>";
         // Linking:  [The link text displayed](\ref TheTarget)
         hrefStart = "[";
         hrefMid = "](\\ref ";
@@ -292,6 +289,9 @@ SetMarkup()
         returns = "\\returns ";
         sectionStart = "\\ingroup ";
         seeAlso = "\\see ";
+        spanWithIdStart = "<span id=\"";
+        spanWithIdMid = "\">";
+        spanWithIdStop = "</span>";
         subSectionStart = "\\addtogroup ";
         templArgDeduced = "\\deduced ";
         templArgExplicit = "\\explicit ";
@@ -1078,8 +1078,7 @@ PrintTypeIdBlock(std::ostream& os, const TypeId tid)
 
     if (tid.GetGroupName().empty())
     {
-        os << SpanWithId("group", "Group " + tid.GetGroupName() + " does not belong to a group.")
-           << std::endl;
+        os << SpanWithId("group", name + " does not belong to a group.") << breakBoth << std::endl;
     }
     else
     {
