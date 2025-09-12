@@ -792,7 +792,7 @@ PrintConfigPaths(std::ostream& os, const TypeId tid)
     // Config --------------
     if (paths.empty())
     {
-        os << SpanWithId("config-paths", "Introspection did not find any typical Config paths.")
+        os << SpanWithId("config-paths", "Introspection did not find any typical Config paths")
            << breakBoth << std::endl;
     }
     else
@@ -938,7 +938,7 @@ PrintAttributes(std::ostream& os, const TypeId tid)
     NS_LOG_FUNCTION(tid);
     if (tid.GetAttributeN() == 0)
     {
-        os << SpanWithId("attributes", "No Attributes are defined for this type.") << breakBoth
+        os << SpanWithId("attributes", "No Attributes are defined for this type") << breakBoth
            << std::endl;
     }
     else
@@ -1012,7 +1012,7 @@ PrintTraceSources(std::ostream& os, const TypeId tid)
     NS_LOG_FUNCTION(tid);
     if (tid.GetTraceSourceN() == 0)
     {
-        os << SpanWithId("trace-sources", "No TraceSources are defined for this type.") << breakBoth
+        os << SpanWithId("trace-sources", "No TraceSources are defined for this type") << breakBoth
            << std::endl;
     }
     else
@@ -1078,7 +1078,7 @@ PrintTypeIdBlock(std::ostream& os, const TypeId tid)
 
     if (tid.GetGroupName().empty())
     {
-        os << SpanWithId("group", name + " does not belong to a group.") << breakBoth << std::endl;
+        os << SpanWithId("group", name + " does not belong to a group") << breakBoth << std::endl;
     }
     else
     {
