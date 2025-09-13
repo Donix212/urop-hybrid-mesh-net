@@ -162,7 +162,7 @@ HeadingWithId(const std::string id, const std::string displayText)
     {
         return displayText + " ";
     }
-    return headingWithIdStart + id + headingWithIdMid + displayText + headingWithIdStop + " ";
+    return headingWithIdStart + id + headingWithIdMid + displayText + headingWithIdStop;
 }
 
 /**
