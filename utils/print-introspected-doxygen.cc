@@ -42,6 +42,10 @@ bool outputText = false;
 
 /**
  * Markup tokens.
+ *
+ * Initializers given here are empty or whitespace values for text output.
+ * Other values for text output, and values for
+ * HTML output are configured in SetMarkup().
  * @{
  */
 std::string anchor;             ///< hyperlink anchor
@@ -51,13 +55,13 @@ std::string boldStop;           ///< end of bold span
 std::string boldWithIdStart;    ///< start of bold with id
 std::string boldWithIdMid;      ///< middle of bold span with id
 std::string boldWithIdStop;     ///< end of bold span with id
-std::string breakBoth;          ///< linebreak
+std::string breakBoth{"\n"};    ///< linebreak
 std::string breakHtmlOnly;      ///< linebreak for html output only
 std::string breakTextOnly;      ///< linebreak for text output only
 std::string brief;              ///< brief tag
 std::string classStart;         ///< start of a class
 std::string classStop;          ///< end of a class
-std::string codeWord;           ///< format next word as source code
+std::string codeWord{" "};      ///< format next word as source code
 std::string commentStart;       ///< start of code comment
 std::string commentStop;        ///< end of code comment
 std::string copyDoc;            ///< copy (or refer) to docs elsewhere
@@ -72,10 +76,10 @@ std::string headingWithIdStart; ///< start of section heading with id (h3)
 std::string headingWithIdMid;   ///< middle of section heading with id (h3)
 std::string headingWithIdStop;  ///< end of section heading with id (h3)
 std::string hideCaller;         ///< hide caller graph
-// Linking:  [The link text displayed](\ref TheTarget)
+// Linking:  [The link text displayed](@ref TheTarget)
 std::string hrefStart;        ///< start of a link
 std::string hrefMid;          ///< middle part of a link
-std::string hrefStop;         ///< end of a link
+std::string hrefStop{")"};    ///< end of a link
 std::string indentHtmlOnly;   ///< small indent
 std::string listLineStart;    ///< start unordered list item
 std::string listLineStop;     ///< end unordered list item
@@ -83,8 +87,8 @@ std::string listStart;        ///< start unordered list
 std::string listStop;         ///< end unordered list
 std::string note;             ///< start a note section
 std::string page;             ///< start a separate page
-std::string reference;        ///< reference tag
-std::string referenceNo;      ///< block automatic references
+std::string reference{" "};   ///< reference tag
+std::string referenceNo{" "}; ///< block automatic references
 std::string returns;          ///< the return value
 std::string sectionStart;     ///< start of a section or group
 std::string seeAlso;          ///< Reference to other docs
@@ -193,47 +197,19 @@ SetMarkup()
     NS_LOG_FUNCTION(outputText);
     if (outputText)
     {
-        anchor = "";
         argument = "  Arg: ";
-        boldStart = "";
-        boldStop = "";
-        boldWithIdStart = "";
-        boldWithIdMid = "";
-        boldWithIdStop = "";
-        breakBoth = "\n";
-        breakHtmlOnly = "";
         breakTextOnly = "\n";
-        brief = "";
-        classStart = "";
-        classStop = "\n\n";
-        codeWord = " ";
         commentStart = "===============================================================\n";
-        commentStop = "";
+        classStop = "\n\n";
         copyDoc = "  See: ";
         file = "File: introspected-doxygen.txt";
-        flagSpanStart = "";
-        flagSpanStop = "";
-        functionStart = "";
         functionStop = "\n\n";
-        headingStart = "";
-        headingStop = "";
-        headingWithIdStart = "";
-        headingWithIdMid = "";
-        headingWithIdStop = "";
-        hideCaller = "";
         // Linking:  The link text displayed (see TheTarget)
-        hrefStart = "";
         hrefMid = " (see ";
         hrefStop = ")";
-        indentHtmlOnly = "";
         listLineStart = "    * ";
-        listLineStop = "";
-        listStart = "";
-        listStop = "";
         note = "Note: ";
         page = "Page ";
-        reference = " ";
-        referenceNo = " ";
         returns = "  Returns: ";
         sectionStart = "Section:  ";
         seeAlso = "  See: ";
@@ -248,8 +224,8 @@ SetMarkup()
     }
     else
     {
-        anchor = "\\anchor ";
-        argument = "\\param ";
+        anchor = "@anchor ";
+        argument = "@param ";
         boldStart = "<b>";
         boldStop = "</b>";
         boldWithIdStart = "<b id=\"";
@@ -257,19 +233,16 @@ SetMarkup()
         boldWithIdStop = "</b>";
         breakBoth = "<br>";
         breakHtmlOnly = "<br>";
-        breakTextOnly = "";
-        brief = "\\brief ";
-        classStart = "\\class ";
-        classStop = "";
-        codeWord = "\\p ";
-        commentStart = "/*!\n";
+        brief = "@brief ";
+        classStart = "@class ";
+        codeWord = "@p ";
+        commentStart = "/**\n";
         commentStop = "*/\n";
-        copyDoc = "\\copydoc ";
-        file = "\\file";
+        copyDoc = "@copydoc ";
+        file = "@file";
         flagSpanStart = "<span class=\"mlabel\">";
         flagSpanStop = "</span>";
-        functionStart = "\\fn ";
-        functionStop = "";
+        functionStart = "@fn ";
         headingStart = "<h3>";
         headingStop = "</h3>";
         headingWithIdStart = "<h3 id=\"";
@@ -278,28 +251,28 @@ SetMarkup()
         hideCaller = "@hidecaller";
         // Linking:  [The link text displayed](\ref TheTarget)
         hrefStart = "[";
-        hrefMid = "](\\ref ";
+        hrefMid = "](@ref ";
         hrefStop = ")";
         indentHtmlOnly = "  ";
         listLineStart = "<li>";
         listLineStop = "</li>";
         listStart = "<ul>";
         listStop = "</ul>";
-        note = "\\note ";
-        page = "\\page ";
-        reference = " \\ref ";
+        note = "@note ";
+        page = "@page ";
+        reference = " @ref ";
         referenceNo = " %";
-        returns = "\\returns ";
-        sectionStart = "\\ingroup ";
-        seeAlso = "\\see ";
+        returns = "@returns ";
+        sectionStart = "@ingroup ";
+        seeAlso = "@see ";
         spanWithIdStart = "<span id=\"";
         spanWithIdMid = "\">";
         spanWithIdStop = "</span>";
-        subSectionStart = "\\addtogroup ";
-        templArgDeduced = "\\deduced ";
-        templArgExplicit = "\\explicit ";
-        templateArgument = "\\tparam ";
-        variable = "\\var ";
+        subSectionStart = "@addtogroup ";
+        templArgDeduced = "@deduced ";
+        templArgExplicit = "@explicit ";
+        templateArgument = "@tparam ";
+        variable = "@var ";
     }
 } // SetMarkup()
 
@@ -479,14 +452,14 @@ StaticInformation::Get(TypeId tid) const
  *
  * The container is modified in place; the elements end up sorted.
  *
- * The container must support \c begin(), \c end() and \c erase(),
+ * The container must support @c begin(), @c end() and @c erase(),
  * which, among the STL containers, limits this to
- * \c std::vector, \c std::dequeue and \c std::list.
+ * @c std::vector, @c std::dequeue and @c std::list.
  *
- * The container elements must support \c operator< (for \c std::sort)
- * and \c operator== (for \c std::unique).
+ * The container elements must support @c operator< (for @c std::sort)
+ * and @c operator== (for @c std::unique).
  *
- * @tparam T \deduced The container type.
+ * @tparam T @deduced The container type.
  * @param t The container.
  */
 template <typename T>
