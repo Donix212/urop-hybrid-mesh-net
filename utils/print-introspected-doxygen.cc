@@ -42,52 +42,56 @@ bool outputText = false;
 
 /**
  * Markup tokens.
+ *
+ * Initializers given here are empty or whitespace values for text output.
+ * Other values for text output, and values for
+ * HTML output are configured in SetMarkup().
  * @{
  */
 // clang-format off
-std::string anchor;          ///< hyperlink anchor
-std::string argument;        ///< function argument
-std::string boldStart;       ///< start of bold span
-std::string boldStop;        ///< end of bold span
-std::string breakBoth;       ///< linebreak
-std::string breakHtmlOnly;   ///< linebreak for html output only
-std::string breakTextOnly;   ///< linebreak for text output only
-std::string brief;           ///< brief tag
-std::string classStart;      ///< start of a class
-std::string classStop;       ///< end of a class
-std::string codeWord;        ///< format next word as source code
-std::string commentStart;    ///< start of code comment
-std::string commentStop;     ///< end of code comment
-std::string copyDoc;         ///< copy (or refer) to docs elsewhere
-std::string file;            ///< file
-std::string flagSpanStart;   ///< start of Attribute flag value
-std::string flagSpanStop;    ///< end of Attribute flag value
-std::string functionStart;   ///< start of a method/function
-std::string functionStop;    ///< end of a method/function
-std::string headingStart;    ///< start of section heading (h3)
-std::string headingStop;     ///< end of section heading (h3)
-std::string hideCaller;      ///< hide caller graph
-// Linking:  [The link text displayed](\ref TheTarget)
-std::string hrefStart;        ///< start of a link
-std::string hrefMid;          ///< middle part of a link
-std::string hrefStop;         ///< end of a link
-std::string indentHtmlOnly;   ///< small indent
-std::string listLineStart;    ///< start unordered list item
-std::string listLineStop;     ///< end unordered list item
-std::string listStart;        ///< start unordered list
-std::string listStop;         ///< end unordered list
-std::string note;             ///< start a note section
-std::string page;             ///< start a separate page
-std::string reference;        ///< reference tag
-std::string referenceNo;      ///< block automatic references
-std::string returns;          ///< the return value
-std::string sectionStart;     ///< start of a section or group
-std::string seeAlso;          ///< Reference to other docs
-std::string subSectionStart;  ///< start a new subsection
-std::string templArgDeduced;  ///< template argument deduced from function
-std::string templArgExplicit; ///< template argument required
-std::string templateArgument; ///< template argument
-std::string variable;         ///< variable or class member
+std::string anchor;               ///< hyperlink anchor
+std::string argument;             ///< function argument
+std::string boldStart;            ///< start of bold span
+std::string boldStop;             ///< end of bold span
+std::string breakBoth{"\n"};      ///< linebreak
+std::string breakHtmlOnly;        ///< linebreak for html output only
+std::string breakTextOnly;        ///< linebreak for text output only
+std::string brief;                ///< brief tag
+std::string classStart;           ///< start of a class
+std::string classStop;            ///< end of a class
+std::string codeWord{" "};        ///< format next word as source code
+std::string commentStart;         ///< start of code comment
+std::string commentStop;          ///< end of code comment
+std::string copyDoc;              ///< copy (or refer) to docs elsewhere
+std::string file;                 ///< file
+std::string flagSpanStart;        ///< start of Attribute flag value
+std::string flagSpanStop;         ///< end of Attribute flag value
+std::string functionStart;        ///< start of a method/function
+std::string functionStop;         ///< end of a method/function
+std::string headingStart;         ///< start of section heading (h3)
+std::string headingStop;          ///< end of section heading (h3)
+std::string hideCaller;           ///< hide caller graph
+// Linking:  [The link text displayed](@ref TheTarget)
+std::string hrefStart;            ///< start of a link
+std::string hrefMid;              ///< middle part of a link
+std::string hrefStop{")"};        ///< end of a link
+std::string indentHtmlOnly;       ///< small indent
+std::string listLineStart;        ///< start unordered list item
+std::string listLineStop;         ///< end unordered list item
+std::string listStart;            ///< start unordered list
+std::string listStop;             ///< end unordered list
+std::string note;                 ///< start a note section
+std::string page;                 ///< start a separate page
+std::string reference{" "};       ///< reference tag
+std::string referenceNo{" "};     ///< block automatic references
+std::string returns;              ///< the return value
+std::string sectionStart;         ///< start of a section or group
+std::string seeAlso;              ///< Reference to other docs
+std::string subSectionStart;      ///< start a new subsection
+std::string templArgDeduced;      ///< template argument deduced from function
+std::string templArgExplicit;     ///< template argument required
+std::string templateArgument;     ///< template argument
+std::string variable;             ///< variable or class member
 /** @} */
 // clang-format on
 
@@ -137,41 +141,19 @@ SetMarkup()
     NS_LOG_FUNCTION(outputText);
     if (outputText)
     {
-        anchor = "";
         argument = "  Arg: ";
-        boldStart = "";
-        boldStop = "";
-        breakBoth = "\n";
-        breakHtmlOnly = "";
         breakTextOnly = "\n";
-        brief = "";
-        classStart = "";
-        classStop = "\n\n";
-        codeWord = " ";
         commentStart = "===============================================================\n";
-        commentStop = "";
+        classStop = "\n\n";
         copyDoc = "  See: ";
         file = "File: introspected-doxygen.txt";
-        flagSpanStart = "";
-        flagSpanStop = "";
-        functionStart = "";
         functionStop = "\n\n";
-        headingStart = "";
-        headingStop = "";
-        hideCaller = "";
         // Linking:  The link text displayed (see TheTarget)
-        hrefStart = "";
         hrefMid = " (see ";
         hrefStop = ")";
-        indentHtmlOnly = "";
         listLineStart = "    * ";
-        listLineStop = "";
-        listStart = "";
-        listStop = "";
         note = "Note: ";
         page = "Page ";
-        reference = " ";
-        referenceNo = " ";
         returns = "  Returns: ";
         sectionStart = "Section:  ";
         seeAlso = "  See: ";
@@ -189,10 +171,8 @@ SetMarkup()
         boldStop = "</b>";
         breakBoth = "<br>";
         breakHtmlOnly = "<br>";
-        breakTextOnly = "";
         brief = "\\brief ";
         classStart = "\\class ";
-        classStop = "";
         codeWord = "\\p ";
         commentStart = "/*!\n";
         commentStop = "*/\n";
@@ -201,7 +181,6 @@ SetMarkup()
         flagSpanStart = "<span class=\"mlabel\">";
         flagSpanStop = "</span>";
         functionStart = "\\fn ";
-        functionStop = "";
         headingStart = "<h3>";
         headingStop = "</h3>";
         hideCaller = "@hidecaller";
