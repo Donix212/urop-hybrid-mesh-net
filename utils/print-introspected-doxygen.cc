@@ -165,46 +165,46 @@ SetMarkup()
     }
     else
     {
-        anchor = "\\anchor ";
-        argument = "\\param ";
+        anchor = "@anchor ";
+        argument = "@param ";
         boldStart = "<b>";
         boldStop = "</b>";
         breakBoth = "<br>";
         breakHtmlOnly = "<br>";
-        brief = "\\brief ";
-        classStart = "\\class ";
-        codeWord = "\\p ";
-        commentStart = "/*!\n";
+        brief = "@brief ";
+        classStart = "@class ";
+        codeWord = "@p ";
+        commentStart = "/**\n";
         commentStop = "*/\n";
-        copyDoc = "\\copydoc ";
-        file = "\\file";
+        copyDoc = "@copydoc ";
+        file = "@file";
         flagSpanStart = "<span class=\"mlabel\">";
         flagSpanStop = "</span>";
-        functionStart = "\\fn ";
+        functionStart = "@fn ";
         headingStart = "<h3>";
         headingStop = "</h3>";
         hideCaller = "@hidecaller";
         // Linking:  [The link text displayed](\ref TheTarget)
         hrefStart = "[";
-        hrefMid = "](\\ref ";
+        hrefMid = "](@ref ";
         hrefStop = ")";
         indentHtmlOnly = "  ";
         listLineStart = "<li>";
         listLineStop = "</li>";
         listStart = "<ul>";
         listStop = "</ul>";
-        note = "\\note ";
-        page = "\\page ";
-        reference = " \\ref ";
+        note = "@note ";
+        page = "@page ";
+        reference = " @ref ";
         referenceNo = " %";
-        returns = "\\returns ";
-        sectionStart = "\\ingroup ";
-        seeAlso = "\\see ";
-        subSectionStart = "\\addtogroup ";
-        templArgDeduced = "\\deduced ";
-        templArgExplicit = "\\explicit ";
-        templateArgument = "\\tparam ";
-        variable = "\\var ";
+        returns = "@returns ";
+        sectionStart = "@ingroup ";
+        seeAlso = "@see ";
+        subSectionStart = "@addtogroup ";
+        templArgDeduced = "@deduced ";
+        templArgExplicit = "@explicit ";
+        templateArgument = "@tparam ";
+        variable = "@var ";
     }
 } // SetMarkup()
 
@@ -384,14 +384,14 @@ StaticInformation::Get(TypeId tid) const
  *
  * The container is modified in place; the elements end up sorted.
  *
- * The container must support \c begin(), \c end() and \c erase(),
+ * The container must support @c begin(), @c end() and @c erase(),
  * which, among the STL containers, limits this to
- * \c std::vector, \c std::dequeue and \c std::list.
+ * @c std::vector, @c std::dequeue and @c std::list.
  *
- * The container elements must support \c operator< (for \c std::sort)
- * and \c operator== (for \c std::unique).
+ * The container elements must support @c operator< (for @c std::sort)
+ * and @c operator== (for @c std::unique).
  *
- * @tparam T \deduced The container type.
+ * @tparam T @deduced The container type.
  * @param t The container.
  */
 template <typename T>
@@ -1310,8 +1310,8 @@ PrintAttributeValueSection(std::ostream& os, const std::string& name, const bool
     NS_LOG_FUNCTION(name);
     std::string section = "attribute_" + name;
 
-    // \ingroup attributes
-    // \defgroup attribute_<name>Value <name> Attribute
+    // @ingroup attributes
+    // @defgroup attribute_<name>Value <name> Attribute
     os << commentStart << sectionStart << "attributes\n"
        << subSectionStart << "attribute_" << name << " " << name << " Attribute\n"
        << "AttributeValue implementation for " << name << "\n";
@@ -1326,7 +1326,7 @@ PrintAttributeValueSection(std::ostream& os, const std::string& name, const bool
 /**
  * Print the AttributeValue documentation for a class.
  *
- * This will print documentation for the \pname{AttributeValue} class and methods.
+ * This will print documentation for the @pname{AttributeValue} class and methods.
  *
  * @param [in,out] os The output stream.
  * @param [in] name The token to use in defining the accessor name.
@@ -1342,15 +1342,16 @@ PrintAttributeValueWithName(std::ostream& os,
     NS_LOG_FUNCTION(name << type << header);
     std::string sectAttr = sectionStart + "attribute_" + name;
 
-    // \ingroup attribute_<name>Value
-    // \class ns3::<name>Value "header"
+    // @ingroup attribute_<name>Value
+    // @class ns3::<name>Value "header"
     std::string valClass = name + "Value";
     std::string qualClass = " ns3::" + valClass;
 
     os << commentStart << sectAttr << std::endl;
     os << classStart << qualClass << " \"" << header << "\"" << std::endl;
     os << "AttributeValue implementation for " << name << "." << std::endl;
-    os << seeAlso << "AttributeValue" << std::endl;
+    os << seeAlso << "ns3::AttributeValue" << std::endl;
+    os << hideCallerGraph;
     os << commentStop;
 
     // Ctor: <name>Value::<name>Value
@@ -1394,7 +1395,7 @@ PrintAttributeValueWithName(std::ostream& os,
 /**
  * Print the AttributeValue MakeAccessor documentation for a class.
  *
- * This will print documentation for the \pname{Make<name>Accessor} functions.
+ * This will print documentation for the @pname{Make<name>Accessor} functions.
  *
  * @param [in,out] os The output stream.
  * @param [in] name The token to use in defining the accessor name.
@@ -1406,7 +1407,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
     std::string sectAttr = sectionStart + "attribute_" + name + "\n";
     std::string make = "ns3::Make" + name + "Accessor ";
 
-    // \ingroup attribute_<name>Value
+    // @ingroup attribute_<name>Value
     // Make<name>Accessor(T1 a1)
     os << commentStart << sectAttr << functionStart << "ns3::Ptr<const ns3::AttributeAccessor> "
        << make << "(T1 a1)\n"
@@ -1414,7 +1415,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
        << seeAlso << "ns3::AttributeAccessor\n"
        << hideCaller << commentStop;
 
-    // \ingroup attribute_<name>Value
+    // @ingroup attribute_<name>Value
     // Make<name>Accessor(T1 a1)
     os << commentStart << sectAttr << functionStart << "ns3::Ptr<const ns3::AttributeAccessor> "
        << make << "(T1 a1, T2 a2)\n"
@@ -1426,7 +1427,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
 /**
  * Print the AttributeValue MakeChecker documentation for a class.
  *
- * This will print documentation for the \pname{Make<name>Checker} function.
+ * This will print documentation for the @pname{Make<name>Checker} function.
  *
  * @param [in,out] os The output stream.
  * @param [in] name The token to use in defining the accessor name.
@@ -1439,7 +1440,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     std::string sectAttr = sectionStart + "attribute_" + name + "\n";
     std::string make = "ns3::Make" + name + "Checker ";
 
-    // \ingroup attribute_<name>Value
+    // @ingroup attribute_<name>Value
     // class <name>Checker
     os << commentStart << sectAttr << std::endl;
     os << classStart << " ns3::" << name << "Checker"
@@ -1448,7 +1449,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     os << seeAlso << "ns3::AttributeChecker" << std::endl;
     os << hideCaller << commentStop;
 
-    // \ingroup attribute_<name>Value
+    // @ingroup attribute_<name>Value
     // Make<name>Checker()
     os << commentStart << sectAttr << functionStart << "ns3::Ptr<const ns3::AttributeChecker> "
        << make << "()\n"
