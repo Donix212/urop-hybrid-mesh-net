@@ -25,9 +25,18 @@
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/yans-wifi-helper.h"
 
+/**
+ * @file
+ * WiFi multirate experiment.
+ */
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("multirate");
+
+// unnamed namespace
+namespace
+{
 
 /**
  * WiFi multirate experiment class.
@@ -429,7 +438,7 @@ Experiment::SendMultiDestinations(Ptr<Node> sender, NodeContainer c)
  * @param server Server node.
  * @return a string with the nodes data and positions
  */
-static inline std::string
+inline std::string
 PrintPosition(Ptr<Node> client, Ptr<Node> server)
 {
     Vector serverPos = server->GetObject<MobilityModel>()->GetPosition();
@@ -679,6 +688,8 @@ Experiment::CommandSetup(int argc, char** argv)
     cmd.Parse(argc, argv);
     return true;
 }
+
+} // unnamed namespace
 
 int
 main(int argc, char* argv[])

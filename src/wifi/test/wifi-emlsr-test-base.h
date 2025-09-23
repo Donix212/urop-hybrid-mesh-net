@@ -33,6 +33,7 @@ using namespace ns3;
 
 /// @cond unknown-to-doxygen
 using namespace std::string_literals;
+
 /// @endcond
 
 // forward declaration

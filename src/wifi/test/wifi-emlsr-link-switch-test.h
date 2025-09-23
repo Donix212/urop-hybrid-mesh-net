@@ -14,6 +14,7 @@
 #include <list>
 
 using namespace ns3;
+
 /**
  * @ingroup wifi-test
  * @ingroup tests

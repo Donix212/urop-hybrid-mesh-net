@@ -21,9 +21,18 @@
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/yans-wifi-helper.h"
 
+/**
+ * @file
+ * Adhoc example
+ */
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Wifi-Adhoc");
+
+// unnamed namespace
+namespace
+{
 
 /**
  * WiFi adhoc experiment class.
@@ -197,6 +206,8 @@ Experiment::Run(const WifiHelper& wifi,
 
     return m_output;
 }
+
+} // unnamed namespace
 
 int
 main(int argc, char* argv[])
