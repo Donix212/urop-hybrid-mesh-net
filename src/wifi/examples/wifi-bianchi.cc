@@ -2420,6 +2420,8 @@ class Experiment
      * @param staTxPower the STA transmit power
      * @param pktInterval the packet interval
      * @return 0 if all went well
+     *
+     * @hidecallgraph
      */
     int Run(const WifiHelper& wifi,
             const YansWifiPhyHelper& wifiPhy,
