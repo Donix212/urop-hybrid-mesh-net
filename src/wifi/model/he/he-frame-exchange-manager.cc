@@ -1550,9 +1550,10 @@ HeFrameExchangeManager::GetHeTbTxVector(CtrlTriggerHeader trigger, Mac48Address 
     uint8_t numPowerLevels = m_phy->GetNTxPower();
     if (numPowerLevels > 1)
     {
-        dBm_u step = (m_phy->GetTxPowerEnd() - m_phy->GetTxPowerStart()) / (numPowerLevels - 1);
+        double step = (DbmToW(m_phy->GetTxPowerEnd()) - DbmToW(m_phy->GetTxPowerStart())) /
+                      (numPowerLevels - 1);
         powerLevel = static_cast<uint8_t>(
-            ceil((reqTxPower - m_phy->GetTxPowerStart()) /
+            ceil((DbmToW(reqTxPower) - DbmToW(m_phy->GetTxPowerStart())) /
                  step)); // better be slightly above so as to satisfy target UL RSSI
         if (powerLevel > numPowerLevels)
         {
