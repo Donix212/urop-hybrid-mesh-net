@@ -51,14 +51,25 @@ RouterApplication::GetTypeId()
     static TypeId tid = TypeId("ns3::RouterApplication")
                             .SetParent<Application>()
                             .SetGroupName("Applications")
-                            .AddConstructor<RouterApplication>();
+                            .AddConstructor<RouterApplication>()
+                            .AddAttribute("Epsilon",
+                                          "Clock skew in microseconds",
+                                          UintegerValue(100),
+                                          MakeUintegerAccessor(&RouterApplication::m_epsilon),
+                                          MakeUintegerChecker<uint32_t>())
+                            .AddAttribute("Interval",
+                                          "Interval for clock updates",
+                                          TimeValue(MilliSeconds(100)),
+                                          MakeTimeAccessor(&RouterApplication::m_interval),
+                                          MakeTimeChecker())
+                            ;
     return tid;
 }
 
 RouterApplication::RouterApplication()
     : m_port(9999),
       m_socket(nullptr),
-      m_clusterId(0) // Initialize cluster ID
+      m_nodeId(0) // Initialize cluster ID
 {
     NS_LOG_FUNCTION(this);
 }
@@ -81,9 +92,9 @@ RouterApplication::SetRemotePeers(const std::vector<Ipv4Address>& peers)
 }
 
 void
-RouterApplication::SetClusterId(uint32_t clusterId)
+RouterApplication::SetNodeId(uint32_t nodeId)
 {
-    m_clusterId = clusterId;
+    m_nodeId = nodeId;
 }
 
 void
@@ -119,7 +130,7 @@ RouterApplication::StartApplication()
     m_socket->SetRecvCallback(MakeCallback(&RouterApplication::HandleRead, this));
 
     m_clockSet = CreateObject<ReplayClockSet>();
-    m_clockSet->Initialize(GetNode()->GetId());
+    m_clockSet->Initialize(m_nodeId, m_routerId, m_epsilon, m_interval);
 }
 
 void
@@ -169,20 +180,24 @@ RouterApplication::HandleRead(Ptr<Socket> socket)
                     Ipv4Address forwardAddress = m_remotePeers[peerIndex];
 
                     NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId << " NodeIP=" << myIp
+                                  << " RouterID=" << m_routerId 
+                                  << " NodeID=" << m_nodeId 
+                                  << " NodeIP=" << myIp
                                   << " Action=F2LC"
                                   << " SrcIP=" << fromIp << " DestIP=" << forwardAddress
-                                  << " ClusterID=" << m_clusterId);
+                                  << " ClusterID=" << m_nodeId);
 
                     m_socket->SendTo(packet->Copy(), 0, InetSocketAddress(forwardAddress, m_port));
                 }
                 else
                 {
                     NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId << " NodeIP=" << myIp
+                                  << " RouterID=" << m_routerId 
+                                  << " NodeID=" << m_nodeId 
+                                  << " NodeIP=" << myIp
                                   << " Action=DROP"
                                   << " SrcIP=" << fromIp << " Reason=\"NO_REMOTE_PEERS\""
-                                  << " ClusterID=" << m_clusterId);
+                                  << " ClusterID=" << m_nodeId);
                 }
                 continue;
             }
@@ -198,29 +213,35 @@ RouterApplication::HandleRead(Ptr<Socket> socket)
                     Ipv4Address forwardAddress = m_localPeers[peerIndex];
 
                     NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId << " NodeIP=" << myIp
+                                  << " RouterID=" << m_routerId 
+                                  << " NodeID=" << m_nodeId 
+                                  << " NodeIP=" << myIp
                                   << " Action=F2RM"
                                   << " SrcIP=" << fromIp << " DestIP=" << forwardAddress
-                                  << " ClusterID=" << m_clusterId);
+                                  << " ClusterID=" << m_nodeId);
 
                     m_socket->SendTo(packet->Copy(), 0, InetSocketAddress(forwardAddress, m_port));
                 }
                 else
                 {
                     NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId << " NodeIP=" << myIp
+                                  << " RouterID=" << m_routerId 
+                                  << " NodeID=" << m_nodeId 
+                                  << " NodeIP=" << myIp
                                   << " Action=DROP"
                                   << " SrcIP=" << fromIp << " Reason=\"NO_LOCAL_PEERS\""
-                                  << " ClusterID=" << m_clusterId);
+                                  << " ClusterID=" << m_nodeId);
                 }
                 continue;
             }
 
             NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                          << " RouterID=" << m_routerId << " NodeIP=" << myIp
+                          << " RouterID=" << m_routerId 
+                          << " NodeID=" << m_nodeId 
+                          << " NodeIP=" << myIp
                           << " Action=DROP"
                           << " SrcIP=" << fromIp << " Reason=\"UNKNOWN_SOURCE\""
-                          << " ClusterID=" << m_clusterId);
+                          << " ClusterID=" << m_nodeId);
         }
     }
 }

@@ -6,6 +6,7 @@
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
 #include "ns3/socket.h"
+#include "ns3/nstime.h"
 #include "replay-clock-header.h"
 #include "replay-clock-set.h"
 
@@ -26,7 +27,7 @@ class RouterApplication : public Application
 
     void SetLocalPeers(const std::vector<Ipv4Address>& peers);
     void SetRemotePeers(const std::vector<Ipv4Address>& peers);
-    void SetClusterId(uint32_t clusterId);
+    void SetNodeId(uint32_t nodeId);
     void SetRouterId(uint32_t routerId);
 
   protected:
@@ -42,8 +43,11 @@ class RouterApplication : public Application
     Ptr<Socket> m_socket;
     std::vector<Ipv4Address> m_localPeers;
     std::vector<Ipv4Address> m_remotePeers;
-    uint32_t m_clusterId;
+    uint32_t m_nodeId;
     uint32_t m_routerId;
+
+    uint32_t m_epsilon;
+    Time m_interval;
 
     Ptr<ReplayClockSet> m_clockSet;
 };

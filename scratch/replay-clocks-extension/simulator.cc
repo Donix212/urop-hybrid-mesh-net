@@ -24,14 +24,14 @@ main(int argc, char* argv[])
     uint32_t n = 3; // Nodes per cluster
     uint32_t k = 2; // Number of clusters
     // e and v are unused as per the request but are here for future extension
-    uint32_t e_unused = 0;
-    uint32_t v_unused = 0;
+    uint32_t e = 0;
+    uint32_t v = 0;
 
     CommandLine cmd;
     cmd.AddValue("n", "Number of nodes per cluster", n);
     cmd.AddValue("k", "Number of clusters", k);
-    cmd.AddValue("e", "Unused variable e", e_unused);
-    cmd.AddValue("v", "Unused variable v", v_unused);
+    cmd.AddValue("e", "Unused variable e", e);
+    cmd.AddValue("v", "Unused variable v", v);
     cmd.Parse(argc, argv);
 
     NS_LOG_INFO("Creating " << k << " clusters with " << n << " nodes each.");
@@ -48,7 +48,7 @@ main(int argc, char* argv[])
     {
         clusterNodes[i].Create(n);
         allNodes.Add(clusterNodes[i]);
-        routerNodes.Add(clusterNodes[i].Get(0)); // First node is the router
+        routerNodes.Add(clusterNodes[i].Get(n-1)); // Last node is the router
     }
 
     InternetStackHelper stack;
@@ -110,12 +110,14 @@ main(int argc, char* argv[])
         for (uint32_t j = 0; j < n; ++j)
         {
             Ptr<Node> node = clusterNodes[i].Get(j);
-            if (j == 0) // Router node
+            if (j == n-1) // Router node
             {
                 Ptr<RouterApplication> app = CreateObject<RouterApplication>();
+                app->SetAttribute("Epsilon", UintegerValue(e));
+                app->SetAttribute("Interval", TimeValue(MicroSeconds(v))); 
                 app->SetLocalPeers(localPeersMap[node->GetId()]);
                 app->SetRemotePeers(remotePeersMap[node->GetId()]);
-                app->SetClusterId(clusterId);
+                app->SetNodeId(n-1);
                 app->SetRouterId(i);
                 node->AddApplication(app);
                 apps.Add(app);
@@ -123,7 +125,10 @@ main(int argc, char* argv[])
             else // End node
             {
                 Ptr<EndNodeApplication> app = CreateObject<EndNodeApplication>();
+                app->SetAttribute("Epsilon", UintegerValue(e));
+                app->SetAttribute("Interval", TimeValue(MicroSeconds(v))); 
                 app->SetPeers(localPeersMap[node->GetId()]);
+                app->SetNodeId(j);
                 app->SetClusterId(clusterId);
                 node->AddApplication(app);
                 apps.Add(app);

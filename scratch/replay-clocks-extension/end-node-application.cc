@@ -50,7 +50,23 @@ EndNodeApplication::GetTypeId()
     static TypeId tid = TypeId("ns3::EndNodeApplication")
                            .SetParent<Application>()
                            .SetGroupName("Applications")
-                           .AddConstructor<EndNodeApplication>();
+                           .AddConstructor<EndNodeApplication>()
+                           .AddAttribute("NodeId",
+                                         "An identifier for this end node",
+                                         UintegerValue(0),
+                                         MakeUintegerAccessor(&EndNodeApplication::m_nodeId),
+                                         MakeUintegerChecker<uint32_t>())
+                            .AddAttribute("Epsilon",
+                                         "Clock skew in microseconds",
+                                         UintegerValue(1000),
+                                         MakeUintegerAccessor(&EndNodeApplication::m_epsilon),
+                                         MakeUintegerChecker<uint32_t>())
+                            .AddAttribute("Interval",
+                                         "Interval for clock updates",
+                                         TimeValue(MilliSeconds(100)),
+                                         MakeTimeAccessor(&EndNodeApplication::m_interval),
+                                         MakeTimeChecker())
+                            ;
     return tid;
 }
 
@@ -77,6 +93,12 @@ void
 EndNodeApplication::SetClusterId(uint32_t clusterId)
 {
     m_clusterId = clusterId;
+}
+
+void
+EndNodeApplication::SetNodeId(uint32_t nodeId)
+{
+    m_nodeId = nodeId;
 }
 
 void
@@ -107,7 +129,7 @@ EndNodeApplication::StartApplication()
     m_sendEvent = Simulator::Schedule(Seconds(1.0), &EndNodeApplication::SendPacket, this);
 
     m_clockSet = CreateObject<ReplayClockSet>();
-    m_clockSet->Initialize(GetNode()->GetId());
+    m_clockSet->Initialize(m_nodeId, m_nodeId, m_epsilon, m_interval);
 }
 
 void
@@ -140,7 +162,7 @@ EndNodeApplication::SendPacket()
     Ipv4Address peerAddress = m_peers[peerIndex];
 
     NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                  << " NodeID=" << GetNode()->GetId() << " NodeIP=" << myIp << " Action=SEND"
+                  << " NodeID=" << m_nodeId << " NodeIP=" << myIp << " Action=SEND"
                   << " DestIP=" << peerAddress << " ClusterID=" << m_clusterId);
 
     ReplayClockHeader header;
@@ -174,7 +196,7 @@ EndNodeApplication::HandleRead(Ptr<Socket> socket)
             packet->RemoveHeader(receivedHeader);
 
             NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                          << " NodeID=" << GetNode()->GetId() << " NodeIP=" << myIp
+                          << " NodeID=" << m_nodeId << " NodeIP=" << myIp
                           << " Action=RECV"
                           << " SrcIP=" << addr.GetIpv4() << " ClusterID=" << m_clusterId);
         }

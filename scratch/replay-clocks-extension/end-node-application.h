@@ -6,6 +6,7 @@
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
 #include "ns3/socket.h"
+#include "ns3/nstime.h"
 #include "replay-clock-header.h"
 #include "replay-clock-set.h"
 
@@ -26,6 +27,7 @@ class EndNodeApplication : public Application
 
     void SetPeers(const std::vector<Ipv4Address>& peers);
     void SetClusterId(uint32_t clusterId);
+    void SetNodeId(uint32_t nodeId);
 
   protected:
     void DoDispose() override;
@@ -41,7 +43,11 @@ class EndNodeApplication : public Application
     Ptr<Socket> m_socket;
     EventId m_sendEvent;
     std::vector<Ipv4Address> m_peers;
+
+    uint32_t m_nodeId;
     uint32_t m_clusterId;
+    uint32_t m_epsilon;
+    Time m_interval;
 
     Ptr<ReplayClockSet> m_clockSet;
 };

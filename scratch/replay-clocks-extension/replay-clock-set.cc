@@ -4,6 +4,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/pointer.h"
 #include "ns3/unbounded-skew-clock.h"
+#include "ns3/nstime.h"
 
 namespace ns3
 {
@@ -30,22 +31,25 @@ ReplayClockSet::~ReplayClockSet()
 }
 
 void
-ReplayClockSet::Initialize(uint32_t nodeId)
+ReplayClockSet::Initialize(uint32_t clusterId, uint32_t routerId, uint32_t epsilon, Time interval)
 {
     m_localClock = CreateObject<ReplayClock>();
-    m_localClock->SetAttribute("NodeId", UintegerValue(nodeId));
+    m_localClock->SetAttribute("NodeId", UintegerValue(clusterId));
     m_localClock->SetAttribute("LocalClock", PointerValue(CreateObject<UnboundedSkewClock>()));
     m_localClock->SetAttribute("HLC", PointerValue(CreateObject<HybridLogicalClock>()));
 
     m_leftClock = CreateObject<ReplayClock>();
-    m_leftClock->SetAttribute("NodeId", UintegerValue(nodeId));
+    m_leftClock->SetAttribute("NodeId", UintegerValue(routerId));
     m_leftClock->SetAttribute("LocalClock", PointerValue(CreateObject<UnboundedSkewClock>()));
     m_leftClock->SetAttribute("HLC", PointerValue(CreateObject<HybridLogicalClock>()));
 
     m_rightClock = CreateObject<ReplayClock>();
-    m_rightClock->SetAttribute("NodeId", UintegerValue(nodeId));
+    m_rightClock->SetAttribute("NodeId", UintegerValue(routerId));
     m_rightClock->SetAttribute("LocalClock", PointerValue(CreateObject<UnboundedSkewClock>()));
     m_rightClock->SetAttribute("HLC", PointerValue(CreateObject<HybridLogicalClock>()));
+
+    m_epsilon = epsilon;
+    m_interval = interval;
 }
 
 Ptr<ReplayClock>
