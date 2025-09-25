@@ -385,6 +385,11 @@ class CORE_EXPORT Time
         return ToDouble(Time::MIN);
     }
 
+    /**
+     * @copydoc GetYears()
+     * @hidecaller
+     * @hideref
+     */
     inline double GetSeconds() const
     {
         return ToDouble(Time::S);
@@ -636,6 +641,8 @@ class CORE_EXPORT Time
      *
      * @param [in] unit The unit to use.
      * @return The Time with embedded unit.
+     * @hidecaller
+     * @hideref
      */
     TimeWithUnit As(const Unit unit = Time::AUTO) const;
 
@@ -1356,6 +1363,11 @@ Minutes(int64x64_t value)
     return Time::From(value, Time::MIN);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 Seconds(double value)
 {
@@ -1368,6 +1380,11 @@ Seconds(int64x64_t value)
     return Time::From(value, Time::S);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 MilliSeconds(uint64_t value)
 {
@@ -1380,6 +1397,11 @@ MilliSeconds(int64x64_t value)
     return Time::From(value, Time::MS);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 MicroSeconds(uint64_t value)
 {
@@ -1392,6 +1414,11 @@ MicroSeconds(int64x64_t value)
     return Time::From(value, Time::US);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 NanoSeconds(uint64_t value)
 {

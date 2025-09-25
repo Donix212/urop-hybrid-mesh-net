@@ -688,6 +688,7 @@ MakeCallback(R (T::*memPtr)(Args...) const, OBJ objPtr)
  * @tparam Args  \deduced Type list of any arguments to the member function.
  * @param [in] fnPtr Function pointer
  * @return A wrapper Callback
+ * @hidecaller
  */
 template <typename R, typename... Args>
 Callback<R, Args...>
@@ -705,6 +706,7 @@ MakeCallback(R (*fnPtr)(Args...))
  * @tparam R   \deduced Return type of the callback function..
  * @tparam Args  \deduced Type list of any arguments to the member function.
  * @return A wrapper Callback
+ * @hidecaller
  */
 template <typename R, typename... Args>
 Callback<R, Args...>
@@ -724,6 +726,7 @@ MakeNullCallback()
  * @param [in] fnPtr Function pointer
  * @param [in] bargs Bound arguments
  * @return A bound Callback
+ * @hidecaller
  */
 template <typename R, typename... Args, typename... BArgs>
 auto

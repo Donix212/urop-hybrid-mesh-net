@@ -44,27 +44,29 @@ bool outputText = false;
  * Markup tokens.
  * @{
  */
-std::string anchor;        ///< hyperlink anchor
-std::string argument;      ///< function argument
-std::string boldStart;     ///< start of bold span
-std::string boldStop;      ///< end of bold span
-std::string breakBoth;     ///< linebreak
-std::string breakHtmlOnly; ///< linebreak for html output only
-std::string breakTextOnly; ///< linebreak for text output only
-std::string brief;         ///< brief tag
-std::string classStart;    ///< start of a class
-std::string classStop;     ///< end of a class
-std::string codeWord;      ///< format next word as source code
-std::string commentStart;  ///< start of code comment
-std::string commentStop;   ///< end of code comment
-std::string copyDoc;       ///< copy (or refer) to docs elsewhere
-std::string file;          ///< file
-std::string flagSpanStart; ///< start of Attribute flag value
-std::string flagSpanStop;  ///< end of Attribute flag value
-std::string functionStart; ///< start of a method/function
-std::string functionStop;  ///< end of a method/function
-std::string headingStart;  ///< start of section heading (h3)
-std::string headingStop;   ///< end of section heading (h3)
+// clang-format off
+std::string anchor;          ///< hyperlink anchor
+std::string argument;        ///< function argument
+std::string boldStart;       ///< start of bold span
+std::string boldStop;        ///< end of bold span
+std::string breakBoth;       ///< linebreak
+std::string breakHtmlOnly;   ///< linebreak for html output only
+std::string breakTextOnly;   ///< linebreak for text output only
+std::string brief;           ///< brief tag
+std::string classStart;      ///< start of a class
+std::string classStop;       ///< end of a class
+std::string codeWord;        ///< format next word as source code
+std::string commentStart;    ///< start of code comment
+std::string commentStop;     ///< end of code comment
+std::string copyDoc;         ///< copy (or refer) to docs elsewhere
+std::string file;            ///< file
+std::string flagSpanStart;   ///< start of Attribute flag value
+std::string flagSpanStop;    ///< end of Attribute flag value
+std::string functionStart;   ///< start of a method/function
+std::string functionStop;    ///< end of a method/function
+std::string headingStart;    ///< start of section heading (h3)
+std::string headingStop;     ///< end of section heading (h3)
+std::string hideCaller;      ///< hide caller graph
 // Linking:  [The link text displayed](\ref TheTarget)
 std::string hrefStart;        ///< start of a link
 std::string hrefMid;          ///< middle part of a link
@@ -86,8 +88,8 @@ std::string templArgDeduced;  ///< template argument deduced from function
 std::string templArgExplicit; ///< template argument required
 std::string templateArgument; ///< template argument
 std::string variable;         ///< variable or class member
-
 /** @} */
+// clang-format on
 
 /**
  * Alphabetize the AttributeInformation for a TypeId by the Attribute name
@@ -156,6 +158,7 @@ SetMarkup()
         functionStop = "\n\n";
         headingStart = "";
         headingStop = "";
+        hideCaller = "";
         // Linking:  The link text displayed (see TheTarget)
         hrefStart = "";
         hrefMid = " (see ";
@@ -201,6 +204,7 @@ SetMarkup()
         functionStop = "";
         headingStart = "<h3>";
         headingStop = "</h3>";
+        hideCaller = "@hidecaller";
         // Linking:  [The link text displayed](\ref TheTarget)
         hrefStart = "[";
         hrefMid = "](\\ref ";
@@ -1336,7 +1340,7 @@ PrintAttributeValueSection(std::ostream& os, const std::string& name, const bool
     {
         os << seeAlso << "ns3::" << name << "\n";
     }
-    os << commentStop;
+    os << hideCaller << commentStop;
 
 } // PrintAttributeValueSection()
 
@@ -1429,7 +1433,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
        << make << "(T1 a1)\n"
        << copyDoc << "ns3::MakeAccessorHelper(T1)\n"
        << seeAlso << "ns3::AttributeAccessor\n"
-       << commentStop;
+       << hideCaller << commentStop;
 
     // \ingroup attribute_<name>Value
     // Make<name>Accessor(T1 a1)
@@ -1437,7 +1441,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
        << make << "(T1 a1, T2 a2)\n"
        << copyDoc << "ns3::MakeAccessorHelper(T1,T2)\n"
        << seeAlso << "ns3::AttributeAccessor\n"
-       << commentStop;
+       << hideCaller << commentStop;
 } // PrintMakeAccessors()
 
 /**
@@ -1462,8 +1466,8 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     os << classStart << " ns3::" << name << "Checker"
        << " \"" << header << "\"" << std::endl;
     os << "AttributeChecker implementation for " << name << "Value." << std::endl;
-    os << seeAlso << "AttributeChecker" << std::endl;
-    os << commentStop;
+    os << seeAlso << "ns3::AttributeChecker" << std::endl;
+    os << hideCaller << commentStop;
 
     // \ingroup attribute_<name>Value
     // Make<name>Checker()
@@ -1471,7 +1475,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
        << make << "()\n"
        << returns << "The AttributeChecker.\n"
        << seeAlso << "ns3::AttributeChecker\n"
-       << commentStop;
+       << hideCaller << commentStop;
 } // PrintMakeChecker()
 
 /**Descriptor for an AttributeValue. */
