@@ -121,7 +121,17 @@ class IeRann : public WifiInformationElement
 };
 
 bool operator==(const IeRann& a, const IeRann& b);
+
+/**
+ * @ingroup dot11s
+ * @brief Stream output operator for IeRann.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] rann The IeRann object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IeRann& rann);
+
 } // namespace dot11s
 } // namespace ns3
 

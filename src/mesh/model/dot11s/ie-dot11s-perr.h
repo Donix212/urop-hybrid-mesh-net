@@ -75,7 +75,17 @@ class IePerr : public WifiInformationElement
 };
 
 bool operator==(const IePerr& a, const IePerr& b);
+
+/**
+ * @ingroup dot11s
+ * @brief Stream output operator for IePerr.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] perr The IePerr object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePerr& perr);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

@@ -17,42 +17,48 @@ namespace ns3
 namespace dot11s
 {
 
-// according to IEEE 802.11 - 2012
+/**
+ * @ingroup dot11s
+ * Various enum flags according to IEEE 802.11 - 2012
+ * @{
+ */
 
-// in 7.3.2.98.2 Active Path Selection Protocol Identifier - 802.11s-2011
+/// In 7.3.2.98.2 Active Path Selection Protocol Identifier - 802.11s-2011
 enum Dot11sPathSelectionProtocol
 {
     PROTOCOL_HWMP = 0x01,
 };
 
-// in 7.3.2.98.3 Active Path Selection Metric Identifier - 802.11s-2011
+/// In 7.3.2.98.3 Active Path Selection Metric Identifier - 802.11s-2011
 enum Dot11sPathSelectionMetric
 {
     METRIC_AIRTIME = 0x01,
 };
 
-// in 7.3.2.98.4 Congestion Control Mode Identifier - 802.11s-2011
+/// In 7.3.2.98.4 Congestion Control Mode Identifier - 802.11s-2011
 enum Dot11sCongestionControlMode
 {
     CONGESTION_SIGNALING = 0x01,
     CONGESTION_NULL = 0x00,
 };
 
-// in 7.3.2.98.5 Synchronization Method Identifier - 802.11s-2011
+/// In 7.3.2.98.5 Synchronization Method Identifier - 802.11s-2011
 enum Dot11sSynchronizationProtocolIdentifier
 {
-    SYNC_NEIGHBOUR_OFFSET = 0x01, // Neighbor offset synchronization method
-    SYNC_NULL = 0x00,             // Reserved
+    SYNC_NEIGHBOUR_OFFSET = 0x01, ///< Neighbor offset synchronization method
+    SYNC_NULL = 0x00,             ///< Reserved
 };
 
-// in 7.3.2.98.6 Authentication Protocol Identifier - 802.11s-2011
+/// In 7.3.2.98.6 Authentication Protocol Identifier - 802.11s-2011
 enum Dot11sAuthenticationProtocol
 {
     AUTH_NULL =
-        0x00, // No authentication method is required to establish mesh peerings within the MBSS
-    AUTH_SAE = 0x01,  // SAE defined in 8.2a
-    AUTH_IEEE = 0x02, // IEEE 802.1X authentication
+        0x00, ///< No authentication method is required to establish mesh peerings within the MBSS
+    AUTH_SAE = 0x01,  ///< SAE defined in 8.2a
+    AUTH_IEEE = 0x02, ///< IEEE 802.1X authentication
 };
+
+/** @} */
 
 /**
  * @ingroup dot11s
@@ -190,7 +196,17 @@ class IeConfiguration : public WifiInformationElement
 
 bool operator==(const IeConfiguration& a, const IeConfiguration& b);
 bool operator==(const Dot11sMeshCapability& a, const Dot11sMeshCapability& b);
+
+/**
+ * @ingroup dot11s
+ * Output streamer for Mesh Configuration Element IeConfiguration
+ *
+ * @param os The output stream
+ * @param config The IeConfiguration
+ * @return The output stream
+ */
 std::ostream& operator<<(std::ostream& os, const IeConfiguration& config);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

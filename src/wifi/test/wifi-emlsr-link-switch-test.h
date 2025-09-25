@@ -14,14 +14,6 @@
 #include <list>
 
 using namespace ns3;
-using namespace std::string_literals;
-
-// forward declaration
-namespace ns3
-{
-struct EmlsrMainPhySwitchTrace;
-}
-
 /**
  * @ingroup wifi-test
  * @ingroup tests

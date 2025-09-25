@@ -362,15 +362,9 @@ class CORE_EXPORT Time
      * Conversions to seconds and larger will return doubles, with
      * possible loss of precision.  Conversions to units smaller than
      * seconds will be rounded.
-     *
      * @{
      */
-    /**
-     * Get an approximation of the time stored in this instance
-     * in the indicated unit.
-     *
-     * @return An approximate value in the indicated unit.
-     */
+    /** @return An approximate value in the indicated unit. */
     inline double GetYears() const
     {
         return ToDouble(Time::Y);
@@ -426,7 +420,6 @@ class CORE_EXPORT Time
     /**
      * @name Convert to Raw Value
      * Convert a Time to a number in the current resolution units.
-     *
      * @{
      */
     /**
@@ -477,7 +470,6 @@ class CORE_EXPORT Time
     /**
      * @name Create Times from Values and Units
      * Create Times from values given in the indicated units.
-     *
      * @{
      */
     /**
@@ -552,7 +544,6 @@ class CORE_EXPORT Time
     /**
      * @name Get Times as Numbers in Specified Units
      * Get the Time as integers or doubles in the indicated unit.
-     *
      * @{
      */
     /**

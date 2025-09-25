@@ -1428,7 +1428,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
     os << commentStart << sectAttr << functionStart << "ns3::Ptr<const ns3::AttributeAccessor> "
        << make << "(T1 a1)\n"
        << copyDoc << "ns3::MakeAccessorHelper(T1)\n"
-       << seeAlso << "AttributeAccessor\n"
+       << seeAlso << "ns3::AttributeAccessor\n"
        << commentStop;
 
     // \ingroup attribute_<name>Value
@@ -1436,7 +1436,7 @@ PrintMakeAccessors(std::ostream& os, const std::string& name)
     os << commentStart << sectAttr << functionStart << "ns3::Ptr<const ns3::AttributeAccessor> "
        << make << "(T1 a1, T2 a2)\n"
        << copyDoc << "ns3::MakeAccessorHelper(T1,T2)\n"
-       << seeAlso << "AttributeAccessor\n"
+       << seeAlso << "ns3::AttributeAccessor\n"
        << commentStop;
 } // PrintMakeAccessors()
 
@@ -1470,7 +1470,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     os << commentStart << sectAttr << functionStart << "ns3::Ptr<const ns3::AttributeChecker> "
        << make << "()\n"
        << returns << "The AttributeChecker.\n"
-       << seeAlso << "AttributeChecker\n"
+       << seeAlso << "ns3::AttributeChecker\n"
        << commentStop;
 } // PrintMakeChecker()
 

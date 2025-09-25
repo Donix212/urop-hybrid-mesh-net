@@ -226,9 +226,7 @@ class Ptr
  * This template work for any class \c T derived from ns3::SimpleRefCount
  *
  * @see CreateObject for methods to create derivatives of ns3::Object
- */
-/** @{ */
-/**
+ *
  * @tparam T  \explicit The type of class object to create.
  * @tparam Ts \deduced Types of the constructor arguments.
  * @param  [in] args Constructor arguments.
@@ -236,8 +234,6 @@ class Ptr
  */
 template <typename T, typename... Ts>
 Ptr<T> Create(Ts&&... args);
-
-/** @}*/
 
 /**
  * @ingroup ptr
@@ -399,6 +395,14 @@ namespace internal
 // without making this header dependent on make-event.h
 template <typename T>
 struct EventMemberImplObjTraits;
+
+/**
+ * @ingroup events
+ * @defgroup makeeventmemptr MakeEvent from class methods.
+ *
+ * Create EventImpl instances from class member methods which take
+ * varying numbers of arguments.
+ */
 
 /**
  * @ingroup makeeventmemptr
@@ -571,8 +575,8 @@ operator>=(const Ptr<T>& lhs, const Ptr<T>& rhs)
  * @tparam T2 \deduced The type of the original Ptr.
  * @param [in] p The original Ptr.
  * @return The result of the cast.
+ * @{
  */
-/** @{ */
 template <typename T1, typename T2>
 Ptr<T1>
 ConstCast(const Ptr<T2>& p)

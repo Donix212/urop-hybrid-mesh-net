@@ -156,7 +156,25 @@ class IeBeaconTiming : public WifiInformationElement
     uint16_t m_numOfUnits;
 };
 
+/**
+ * @ingroup dot11s
+ * Equality operator for IeBeaconTimingUnit's
+ * Compare first `GetAid()`, then `GetLastBeacon(), and finally `GetBeaconInterval()`
+ *
+ * @param a The first IeBeaconTimingUnit
+ * @param b The second IeBeaconTimingUnit
+ * @return @c true if the IeBeaconTimingUnit's are equal
+ */
 bool operator==(const IeBeaconTimingUnit& a, const IeBeaconTimingUnit& b);
+
+/**
+ * @ingroup dot11s
+ * Output streaming operator for IeBeaconTiming
+ *
+ * @param os The output stream
+ * @param beaconTiming The IeBeaconTimingUnit
+ * @return The output stream
+ */
 std::ostream& operator<<(std::ostream& os, const IeBeaconTiming& beaconTiming);
 } // namespace dot11s
 } // namespace ns3

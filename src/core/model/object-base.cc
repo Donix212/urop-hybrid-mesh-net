@@ -26,12 +26,6 @@ namespace ns3
 {
 // Explicit instantiation declaration
 
-/**
- * @ingroup callback
- * Explicit instantiation for ObjectBase
- * @return A wrapper Callback
- * \sa ns3::MakeCallback
- */
 template Callback<ObjectBase*> MakeCallback<ObjectBase*>(ObjectBase* (*)());
 template Callback<ObjectBase*>::Callback();
 template class CallbackImpl<ObjectBase*>;

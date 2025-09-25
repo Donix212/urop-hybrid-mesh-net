@@ -153,7 +153,17 @@ class IePrep : public WifiInformationElement
 };
 
 bool operator==(const IePrep& a, const IePrep& b);
+
+/**
+ * @ingroup dot11s
+ * @brief Stream output operator for IePrep.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] prep The IePrep object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePrep& prep);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

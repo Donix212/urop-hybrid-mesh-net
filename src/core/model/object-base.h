@@ -328,13 +328,24 @@ class ObjectBase
                const AttributeValue& value);
 };
 
-// The following explicit template instantiation declarations prevent all the translation
-// units including this header file to implicitly instantiate the callbacks class and
-// function templates having ObjectBase as template type parameter that are required to be
-// instantiated more often (accorging to the ClangBuildAnalyzer tool).
-// These classes and functions are explicitly instantiated in object-base.cc
+/**
+ * @ingroup callback
+ * Explicit instantiation for ObjectBase
+ * @return A wrapper Callback
+ * \sa ns3::MakeCallback
+ *
+ * @internal
+ * These explicit template instantiation declarations obviate the need for
+ * all the translation units including this header to implicitly instantiate
+ * duplicate instances when ObjectBase is the template type.
+ */
 extern template Callback<ObjectBase*> MakeCallback<ObjectBase*>(ObjectBase* (*)());
 extern template Callback<ObjectBase*>::Callback();
+/**@}*/
+/**
+ * @ingroup callbackimpl
+ * @copydoc MakeCallback<ObjectBase*>(ObjectBase*(*))
+ */
 extern template class CallbackImpl<ObjectBase*>;
 
 } // namespace ns3
