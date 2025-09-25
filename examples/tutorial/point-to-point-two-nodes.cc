@@ -21,7 +21,7 @@
 /*
  * Two nodes directly connected, asymmetric link bandwidth and delay,
  * IPv4 addresses, Ping application.
- * 
+ *
  *  /////////////////////////////////
  *  //  Default Network Topology   //
  *  //                             //
@@ -32,8 +32,8 @@
  *  //        <-- 10Mbps, 2ms      //
  *  //                             //
  *  //        point-to-point       //
- *  ///////////////////////////////// 
- * 
+ *  /////////////////////////////////
+ *
  * The topology has two nodes interconnected by a point-to-point link.
  * The link has 2 ms one-way delay, for a round-trip propagation delay
  * of 4 ms. The transmission rate on the link is asymmetric, and has 5Mbps and
@@ -59,8 +59,8 @@
 // end-general-documentation
 
 #include "ns3/core-module.h"
-#include "ns3/internet-module.h"
 #include "ns3/internet-apps-module.h"
+#include "ns3/internet-module.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
 
@@ -73,7 +73,8 @@ int
 main(int argc, char* argv[])
 {
     CommandLine cmd(__FILE__);
-    cmd.Usage("This tutorial program demonstrates some basic API of ns-3 in a two-node, point-to-point network.");
+    cmd.Usage("This tutorial program demonstrates some basic API of ns-3 in a two-node, "
+              "point-to-point network.");
     cmd.Parse(argc, argv);
 
     /*
@@ -105,8 +106,10 @@ main(int argc, char* argv[])
      * different values for the DataRate attributes on the two nodes for the
      * asymmetric point-to-point link.
      */
-    devices.Get(0)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate", StringValue("5Mbps"));
-    devices.Get(1)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate", StringValue("10Mbps"));
+    devices.Get(0)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate",
+                                                                     StringValue("5Mbps"));
+    devices.Get(1)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate",
+                                                                     StringValue("10Mbps"));
 
     /*
      * Create an InternetStackHelper.

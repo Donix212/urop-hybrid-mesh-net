@@ -69,9 +69,9 @@ using namespace ns3;
 int
 main(int argc, char* argv[])
 {
-
     CommandLine cmd(__FILE__);
-    cmd.Usage("This tutorial program demonstrates some basic API of ns-3 in a three-node, point-to-point network.");
+    cmd.Usage("This tutorial program demonstrates some basic API of ns-3 in a three-node, "
+              "point-to-point network.");
     cmd.Parse(argc, argv);
 
     // Create 3 nodes
@@ -89,16 +89,18 @@ main(int argc, char* argv[])
     // Connect n0 to r0
     NetDeviceContainer link1Devices;
     link1Devices = pointToPoint.Install(nodes.Get(0), nodes.Get(1));
-    link1Devices.Get(0)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate", StringValue("5Mbps"));
-    link1Devices.Get(1)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate", StringValue("10Mbps"));
-
+    link1Devices.Get(0)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate",
+                                                                          StringValue("5Mbps"));
+    link1Devices.Get(1)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate",
+                                                                          StringValue("10Mbps"));
 
     // Connect r0 to n1
     NetDeviceContainer link2Devices;
     link2Devices = pointToPoint.Install(nodes.Get(1), nodes.Get(2));
-    link2Devices.Get(0)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate", StringValue("5Mbps"));
-    link2Devices.Get(1)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate", StringValue("10Mbps"));
-
+    link2Devices.Get(0)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate",
+                                                                          StringValue("5Mbps"));
+    link2Devices.Get(1)->GetObject<PointToPointNetDevice>()->SetAttribute("DataRate",
+                                                                          StringValue("10Mbps"));
 
     // Install the internet stack on all the nodes in the NodeContainer
     InternetStackHelper stack;
