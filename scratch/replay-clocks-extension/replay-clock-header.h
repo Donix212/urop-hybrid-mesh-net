@@ -2,31 +2,10 @@
 #define REPLAY_CLOCK_HEADER_H
 
 #include "ns3/header.h"
-#include "replay-clock-set.h"
+#include "ns3/replay-clock.h"
 
 namespace ns3
 {
-
-/**
- * \brief A simple struct to hold the serializable state of a ReplayClock.
- */
-struct ClockState
-{
-    int64_t hlcTime;
-    uint64_t bitmap;
-    uint64_t offsets;
-    uint8_t counters;
-    uint32_t nodeId;
-
-    ClockState()
-        : hlcTime(0),
-          bitmap(0),
-          offsets(0),
-          counters(0),
-          nodeId(0)
-    {
-    }
-};
 
 /**
  * \brief A packet header to carry the state of three ReplayClocks.
@@ -44,11 +23,12 @@ class ReplayClockHeader : public Header
     void SetClockRight(Ptr<ReplayClock> clock);
 
     // Getters to retrieve clock state
-    ClockState GetClockLocal() const;
-    ClockState GetClockLeft() const;
-    ClockState GetClockRight() const;
+    Ptr<ReplayClock> GetClockLocal() const;
+    Ptr<ReplayClock> GetClockLeft() const;
+    Ptr<ReplayClock> GetClockRight() const;
 
-    void SetClocks(Ptr<ReplayClockSet> clockSet);
+    void SetClocks(Ptr<ReplayClock> localClock, Ptr<ReplayClock> routerLeftClock, Ptr<ReplayClock> routerRightClock);
+    void SetType(uint32_t type);
 
     // Overridden from ns3::Header
     TypeId GetInstanceTypeId() const override;
@@ -58,9 +38,10 @@ class ReplayClockHeader : public Header
     uint32_t Deserialize(Buffer::Iterator start) override;
 
   private:
-    ClockState m_clockLocalState;
-    ClockState m_clockLeftState;
-    ClockState m_clockRightState;
+    Ptr<ReplayClock> m_localClock;
+    Ptr<ReplayClock> m_routerLeftClock;
+    Ptr<ReplayClock> m_routerRightClock;
+    uint32_t m_type;
 };
 
 } // namespace ns3

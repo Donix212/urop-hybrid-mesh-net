@@ -20,6 +20,8 @@ int
 main(int argc, char* argv[])
 {
     LogComponentEnable("ClusteredMeshSimulation", LOG_LEVEL_INFO);
+    LogComponentEnable("EndNodeApplication", LOG_LEVEL_INFO);
+    LogComponentEnable("RouterApplication", LOG_LEVEL_INFO);
 
     uint32_t n = 3; // Nodes per cluster
     uint32_t k = 2; // Number of clusters
@@ -106,7 +108,6 @@ main(int argc, char* argv[])
     ApplicationContainer apps;
     for (uint32_t i = 0; i < k; ++i)
     {
-        uint32_t clusterId = i;
         for (uint32_t j = 0; j < n; ++j)
         {
             Ptr<Node> node = clusterNodes[i].Get(j);
@@ -129,7 +130,7 @@ main(int argc, char* argv[])
                 app->SetAttribute("Interval", TimeValue(MicroSeconds(v))); 
                 app->SetPeers(localPeersMap[node->GetId()]);
                 app->SetNodeId(j);
-                app->SetClusterId(clusterId);
+                app->SetClusterId(i);
                 node->AddApplication(app);
                 apps.Add(app);
             }

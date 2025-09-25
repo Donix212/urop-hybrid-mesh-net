@@ -1,11 +1,13 @@
 #include "router-application.h"
-#include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
-#include "replay-clock-set.h"
-#include <algorithm> // for std::find
-#include <sstream>
+#include "ns3/ptr.h"
+#include "ns3/random-variable-stream.h"
+#include <algorithm> // For std::find
+
+#include "hybrid-logical-clock.h"
+
 
 namespace ns3
 {
@@ -13,63 +15,42 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("RouterApplication");
 NS_OBJECT_ENSURE_REGISTERED(RouterApplication);
 
-// Helper function to format a single ReplayClock's state
-static std::string
-FormatClock(Ptr<ReplayClock> clock)
-{
-    if (!clock)
-    {
-        return "CLOCK_NULL";
-    }
-    std::stringstream ss;
-    ss << "ReplayClock(ID=" << clock->GetNodeId()
-       << ",HLC=" << clock->GetHLC()->Now().GetMicroSeconds()
-       << ",B=" << clock->GetBitmap().to_ullong()
-       << ",O=" << clock->GetOffsets().to_ullong()
-       << ",C=" << static_cast<int>(clock->GetCounters()) << ")";
-    return ss.str();
-}
-
-// Helper function to format all three clocks into a single timestamp string
-static std::string
-FormatAllClocks(Ptr<ReplayClockSet> clockSet)
-{
-    if (!clockSet)
-    {
-        return "Timestamp=\"CLOCKSET_NULL\"";
-    }
-    std::stringstream ss;
-    ss << "Timestamp=\"" << FormatClock(clockSet->GetLocalClock()) << ";"
-       << FormatClock(clockSet->GetLeftClock()) << ";" << FormatClock(clockSet->GetRightClock())
-       << "\"";
-    return ss.str();
-}
-
 TypeId
 RouterApplication::GetTypeId()
 {
-    static TypeId tid = TypeId("ns3::RouterApplication")
-                            .SetParent<Application>()
-                            .SetGroupName("Applications")
-                            .AddConstructor<RouterApplication>()
-                            .AddAttribute("Epsilon",
-                                          "Clock skew in microseconds",
-                                          UintegerValue(100),
-                                          MakeUintegerAccessor(&RouterApplication::m_epsilon),
-                                          MakeUintegerChecker<uint32_t>())
-                            .AddAttribute("Interval",
-                                          "Interval for clock updates",
-                                          TimeValue(MilliSeconds(100)),
-                                          MakeTimeAccessor(&RouterApplication::m_interval),
-                                          MakeTimeChecker())
-                            ;
+    static TypeId tid =
+        TypeId("ns3::RouterApplication")
+            .SetParent<Application>()
+            .SetGroupName("Applications")
+            .AddConstructor<RouterApplication>()
+            .AddAttribute("Port",
+                          "The port on which to listen for incoming packets.",
+                          UintegerValue(9),
+                          MakeUintegerAccessor(&RouterApplication::m_port),
+                          MakeUintegerChecker<uint16_t>())
+            .AddAttribute("Interval",
+                          "The time to wait between packets (used by clocks).",
+                          TimeValue(Seconds(1.0)),
+                          MakeTimeAccessor(&RouterApplication::m_interval),
+                          MakeTimeChecker())
+            .AddAttribute("Epsilon",
+                          "Epsilon value for clock calculations.",
+                          UintegerValue(100),
+                          MakeUintegerAccessor(&RouterApplication::m_epsilon),
+                          MakeUintegerChecker<uint32_t>());
     return tid;
 }
 
 RouterApplication::RouterApplication()
-    : m_port(9999),
+    : m_port(0),
       m_socket(nullptr),
-      m_nodeId(0) // Initialize cluster ID
+      m_nodeId(0),
+      m_routerId(0),
+      m_epsilon(0),
+      m_interval(Seconds(1.0)),
+      m_localClock(nullptr),
+      m_routerLeftClock(nullptr),
+      m_routerRightClock(nullptr)
 {
     NS_LOG_FUNCTION(this);
 }
@@ -77,6 +58,7 @@ RouterApplication::RouterApplication()
 RouterApplication::~RouterApplication()
 {
     NS_LOG_FUNCTION(this);
+    m_socket = nullptr;
 }
 
 void
@@ -107,8 +89,6 @@ void
 RouterApplication::DoDispose()
 {
     NS_LOG_FUNCTION(this);
-    m_socket = nullptr;
-    m_clockSet = nullptr;
     Application::DoDispose();
 }
 
@@ -116,6 +96,8 @@ void
 RouterApplication::StartApplication()
 {
     NS_LOG_FUNCTION(this);
+
+    // Create and bind the socket
     if (!m_socket)
     {
         TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
@@ -129,8 +111,25 @@ RouterApplication::StartApplication()
 
     m_socket->SetRecvCallback(MakeCallback(&RouterApplication::HandleRead, this));
 
-    m_clockSet = CreateObject<ReplayClockSet>();
-    m_clockSet->Initialize(m_nodeId, m_routerId, m_epsilon, m_interval);
+    // Initialize the router's own clocks
+    Ptr<UnboundedSkewClock> pt = CreateObject<UnboundedSkewClock>();
+    Ptr<HybridLogicalClock> hlc = CreateObject<HybridLogicalClock>();
+
+    m_localClock = CreateObject<ReplayClock>();
+    m_localClock->SetAttribute("NodeId", UintegerValue(m_nodeId));
+    m_localClock->SetAttribute("LocalClock", PointerValue(pt));
+    m_localClock->SetAttribute("HLC", PointerValue(hlc));
+
+    m_routerLeftClock = CreateObject<ReplayClock>();
+    m_routerLeftClock->SetAttribute("NodeId", UintegerValue(m_routerId));
+    m_routerLeftClock->SetAttribute("LocalClock", PointerValue(pt));
+    m_routerLeftClock->SetAttribute("HLC", PointerValue(hlc));
+    
+    m_routerRightClock = CreateObject<ReplayClock>();
+    m_routerRightClock->SetAttribute("NodeId", UintegerValue(m_routerId));
+    m_routerRightClock->SetAttribute("LocalClock", PointerValue(pt));
+    m_routerRightClock->SetAttribute("HLC", PointerValue(hlc));
+    // NOTE: Further initialization of clocks with nodeId, etc., may be needed.
 }
 
 void
@@ -141,6 +140,7 @@ RouterApplication::StopApplication()
     {
         m_socket->Close();
         m_socket->SetRecvCallback(MakeNullCallback<void, Ptr<Socket>>());
+        m_socket = nullptr;
     }
 }
 
@@ -150,100 +150,101 @@ RouterApplication::HandleRead(Ptr<Socket> socket)
     NS_LOG_FUNCTION(this << socket);
     Ptr<Packet> packet;
     Address from;
-
-    Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
-    Ipv4Address myIp =
-        ipv4->GetNInterfaces() > 1 ? ipv4->GetAddress(1, 0).GetLocal() : Ipv4Address("0.0.0.0");
-
     while ((packet = socket->RecvFrom(from)))
     {
-        if (InetSocketAddress::IsMatchingType(from))
+        if (packet->GetSize() == 0)
         {
-            InetSocketAddress fromAddress = InetSocketAddress::ConvertFrom(from);
-            Ipv4Address fromIp = fromAddress.GetIpv4();
+            break;
+        }
 
-            ReplayClockHeader receivedHeader;
-            packet->RemoveHeader(receivedHeader);
+        Ipv4Address fromAddress = InetSocketAddress::ConvertFrom(from).GetIpv4();
+        NS_LOG_INFO("Received a packet from " << fromAddress);
 
-            ReplayClockHeader newHeader;
-            newHeader.SetClocks(m_clockSet);
-            packet->AddHeader(newHeader);
+        ReplayClockHeader receivedHeader;
+        packet->RemoveHeader(receivedHeader);
 
-            bool isLocal =
-                std::find(m_localPeers.begin(), m_localPeers.end(), fromIp) != m_localPeers.end();
-            if (isLocal)
+        // Process the clocks from the incoming message first
+        ProcessClocks(receivedHeader);
+
+        // Check if the sender is a local peer
+        bool isLocal =
+            (std::find(m_localPeers.begin(), m_localPeers.end(), fromAddress) != m_localPeers.end());
+        // Check if the sender is a remote peer
+        bool isRemote = (std::find(m_remotePeers.begin(), m_remotePeers.end(), fromAddress) !=
+                         m_remotePeers.end());
+
+        if (isLocal)
+        {
+            NS_LOG_INFO("Packet is from a local peer. Processing...");
+
+            // 1. Send a control message (type 3) back to the sender
+            ReplayClockHeader controlHeader;
+            controlHeader.SetClocks(m_localClock, m_routerLeftClock, m_routerRightClock);
+            controlHeader.SetType(3);
+            Ptr<Packet> controlPacket = Create<Packet>();
+            controlPacket->AddHeader(controlHeader);
+            socket->SendTo(controlPacket, 0, from);
+            NS_LOG_INFO("Sent control message (type 3) back to " << fromAddress);
+
+            // 2. Forward the original packet (type 1) to a random remote peer
+            if (!m_remotePeers.empty())
             {
-                if (!m_remotePeers.empty())
-                {
-                    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
-                    uint32_t peerIndex = rand->GetInteger(0, m_remotePeers.size() - 1);
-                    Ipv4Address forwardAddress = m_remotePeers[peerIndex];
+                Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+                uint32_t randomIndex = rand->GetInteger(0, m_remotePeers.size() - 1);
+                Ipv4Address remoteDest = m_remotePeers[randomIndex];
+                InetSocketAddress remoteAddr(remoteDest, m_port);
 
-                    NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId 
-                                  << " NodeID=" << m_nodeId 
-                                  << " NodeIP=" << myIp
-                                  << " Action=F2LC"
-                                  << " SrcIP=" << fromIp << " DestIP=" << forwardAddress
-                                  << " ClusterID=" << m_nodeId);
-
-                    m_socket->SendTo(packet->Copy(), 0, InetSocketAddress(forwardAddress, m_port));
-                }
-                else
-                {
-                    NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId 
-                                  << " NodeID=" << m_nodeId 
-                                  << " NodeIP=" << myIp
-                                  << " Action=DROP"
-                                  << " SrcIP=" << fromIp << " Reason=\"NO_REMOTE_PEERS\""
-                                  << " ClusterID=" << m_nodeId);
-                }
-                continue;
+                ReplayClockHeader forwardHeader;
+                forwardHeader.SetClocks(m_localClock, m_routerLeftClock, m_routerRightClock);
+                forwardHeader.SetType(1);
+                Ptr<Packet> forwardPacket = Create<Packet>();
+                forwardPacket->AddHeader(forwardHeader);
+                socket->SendTo(forwardPacket, 0, remoteAddr);
+                NS_LOG_INFO("Forwarded message (type 1) to random remote peer " << remoteDest);
             }
-
-            bool isRemote =
-                std::find(m_remotePeers.begin(), m_remotePeers.end(), fromIp) != m_remotePeers.end();
-            if (isRemote)
+            else
             {
-                if (!m_localPeers.empty())
-                {
-                    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
-                    uint32_t peerIndex = rand->GetInteger(0, m_localPeers.size() - 1);
-                    Ipv4Address forwardAddress = m_localPeers[peerIndex];
-
-                    NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId 
-                                  << " NodeID=" << m_nodeId 
-                                  << " NodeIP=" << myIp
-                                  << " Action=F2RM"
-                                  << " SrcIP=" << fromIp << " DestIP=" << forwardAddress
-                                  << " ClusterID=" << m_nodeId);
-
-                    m_socket->SendTo(packet->Copy(), 0, InetSocketAddress(forwardAddress, m_port));
-                }
-                else
-                {
-                    NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                                  << " RouterID=" << m_routerId 
-                                  << " NodeID=" << m_nodeId 
-                                  << " NodeIP=" << myIp
-                                  << " Action=DROP"
-                                  << " SrcIP=" << fromIp << " Reason=\"NO_LOCAL_PEERS\""
-                                  << " ClusterID=" << m_nodeId);
-                }
-                continue;
+                NS_LOG_WARN("No remote peers configured to forward the packet.");
             }
+        }
+        else if (isRemote)
+        {
+            NS_LOG_INFO("Packet is from a remote peer. Processing...");
 
-            NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                          << " RouterID=" << m_routerId 
-                          << " NodeID=" << m_nodeId 
-                          << " NodeIP=" << myIp
-                          << " Action=DROP"
-                          << " SrcIP=" << fromIp << " Reason=\"UNKNOWN_SOURCE\""
-                          << " ClusterID=" << m_nodeId);
+            // Send a packet (type 2) with the router's own clocks to a random local peer
+            if (!m_localPeers.empty())
+            {
+                Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+                uint32_t randomIndex = rand->GetInteger(0, m_localPeers.size() - 1);
+                Ipv4Address localDest = m_localPeers[randomIndex];
+                InetSocketAddress localAddr(localDest, m_port);
+
+                ReplayClockHeader routerStateHeader;
+                routerStateHeader.SetClocks(m_localClock, m_routerLeftClock, m_routerRightClock);
+                routerStateHeader.SetType(2);
+
+                Ptr<Packet> routerStatePacket = Create<Packet>();
+                routerStatePacket->AddHeader(routerStateHeader);
+                socket->SendTo(routerStatePacket, 0, localAddr);
+                NS_LOG_INFO("Sent router state (type 2) to random local peer " << localDest);
+            }
+            else
+            {
+                NS_LOG_WARN("No local peers configured to send router state.");
+            }
+        }
+        else
+        {
+            NS_LOG_WARN("Received packet from an unknown peer: " << fromAddress);
         }
     }
+}
+
+void
+RouterApplication::ProcessClocks(const ReplayClockHeader header)
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_INFO("Updated router's local clock after processing.");
 }
 
 } // namespace ns3

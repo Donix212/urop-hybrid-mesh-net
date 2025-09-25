@@ -1,10 +1,11 @@
 #include "end-node-application.h"
-#include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
-#include "replay-clock-set.h"
-#include <sstream>
+#include "ns3/ptr.h"
+#include "ns3/random-variable-stream.h"
+
+#include "hybrid-logical-clock.h"
 
 namespace ns3
 {
@@ -12,68 +13,42 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("EndNodeApplication");
 NS_OBJECT_ENSURE_REGISTERED(EndNodeApplication);
 
-// Helper function to format a single ReplayClock's state
-static std::string
-FormatClock(Ptr<ReplayClock> clock)
-{
-    if (!clock)
-    {
-        return "CLOCK_NULL";
-    }
-    std::stringstream ss;
-    ss << "ReplayClock(ID=" << clock->GetNodeId()
-       << ",HLC=" << clock->GetHLC()->Now().GetMicroSeconds()
-       << ",B=" << clock->GetBitmap().to_ullong()
-       << ",O=" << clock->GetOffsets().to_ullong()
-       << ",C=" << static_cast<int>(clock->GetCounters()) << ")";
-    return ss.str();
-}
-
-// Helper function to format all three clocks into a single timestamp string
-static std::string
-FormatAllClocks(Ptr<ReplayClockSet> clockSet)
-{
-    if (!clockSet)
-    {
-        return "Timestamp=\"CLOCKSET_NULL\"";
-    }
-    std::stringstream ss;
-    ss << "Timestamp=\"" << FormatClock(clockSet->GetLocalClock()) << ";"
-       << FormatClock(clockSet->GetLeftClock()) << ";" << FormatClock(clockSet->GetRightClock())
-       << "\"";
-    return ss.str();
-}
-
 TypeId
 EndNodeApplication::GetTypeId()
 {
-    static TypeId tid = TypeId("ns3::EndNodeApplication")
-                           .SetParent<Application>()
-                           .SetGroupName("Applications")
-                           .AddConstructor<EndNodeApplication>()
-                           .AddAttribute("NodeId",
-                                         "An identifier for this end node",
-                                         UintegerValue(0),
-                                         MakeUintegerAccessor(&EndNodeApplication::m_nodeId),
-                                         MakeUintegerChecker<uint32_t>())
-                            .AddAttribute("Epsilon",
-                                         "Clock skew in microseconds",
-                                         UintegerValue(1000),
-                                         MakeUintegerAccessor(&EndNodeApplication::m_epsilon),
-                                         MakeUintegerChecker<uint32_t>())
-                            .AddAttribute("Interval",
-                                         "Interval for clock updates",
-                                         TimeValue(MilliSeconds(100)),
-                                         MakeTimeAccessor(&EndNodeApplication::m_interval),
-                                         MakeTimeChecker())
-                            ;
+    static TypeId tid =
+        TypeId("ns3::EndNodeApplication")
+            .SetParent<Application>()
+            .SetGroupName("Applications")
+            .AddConstructor<EndNodeApplication>()
+            .AddAttribute("Port",
+                          "The port on which to listen for incoming packets.",
+                          UintegerValue(9),
+                          MakeUintegerAccessor(&EndNodeApplication::m_port),
+                          MakeUintegerChecker<uint16_t>())
+            .AddAttribute("Interval",
+                          "The time to wait between sending packets.",
+                          TimeValue(Seconds(1.0)),
+                          MakeTimeAccessor(&EndNodeApplication::m_interval),
+                          MakeTimeChecker())
+            .AddAttribute("Epsilon",
+                          "Epsilon value for clock calculations.",
+                          UintegerValue(100),
+                          MakeUintegerAccessor(&EndNodeApplication::m_epsilon),
+                          MakeUintegerChecker<uint32_t>());
     return tid;
 }
 
 EndNodeApplication::EndNodeApplication()
-    : m_port(9999),
+    : m_port(0),
       m_socket(nullptr),
-      m_clusterId(0)
+      m_nodeId(0),
+      m_clusterId(0),
+      m_epsilon(0),
+      m_interval(Seconds(1.0)),
+      m_localClock(nullptr),
+      m_routerLeftClock(nullptr),
+      m_routerRightClock(nullptr)
 {
     NS_LOG_FUNCTION(this);
 }
@@ -81,6 +56,7 @@ EndNodeApplication::EndNodeApplication()
 EndNodeApplication::~EndNodeApplication()
 {
     NS_LOG_FUNCTION(this);
+    m_socket = nullptr;
 }
 
 void
@@ -105,8 +81,6 @@ void
 EndNodeApplication::DoDispose()
 {
     NS_LOG_FUNCTION(this);
-    m_socket = nullptr;
-    m_clockSet = nullptr;
     Application::DoDispose();
 }
 
@@ -114,6 +88,7 @@ void
 EndNodeApplication::StartApplication()
 {
     NS_LOG_FUNCTION(this);
+
     if (!m_socket)
     {
         TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
@@ -126,10 +101,22 @@ EndNodeApplication::StartApplication()
     }
 
     m_socket->SetRecvCallback(MakeCallback(&EndNodeApplication::HandleRead, this));
-    m_sendEvent = Simulator::Schedule(Seconds(1.0), &EndNodeApplication::SendPacket, this);
 
-    m_clockSet = CreateObject<ReplayClockSet>();
-    m_clockSet->Initialize(m_nodeId, m_nodeId, m_epsilon, m_interval);
+    Ptr<UnboundedSkewClock> pt = CreateObject<UnboundedSkewClock>();
+    Ptr<HybridLogicalClock> hlc = CreateObject<HybridLogicalClock>();
+
+    m_localClock = CreateObject<ReplayClock>();
+    m_localClock->SetAttribute("NodeId", UintegerValue(m_nodeId));
+    m_localClock->SetAttribute("LocalClock", PointerValue(pt));
+    m_localClock->SetAttribute("HLC", PointerValue(hlc));
+
+    m_routerLeftClock = CreateObject<ReplayClock>();
+    m_routerLeftClock->SetAttribute("HLC", PointerValue(hlc));
+    
+    m_routerRightClock = CreateObject<ReplayClock>();
+    m_routerRightClock->SetAttribute("HLC", PointerValue(hlc));
+
+    m_sendEvent = Simulator::Schedule(Seconds(0.0), &EndNodeApplication::SendPacket, this);
 }
 
 void
@@ -141,6 +128,7 @@ EndNodeApplication::StopApplication()
     {
         m_socket->Close();
         m_socket->SetRecvCallback(MakeNullCallback<void, Ptr<Socket>>());
+        m_socket = nullptr;
     }
 }
 
@@ -148,32 +136,33 @@ void
 EndNodeApplication::SendPacket()
 {
     NS_LOG_FUNCTION(this);
-    Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
-    Ipv4Address myIp =
-        ipv4->GetNInterfaces() > 1 ? ipv4->GetAddress(1, 0).GetLocal() : Ipv4Address("0.0.0.0");
 
-    if (m_peers.empty())
-    {
-        return;
-    }
-
-    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
-    uint32_t peerIndex = rand->GetInteger(0, m_peers.size() - 1);
-    Ipv4Address peerAddress = m_peers[peerIndex];
-
-    NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                  << " NodeID=" << m_nodeId << " NodeIP=" << myIp << " Action=SEND"
-                  << " DestIP=" << peerAddress << " ClusterID=" << m_clusterId);
+    // Update clocks before sending
+    m_localClock->Send(m_epsilon, m_interval);
+    // You might want to update router clocks too, if applicable
+    // m_routerLeftClock->Send(m_epsilon, m_interval);
+    // m_routerRightClock->Send(m_epsilon, m_interval);
 
     ReplayClockHeader header;
-    header.SetClocks(m_clockSet);
+    header.SetClocks(m_localClock, m_routerLeftClock, m_routerRightClock);
+    header.SetType(0); // Example type
 
-    Ptr<Packet> packet = Create<Packet>(100); // 100 byte payload
+    Ptr<Packet> packet = Create<Packet>();
     packet->AddHeader(header);
 
-    m_socket->SendTo(packet, 0, InetSocketAddress(peerAddress, m_port));
+    if (!m_peers.empty())
+    {
+        // Send to a random peer
+        Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+        uint32_t randomIndex = rand->GetInteger(0, m_peers.size() - 1);
+        Ipv4Address dest = m_peers[randomIndex];
+        InetSocketAddress remote(dest, m_port);
+        m_socket->SendTo(packet, 0, remote);
+        NS_LOG_INFO("Sent packet to random peer " << dest);
+    }
 
-    m_sendEvent = Simulator::Schedule(Seconds(1.0), &EndNodeApplication::SendPacket, this);
+    // Schedule the next transmission
+    m_sendEvent = Simulator::Schedule(m_interval, &EndNodeApplication::SendPacket, this);
 }
 
 void
@@ -182,26 +171,29 @@ EndNodeApplication::HandleRead(Ptr<Socket> socket)
     NS_LOG_FUNCTION(this << socket);
     Ptr<Packet> packet;
     Address from;
-
-    Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
-    Ipv4Address myIp =
-        ipv4->GetNInterfaces() > 1 ? ipv4->GetAddress(1, 0).GetLocal() : Ipv4Address("0.0.0.0");
-
     while ((packet = socket->RecvFrom(from)))
     {
-        if (InetSocketAddress::IsMatchingType(from))
+        if (packet->GetSize() == 0)
         {
-            InetSocketAddress addr = InetSocketAddress::ConvertFrom(from);
-            ReplayClockHeader receivedHeader;
-            packet->RemoveHeader(receivedHeader);
-
-            NS_LOG_UNCOND(FormatAllClocks(m_clockSet)
-                          << " NodeID=" << m_nodeId << " NodeIP=" << myIp
-                          << " Action=RECV"
-                          << " SrcIP=" << addr.GetIpv4() << " ClusterID=" << m_clusterId);
+            break;
         }
+
+        Ipv4Address fromAddress = InetSocketAddress::ConvertFrom(from).GetIpv4();
+        NS_LOG_INFO("Received a packet from " << fromAddress);
+
+        ReplayClockHeader receivedHeader;
+        packet->RemoveHeader(receivedHeader);
+
+        ProcessClocks(receivedHeader);
     }
 }
 
+void
+EndNodeApplication::ProcessClocks(const ReplayClockHeader header)
+{
+    NS_LOG_FUNCTION(this);
+}
+
 } // namespace ns3
+
 
