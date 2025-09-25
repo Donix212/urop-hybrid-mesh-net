@@ -15,6 +15,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Kavya Bhat <kavyabhat@gmail.com>
+ *         Ashish Reddy <ashishajr@gmail.com>
  */
 
 // start-general-documentation
@@ -86,12 +87,12 @@ main(int argc, char* argv[])
               "point-to-point network.");
     cmd.Parse(argc, argv);
 
-    if (leftLeafNodes < 1) 
+    if (leftLeafNodes < 1)
     {
         leftLeafNodes = 1;
     }
-    
-    if (rightLeafNodes < 1) 
+
+    if (rightLeafNodes < 1)
     {
         rightLeafNodes = 1;
     }
@@ -117,7 +118,7 @@ main(int argc, char* argv[])
     // Create NetDeviceContainers for the nodes connected to r0.
     NetDeviceContainer r0Devices;
     // Loop through 'leftLeafNodes' nodes after the first 2 nodes (routers) and create point to
-    // point links for them with r0 
+    // point links for them with r0
     // NetDeviceContainers at odd indices in r0Devices are inside r0
     // NetDeviceContainers at even indices in r0Devices are inside distinct left leaf nodes
     for (int i = 2; i < 2 + leftLeafNodes; i++)
@@ -154,34 +155,64 @@ main(int argc, char* argv[])
     stack.Install(nodes);
 
     /*
-     * Assign IPv4 addresses to all the interfaces.
-     * This example has three networks: one on the left of r0, second between
-     * the two routers, and third on the right of r1.
+     * Assign IPv4 addresses to interfaces for each point-to-point link
+     * between r0 and its left leaf nodes. Each link gets a unique /24 subnet:
+     *
+     * | Point 1 | Point 2 | Subnet      |
+     * |---------|---------|-------------|
+     * | r0      | L0      | 10.1.1.0/24 |
+     * | r0      | L1      | 10.1.2.0/24 |
+     * | r0      | ...     | ...         |
      */
+    std::vector<Ipv4InterfaceContainer> leftInterfaces;
+    Ipv4AddressHelper address;
 
-    /*
-     * Assign IPv4 addresses to interfaces in the network which is on the left
-     * of r0. The IPv4 address of this network is `10.1.1.0/24`.
-     */
-    Ipv4AddressHelper leftLinkAddress;
-    leftLinkAddress.SetBase("10.1.1.0", "255.255.255.0");
-    Ipv4InterfaceContainer leftLinkInterfaces = leftLinkAddress.Assign(r0Devices);
+    for (int i = 0; i < leftLeafNodes; i++)
+    {
+        std::ostringstream subnet;
+        subnet << "10.1." << (i + 1) << ".0";
+        address.SetBase(subnet.str().c_str(), "255.255.255.0");
+
+        NetDeviceContainer link;
+        link.Add(r0Devices.Get(i * 2));
+        link.Add(r0Devices.Get(i * 2 + 1));
+
+        Ipv4InterfaceContainer iface = address.Assign(link);
+        leftInterfaces.push_back(iface);
+    }
 
     /*
      * Assign IPv4 addresses to interfaces in the network which is between r0
-     * and r1. The IPv4 address of this network is `10.1.2.0/24`.
+     * and r1. The IPv4 address of this network is `10.2.0.0/24`.
      */
     Ipv4AddressHelper routerLinkAddress;
-    routerLinkAddress.SetBase("10.1.2.0", "255.255.255.0");
+    routerLinkAddress.SetBase("10.2.0.0", "255.255.255.0");
     Ipv4InterfaceContainer routerLinkInterfaces = routerLinkAddress.Assign(routerDevices);
 
     /*
-     * Assign IPv4 addresses to interfaces in the network which is on the right
-     * of r1. The IPv4 address of this network is `10.1.3.0/24`.
+     * Assign IPv4 addresses to interfaces for each point-to-point link
+     * between r1 and its right leaf nodes. Each link gets its own /24 subnet:
+     * | Point 1 | Point 2 | Subnet      |
+     * |---------|---------|-------------|
+     * | r1      | R0      | 10.3.1.0/24 |
+     * | r1      | R1      | 10.3.2.0/24 |
+     * | r1      | ...     | ...         |
      */
-    Ipv4AddressHelper rightLinkAddress;
-    rightLinkAddress.SetBase("10.1.3.0", "255.255.255.0");
-    Ipv4InterfaceContainer rightLinkInterfaces = rightLinkAddress.Assign(r1Devices);
+    std::vector<Ipv4InterfaceContainer> rightInterfaces;
+
+    for (int i = 0; i < rightLeafNodes; i++)
+    {
+        std::ostringstream subnet;
+        subnet << "10.3." << (i + 1) << ".0";
+        address.SetBase(subnet.str().c_str(), "255.255.255.0");
+
+        NetDeviceContainer link;
+        link.Add(r1Devices.Get(i * 2));
+        link.Add(r1Devices.Get(i * 2 + 1));
+
+        Ipv4InterfaceContainer iface = address.Assign(link);
+        rightInterfaces.push_back(iface);
+    }
 
     /*
      * Build a routing database and initialize the routing tables of the nodes
@@ -193,8 +224,8 @@ main(int argc, char* argv[])
      * The 'GetAddress' API takes the index of ipInterfacePair in container, and
      * returns the address of the interface.
      */
-    Address destination = rightLinkInterfaces.GetAddress(1);
-    Address source = leftLinkInterfaces.GetAddress(0);
+    Address source = leftInterfaces[0].GetAddress(0);
+    Address destination = rightInterfaces[0].GetAddress(1);
 
     // Create a ping application with R0 as destination and L0 as source.
     PingHelper pingHelper(destination, source);
