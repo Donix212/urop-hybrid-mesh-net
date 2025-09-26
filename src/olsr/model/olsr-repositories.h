@@ -25,7 +25,9 @@ namespace olsr
 
 /**
  * @ingroup olsr
- *
+ * @{
+ */
+/**
  * Willingness for forwarding packets from other nodes.
  * The standard defines the following set of values.
  * Values 0 - 7 are allowed by the standard, but this is not enforced in the code.
@@ -69,8 +71,7 @@ operator<<(std::ostream& os, Willingness willingness)
     return os;
 }
 
-/// @ingroup olsr
-/// An Interface Association Tuple.
+/** An Interface Association Tuple. */
 struct IfaceAssocTuple
 {
     /// Interface address of a node.
@@ -81,12 +82,27 @@ struct IfaceAssocTuple
     Time time;
 };
 
+/**
+ * Equality operator for OLSR IfaceAssocTuple's
+ * Compare first the `ifaceAddr`, then the `mainAddr`
+
+ * @param a The first IfaceAssocTuple
+ * @param b The second IfaceAssocTuple
+ * @return @c true if the IfaceAssocTuple's are equal
+ */
 inline bool
 operator==(const IfaceAssocTuple& a, const IfaceAssocTuple& b)
 {
     return (a.ifaceAddr == b.ifaceAddr && a.mainAddr == b.mainAddr);
 }
 
+/**
+ * Stream insertion operator for OLSR IfaceAssocTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The IfaceAssocTuple.
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const IfaceAssocTuple& tuple)
 {
@@ -95,8 +111,7 @@ operator<<(std::ostream& os, const IfaceAssocTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
-/// A Link Tuple.
+/** A Link Tuple. */
 struct LinkTuple
 {
     /// Interface address of the local node.
@@ -111,12 +126,27 @@ struct LinkTuple
     Time time;
 };
 
+/**
+ * Equality operator for OLSR LinkTuple's
+ * Compare first the `localIfaceAddr`, then the `neighborIfaceAddr`
+ *
+ * @param a The first LinkTuple
+ * @param b The second LinkTuple
+ * @return @c true if the LinkTuple's are equal
+ */
 inline bool
 operator==(const LinkTuple& a, const LinkTuple& b)
 {
     return (a.localIfaceAddr == b.localIfaceAddr && a.neighborIfaceAddr == b.neighborIfaceAddr);
 }
 
+/**
+ * Stream insertion operator for OLSR LinkTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The LinkTuple.
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const LinkTuple& tuple)
 {
@@ -126,8 +156,7 @@ operator<<(std::ostream& os, const LinkTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
-/// A Neighbor Tuple.
+/** A Neighbor Tuple. */
 struct NeighborTuple
 {
     /// Main address of a neighbor node.
@@ -148,6 +177,14 @@ struct NeighborTuple
     Willingness willingness;
 };
 
+/**
+ * Equality operator for OLSR NeighborTuple's
+ * Compare first the `neighborMainAddr`, then the `status`, and finally the `willingness`
+ *
+ * @param a The first NeighborTuple
+ * @param b The second NeighborTuple
+ * @return @c true if the NeighborTuple's are equal
+ */
 inline bool
 operator==(const NeighborTuple& a, const NeighborTuple& b)
 {
@@ -155,6 +192,13 @@ operator==(const NeighborTuple& a, const NeighborTuple& b)
             a.willingness == b.willingness);
 }
 
+/**
+ * Stream insertion operator for OLSR NeighborTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The NeighborTuple.
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const NeighborTuple& tuple)
 {
@@ -164,8 +208,7 @@ operator<<(std::ostream& os, const NeighborTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
-/// A 2-hop Tuple.
+/** A 2-hop Tuple. */
 struct TwoHopNeighborTuple
 {
     /// Main address of a neighbor.
@@ -176,6 +219,13 @@ struct TwoHopNeighborTuple
     Time expirationTime; // previously called 'time_'
 };
 
+/**
+ * Stream insertion operator for OLSR TwoHopNeighborTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The TwoHopNeighborTuple.
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const TwoHopNeighborTuple& tuple)
 {
@@ -185,6 +235,14 @@ operator<<(std::ostream& os, const TwoHopNeighborTuple& tuple)
     return os;
 }
 
+/**
+ * Equality operator for OLSR TwoHopNeighborTuple's
+ * Compare first the `neighborMainAddr`, then the `twoHopNeighborAddr`
+ *
+ * @param a The first TwoHopNeighborTuple
+ * @param b The second TwoHopNeighborTuple
+ * @return @c true if the TwoHopNeighborTuple's are equal
+ */
 inline bool
 operator==(const TwoHopNeighborTuple& a, const TwoHopNeighborTuple& b)
 {
@@ -192,8 +250,7 @@ operator==(const TwoHopNeighborTuple& a, const TwoHopNeighborTuple& b)
             a.twoHopNeighborAddr == b.twoHopNeighborAddr);
 }
 
-/// @ingroup olsr
-/// An MPR-Selector Tuple.
+/** An MPR-Selector Tuple. */
 struct MprSelectorTuple
 {
     /// Main address of a node which have selected this node as a MPR.
@@ -202,17 +259,25 @@ struct MprSelectorTuple
     Time expirationTime; // previously called 'time_'
 };
 
+/**
+ * Equality operator for OLSR MprSelectorTuple's
+ * Compare the `mainAddr` fields.
+ *
+ * @param a The first MprSelectorTuple
+ * @param b The second MprSelectorTuple
+ * @return @c true if the MprSelectorTuple's are equal
+ */
 inline bool
 operator==(const MprSelectorTuple& a, const MprSelectorTuple& b)
 {
     return (a.mainAddr == b.mainAddr);
 }
 
-// The type "list of interface addresses"
+// unused
+/* The type "list of interface addresses" */
 // typedef std::vector<nsaddr_t> addr_list_t;
 
-/// @ingroup olsr
-/// A Duplicate Tuple
+/** A Duplicate Tuple */
 struct DuplicateTuple
 {
     /// Originator address of the message.
@@ -227,14 +292,21 @@ struct DuplicateTuple
     Time expirationTime;
 };
 
+/**
+ * Equality operator for OLSR DuplicateTuple's
+ * Compare first the `address`, then the `sequenceNumber`
+ *
+ * @param a The first DuplicateTuple
+ * @param b The second DuplicateTuple
+ * @return @c true if the DuplicateTuple's are equal
+ */
 inline bool
 operator==(const DuplicateTuple& a, const DuplicateTuple& b)
 {
     return (a.address == b.address && a.sequenceNumber == b.sequenceNumber);
 }
 
-/// @ingroup olsr
-/// A Topology Tuple
+/** A Topology Tuple */
 struct TopologyTuple
 {
     /// Main address of the destination.
@@ -247,6 +319,14 @@ struct TopologyTuple
     Time expirationTime;
 };
 
+/**
+ * Equality operator for OLSR TopologyTuple's
+ * Compare first the `destAddr`, then `lastAddr`, and finally the `sequenceNumber`
+ *
+ * @param a The first TopologyTuple
+ * @param b The second TopologyTuple
+ * @return @c true if the TopologyTuple's are equal
+ */
 inline bool
 operator==(const TopologyTuple& a, const TopologyTuple& b)
 {
@@ -254,6 +334,13 @@ operator==(const TopologyTuple& a, const TopologyTuple& b)
             a.sequenceNumber == b.sequenceNumber);
 }
 
+/**
+ * Stream insertion operator for OLSR TopologyTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The TopologyTuple.
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const TopologyTuple& tuple)
 {
@@ -263,20 +350,34 @@ operator<<(std::ostream& os, const TopologyTuple& tuple)
     return os;
 }
 
-/// @ingroup olsr
-/// Association
+/** Association */
 struct Association
 {
     Ipv4Address networkAddr; //!< IPv4 Network address.
     Ipv4Mask netmask;        //!< IPv4 Network mask.
 };
 
+/**
+ * Equality operator for OLSR Association's
+ * Compare first the `networkAddr`, then `netmask`
+ *
+ * @param a The first Association
+ * @param b The second Association
+ * @return @c true if the Association's are equal
+ */
 inline bool
 operator==(const Association& a, const Association& b)
 {
     return (a.networkAddr == b.networkAddr && a.netmask == b.netmask);
 }
 
+/**
+ * Stream insertion operator for OLSR Association.
+ *
+ * @param os Output stream.
+ * @param tuple The Association
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const Association& tuple)
 {
@@ -284,8 +385,7 @@ operator<<(std::ostream& os, const Association& tuple)
     return os;
 }
 
-/// @ingroup olsr
-/// An Association Tuple
+/** An Association Tuple */
 struct AssociationTuple
 {
     /// Main address of the gateway.
@@ -298,6 +398,14 @@ struct AssociationTuple
     Time expirationTime;
 };
 
+/**
+ * Equality operator for OLSR AssociationTuple's
+ * Compare first the `gatewayAddr`, then `networkAddr`, and finally `netmask`
+ *
+ * @param a The first AssociationTuple
+ * @param b The second AssociationTuple
+ * @return @c true if the AssociationTuple's are equal
+ */
 inline bool
 operator==(const AssociationTuple& a, const AssociationTuple& b)
 {
@@ -305,6 +413,13 @@ operator==(const AssociationTuple& a, const AssociationTuple& b)
             a.netmask == b.netmask);
 }
 
+/**
+ * Stream insertionTuple operator for OLSR AssociationTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The AssociationTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const AssociationTuple& tuple)
 {
@@ -324,6 +439,8 @@ typedef std::vector<DuplicateTuple> DuplicateSet;           //!< Duplicate Set t
 typedef std::vector<IfaceAssocTuple> IfaceAssocSet;         //!< Interface Association Set type.
 typedef std::vector<AssociationTuple> AssociationSet;       //!< Association Set type.
 typedef std::vector<Association> Associations;              //!< Association Set type.
+
+/** @} */
 
 } // namespace olsr
 } // namespace ns3

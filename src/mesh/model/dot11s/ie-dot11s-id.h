@@ -20,6 +20,7 @@ namespace dot11s
 {
 
 /**
+ * @ingroup dot11s
  * @brief a IEEE 802.11 Mesh ID element (Section 8.4.2.101 of IEEE 802.11-2012)
  */
 class IeMeshId : public WifiInformationElement
@@ -72,6 +73,7 @@ class IeMeshId : public WifiInformationElement
 };
 
 /**
+ * @ingroup dot11s
  * @brief Stream insertion operator.
  *
  * @param [in] os The reference to the output stream.

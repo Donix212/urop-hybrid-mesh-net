@@ -156,6 +156,14 @@ Stats::FlowStatsInit(const void* body, int body_len, void** state)
     return 0;
 }
 
+/**
+ * @ingroup openflow
+ * Callback function to populate the `ofs_flow_stats` in @p state
+ * from the @p flow
+ * @param flow The `sw_flow` to read stats from
+ * @param state The `ofp_flow_stats` to populate
+ * @return a flag indicating if the final @p state exceeds the size limit
+ */
 int
 Stats_FlowDumpCallback(sw_flow* flow, void* state)
 {
@@ -227,6 +235,14 @@ Stats::AggregateStatsInit(const void* body, int body_len, void** state)
     return 0;
 }
 
+/**
+ * @ingroup openflow
+ * Callback function to populate the `ofp_aggregate_stats_reply` in @p state
+ * from the @p flow
+ * @param flow The `sw_flow to read stats` from
+ * @param state The `ofp_aggregate_stats_reply` to populate
+ * @return @c 0
+ */
 int
 Stats_AggregateDumpCallback(sw_flow* flow, void* state)
 {

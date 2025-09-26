@@ -35,7 +35,10 @@ enum PmpReasonCode
     REASON11S_RESERVED = 67,
 };
 
-/// according to IEEE 802.11 - 2012
+/**
+ * @ingroup dot11s
+ * Peer Management, according to IEEE 802.11 - 2012
+ */
 class IePeerManagement : public WifiInformationElement
 {
   public:
@@ -134,7 +137,18 @@ class IePeerManagement : public WifiInformationElement
 };
 
 bool operator==(const IePeerManagement& a, const IePeerManagement& b);
+
+/**
+ * @ingroup dot11s
+ * @brief Stream output operator for IePeerManagement.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] peerMan The IePeerManagement object.
+ * @returns The reference to the output stream.
+ */
+
 std::ostream& operator<<(std::ostream& os, const IePeerManagement& peerMan);
+
 } // namespace dot11s
 } // namespace ns3
 

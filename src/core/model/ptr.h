@@ -61,6 +61,9 @@ namespace ns3
  * (or ObjectBase) there is also a convenience wrapper Create<>()
  *
  * @tparam T \explicit The type of the underlying object.
+ *
+ * Inheritance graph was not generated because of its size.
+ * @hideinheritancegraph
  */
 template <typename T>
 class Ptr
@@ -95,6 +98,8 @@ class Ptr
      * @tparam U \deduced The actual type of the argument and return pointer.
      * @param [in] p Smart pointer
      * @return The pointer managed by this smart pointer.
+     * @hidecaller
+     * @hideref
      */
     template <typename U>
     friend U* PeekPointer(const Ptr<U>& p);
@@ -226,18 +231,16 @@ class Ptr
  * This template work for any class \c T derived from ns3::SimpleRefCount
  *
  * @see CreateObject for methods to create derivatives of ns3::Object
- */
-/** @{ */
-/**
+ *
  * @tparam T  \explicit The type of class object to create.
  * @tparam Ts \deduced Types of the constructor arguments.
  * @param  [in] args Constructor arguments.
  * @return A Ptr to the newly created \c T.
+ * @hidecaller
+ * @hiderefby
  */
 template <typename T, typename... Ts>
 Ptr<T> Create(Ts&&... args);
-
-/** @}*/
 
 /**
  * @ingroup ptr
@@ -399,6 +402,14 @@ namespace internal
 // without making this header dependent on make-event.h
 template <typename T>
 struct EventMemberImplObjTraits;
+
+/**
+ * @ingroup events
+ * @defgroup makeeventmemptr MakeEvent from class methods.
+ *
+ * Create EventImpl instances from class member methods which take
+ * varying numbers of arguments.
+ */
 
 /**
  * @ingroup makeeventmemptr
@@ -571,8 +582,8 @@ operator>=(const Ptr<T>& lhs, const Ptr<T>& rhs)
  * @tparam T2 \deduced The type of the original Ptr.
  * @param [in] p The original Ptr.
  * @return The result of the cast.
+ * @{
  */
-/** @{ */
 template <typename T1, typename T2>
 Ptr<T1>
 ConstCast(const Ptr<T2>& p)
@@ -580,6 +591,11 @@ ConstCast(const Ptr<T2>& p)
     return Ptr<T1>(const_cast<T1*>(PeekPointer(p)));
 }
 
+/**
+ * @copydoc ConstCast()
+ * @hidecaller
+ * @hiderefby
+ */
 template <typename T1, typename T2>
 Ptr<T1>
 DynamicCast(const Ptr<T2>& p)

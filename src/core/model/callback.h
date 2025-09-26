@@ -48,23 +48,10 @@ namespace ns3
  * @defgroup callbackimpl Callback Implementation
  * Callback implementation classes
  */
-/**
- * @ingroup callbackimpl
- * @defgroup makeboundcallback MakeBoundCallback from functions bound with up to three arguments.
- *
- * Build bound Callbacks which take varying numbers of arguments,
- * and potentially returning a value.
- *
- * @internal
- *
- * The following is experimental code. It works but we have
- * not yet determined whether or not it is really useful and whether
- * or not we really want to use it.
- */
 
 /**
  * @ingroup callbackimpl
- * Abstract base class for CallbackImpl
+ * Abstract base class for CallbackImpl.
  * Provides reference counting and equality test.
  */
 class CallbackImplBase : public SimpleRefCount<CallbackImplBase>
@@ -661,9 +648,7 @@ operator!=(Callback<R, Args...> a, Callback<R, Args...> b)
 }
 
 /**
- * @{
- */
-/**
+ * @ingroup callback
  * Build Callbacks for class method members which take varying numbers
  * of arguments and potentially returning a value.
  *
@@ -676,9 +661,8 @@ operator!=(Callback<R, Args...> a, Callback<R, Args...> b)
  * @param [in] objPtr Class instance
  * @return A wrapper Callback
  *
- * Build Callbacks for class method members which take varying numbers of arguments
- * and potentially returning a value.
  */
+/**@{*/
 template <typename T, typename OBJ, typename R, typename... Args>
 Callback<R, Args...>
 MakeCallback(R (T::*memPtr)(Args...), OBJ objPtr)
@@ -696,14 +680,15 @@ MakeCallback(R (T::*memPtr)(Args...) const, OBJ objPtr)
 /**@}*/
 
 /**
+ * Build Callbacks for functions which take varying numbers of arguments
+ * and potentially returning a value.
+ *
  * @ingroup callback
  * @tparam R   \deduced Return type of the callback function..
  * @tparam Args  \deduced Type list of any arguments to the member function.
  * @param [in] fnPtr Function pointer
  * @return A wrapper Callback
- *
- * Build Callbacks for functions which take varying numbers of arguments
- * and potentially returning a value.
+ * @hidecaller
  */
 template <typename R, typename... Args>
 Callback<R, Args...>
@@ -713,14 +698,15 @@ MakeCallback(R (*fnPtr)(Args...))
 }
 
 /**
+ * Build null Callbacks which take no arguments,
+ * for varying number of template arguments,
+ * and potentially returning a value.
+ *
  * @ingroup callback
  * @tparam R   \deduced Return type of the callback function..
  * @tparam Args  \deduced Type list of any arguments to the member function.
  * @return A wrapper Callback
- *
- * Build null Callbacks which take no arguments,
- * for varying number of template arguments,
- * and potentially returning a value.
+ * @hidecaller
  */
 template <typename R, typename... Args>
 Callback<R, Args...>
@@ -730,15 +716,17 @@ MakeNullCallback()
 }
 
 /**
- * @ingroup makeboundcallback
- * @{
- * Make Callbacks with varying number of bound arguments.
+ * @ingroup callback
+ * Make bound Callbacks which take varying numbers of arguments,
+ * and potentially returning a value.
+ *
  * @tparam R   \deduced Return type of the callback function..
  * @tparam Args \deduced Type list of any arguments to the member function.
  * @tparam BArgs \deduced Type list of bound arguments.
  * @param [in] fnPtr Function pointer
  * @param [in] bargs Bound arguments
  * @return A bound Callback
+ * @hidecaller
  */
 template <typename R, typename... Args, typename... BArgs>
 auto
@@ -747,19 +735,21 @@ MakeBoundCallback(R (*fnPtr)(Args...), BArgs&&... bargs)
     return Callback<R, Args...>(fnPtr).Bind(std::forward<BArgs>(bargs)...);
 }
 
+/**@{*/
 /**
- * @tparam T   \deduced Type of the class having the member function.
- * @tparam OBJ \deduced Type of the class instance.
+ * @ingroup callback
+ * Make bound Callbacks which take varying numbers of arguments,
+ * and potentially returning a value.
+ *
  * @tparam R   \deduced Return type of the callback.
  * @tparam Args \deduced Type list of any arguments to the member function.
  * @tparam BArgs \deduced Type list of bound arguments.
+ * @tparam T   \deduced Type of the class having the member function.
+ * @tparam OBJ \deduced Type of the class instance.
  * @param [in] memPtr Class method member pointer
  * @param [in] objPtr Class instance
  * @param [in] bargs Bound arguments
  * @return A wrapper Callback
- *
- * Build Callbacks for class method members which take varying numbers of arguments
- * and potentially returning a value.
  */
 template <typename T, typename OBJ, typename R, typename... Args, typename... BArgs>
 auto

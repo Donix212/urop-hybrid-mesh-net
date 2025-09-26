@@ -135,12 +135,20 @@ operator<<(std::ostream& os, const IeMeshId& a)
     return os;
 }
 
+/**
+ * @ingroup dot11s
+ * @brief Stream input operator for IeMeshId.
+ *
+ * @param [in] is The reference to the input stream.
+ * @param [in] meshId The IeMeshId object.
+ * @returns The reference to the input stream.
+ */
 std::istream&
-operator>>(std::istream& is, IeMeshId& a)
+operator>>(std::istream& is, IeMeshId& meshId)
 {
     std::string str;
     is >> str;
-    a = IeMeshId(str);
+    meshId = IeMeshId(str);
     return is;
 }
 

@@ -19,6 +19,8 @@
 
 namespace ns3
 {
+
+/** The LR-WPAN namespace. */
 namespace lrwpan
 {
 

@@ -122,6 +122,7 @@ enum PendingPrimitiveStatus
     MLME_SYNC_REQ = 4   //!< Pending MLME-SYNC.request primitive
 };
 
+/** TracedValueCallback declarations for LR-WPAN. */
 namespace TracedValueCallback
 {
 

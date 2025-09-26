@@ -675,6 +675,13 @@ class MessageHeader : public Header
     }
 };
 
+/**
+ * @ingroup olsr
+ * @brief Output streamer for OLSR PacketHeader
+ * @param os The output stream
+ * @param packet The PacketHeader
+ * @return The stream
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const PacketHeader& packet)
 {
@@ -682,6 +689,13 @@ operator<<(std::ostream& os, const PacketHeader& packet)
     return os;
 }
 
+/**
+ * @ingroup olsr
+ * @brief Output streamer for OLSR MessageHeader
+ * @param os The output stream
+ * @param message The MessageHeader
+ * @return The stream
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const MessageHeader& message)
 {
@@ -689,8 +703,19 @@ operator<<(std::ostream& os, const MessageHeader& message)
     return os;
 }
 
+/**
+ * @ingroup olsr
+ * Container for a set of OLSR MessageHeader's
+ */
 typedef std::vector<MessageHeader> MessageList;
 
+/**
+ * @ingroup olsr
+ * @brief Output streamer for OLSR MessageList
+ * @param os The output stream
+ * @param messages The MessageList
+ * @return The stream
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const MessageList& messages)
 {

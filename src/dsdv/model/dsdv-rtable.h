@@ -34,6 +34,8 @@ namespace ns3
 {
 namespace dsdv
 {
+
+/** DSDV route status flag values. */
 enum RouteFlags
 {
     VALID = 0,   // !< VALID

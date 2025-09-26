@@ -49,10 +49,18 @@ IePeeringProtocol::Print(std::ostream& os) const
     os << "PeeringProtocol=(peering protocol=" << m_protocol << ")";
 }
 
+/**
+ * @ingroup dot11s
+ * @brief Stream output operator for IePeeringProtocol.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] peer The IePeeringProtocol object.
+ * @returns The reference to the output stream.
+ */
 std::ostream&
-operator<<(std::ostream& os, const IePeeringProtocol& a)
+operator<<(std::ostream& os, const IePeeringProtocol& peer)
 {
-    a.Print(os);
+    peer.Print(os);
     return os;
 }
 } // namespace dot11s

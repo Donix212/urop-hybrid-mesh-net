@@ -129,6 +129,13 @@ class DsdvHeader : public Header
     uint32_t m_dstSeqNo; ///< Destination Sequence Number
 };
 
+/**
+ * @ingroup dsdv
+ * @brief Output streamer for DsdvHeader
+ * @param os The output stream
+ * @param packet The DsdvHeader
+ * @return The stream
+ */
 static inline std::ostream&
 operator<<(std::ostream& os, const DsdvHeader& packet)
 {

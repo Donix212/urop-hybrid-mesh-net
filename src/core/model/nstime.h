@@ -362,15 +362,9 @@ class CORE_EXPORT Time
      * Conversions to seconds and larger will return doubles, with
      * possible loss of precision.  Conversions to units smaller than
      * seconds will be rounded.
-     *
      * @{
      */
-    /**
-     * Get an approximation of the time stored in this instance
-     * in the indicated unit.
-     *
-     * @return An approximate value in the indicated unit.
-     */
+    /** @return An approximate value in the indicated unit. */
     inline double GetYears() const
     {
         return ToDouble(Time::Y);
@@ -391,6 +385,11 @@ class CORE_EXPORT Time
         return ToDouble(Time::MIN);
     }
 
+    /**
+     * @copydoc GetYears()
+     * @hidecaller
+     * @hideref
+     */
     inline double GetSeconds() const
     {
         return ToDouble(Time::S);
@@ -426,7 +425,6 @@ class CORE_EXPORT Time
     /**
      * @name Convert to Raw Value
      * Convert a Time to a number in the current resolution units.
-     *
      * @{
      */
     /**
@@ -477,7 +475,6 @@ class CORE_EXPORT Time
     /**
      * @name Create Times from Values and Units
      * Create Times from values given in the indicated units.
-     *
      * @{
      */
     /**
@@ -552,7 +549,6 @@ class CORE_EXPORT Time
     /**
      * @name Get Times as Numbers in Specified Units
      * Get the Time as integers or doubles in the indicated unit.
-     *
      * @{
      */
     /**
@@ -645,6 +641,8 @@ class CORE_EXPORT Time
      *
      * @param [in] unit The unit to use.
      * @return The Time with embedded unit.
+     * @hidecaller
+     * @hideref
      */
     TimeWithUnit As(const Unit unit = Time::AUTO) const;
 
@@ -1365,6 +1363,11 @@ Minutes(int64x64_t value)
     return Time::From(value, Time::MIN);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 Seconds(double value)
 {
@@ -1377,6 +1380,11 @@ Seconds(int64x64_t value)
     return Time::From(value, Time::S);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 MilliSeconds(uint64_t value)
 {
@@ -1389,6 +1397,11 @@ MilliSeconds(int64x64_t value)
     return Time::From(value, Time::MS);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 MicroSeconds(uint64_t value)
 {
@@ -1401,6 +1414,11 @@ MicroSeconds(int64x64_t value)
     return Time::From(value, Time::US);
 }
 
+/**
+ * @copydoc Years()
+ * @hidecaller
+ * @hideref
+ */
 inline Time
 NanoSeconds(uint64_t value)
 {

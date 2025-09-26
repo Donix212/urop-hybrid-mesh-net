@@ -251,8 +251,13 @@ REappend filter_blacklistRE "cairo-wideint"
 # REappend filter_blacklistRE "MakeCallback< ObjectBase \\* >(ObjectBase \\*"
 
 #   ATTRIBUTE_HELPER_CPP( and _HEADER(
-# REappend filter_blacklistRE "ATTRIBUTE_HELPER_\\(CPP\\|HEADER\\)"
+REappend filter_blacklistRE "ATTRIBUTE_HELPER_\\(CPP\\|HEADER\\)"
 
+#   *.py:  we've included python files since 2012,
+#          but they are now (2025) generating warnings
+REappend filter_blacklistRE "\.py"
+
+#
 # Filter out regular expression for black list, -e, -t and -F
 filter_outRE=""
 [[ $filter_blacklist -eq 1 ]] && REappend filter_outRE "$filter_blacklistRE"

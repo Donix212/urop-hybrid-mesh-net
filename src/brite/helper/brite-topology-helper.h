@@ -19,6 +19,7 @@
 
 // These are in #include <Brite.h>,
 // here we just need a forward declaration.
+/** Forward declaration of namespace and class from `Brite.h` */
 namespace brite
 {
 class Topology;

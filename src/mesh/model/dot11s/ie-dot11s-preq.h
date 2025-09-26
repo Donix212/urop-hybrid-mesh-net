@@ -280,6 +280,15 @@ class IePreq : public WifiInformationElement
 
 bool operator==(const DestinationAddressUnit& a, const DestinationAddressUnit& b);
 bool operator==(const IePreq& a, const IePreq& b);
+
+/**
+ * @ingroup dot11s
+ * @brief Stream output operator for IePreq.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] preq The IePreq object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePreq& preq);
 
 } // namespace dot11s
