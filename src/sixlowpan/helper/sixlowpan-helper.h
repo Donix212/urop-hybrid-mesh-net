@@ -10,7 +10,9 @@
 #define SIXLOWPAN_HELPER_H
 
 #include "ns3/net-device-container.h"
+#include "ns3/nstime.h" // Add this
 #include "ns3/object-factory.h"
+#include "ns3/output-stream-wrapper.h" // Add this
 
 #include <string>
 
@@ -20,6 +22,8 @@ namespace ns3
 class Node;
 class AttributeValue;
 class Time;
+class Ipv6InterfaceContainer;
+class Icmpv6OptionSixLowPanCapabilityIndication;
 
 /**
  * @ingroup sixlowpan
@@ -130,7 +134,118 @@ class SixLowPanHelper
      */
     int64_t AssignStreams(NetDeviceContainer c, int64_t stream);
 
+    /**
+     * @brief Install the SixLoWPAN-ND stack, associate it with a NetDevice, and set it as a 6LBR.
+     *
+     * @note IPv6 stack must NOT be installed \a after this function, because it has been already
+     * set up.
+     *
+     * @param [in] c The NetDevice container.
+     * @param [in] baseAddr The prefix to be announced by the 6LBR.
+     * @return A container of the addresses assigned to the NetDevices.
+     */
+    Ipv6InterfaceContainer InstallSixLowPanNdBorderRouter(NetDeviceContainer c,
+                                                          Ipv6Address baseAddr);
+
+    /**
+     * @brief Install the SixLoWPAN-ND stack, associate it with a NetDevice, and set it as a 6LN.
+     * @note IPv6 stack must NOT be installed \a after this function, because it has been already
+     * set up.
+     *
+     * @param [in] c The NetDevice container.
+     * @return A container of the addresses assigned to the NetDevices.
+     */
+    Ipv6InterfaceContainer InstallSixLowPanNdNode(NetDeviceContainer c);
+
+    /**
+     * @brief Install the SixLoWPAN-ND stack, associate it with a NetDevice, and set it as a 6LN
+     * that wants to become a 6BBR.
+     * @note IPv6 stack must NOT be installed \a after this function, because it has been already
+     * set up.
+     *
+     * @param [in] c The NetDevice container.
+     * @return A container of the addresses assigned to the NetDevices.
+     */
+    Ipv6InterfaceContainer InstallSixLowPanNdBackboneRouter(NetDeviceContainer c);
+
+    /**
+     * @brief Add a new prefix to be advertised by 6LoWPAN-ND.
+     * @param [in] nd The NetDevice.
+     * @param prefix announced IPv6 prefix
+     */
+    void SetAdvertisedPrefix(const Ptr<NetDevice> nd, Ipv6Prefix prefix);
+
+    /**
+     * @brief Add a new context to be advertised by 6LoWPAN-ND.
+     * @param [in] nd The NetDevice.
+     * @param context announced IPv6 context
+     */
+    void AddAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix context);
+
+    /**
+     * @brief Remove a context advertised by 6LoWPAN-ND.
+     * @param [in] nd The NetDevice.
+     * @param context announced IPv6 context
+     */
+    void RemoveAdvertisedContext(const Ptr<NetDevice> nd, Ipv6Prefix context);
+
+    /**
+     * @brief Add a Capability Indication to be advertised by 6LoWPAN-ND.
+     * @param [in] nd The NetDevice.
+     * @param capability announced Node capability
+     */
+    void SetCapabilityIndication(const Ptr<NetDevice> nd,
+                                 Icmpv6OptionSixLowPanCapabilityIndication capability);
+
+    /**
+     * @brief Print the binding table of all nodes at a specific time.
+     * @param printTime the time at which the binding table is printed.
+     * @param stream the output stream wrapper used for printing.
+     * @param unit the time unit to be used in the report.
+     */
+    static void PrintBindingTableAllAt(Time printTime,
+                                       Ptr<OutputStreamWrapper> stream,
+                                       Time::Unit unit = Time::S);
+
+    /**
+     * @brief Print the binding table of a node.
+     * @param node the node for which the binding table is printed.
+     * @param stream the output stream wrapper used for printing.
+     * @param unit the time unit to be used in the report.
+     */
+    static void PrintBindingTable(Ptr<Node> node,
+                                  Ptr<OutputStreamWrapper> stream,
+                                  Time::Unit unit = Time::S);
+
   private:
+    /**
+     * @brief Install the SixLoWPAN-ND stack in the node and associates it with a NetDevice.
+     *
+     * @param [in] c The NetDevice container.
+     * @param [in] borderRouter Set the NetDevices to work as 6LBRs.
+     */
+    void InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter);
+
+    /**
+     * @brief Initialize the ROVR for a node.
+     * @param [in] node The node to initialize the ROVR for.
+     */
+    void InitializeRovr(Ptr<Node> node);
+
+    /**
+     * @brief Convert a MAC address to a ROVR.
+     * @param mac The MAC address to convert.
+     * @return A vector of bytes representing the ROVR.
+     */
+    std::vector<uint8_t> ConvertMacToRovr(const Address& mac);
+
+    /**
+     * @brief Print a ROVR as a string.
+     * @param rovr The ROVR to print.
+     * @return A string representation of the ROVR.
+     */
+    std::string PrintRovr(const std::vector<uint8_t>& rovr);
+
     ObjectFactory m_deviceFactory; //!< Object factory.
 };
 
