@@ -19,8 +19,12 @@
 #include "wifi-radio-energy-model.h"
 #include "wifi-standards.h"
 
+#include "ns3/attribute-container.h"
+#include "ns3/enum.h"
 #include "ns3/error-model.h"
 #include "ns3/mobility-model.h"
+#include "ns3/tuple.h"
+#include "ns3/uinteger.h"
 #include "ns3/wifi-export.h"
 
 #include <limits>
@@ -941,14 +945,45 @@ class WIFI_EXPORT WifiPhy : public Object
      */
     Ptr<MobilityModel> GetMobility() const;
 
-    using ChannelTuple = std::tuple<uint8_t /* channel number */,
-                                    MHz_u /* channel width */,
-                                    WifiPhyBand /* WifiPhyBand */,
-                                    uint8_t /* primary20 index*/>; //!< Tuple identifying a segment
-                                                                   //!< of an operating channel
+    /// kept for backward compatibility, can be deprecated when using strong types
+    using ChannelTuple = WifiChannelConfig::SegmentWithoutUnits;
 
-    using ChannelSegments =
-        std::vector<ChannelTuple>; //!< segments identifying an operating channel
+    /// segments identifying an operating channel
+    using ChannelSegments = std::list<WifiChannelConfig::TupleWithoutUnits>;
+
+    /// AttributeValue type of a ChannelTuple object
+    using ChannelTupleValue =
+        TupleValue<UintegerValue, UintegerValue, EnumValue<WifiPhyBand>, UintegerValue>;
+
+    /// AttributeValue type of a ChannelSegments object
+    using ChannelSettingsValue = AttributeContainerValue<ChannelTupleValue, ';'>;
+
+    /**
+     * Get a checker for the ChannelSettings attribute, which can be used to deserialize a
+     * ChannelSegments object from a string:
+     *
+     * @code
+     *   WifiPhy::ChannelSettingsValue value;
+     *   value.DeserializeFromString("{36,0,BAND_5GHZ,0}", WifiPhy::GetChannelSegmentsChecker());
+     *   ChannelSettings channel = value.Get();
+     * @endcode
+     *
+     * Note that the WifiChannelConfig::FromString() static function uses the code above to return
+     * a WifiChannelConfig object starting from a string.
+     *
+     * @return a checker for the ChannelSettings attribute
+     */
+    static Ptr<const AttributeChecker> GetChannelSegmentsChecker();
+
+    /**
+     * The ChannelSettings attribute allows users to leave some parameters (e.g., the channel width)
+     * unspecified. This function is used to set such unspecified parameters to their default values
+     * in the given channel config.
+     *
+     * @param channelCfg the given channel settings
+     * @param standard the supported standard
+     */
+    static void SetUnspecifiedChannelParams(WifiChannelConfig& channelCfg, WifiStandard standard);
 
     /**
      * If the standard for this object has not been set yet, store the channel settings
@@ -974,12 +1009,12 @@ class WIFI_EXPORT WifiPhy : public Object
     void SetOperatingChannel(const ChannelSegments& channelSegments);
 
     /**
-     * This overloaded function is used when the operating channel
-     * consists of a single segment, identified by a tuple.
+     * This overloaded function is used to pass a WifiChannelConfig object from which
+     * the operating channel can be deduced.
      *
-     * @param tuple the segment identifying the operating channel
+     * @param channelCfg the channel config object
      */
-    void SetOperatingChannel(const ChannelTuple& tuple);
+    void SetOperatingChannel(const WifiChannelConfig& channelCfg);
 
     /**
      * Configure whether it is prohibited to change PHY band after initialization.
@@ -1613,7 +1648,7 @@ class WIFI_EXPORT WifiPhy : public Object
     WifiStandard m_standard;                    //!< WifiStandard
     WifiModulationClass m_maxModClassSupported; //!< max modulation class supported
     WifiPhyBand m_band;                         //!< WifiPhyBand
-    ChannelSegments m_channelSettings; //!< Store operating channel settings until initialization
+    WifiChannelConfig m_channelCfg; //!< Store operating channel config until initialization
     WifiPhyOperatingChannel m_operatingChannel; //!< Operating channel
     bool m_fixedPhyBand; //!< True to prohibit changing PHY band after initialization
 
