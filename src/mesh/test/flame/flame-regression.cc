@@ -36,7 +36,7 @@ FlameRegressionTest::FlameRegressionTest()
       m_nodes(nullptr),
       m_time(Seconds(10)),
       m_sentPktsCounter(0),
-      m_serverPktsReceived(0)
+      m_receivedPktsCounter(0)
 {
 }
 
@@ -179,7 +179,7 @@ FlameRegressionTest::CheckResults()
     std::cout << "Skipping FLAME protocol validation - interface access issues" << std::endl;
 
     // 3. Verify data transmission occurred
-    NS_TEST_ASSERT_MSG_GT(m_serverPktsReceived, 0, "Server should have received packets");
+    NS_TEST_ASSERT_MSG_GT(m_receivedPktsCounter, 0, "Server should have received packets");
     NS_TEST_ASSERT_MSG_GT(m_sentPktsCounter, 0, "Client should have sent packets");
 
     // 4. Check that mesh network is properly configured
@@ -210,7 +210,7 @@ FlameRegressionTest::HandleReadServer(Ptr<Socket> socket)
     Address from;
     while ((packet = socket->RecvFrom(from)))
     {
-        m_serverPktsReceived++;
+        m_receivedPktsCounter++;
         packet->RemoveAllPacketTags();
         packet->RemoveAllByteTags();
 

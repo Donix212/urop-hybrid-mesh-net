@@ -39,7 +39,7 @@ HwmpDoRfRegressionTest::HwmpDoRfRegressionTest()
       m_sentPktsCounterA(0),
       m_sentPktsCounterB(0),
       m_sentPktsCounterC(0),
-      m_serverPktsReceived(0)
+      m_receivedPktsCounter(0)
 {
 }
 
@@ -204,7 +204,7 @@ HwmpDoRfRegressionTest::CheckResults()
     std::cout << "Skipping HWMP routing table validation - interface access issues" << std::endl;
 
     // 3. Verify data transmission occurred
-    NS_TEST_ASSERT_MSG_GT(m_serverPktsReceived, 0, "Server should have received packets");
+    NS_TEST_ASSERT_MSG_GT(m_receivedPktsCounter, 0, "Server should have received packets");
     NS_TEST_ASSERT_MSG_GT(m_sentPktsCounterA + m_sentPktsCounterB + m_sentPktsCounterC,
                           0,
                           "Clients should have sent packets");
@@ -267,7 +267,7 @@ HwmpDoRfRegressionTest::HandleReadServer(Ptr<Socket> socket)
     Address from;
     while ((packet = socket->RecvFrom(from)))
     {
-        m_serverPktsReceived++;
+        m_receivedPktsCounter++;
         packet->RemoveAllPacketTags();
         packet->RemoveAllByteTags();
 

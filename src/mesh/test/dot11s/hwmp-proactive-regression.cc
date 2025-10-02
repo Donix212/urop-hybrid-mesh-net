@@ -40,7 +40,7 @@ HwmpProactiveRegressionTest::HwmpProactiveRegressionTest()
       m_nodes(nullptr),
       m_time(Seconds(5)),
       m_sentPktsCounter(0),
-      m_serverPktsReceived(0)
+      m_receivedPktsCounter(0)
 {
 }
 
@@ -194,7 +194,7 @@ HwmpProactiveRegressionTest::CheckResults()
 
     // In proactive mode, check that the routing table exists
     // 3. Verify data transmission occurred
-    NS_TEST_ASSERT_MSG_GT(m_serverPktsReceived, 0, "Server should have received packets");
+    NS_TEST_ASSERT_MSG_GT(m_receivedPktsCounter, 0, "Server should have received packets");
     NS_TEST_ASSERT_MSG_GT(m_sentPktsCounter, 0, "Client should have sent packets");
 
     // 4. Check that peer links were established
@@ -223,7 +223,7 @@ HwmpProactiveRegressionTest::HandleReadServer(Ptr<Socket> socket)
     Address from;
     while ((packet = socket->RecvFrom(from)))
     {
-        m_serverPktsReceived++;
+        m_receivedPktsCounter++;
         packet->RemoveAllPacketTags();
         packet->RemoveAllByteTags();
 

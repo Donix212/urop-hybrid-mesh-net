@@ -79,7 +79,7 @@ class HwmpProactiveRegressionTest : public TestCase
     /// sent packets counter
     uint32_t m_sentPktsCounter;
     /// received packets counter on server
-    uint32_t m_serverPktsReceived;
+    uint32_t m_receivedPktsCounter;
 
     /**
      * Send data

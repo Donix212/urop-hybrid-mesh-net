@@ -102,7 +102,7 @@ class HwmpDoRfRegressionTest : public TestCase
     /// sent packets counter C
     uint32_t m_sentPktsCounterC;
     /// received packets counter on server
-    uint32_t m_serverPktsReceived;
+    uint32_t m_receivedPktsCounter;
 
     /**
      * Send data A
