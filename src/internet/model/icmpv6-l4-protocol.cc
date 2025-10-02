@@ -11,6 +11,7 @@
 
 #include "icmpv6-l4-protocol.h"
 
+#include "icmp-socket-factory-impl.h"
 #include "ipv4-interface.h"
 #include "ipv6-interface.h"
 #include "ipv6-l3-protocol.h"
@@ -146,7 +147,8 @@ Icmpv6L4Protocol::GetTypeId()
 }
 
 Icmpv6L4Protocol::Icmpv6L4Protocol()
-    : m_node(nullptr)
+    : m_node(nullptr),
+      ping_port_rover(0)
 {
     NS_LOG_FUNCTION(this);
 }
@@ -154,6 +156,8 @@ Icmpv6L4Protocol::Icmpv6L4Protocol()
 Icmpv6L4Protocol::~Icmpv6L4Protocol()
 {
     NS_LOG_FUNCTION(this);
+    NS_ASSERT(!m_node);
+    NS_ASSERT(m_sockets.empty());
 }
 
 void
@@ -197,6 +201,16 @@ Icmpv6L4Protocol::NotifyNewAggregate()
             {
                 SetNode(node);
                 ipv6->Insert(this);
+
+                Ptr<IcmpSocketFactoryImpl> icmpFactory = ipv6->GetObject<IcmpSocketFactoryImpl>();
+                if (!icmpFactory)
+                {
+                    icmpFactory = CreateObject<IcmpSocketFactoryImpl>();
+                    ipv6->AggregateObject(icmpFactory);
+                }
+
+                icmpFactory->SetNode(m_node);
+
                 SetDownTarget6(MakeCallback(&Ipv6::Send, ipv6));
             }
         }
@@ -237,6 +251,32 @@ Icmpv6L4Protocol::GetVersion() const
 {
     NS_LOG_FUNCTION(this);
     return 1;
+}
+
+bool
+Icmpv6L4Protocol::RemoveSocket(Ptr<IcmpSocketImpl> socket)
+{
+    NS_LOG_FUNCTION(this << socket);
+
+    const auto id = socket->GetIdentifier();
+    auto it = m_sockets.find(id);
+    const bool found = (it != m_sockets.end());
+    if (found)
+    {
+        m_sockets.erase(it);
+    }
+    return found;
+}
+
+void
+Icmpv6L4Protocol::ForwardToIcmpSocket(Ptr<Packet> p,
+                                      Ipv6Header header,
+                                      Ptr<Ipv6Interface> incomingInterface)
+{
+    for (auto socket : m_sockets)
+    {
+        socket.second->ForwardUp(p, header, incomingInterface);
+    }
 }
 
 bool
@@ -295,9 +335,10 @@ Icmpv6L4Protocol::Receive(Ptr<Packet> packet,
     Ptr<Packet> p = packet->Copy();
     Ptr<Ipv6> ipv6 = m_node->GetObject<Ipv6>();
 
-    /* very ugly! try to find something better in the future */
-    uint8_t type;
-    p->CopyData(&type, sizeof(type));
+    Icmpv6Header icmp;
+    p->PeekHeader(icmp);
+
+    uint8_t type = icmp.GetType();
 
     switch (type)
     {
@@ -329,18 +370,19 @@ Icmpv6L4Protocol::Receive(Ptr<Packet> packet,
         // EchoReply does not contain any info about L4
         // so we can not forward it up.
         /// @todo implement request / reply consistency check.
+        ForwardToIcmpSocket(packet, header, interface);
         break;
     case Icmpv6Header::ICMPV6_ERROR_DESTINATION_UNREACHABLE:
-        HandleDestinationUnreachable(p, header.GetSource(), header.GetDestination(), interface);
+        HandleDestinationUnreachable(p, header, interface);
         break;
     case Icmpv6Header::ICMPV6_ERROR_PACKET_TOO_BIG:
-        HandlePacketTooBig(p, header.GetSource(), header.GetDestination(), interface);
+        HandlePacketTooBig(p, header, interface);
         break;
     case Icmpv6Header::ICMPV6_ERROR_TIME_EXCEEDED:
-        HandleTimeExceeded(p, header.GetSource(), header.GetDestination(), interface);
+        HandleTimeExceeded(p, header, interface);
         break;
     case Icmpv6Header::ICMPV6_ERROR_PARAMETER_ERROR:
-        HandleParameterError(p, header.GetSource(), header.GetDestination(), interface);
+        HandleParameterError(p, header, interface);
         break;
     default:
         NS_LOG_LOGIC("Unknown ICMPv6 message type=" << type);
@@ -1090,11 +1132,11 @@ Icmpv6L4Protocol::HandleRedirection(Ptr<Packet> packet,
 
 void
 Icmpv6L4Protocol::HandleDestinationUnreachable(Ptr<Packet> p,
-                                               const Ipv6Address& src,
-                                               const Ipv6Address& dst,
+                                               Ipv6Header incomingHeader,
                                                Ptr<Ipv6Interface> interface)
 {
-    NS_LOG_FUNCTION(this << *p << src << dst << interface);
+    NS_LOG_FUNCTION(this << *p << incomingHeader.GetSource() << incomingHeader.GetDestination()
+                         << interface);
     Ptr<Packet> pkt = p->Copy();
 
     Icmpv6DestinationUnreachable unreach;
@@ -1106,17 +1148,42 @@ Icmpv6L4Protocol::HandleDestinationUnreachable(Ptr<Packet> p,
         pkt->RemoveHeader(ipHeader);
         uint8_t payload[8];
         pkt->CopyData(payload, 8);
-        Forward(src, unreach, unreach.GetCode(), ipHeader, payload);
+        Forward(incomingHeader.GetSource(), unreach, unreach.GetCode(), ipHeader, payload);
+
+        Ptr<Packet> errorPacket = ParseError(payload, unreach.GetType(), unreach.GetCode());
+        ForwardToIcmpSocket(errorPacket, ipHeader, interface);
     }
+}
+
+Ptr<Packet>
+Icmpv6L4Protocol::ParseError(uint8_t payload[8], uint8_t errorType, uint8_t errorCode)
+{
+    uint8_t type = errorType;
+    uint8_t code = errorCode;
+    uint16_t identifier = (payload[4] << 8) + payload[5];
+    uint16_t sequenceNumber = (payload[6] << 8) + payload[7];
+
+    Ptr<Packet> packet = Create<Packet>();
+
+    Icmpv6Echo icmp; // Stores the error Type, error Code, along with the identifier and
+                     // the sequence number of the dropped ICMPv6 Packet
+
+    icmp.SetType(type);
+    icmp.SetCode(code);
+    icmp.SetId(identifier);
+    icmp.SetSeq(sequenceNumber);
+    packet->AddHeader(icmp);
+
+    return packet;
 }
 
 void
 Icmpv6L4Protocol::HandleTimeExceeded(Ptr<Packet> p,
-                                     const Ipv6Address& src,
-                                     const Ipv6Address& dst,
+                                     Ipv6Header incomingHeader,
                                      Ptr<Ipv6Interface> interface)
 {
-    NS_LOG_FUNCTION(this << *p << src << dst << interface);
+    NS_LOG_FUNCTION(this << *p << incomingHeader.GetSource() << incomingHeader.GetDestination()
+                         << interface);
     Ptr<Packet> pkt = p->Copy();
 
     Icmpv6TimeExceeded timeexceeded;
@@ -1125,21 +1192,29 @@ Icmpv6L4Protocol::HandleTimeExceeded(Ptr<Packet> p,
     Ipv6Header ipHeader;
     if (pkt->GetSize() > ipHeader.GetSerializedSize())
     {
-        Ipv6Header ipHeader;
         pkt->RemoveHeader(ipHeader);
         uint8_t payload[8];
         pkt->CopyData(payload, 8);
-        Forward(src, timeexceeded, timeexceeded.GetCode(), ipHeader, payload);
+
+        Forward(incomingHeader.GetSource(),
+                timeexceeded,
+                timeexceeded.GetCode(),
+                ipHeader,
+                payload);
+
+        Ptr<Packet> errorPacket =
+            ParseError(payload, timeexceeded.GetType(), timeexceeded.GetCode());
+        ForwardToIcmpSocket(errorPacket, ipHeader, interface);
     }
 }
 
 void
 Icmpv6L4Protocol::HandlePacketTooBig(Ptr<Packet> p,
-                                     const Ipv6Address& src,
-                                     const Ipv6Address& dst,
+                                     Ipv6Header incomingHeader,
                                      Ptr<Ipv6Interface> interface)
 {
-    NS_LOG_FUNCTION(this << *p << src << dst << interface);
+    NS_LOG_FUNCTION(this << *p << incomingHeader.GetSource() << incomingHeader.GetDestination()
+                         << interface);
     Ptr<Packet> pkt = p->Copy();
 
     Icmpv6TooBig tooBig;
@@ -1155,17 +1230,20 @@ Icmpv6L4Protocol::HandlePacketTooBig(Ptr<Packet> p,
         Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
         ipv6->SetPmtu(ipHeader.GetDestination(), tooBig.GetMtu());
 
-        Forward(src, tooBig, tooBig.GetMtu(), ipHeader, payload);
+        Forward(incomingHeader.GetSource(), tooBig, tooBig.GetMtu(), ipHeader, payload);
+
+        Ptr<Packet> errorPacket = ParseError(payload, tooBig.GetType(), tooBig.GetCode());
+        ForwardToIcmpSocket(errorPacket, ipHeader, interface);
     }
 }
 
 void
 Icmpv6L4Protocol::HandleParameterError(Ptr<Packet> p,
-                                       const Ipv6Address& src,
-                                       const Ipv6Address& dst,
+                                       Ipv6Header incomingHeader,
                                        Ptr<Ipv6Interface> interface)
 {
-    NS_LOG_FUNCTION(this << *p << src << dst << interface);
+    NS_LOG_FUNCTION(this << *p << incomingHeader.GetSource() << incomingHeader.GetDestination()
+                         << interface);
     Ptr<Packet> pkt = p->Copy();
 
     Icmpv6ParameterError paramErr;
@@ -1177,7 +1255,10 @@ Icmpv6L4Protocol::HandleParameterError(Ptr<Packet> p,
         pkt->RemoveHeader(ipHeader);
         uint8_t payload[8];
         pkt->CopyData(payload, 8);
-        Forward(src, paramErr, paramErr.GetCode(), ipHeader, payload);
+        Forward(incomingHeader.GetSource(), paramErr, paramErr.GetCode(), ipHeader, payload);
+
+        Ptr<Packet> errorPacket = ParseError(payload, paramErr.GetType(), paramErr.GetCode());
+        ForwardToIcmpSocket(errorPacket, ipHeader, interface);
     }
 }
 
@@ -1823,6 +1904,51 @@ Icmpv6L4Protocol::Lookup(Ptr<Packet> p,
     }
 
     return false;
+}
+
+bool
+Icmpv6L4Protocol::IsIdInUse(uint16_t identifier) const
+{
+    return m_sockets.find(identifier) != m_sockets.end();
+}
+
+uint16_t
+Icmpv6L4Protocol::AllocateId()
+{
+    uint16_t portRover = ping_port_rover;
+    uint16_t start = portRover;
+    portRover = (portRover + 1) % 0xFFFF;
+
+    while (portRover != start)
+    { // Complete cycle across the id's available
+        if (portRover == 0)
+        {
+            portRover++;
+        }
+        if (!IsIdInUse(portRover))
+        {
+            ping_port_rover = portRover;
+            return portRover;
+        }
+        portRover = (portRover + 1) % 0xFFFF;
+    }
+
+    return 0;
+}
+
+bool
+Icmpv6L4Protocol::BindId(uint16_t id, Ptr<IcmpSocketImpl> sock)
+{
+    if (id == 0)
+    {
+        return false;
+    }
+    if (m_sockets.find(id) != m_sockets.end())
+    {
+        return false;
+    }
+    m_sockets[id] = sock;
+    return true;
 }
 
 void

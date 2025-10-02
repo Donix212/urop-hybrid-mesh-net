@@ -11,6 +11,7 @@
 #ifndef ICMPV6_L4_PROTOCOL_H
 #define ICMPV6_L4_PROTOCOL_H
 
+#include "icmp-socket-impl.h"
 #include "icmpv6-header.h"
 #include "ip-l4-protocol.h"
 #include "ndisc-cache.h"
@@ -28,6 +29,7 @@ class NetDevice;
 class Node;
 class Packet;
 class TraceContext;
+class IcmpSocketImpl;
 
 /**
  * @ingroup ipv6
@@ -129,6 +131,13 @@ class Icmpv6L4Protocol : public IpL4Protocol
      * @return version
      */
     virtual int GetVersion() const;
+
+    /**
+     * @brief Method for removing a socket from the set of sockets
+     * @param socket The socket to be removed from the set of sockets
+     * @returns True if the sockets exists, otherwise false
+     */
+    bool RemoveSocket(Ptr<IcmpSocketImpl> socket);
 
     /**
      * @brief Send a packet via ICMPv6, note that packet already contains ICMPv6 header.
@@ -422,6 +431,24 @@ class Icmpv6L4Protocol : public IpL4Protocol
         m_startDhcpv6 = cb;
     }
 
+    /**
+     * @brief Allocates a new identifier for the socket
+     * Updates the ping_port_rover to (identifier allocated + 1)
+     *
+     * @returns An identifier that has not been bound by a socket
+     */
+    uint16_t AllocateId();
+
+    /**
+     * @brief Binds the socket to the identifier
+     *
+     * @param id The identifier to bind to
+     * @param sock The socket that has to bind to the id
+     *
+     * @return True if bind successful, otherwise false
+     */
+    bool BindId(uint16_t id, Ptr<IcmpSocketImpl> sock);
+
   protected:
     /**
      * @brief Dispose this object.
@@ -527,49 +554,37 @@ class Icmpv6L4Protocol : public IpL4Protocol
     /**
      * @brief Receive Destination Unreachable method.
      * @param p the packet
-     * @param src source address
-     * @param dst destination address
+     * @param incomingHeader the IPv6 header associates with the packet
      * @param interface the interface from which the packet is coming
      */
     void HandleDestinationUnreachable(Ptr<Packet> p,
-                                      const Ipv6Address& src,
-                                      const Ipv6Address& dst,
+                                      Ipv6Header incomingHeader,
                                       Ptr<Ipv6Interface> interface);
 
     /**
      * @brief Receive Time Exceeded method.
      * @param p the packet
-     * @param src source address
-     * @param dst destination address
+     * @param incomingHeader the IPv6 header associated with the packet
      * @param interface the interface from which the packet is coming
      */
-    void HandleTimeExceeded(Ptr<Packet> p,
-                            const Ipv6Address& src,
-                            const Ipv6Address& dst,
-                            Ptr<Ipv6Interface> interface);
+    void HandleTimeExceeded(Ptr<Packet> p, Ipv6Header incomingHeader, Ptr<Ipv6Interface> interface);
 
     /**
      * @brief Receive Packet Too Big method.
      * @param p the packet
-     * @param src source address
-     * @param dst destination address
+     * @param incomingHeader the IPv6 header associated with the packet
      * @param interface the interface from which the packet is coming
      */
-    void HandlePacketTooBig(Ptr<Packet> p,
-                            const Ipv6Address& src,
-                            const Ipv6Address& dst,
-                            Ptr<Ipv6Interface> interface);
+    void HandlePacketTooBig(Ptr<Packet> p, Ipv6Header incomingHeader, Ptr<Ipv6Interface> interface);
 
     /**
      * @brief Receive Parameter Error method.
      * @param p the packet
-     * @param src source address
-     * @param dst destination address
+     * @param incomingHeader the IPv6 header associated with the packet
      * @param interface the interface from which the packet is coming
      */
     void HandleParameterError(Ptr<Packet> p,
-                              const Ipv6Address& src,
-                              const Ipv6Address& dst,
+                              Ipv6Header incomingHeader,
                               Ptr<Ipv6Interface> interface);
 
     /**
@@ -597,6 +612,32 @@ class Icmpv6L4Protocol : public IpL4Protocol
     // From IpL4Protocol
     IpL4Protocol::DownTargetCallback GetDownTarget() const override;
     IpL4Protocol::DownTargetCallback6 GetDownTarget6() const override;
+
+    /**
+     * @brief Parse an ICMP error message
+     * @param payload First 8 bytes of the sent packet (sent ICMP header)
+     * @param errorType ICMPv6 type.
+     * @param errorCode ICMPv6 code for that type.
+     *
+     * @returns Parsed packet containing an ICMPv6Echo header with the values set
+     */
+    Ptr<Packet> ParseError(uint8_t payload[8], uint8_t errorType, uint8_t errorCode);
+    /**
+     * @brief Forward the ICMPv6 packet to sockets
+     *
+     * @param packet The packet to be sent up
+     * @param ip the IP header carried by ICMP
+     * @param interface the Ipv4Interface on which the packet arrived
+     */
+    void ForwardToIcmpSocket(Ptr<Packet> packet, Ipv6Header ip, Ptr<Ipv6Interface> interface);
+
+    /**
+     * @brief Checks if there exists a socket with this identifier
+     *
+     * @param identifier The identifier to check for
+     * @return true if exists, false otherwise
+     */
+    bool IsIdInUse(uint16_t identifier) const;
 
     /**
      * @brief Always do DAD ?
@@ -715,6 +756,8 @@ class Icmpv6L4Protocol : public IpL4Protocol
      * Includes the interface on which the RA was received.
      */
     Callback<void, uint32_t> m_startDhcpv6;
+    std::unordered_map<uint16_t, Ptr<IcmpSocketImpl>> m_sockets; //!< All the sockets on this node
+    uint16_t ping_port_rover; //!< Stores the latest Identifier Allocated + 1
 };
 
 } /* namespace ns3 */

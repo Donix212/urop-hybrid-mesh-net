@@ -18,10 +18,12 @@
 #include "ns3/assert.h"
 #include "ns3/boolean.h"
 #include "ns3/enum.h"
+#include "ns3/icmp-packet-info-tag.h"
 #include "ns3/icmpv4.h"
 #include "ns3/icmpv6-header.h"
 #include "ns3/inet-socket-address.h"
 #include "ns3/ipv4-address.h"
+#include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/ipv6-extension-header.h"
 #include "ns3/ipv6-header.h"
 #include "ns3/ipv6-l3-protocol.h"
@@ -98,6 +100,12 @@ Ping::GetTypeId()
                           UintegerValue(0),
                           MakeUintegerAccessor(&Ping::m_tos),
                           MakeUintegerChecker<uint8_t>())
+            .AddAttribute("UseRaw",
+                          "If true, send via Raw socket factory; "
+                          "otherwise use IcmpSocketFactory.",
+                          BooleanValue(false),
+                          MakeBooleanAccessor(&Ping::m_useRaw),
+                          MakeBooleanChecker())
             .AddTraceSource("Tx",
                             "The sequence number and ICMP echo response packet.",
                             MakeTraceSourceAccessor(&Ping::m_txTrace),
@@ -165,199 +173,379 @@ Ping::Receive(Ptr<Socket> socket)
     while (m_socket->GetRxAvailable() > 0)
     {
         Address from;
-        Ptr<Packet> packet = m_socket->RecvFrom(from);
+
+        Ptr<Packet> packet = socket->RecvFrom(from);
+
+        IcmpPacketInfoTag icmpTag;
+        packet->RemovePacketTag(icmpTag);
+
         uint32_t recvSize = packet->GetSize();
         NS_LOG_DEBUG("recv " << recvSize << " bytes " << *packet);
-
-        if (InetSocketAddress::IsMatchingType(from))
+        if (m_useRaw)
         {
-            InetSocketAddress realFrom = InetSocketAddress::ConvertFrom(from);
-            Ipv4Header ipv4Hdr;
-            packet->RemoveHeader(ipv4Hdr);
-            recvSize -= ipv4Hdr.GetSerializedSize();
-            Icmpv4Header icmp;
-            packet->RemoveHeader(icmp);
-
-            switch (icmp.GetType())
+            if (InetSocketAddress::IsMatchingType(from))
             {
-            case Icmpv4Header::ICMPV4_ECHO_REPLY: {
-                Icmpv4Echo echo;
-                packet->RemoveHeader(echo);
+                InetSocketAddress realFrom = InetSocketAddress::ConvertFrom(from);
+                Ipv4Header ipv4Hdr;
+                packet->RemoveHeader(ipv4Hdr);
+                recvSize -= ipv4Hdr.GetSerializedSize();
+                Icmpv4Header icmp;
+                packet->RemoveHeader(icmp);
 
-                if (echo.GetIdentifier() != PING_ID)
+                switch (icmp.GetType())
                 {
-                    return;
-                }
+                case Icmpv4Header::ICMPV4_ECHO_REPLY: {
+                    Icmpv4Echo echo;
+                    packet->RemoveHeader(echo);
 
-                NS_LOG_INFO("Received Echo Reply size  = "
-                            << std::dec << recvSize << " bytes from " << realFrom.GetIpv4()
-                            << " id =  " << echo.GetIdentifier()
-                            << " seq = " << echo.GetSequenceNumber()
-                            << " TTL = " << static_cast<uint16_t>(ipv4Hdr.GetTtl()));
-
-                uint32_t dataSize = echo.GetDataSize();
-                if (dataSize < 8)
-                {
-                    NS_LOG_INFO("Packet too short, discarding");
-                    return;
-                }
-                auto buf = new uint8_t[dataSize];
-                echo.GetData(buf);
-                uint64_t appSignature = Read64(buf);
-                delete[] buf;
-
-                if (appSignature == m_appSignature)
-                {
-                    Time sendTime = m_sent.at(echo.GetSequenceNumber()).txTime;
-                    NS_ASSERT(Simulator::Now() >= sendTime);
-                    Time delta = Simulator::Now() - sendTime;
-
-                    bool dupReply = false;
-                    if (m_sent.at(echo.GetSequenceNumber()).acked)
+                    if (echo.GetIdentifier() != PING_ID)
                     {
-                        m_duplicate++;
-                        dupReply = true;
-                    }
-                    else
-                    {
-                        m_recv++;
-                        m_sent.at(echo.GetSequenceNumber()).acked = true;
+                        return;
                     }
 
-                    m_avgRtt.Update(delta.GetMilliSeconds());
-                    m_rttTrace(echo.GetSequenceNumber(), delta);
+                    NS_LOG_INFO("Received Echo Reply size  = "
+                                << std::dec << recvSize << " bytes from " << realFrom.GetIpv4()
+                                << " id =  " << echo.GetIdentifier()
+                                << " seq = " << echo.GetSequenceNumber()
+                                << " TTL = " << static_cast<uint16_t>(ipv4Hdr.GetTtl()));
 
-                    if (m_verbose == VerboseMode::VERBOSE)
+                    uint32_t dataSize = echo.GetDataSize();
+                    if (dataSize < 8)
                     {
-                        std::cout << recvSize << " bytes from " << realFrom.GetIpv4() << ":"
-                                  << " icmp_seq=" << echo.GetSequenceNumber()
-                                  << " ttl=" << static_cast<uint16_t>(ipv4Hdr.GetTtl())
-                                  << " time=" << delta.GetMicroSeconds() / 1000.0 << " ms";
-                        if (dupReply && !m_multipleDestinations)
+                        NS_LOG_INFO("Packet too short, discarding");
+                        return;
+                    }
+                    auto buf = new uint8_t[dataSize];
+                    echo.GetData(buf);
+                    uint64_t appSignature = Read64(buf);
+                    delete[] buf;
+
+                    if (appSignature == m_appSignature)
+                    {
+                        Time sendTime = m_sent.at(echo.GetSequenceNumber()).txTime;
+                        NS_ASSERT(Simulator::Now() >= sendTime);
+                        Time delta = Simulator::Now() - sendTime;
+
+                        bool dupReply = false;
+                        if (m_sent.at(echo.GetSequenceNumber()).acked)
                         {
-                            std::cout << " (DUP!)";
+                            m_duplicate++;
+                            dupReply = true;
                         }
-                        std::cout << "\n";
+                        else
+                        {
+                            m_recv++;
+                            m_sent.at(echo.GetSequenceNumber()).acked = true;
+                        }
+
+                        m_avgRtt.Update(delta.GetMilliSeconds());
+                        m_rttTrace(echo.GetSequenceNumber(), delta);
+
+                        if (m_verbose == VerboseMode::VERBOSE)
+                        {
+                            std::cout << recvSize << " bytes from " << realFrom.GetIpv4() << ":"
+                                      << " icmp_seq=" << echo.GetSequenceNumber()
+                                      << " ttl=" << static_cast<uint16_t>(ipv4Hdr.GetTtl())
+                                      << " time=" << delta.GetMicroSeconds() / 1000.0 << " ms";
+                            if (dupReply && !m_multipleDestinations)
+                            {
+                                std::cout << " (DUP!)";
+                            }
+                            std::cout << "\n";
+                        }
                     }
+
+                    break;
                 }
+                case Icmpv4Header::ICMPV4_DEST_UNREACH: {
+                    Icmpv4DestinationUnreachable destUnreach;
+                    packet->RemoveHeader(destUnreach);
 
-                break;
-            }
-            case Icmpv4Header::ICMPV4_DEST_UNREACH: {
-                Icmpv4DestinationUnreachable destUnreach;
-                packet->RemoveHeader(destUnreach);
+                    NS_LOG_INFO("Received Destination Unreachable from " << realFrom.GetIpv4());
+                    break;
+                }
+                case Icmpv4Header::ICMPV4_TIME_EXCEEDED: {
+                    Icmpv4TimeExceeded timeExceeded;
+                    packet->RemoveHeader(timeExceeded);
 
-                NS_LOG_INFO("Received Destination Unreachable from " << realFrom.GetIpv4());
-                break;
+                    NS_LOG_INFO("Received Time Exceeded from " << realFrom.GetIpv4());
+                    break;
+                }
+                default:
+                    break;
+                }
             }
-            case Icmpv4Header::ICMPV4_TIME_EXCEEDED: {
-                Icmpv4TimeExceeded timeExceeded;
-                packet->RemoveHeader(timeExceeded);
+            else if (Inet6SocketAddress::IsMatchingType(from))
+            {
+                Inet6SocketAddress realFrom = Inet6SocketAddress::ConvertFrom(from);
+                Ipv6Header ipv6Hdr;
 
-                NS_LOG_INFO("Received Time Exceeded from " << realFrom.GetIpv4());
-                break;
-            }
-            default:
-                break;
+                // We need the IP interface index.
+                Ipv6PacketInfoTag infoTag;
+                packet->RemovePacketTag(infoTag);
+                Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
+                Ipv6Address myAddr = infoTag.GetAddress();
+                int32_t ipIfIndex = ipv6->GetInterfaceForAddress(myAddr);
+
+                packet->RemoveHeader(ipv6Hdr);
+                recvSize -= ipv6Hdr.GetSerializedSize();
+                uint8_t type;
+                packet->CopyData(&type, sizeof(type));
+
+                switch (type)
+                {
+                case Icmpv6Header::ICMPV6_ECHO_REPLY: {
+                    Icmpv6Echo echo(false);
+                    packet->RemoveHeader(echo);
+
+                    if (echo.GetId() != PING_ID)
+                    {
+                        return;
+                    }
+
+                    NS_LOG_INFO("Received Echo Reply size  = "
+                                << std::dec << recvSize << " bytes from " << realFrom.GetIpv6()
+                                << " id =  " << echo.GetId() << " seq = " << echo.GetSeq()
+                                << " Hop Count = " << static_cast<uint16_t>(ipv6Hdr.GetHopLimit()));
+
+                    uint32_t dataSize = packet->GetSize();
+                    if (dataSize < 8)
+                    {
+                        NS_LOG_INFO("Packet too short, discarding");
+                        return;
+                    }
+                    auto buf = new uint8_t[dataSize];
+                    packet->CopyData(buf, dataSize);
+                    uint64_t appSignature = Read64(buf);
+                    delete[] buf;
+
+                    if (appSignature == m_appSignature)
+                    {
+                        Time sendTime = m_sent.at(echo.GetSeq()).txTime;
+                        NS_ASSERT(Simulator::Now() >= sendTime);
+                        Time delta = Simulator::Now() - sendTime;
+
+                        bool dupReply = false;
+                        if (m_sent.at(echo.GetSeq()).acked)
+                        {
+                            m_duplicate++;
+                            dupReply = true;
+                        }
+                        else
+                        {
+                            m_recv++;
+                            m_sent.at(echo.GetSeq()).acked = true;
+                        }
+
+                        m_avgRtt.Update(delta.GetMilliSeconds());
+                        m_rttTrace(echo.GetSeq(), delta);
+
+                        if (m_verbose == VerboseMode::VERBOSE)
+                        {
+                            std::cout << recvSize << " bytes from (" << realFrom.GetIpv6() << "):"
+                                      << " icmp_seq=" << echo.GetSeq()
+                                      << " ttl=" << static_cast<uint16_t>(ipv6Hdr.GetHopLimit())
+                                      << " time=" << delta.GetMicroSeconds() / 1000.0 << " ms";
+                            if (dupReply)
+                            {
+                                std::cout << " (DUP!)";
+                            }
+                            std::cout << "\n";
+                        }
+                    }
+                    ipv6->ReachabilityHint(ipIfIndex, realFrom.GetIpv6());
+                    break;
+                }
+                case Icmpv6Header::ICMPV6_ERROR_DESTINATION_UNREACHABLE: {
+                    Icmpv6DestinationUnreachable destUnreach;
+                    packet->RemoveHeader(destUnreach);
+
+                    NS_LOG_INFO("Received Destination Unreachable from " << realFrom.GetIpv6());
+                    break;
+                }
+                case Icmpv6Header::ICMPV6_ERROR_TIME_EXCEEDED: {
+                    Icmpv6TimeExceeded timeExceeded;
+                    packet->RemoveHeader(timeExceeded);
+
+                    NS_LOG_INFO("Received Time Exceeded from " << realFrom.GetIpv6());
+                    break;
+                }
+                default:
+                    break;
+                }
             }
         }
-        else if (Inet6SocketAddress::IsMatchingType(from))
+        else
         {
-            Inet6SocketAddress realFrom = Inet6SocketAddress::ConvertFrom(from);
-            Ipv6Header ipv6Hdr;
-
-            // We need the IP interface index.
-            Ipv6PacketInfoTag infoTag;
-            packet->RemovePacketTag(infoTag);
-            Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
-            Ipv6Address myAddr = infoTag.GetAddress();
-            int32_t ipIfIndex = ipv6->GetInterfaceForAddress(myAddr);
-
-            packet->RemoveHeader(ipv6Hdr);
-            recvSize -= ipv6Hdr.GetSerializedSize();
-            uint8_t type;
-            packet->CopyData(&type, sizeof(type));
-
-            switch (type)
+            if (InetSocketAddress::IsMatchingType(from))
             {
-            case Icmpv6Header::ICMPV6_ECHO_REPLY: {
-                Icmpv6Echo echo(false);
-                packet->RemoveHeader(echo);
+                Ipv4PacketInfoTag ipTag;
+                packet->RemovePacketTag(ipTag);
 
-                if (echo.GetId() != PING_ID)
+                InetSocketAddress realFrom = InetSocketAddress::ConvertFrom(from);
+
+                uint8_t type = icmpTag.GetType();
+                switch (type)
                 {
-                    return;
-                }
-
-                NS_LOG_INFO("Received Echo Reply size  = "
-                            << std::dec << recvSize << " bytes from " << realFrom.GetIpv6()
-                            << " id =  " << echo.GetId() << " seq = " << echo.GetSeq()
-                            << " Hop Count = " << static_cast<uint16_t>(ipv6Hdr.GetHopLimit()));
-
-                uint32_t dataSize = packet->GetSize();
-                if (dataSize < 8)
-                {
-                    NS_LOG_INFO("Packet too short, discarding");
-                    return;
-                }
-                auto buf = new uint8_t[dataSize];
-                packet->CopyData(buf, dataSize);
-                uint64_t appSignature = Read64(buf);
-                delete[] buf;
-
-                if (appSignature == m_appSignature)
-                {
-                    Time sendTime = m_sent.at(echo.GetSeq()).txTime;
-                    NS_ASSERT(Simulator::Now() >= sendTime);
-                    Time delta = Simulator::Now() - sendTime;
-
-                    bool dupReply = false;
-                    if (m_sent.at(echo.GetSeq()).acked)
+                case Icmpv4Header::ICMPV4_ECHO_REPLY: {
+                    if (icmpTag.GetIdentifier() != PING_ID)
                     {
-                        m_duplicate++;
-                        dupReply = true;
-                    }
-                    else
-                    {
-                        m_recv++;
-                        m_sent.at(echo.GetSeq()).acked = true;
+                        return;
                     }
 
-                    m_avgRtt.Update(delta.GetMilliSeconds());
-                    m_rttTrace(echo.GetSeq(), delta);
+                    NS_LOG_INFO("Received Echo Reply size  = "
+                                << std::dec << recvSize << " bytes from " << realFrom.GetIpv4()
+                                << " id =  " << icmpTag.GetIdentifier() << " seq = "
+                                << icmpTag.GetSequenceNumber() << " TTL = " << ipTag.GetTtl());
 
-                    if (m_verbose == VerboseMode::VERBOSE)
+                    uint32_t dataSize = recvSize;
+                    ;
+                    if (dataSize < 8)
                     {
-                        std::cout << recvSize << " bytes from (" << realFrom.GetIpv6() << "):"
-                                  << " icmp_seq=" << echo.GetSeq()
-                                  << " ttl=" << static_cast<uint16_t>(ipv6Hdr.GetHopLimit())
-                                  << " time=" << delta.GetMicroSeconds() / 1000.0 << " ms";
-                        if (dupReply)
+                        NS_LOG_INFO("Packet too short, discarding");
+                        return;
+                    }
+
+                    auto buf = new uint8_t[recvSize];
+                    packet->CopyData(buf, recvSize);
+                    uint64_t appSignature = Read64(buf);
+
+                    delete[] buf;
+
+                    if (appSignature == m_appSignature)
+                    {
+                        Time sendTime = m_sent.at(icmpTag.GetSequenceNumber()).txTime;
+                        NS_ASSERT(Simulator::Now() >= sendTime);
+                        Time delta = Simulator::Now() - sendTime;
+
+                        bool dupReply = false;
+                        if (m_sent.at(icmpTag.GetSequenceNumber()).acked)
                         {
-                            std::cout << " (DUP!)";
+                            m_duplicate++;
+                            dupReply = true;
                         }
-                        std::cout << "\n";
+                        else
+                        {
+                            m_recv++;
+                            m_sent.at(icmpTag.GetSequenceNumber()).acked = true;
+                        }
+
+                        m_avgRtt.Update(delta.GetMilliSeconds());
+                        m_rttTrace(icmpTag.GetSequenceNumber(), delta);
+
+                        if (m_verbose == VerboseMode::VERBOSE)
+                        {
+                            std::cout << recvSize << " bytes from " << realFrom.GetIpv4() << ":"
+                                      << " icmp_seq=" << icmpTag.GetSequenceNumber()
+                                      << " ttl=" << static_cast<uint16_t>(ipTag.GetTtl())
+                                      << " time=" << delta.GetMicroSeconds() / 1000.0 << " ms";
+                            if (dupReply && !m_multipleDestinations)
+                            {
+                                std::cout << " (DUP!)";
+                            }
+                            std::cout << "\n";
+                        }
                     }
+
+                    break;
                 }
-                ipv6->ReachabilityHint(ipIfIndex, realFrom.GetIpv6());
-                break;
+                case Icmpv4Header::ICMPV4_DEST_UNREACH: {
+                    NS_LOG_INFO("Received Destination Unreachable from " << realFrom.GetIpv4());
+                    break;
+                }
+                case Icmpv4Header::ICMPV4_TIME_EXCEEDED: {
+                    NS_LOG_INFO("Received Time Exceeded from " << realFrom.GetIpv4());
+                    break;
+                }
+                default:
+                    break;
+                }
             }
-            case Icmpv6Header::ICMPV6_ERROR_DESTINATION_UNREACHABLE: {
-                Icmpv6DestinationUnreachable destUnreach;
-                packet->RemoveHeader(destUnreach);
+            else if (Inet6SocketAddress::IsMatchingType(from))
+            {
+                Inet6SocketAddress realFrom = Inet6SocketAddress::ConvertFrom(from);
 
-                NS_LOG_INFO("Received Destination Unreachable from " << realFrom.GetIpv6());
-                break;
-            }
-            case Icmpv6Header::ICMPV6_ERROR_TIME_EXCEEDED: {
-                Icmpv6TimeExceeded timeExceeded;
-                packet->RemoveHeader(timeExceeded);
+                // We need the IP interface index.
+                Ipv6PacketInfoTag infoTag;
+                packet->RemovePacketTag(infoTag);
+                Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
+                Ipv6Address myAddr = infoTag.GetAddress();
+                int32_t ipIfIndex = ipv6->GetInterfaceForAddress(myAddr);
 
-                NS_LOG_INFO("Received Time Exceeded from " << realFrom.GetIpv6());
-                break;
-            }
-            default:
-                break;
+                uint8_t type = icmpTag.GetType();
+                switch (type)
+                {
+                case Icmpv6Header::ICMPV6_ECHO_REPLY: {
+                    if (icmpTag.GetIdentifier() != PING_ID)
+                    {
+                        return;
+                    }
+
+                    uint8_t ttl = infoTag.GetHoplimit();
+                    NS_LOG_INFO("Received Echo Reply size  = "
+                                << std::dec << recvSize << " bytes from " << realFrom.GetIpv6()
+                                << " id =  " << icmpTag.GetIdentifier()
+                                << " seq = " << icmpTag.GetSequenceNumber()
+                                << " Hop Count = " << static_cast<uint16_t>(ttl));
+
+                    if (recvSize < 8)
+                    {
+                        NS_LOG_INFO("Packet too short, discarding");
+                        return;
+                    }
+                    auto buf = new uint8_t[recvSize];
+                    packet->CopyData(buf, recvSize);
+                    uint64_t appSignature = Read64(buf);
+                    delete[] buf;
+
+                    if (appSignature == m_appSignature)
+                    {
+                        Time sendTime = m_sent.at(icmpTag.GetSequenceNumber()).txTime;
+                        NS_ASSERT(Simulator::Now() >= sendTime);
+                        Time delta = Simulator::Now() - sendTime;
+
+                        bool dupReply = false;
+                        if (m_sent.at(icmpTag.GetSequenceNumber()).acked)
+                        {
+                            m_duplicate++;
+                            dupReply = true;
+                        }
+                        else
+                        {
+                            m_recv++;
+                            m_sent.at(icmpTag.GetSequenceNumber()).acked = true;
+                        }
+
+                        m_avgRtt.Update(delta.GetMilliSeconds());
+                        m_rttTrace(icmpTag.GetSequenceNumber(), delta);
+
+                        if (m_verbose == VerboseMode::VERBOSE)
+                        {
+                            std::cout << recvSize << " bytes from (" << realFrom.GetIpv6() << "):"
+                                      << " icmp_seq=" << icmpTag.GetSequenceNumber()
+                                      << " ttl=" << static_cast<uint16_t>(ttl)
+                                      << " time=" << delta.GetMicroSeconds() / 1000.0 << " ms";
+                            if (dupReply)
+                            {
+                                std::cout << " (DUP!)";
+                            }
+                            std::cout << "\n";
+                        }
+                    }
+                    ipv6->ReachabilityHint(ipIfIndex, realFrom.GetIpv6());
+                    break;
+                }
+                case Icmpv6Header::ICMPV6_ERROR_DESTINATION_UNREACHABLE: {
+                    NS_LOG_INFO("Received Destination Unreachable from " << realFrom.GetIpv6());
+                    break;
+                }
+                case Icmpv6Header::ICMPV6_ERROR_TIME_EXCEEDED: {
+                    NS_LOG_INFO("Received Time Exceeded from " << realFrom.GetIpv6());
+                    break;
+                }
+                default:
+                    break;
+                }
             }
         }
     }
@@ -431,59 +619,65 @@ Ping::Send()
     Ptr<Packet> p = Create<Packet>();
     int returnValue = 0;
 
-    if (!m_useIpv6)
+    if (!m_useRaw)
     {
-        // Using IPv4
-        Icmpv4Echo echo;
-        echo.SetSequenceNumber(m_seq);
-        echo.SetIdentifier(PING_ID);
-
-        // In the Icmpv4Echo the payload is part of the header.
-        echo.SetData(dataPacket);
-
-        p->AddHeader(echo);
-        Icmpv4Header header;
-        header.SetType(Icmpv4Header::ICMPV4_ECHO);
-        header.SetCode(0);
-        if (Node::ChecksumEnabled())
-        {
-            header.EnableChecksum();
-        }
-        p->AddHeader(header);
-        auto dest = InetSocketAddress(Ipv4Address::ConvertFrom(m_destination), 0);
-        returnValue = m_socket->SendTo(p, 0, dest);
+        returnValue = m_socket->Send(dataPacket);
     }
     else
     {
-        // Using IPv6
-        Icmpv6Echo echo(true);
-
-        echo.SetSeq(m_seq);
-        echo.SetId(PING_ID);
-
-        // In the Icmpv6Echo the payload is just the content of the packet.
-        p = dataPacket->Copy();
-
-        p->AddHeader(echo);
-
-        /* use Loose Routing (routing type 0) */
-        if (!m_routers.empty())
+        if (!m_useIpv6)
         {
-            Ipv6ExtensionLooseRoutingHeader routingHeader;
-            routingHeader.SetNextHeader(Ipv6Header::IPV6_ICMPV6);
-            routingHeader.SetTypeRouting(0);
-            routingHeader.SetSegmentsLeft(m_routers.size());
-            routingHeader.SetRoutersAddress(m_routers);
-            p->AddHeader(routingHeader);
-            m_socket->SetAttribute("Protocol", UintegerValue(Ipv6Header::IPV6_EXT_ROUTING));
+            Icmpv4Echo echo;
+            echo.SetSequenceNumber(m_seq);
+            echo.SetIdentifier(PING_ID);
+
+            echo.SetData(dataPacket);
+
+            p->AddHeader(echo);
+            Icmpv4Header header;
+            header.SetType(Icmpv4Header::ICMPV4_ECHO);
+            header.SetCode(0);
+            if (Node::ChecksumEnabled())
+            {
+                header.EnableChecksum();
+            }
+            p->AddHeader(header);
+
+            auto dest = InetSocketAddress(Ipv4Address::ConvertFrom(m_destination), 0);
+            returnValue = m_socket->SendTo(p, 0, dest);
         }
+        else
+        {
+            Icmpv6Echo echo(true);
 
-        returnValue =
-            m_socket->SendTo(p, 0, Inet6SocketAddress(Ipv6Address::ConvertFrom(m_destination), 0));
+            echo.SetSeq(m_seq);
+            echo.SetId(PING_ID);
 
-        // Loose routing could have changed (temporarily) the protocol. Set it again to receive the
-        // replies.
-        m_socket->SetAttribute("Protocol", UintegerValue(Ipv6Header::IPV6_ICMPV6));
+            p = dataPacket->Copy();
+
+            p->AddHeader(echo);
+
+            /* use Loose Routing (routing type 0) */
+            if (!m_routers.empty())
+            {
+                Ipv6ExtensionLooseRoutingHeader routingHeader;
+                routingHeader.SetNextHeader(Ipv6Header::IPV6_ICMPV6);
+                routingHeader.SetTypeRouting(0);
+                routingHeader.SetSegmentsLeft(m_routers.size());
+                routingHeader.SetRoutersAddress(m_routers);
+                p->AddHeader(routingHeader);
+                m_socket->SetAttribute("Protocol", UintegerValue(Ipv6Header::IPV6_EXT_ROUTING));
+            }
+
+            returnValue =
+                m_socket->SendTo(p,
+                                 0,
+                                 Inet6SocketAddress(Ipv6Address::ConvertFrom(m_destination), 0));
+
+            // Loose routing could have changed (temporarily) the protocol. Set it again to receive
+            // the replies.
+            m_socket->SetAttribute("Protocol", UintegerValue(Ipv6Header::IPV6_ICMPV6));
+        }
     }
     if (returnValue > 0)
     {
@@ -535,6 +729,7 @@ Ping::StartApplication()
         else if (Ipv6Address::IsMatchingType(m_destination))
         {
             Inet6SocketAddress realFrom = Ipv6Address::ConvertFrom(m_destination);
+
             std::cout << "PING " << realFrom.GetIpv6() << " - " << m_size << " bytes of data; "
                       << m_size + 48 << " bytes including ICMP and IPv6 headers.\n";
         }
@@ -546,10 +741,21 @@ Ping::StartApplication()
 
     if (Ipv4Address::IsMatchingType(m_destination))
     {
-        m_socket =
-            Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::Ipv4RawSocketFactory"));
-        NS_ASSERT_MSG(m_socket, "Ping::StartApplication: can not create socket.");
-        m_socket->SetAttribute("Protocol", UintegerValue(1)); // icmp
+        if (m_useRaw)
+        {
+            std::cout << "Here" << std::endl;
+            m_socket =
+                Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::Ipv4RawSocketFactory"));
+            NS_ASSERT_MSG(m_socket, "Ping::StartApplication: can not create socket.");
+            m_socket->SetAttribute("Protocol", UintegerValue(1));
+        }
+        else
+        {
+            m_socket =
+                Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::IcmpSocketFactory"));
+            NS_ASSERT_MSG(m_socket, "Ping::StartApplication: can not create socket.");
+            m_socket->SetRecvPktInfo(true);
+        }
         m_socket->SetRecvCallback(MakeCallback(&Ping::Receive, this));
         m_socket->SetIpTos(m_tos);
         m_useIpv6 = false;
@@ -559,12 +765,21 @@ Ping::StartApplication()
     }
     else if (Ipv6Address::IsMatchingType(m_destination))
     {
-        m_socket =
-            Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::Ipv6RawSocketFactory"));
-        NS_ASSERT_MSG(m_socket, "Ping::StartApplication: can not create socket.");
-        m_socket->SetAttribute("Protocol", UintegerValue(Ipv6Header::IPV6_ICMPV6));
+        if (m_useRaw)
+        {
+            m_socket =
+                Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::Ipv6RawSocketFactory"));
+            NS_ASSERT_MSG(m_socket, "Ping::StartApplication: can not create socket.");
+            m_socket->SetAttribute("Protocol", UintegerValue(Ipv6Header::IPV6_ICMPV6));
+        }
+        else
+        {
+            m_socket =
+                Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::IcmpSocketFactory"));
+            NS_ASSERT_MSG(m_socket, "Ping::StartApplication: can not create socket.");
+            m_socket->SetRecvPktInfo(true);
+        }
         m_socket->SetRecvCallback(MakeCallback(&Ping::Receive, this));
-        m_socket->SetRecvPktInfo(true);
         m_useIpv6 = true;
 
         Ipv6Address dst = Ipv6Address::ConvertFrom(m_destination);
@@ -577,22 +792,64 @@ Ping::StartApplication()
 
     if (!m_interfaceAddress.IsInvalid())
     {
+        // If the interface address is provided by the user
+
         if (Ipv4Address::IsMatchingType(m_interfaceAddress))
         {
-            InetSocketAddress senderInet(Ipv4Address::ConvertFrom(m_interfaceAddress));
-            int status = m_socket->Bind(senderInet);
-            NS_ASSERT_MSG(status == 0, "Failed to bind IPv4 socket");
+            if (m_useIpv6)
+            {
+                NS_ABORT_MSG("Cannot bind to IPv6 and send to IPv4");
+            }
+
+            InetSocketAddress senderInet(Ipv4Address::ConvertFrom(m_interfaceAddress), PING_ID);
+            int statusBindSender = m_socket->Bind(senderInet);
+            InetSocketAddress receiverInet(Ipv4Address::ConvertFrom(m_destination));
+
+            m_socket->Connect(receiverInet);
+
+            NS_ASSERT_MSG(statusBindSender == 0, "Failed to bind ICMPv6 sender socket");
         }
         else if (Ipv6Address::IsMatchingType(m_interfaceAddress))
         {
-            Inet6SocketAddress senderInet =
-                Inet6SocketAddress(Ipv6Address::ConvertFrom(m_interfaceAddress));
-            int status = m_socket->Bind(senderInet);
-            NS_ASSERT_MSG(status == 0, "Failed to bind IPv6 socket");
+            if (!m_useIpv6)
+            {
+                NS_ABORT_MSG("Cannot bind to IPv4 and send to IPv6");
+            }
+
+            Inet6SocketAddress senderInet(Ipv6Address::ConvertFrom(m_interfaceAddress), PING_ID);
+            int statusBindSender = m_socket->Bind(senderInet);
+            Inet6SocketAddress receiverInet(Ipv6Address::ConvertFrom(m_destination));
+
+            m_socket->Connect(receiverInet);
+
+            NS_ASSERT_MSG(statusBindSender == 0, "Failed to bind IPv6 sender socket");
+        }
+    }
+    else
+    {
+        // If the interface address is not provided by the user => Take v4/v6 depending on
+        // destination address
+        if (Ipv4Address::IsMatchingType(m_destination))
+        {
+            m_useIpv6 = false;
+            InetSocketAddress senderInet(Ipv4Address::GetAny(), PING_ID);
+            int statusBindSender = m_socket->Bind(senderInet);
+            InetSocketAddress receiverInet(Ipv4Address::ConvertFrom(m_destination));
+
+            m_socket->Connect(receiverInet);
+
+            NS_ASSERT_MSG(statusBindSender == 0, "Failed to bind ICMPv4 sender socket");
         }
         else
         {
-            NS_ABORT_MSG("Sender Address value must be of type Ipv4 or Ipv6");
+            m_useIpv6 = true;
+            Inet6SocketAddress senderInet(Ipv6Address::GetAny(), PING_ID);
+            int statusBindSender = m_socket->Bind(senderInet);
+            Inet6SocketAddress receiverInet(Ipv6Address::ConvertFrom(m_destination));
+
+            m_socket->Connect(receiverInet);
+
+            NS_ASSERT_MSG(statusBindSender == 0, "Failed to bind IPv6 sender socket");
         }
     }
 

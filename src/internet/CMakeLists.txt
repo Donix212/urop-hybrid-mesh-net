@@ -24,6 +24,10 @@ set(source_files
     model/global-route-manager.cc
     model/global-router-interface.cc
     model/icmpv4-l4-protocol.cc
+    model/icmp-socket-factory-impl.cc
+    model/icmp-socket-factory.cc
+    model/icmp-socket-impl.cc
+    model/icmp-socket.cc
     model/icmpv4.cc
     model/icmpv6-header.cc
     model/icmpv6-l4-protocol.cc
@@ -39,6 +43,7 @@ set(source_files
     model/ipv4-list-routing.cc
     model/ipv4-packet-filter.cc
     model/ipv4-packet-info-tag.cc
+    model/icmp-packet-info-tag.cc
     model/ipv4-packet-probe.cc
     model/ipv4-queue-disc-item.cc
     model/ipv4-raw-socket-factory-impl.cc
@@ -154,6 +159,10 @@ set(header_files
     model/global-route-manager.h
     model/global-router-interface.h
     model/icmpv4-l4-protocol.h
+    model/icmp-socket-factory-impl.h
+    model/icmp-socket-factory.h
+    model/icmp-socket-impl.h
+    model/icmp-socket.h
     model/icmpv4.h
     model/icmpv6-header.h
     model/icmpv6-l4-protocol.h
@@ -169,6 +178,7 @@ set(header_files
     model/ipv4-list-routing.h
     model/ipv4-packet-filter.h
     model/ipv4-packet-info-tag.h
+    model/icmp-packet-info-tag.h
     model/ipv4-packet-probe.h
     model/ipv4-queue-disc-item.h
     model/ipv4-raw-socket-factory.h

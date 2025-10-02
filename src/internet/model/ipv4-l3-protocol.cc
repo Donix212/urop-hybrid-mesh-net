@@ -643,6 +643,14 @@ Ipv4L3Protocol::Receive(Ptr<NetDevice> device,
     {
         NS_LOG_WARN("No route found for forwarding packet.  Drop.");
         m_dropTrace(ipHeader, packet, DROP_NO_ROUTE, this, interface);
+
+        if (ShouldSendIcmpError(ipHeader, packet))
+        {
+            if (Ptr<Icmpv4L4Protocol> icmp = GetIcmp())
+            {
+                icmp->SendDestUnreachInet(ipHeader, packet->Copy());
+            }
+        }
     }
 }
 
@@ -717,6 +725,56 @@ Ipv4L3Protocol::CallTxTrace(const Ipv4Header& ipHeader,
         packetCopy->AddHeader(ipHeader);
         m_txTrace(packetCopy, ipv4, interface);
     }
+}
+
+bool
+Ipv4L3Protocol::IsMyAddress(Ipv4Address addr) const
+{
+    for (uint32_t i = 0; i < GetNInterfaces(); ++i)
+    {
+        for (uint32_t j = 0; j < GetNAddresses(i); ++j)
+        {
+            if (GetAddress(i, j).GetLocal() == addr)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool
+Ipv4L3Protocol::ShouldSendIcmpError(const Ipv4Header& h, Ptr<const Packet> payload)
+{
+    if (h.GetDestination().IsBroadcast() || h.GetDestination().IsMulticast())
+    {
+        return false;
+    }
+    if (h.GetSource().IsBroadcast() || h.GetSource().IsMulticast() || h.GetSource().IsAny())
+    {
+        return false;
+    }
+
+    if (h.GetFragmentOffset() != 0)
+    {
+        return false;
+    }
+
+    if (h.GetProtocol() == Icmpv4L4Protocol::GetStaticProtocolNumber())
+    {
+        Icmpv4Header icmph;
+        Ptr<Packet> tmp = payload ? payload->Copy() : nullptr;
+        if (tmp && tmp->PeekHeader(icmph))
+        {
+            const uint8_t t = icmph.GetType();
+
+            if (t != Icmpv4Header::ICMPV4_ECHO)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 void
@@ -945,6 +1003,7 @@ Ipv4L3Protocol::SendRealOut(Ptr<Ipv4Route> route, Ptr<Packet> packet, const Ipv4
     if (!route)
     {
         NS_LOG_WARN("No route to host.  Drop.");
+
         m_dropTrace(ipHeader, packet, DROP_NO_ROUTE, this, 0);
         return;
     }
@@ -973,6 +1032,20 @@ Ipv4L3Protocol::SendRealOut(Ptr<Ipv4Route> route, Ptr<Packet> packet, const Ipv4
         NS_LOG_LOGIC("Send to " << targetLabel << " " << target);
         if (packet->GetSize() + ipHeader.GetSerializedSize() > outInterface->GetDevice()->GetMtu())
         {
+            if (ipHeader.IsDontFragment())
+            {
+                if (ShouldSendIcmpError(ipHeader, packet))
+                {
+                    if (Ptr<Icmpv4L4Protocol> icmp = GetIcmp())
+                    {
+                        icmp->SendDestUnreachFragNeeded(ipHeader,
+                                                        packet->Copy(),
+                                                        outInterface->GetDevice()->GetMtu());
+                    }
+                }
+                return;
+            }
+
             std::list<Ipv4PayloadHeaderPair> listFragments;
             DoFragmentation(packet, ipHeader, outInterface->GetDevice()->GetMtu(), listFragments);
             for (auto it = listFragments.begin(); it != listFragments.end(); it++)
@@ -986,6 +1059,26 @@ Ipv4L3Protocol::SendRealOut(Ptr<Ipv4Route> route, Ptr<Packet> packet, const Ipv4
         {
             CallTxTrace(ipHeader, packet, this, interface);
             outInterface->Send(packet, ipHeader, target);
+        }
+    }
+    else
+    {
+        NS_LOG_LOGIC("Dropping: output interface is down");
+        m_dropTrace(ipHeader, packet, DROP_INTERFACE_DOWN, this, interface);
+
+        if (!IsMyAddress(ipHeader.GetSource()) && ShouldSendIcmpError(ipHeader, packet))
+        {
+            if (Ptr<Icmpv4L4Protocol> icmp = GetIcmp())
+            {
+                if (route->GetGateway().IsAny())
+                {
+                    icmp->SendDestUnreachInet(ipHeader, packet->Copy());
+                }
+                else
+                {
+                    icmp->SendDestUnreachHost(ipHeader, packet->Copy());
+                }
+            }
         }
     }
 }
@@ -1040,7 +1133,7 @@ Ipv4L3Protocol::IpForward(Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ipv
     if (ipHeader.GetTtl() <= 1)
     {
         // Do not reply to multicast/broadcast IP address
-        if (!ipHeader.GetDestination().IsBroadcast() && !ipHeader.GetDestination().IsMulticast())
+        if (ShouldSendIcmpError(ipHeader, packet))
         {
             Ptr<Icmpv4L4Protocol> icmp = GetIcmp();
             icmp->SendTimeExceededTtl(ipHeader, packet, false);
@@ -1424,7 +1517,15 @@ Ipv4L3Protocol::RouteInputError(Ptr<const Packet> p,
                                                              << sockErrno);
     m_dropTrace(ipHeader, p, DROP_ROUTE_ERROR, this, 0);
 
-    // \todo Send an ICMP no route.
+    if (!ShouldSendIcmpError(ipHeader, p))
+    {
+        return;
+    }
+
+    if (Ptr<Icmpv4L4Protocol> icmp = GetIcmp())
+    {
+        icmp->SendDestUnreachInet(ipHeader, p->Copy());
+    }
 }
 
 void
