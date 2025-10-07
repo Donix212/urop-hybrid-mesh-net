@@ -21,6 +21,7 @@
 #include "ns3/object-factory.h"
 #include "ns3/simulator.h"
 
+#include <array>
 #include <cfloat>
 #include <cmath>
 
@@ -872,7 +873,7 @@ LteEnbPhy::DoSetBandwidth(uint16_t ulBandwidth, uint16_t dlBandwidth)
     m_dlBandwidth = dlBandwidth;
 
     // See table 7.1.6.1-1 of 36.213
-    static const int Type0AllocationRbg[4] = {
+    constexpr std::array<int, 4> Type0AllocationRbg{
         10,  // RBG size 1
         26,  // RBG size 2
         63,  // RBG size 3

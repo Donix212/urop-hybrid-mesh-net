@@ -25,6 +25,7 @@
 #include "ns3/simulator.h"
 #include "ns3/string.h"
 
+#include <array>
 #include <cfloat>
 #include <set>
 #include <stdexcept>
@@ -35,7 +36,7 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("CqaFfMacScheduler");
 
 /// CGA Type 0 Allocation (see table 7.1.6.1-1 of 36.213)
-static const int CqaType0AllocationRbg[4] = {
+constexpr std::array<int, 4> CqaType0AllocationRbg{
     10,  // RBG size 1
     26,  // RBG size 2
     63,  // RBG size 3

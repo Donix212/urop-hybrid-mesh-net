@@ -16,6 +16,7 @@
 #include "ns3/double.h"
 #include "ns3/log.h"
 
+#include <array>
 #include <cfloat>
 
 namespace ns3
@@ -26,7 +27,7 @@ NS_LOG_COMPONENT_DEFINE("LteFfrEnhancedAlgorithm");
 NS_OBJECT_ENSURE_REGISTERED(LteFfrEnhancedAlgorithm);
 
 /// Spectral efficiency for CQI table
-static const double SpectralEfficiencyForCqi[16] = {
+constexpr std::array<double, 16> SpectralEfficiencyForCqi{
     0.0, // out of range
     0.15,
     0.23,
@@ -56,20 +57,21 @@ struct FfrEnhancedDownlinkDefaultConfiguration
 };
 
 /// The enhanced downlink default configuration
-static const FfrEnhancedDownlinkDefaultConfiguration g_ffrEnhancedDownlinkDefaultConfiguration[]{
-    {1, 25, 0, 4, 4},
-    {2, 25, 8, 4, 4},
-    {3, 25, 16, 4, 4},
-    {1, 50, 0, 9, 6},
-    {2, 50, 15, 9, 6},
-    {3, 50, 30, 9, 6},
-    {1, 75, 0, 8, 16},
-    {2, 75, 24, 8, 16},
-    {3, 75, 48, 8, 16},
-    {1, 100, 0, 16, 16},
-    {2, 100, 32, 16, 16},
-    {3, 100, 64, 16, 16},
-};
+constexpr std::array<FfrEnhancedDownlinkDefaultConfiguration, 15>
+    g_ffrEnhancedDownlinkDefaultConfiguration{{
+        {1, 25, 0, 4, 4},
+        {2, 25, 8, 4, 4},
+        {3, 25, 16, 4, 4},
+        {1, 50, 0, 9, 6},
+        {2, 50, 15, 9, 6},
+        {3, 50, 30, 9, 6},
+        {1, 75, 0, 8, 16},
+        {2, 75, 24, 8, 16},
+        {3, 75, 48, 8, 16},
+        {1, 100, 0, 16, 16},
+        {2, 100, 32, 16, 16},
+        {3, 100, 64, 16, 16},
+    }};
 
 /// FfrEnhancedUplinkDefaultConfiguration structure
 struct FfrEnhancedUplinkDefaultConfiguration
@@ -82,27 +84,26 @@ struct FfrEnhancedUplinkDefaultConfiguration
 };
 
 /// The enhanced uplink default configuration
-static const FfrEnhancedUplinkDefaultConfiguration g_ffrEnhancedUplinkDefaultConfiguration[]{
-    {1, 25, 0, 4, 4},
-    {2, 25, 8, 4, 4},
-    {3, 25, 16, 4, 4},
-    {1, 50, 0, 9, 6},
-    {2, 50, 15, 9, 6},
-    {3, 50, 30, 9, 6},
-    {1, 75, 0, 8, 16},
-    {2, 75, 24, 8, 16},
-    {3, 75, 48, 8, 16},
-    {1, 100, 0, 16, 16},
-    {2, 100, 32, 16, 16},
-    {3, 100, 64, 16, 16},
-};
+constexpr std::array<FfrEnhancedUplinkDefaultConfiguration, 15>
+    g_ffrEnhancedUplinkDefaultConfiguration{{
+        {1, 25, 0, 4, 4},
+        {2, 25, 8, 4, 4},
+        {3, 25, 16, 4, 4},
+        {1, 50, 0, 9, 6},
+        {2, 50, 15, 9, 6},
+        {3, 50, 30, 9, 6},
+        {1, 75, 0, 8, 16},
+        {2, 75, 24, 8, 16},
+        {3, 75, 48, 8, 16},
+        {1, 100, 0, 16, 16},
+        {2, 100, 32, 16, 16},
+        {3, 100, 64, 16, 16},
+    }};
 
 /** @returns number of downlink configurations */
-const uint16_t NUM_DOWNLINK_CONFS(sizeof(g_ffrEnhancedDownlinkDefaultConfiguration) /
-                                  sizeof(FfrEnhancedDownlinkDefaultConfiguration));
+constexpr uint16_t NUM_DOWNLINK_CONFS = g_ffrEnhancedDownlinkDefaultConfiguration.size();
 /** @returns number of uplink configurations */
-const uint16_t NUM_UPLINK_CONFS(sizeof(g_ffrEnhancedUplinkDefaultConfiguration) /
-                                sizeof(FfrEnhancedUplinkDefaultConfiguration));
+constexpr uint16_t NUM_UPLINK_CONFS = g_ffrEnhancedUplinkDefaultConfiguration.size();
 
 LteFfrEnhancedAlgorithm::LteFfrEnhancedAlgorithm()
     : m_ffrSapUser(nullptr),

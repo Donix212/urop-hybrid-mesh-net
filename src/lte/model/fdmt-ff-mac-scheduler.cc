@@ -18,6 +18,7 @@
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
 
+#include <array>
 #include <cfloat>
 #include <set>
 
@@ -27,7 +28,7 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("FdMtFfMacScheduler");
 
 /// FdMtType0AllocationRbg size array (see table 7.1.6.1-1 of 36.213)
-static const int FdMtType0AllocationRbg[4] = {
+constexpr std::array<int, 4> FdMtType0AllocationRbg{
     10,  // RBG size 1
     26,  // RBG size 2
     63,  // RBG size 3

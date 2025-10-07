@@ -11,6 +11,8 @@
 
 #include "ns3/log.h"
 
+#include <array>
+
 namespace ns3
 {
 
@@ -28,7 +30,7 @@ struct FrHardDownlinkDefaultConfiguration
 };
 
 /// The hard downlink default configuration
-static const FrHardDownlinkDefaultConfiguration g_frHardDownlinkDefaultConfiguration[]{
+constexpr std::array<FrHardDownlinkDefaultConfiguration, 15> g_frHardDownlinkDefaultConfiguration{{
     {1, 15, 0, 4},
     {2, 15, 4, 4},
     {3, 15, 8, 6},
@@ -44,7 +46,7 @@ static const FrHardDownlinkDefaultConfiguration g_frHardDownlinkDefaultConfigura
     {1, 100, 0, 32},
     {2, 100, 32, 32},
     {3, 100, 64, 36},
-};
+}};
 
 /// FrHardUplinkDefaultConfiguration structure
 struct FrHardUplinkDefaultConfiguration
@@ -56,7 +58,7 @@ struct FrHardUplinkDefaultConfiguration
 };
 
 /// The hard uplink default configuration
-static const FrHardUplinkDefaultConfiguration g_frHardUplinkDefaultConfiguration[]{
+constexpr std::array<FrHardUplinkDefaultConfiguration, 15> g_frHardUplinkDefaultConfiguration{{
     {1, 15, 0, 5},
     {2, 15, 5, 5},
     {3, 15, 10, 5},
@@ -72,14 +74,12 @@ static const FrHardUplinkDefaultConfiguration g_frHardUplinkDefaultConfiguration
     {1, 100, 0, 32},
     {2, 100, 32, 32},
     {3, 100, 64, 36},
-};
+}};
 
 /** @returns number of downlink configurations */
-const uint16_t NUM_DOWNLINK_CONFS(sizeof(g_frHardDownlinkDefaultConfiguration) /
-                                  sizeof(FrHardDownlinkDefaultConfiguration));
+constexpr uint16_t NUM_DOWNLINK_CONFS = g_frHardDownlinkDefaultConfiguration.size();
 /** @returns number of uplink configurations */
-const uint16_t NUM_UPLINK_CONFS(sizeof(g_frHardUplinkDefaultConfiguration) /
-                                sizeof(FrHardUplinkDefaultConfiguration));
+constexpr uint16_t NUM_UPLINK_CONFS = g_frHardUplinkDefaultConfiguration.size();
 
 LteFrHardAlgorithm::LteFrHardAlgorithm()
     : m_ffrSapUser(nullptr),

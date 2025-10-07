@@ -18,6 +18,7 @@
 #include "ns3/spectrum-error-model.h"
 #include "ns3/waveform-generator.h"
 
+#include <array>
 #include <cmath>
 
 namespace ns3
@@ -133,9 +134,9 @@ uint16_t
 LtePhy::GetSrsPeriodicity(uint16_t srcCi) const
 {
     // from 3GPP TS 36.213 table 8.2-1 UE Specific SRS Periodicity
-    uint16_t SrsPeriodicity[9] = {0, 2, 5, 10, 20, 40, 80, 160, 320};
-    uint16_t SrsCiLow[9] = {0, 0, 2, 7, 17, 37, 77, 157, 317};
-    uint16_t SrsCiHigh[9] = {0, 1, 6, 16, 36, 76, 156, 316, 636};
+    constexpr std::array<uint16_t, 9> SrsPeriodicity{0, 2, 5, 10, 20, 40, 80, 160, 320};
+    constexpr std::array<uint16_t, 9> SrsCiLow{0, 0, 2, 7, 17, 37, 77, 157, 317};
+    constexpr std::array<uint16_t, 9> SrsCiHigh{0, 1, 6, 16, 36, 76, 156, 316, 636};
     uint8_t i;
     for (i = 8; i > 0; i--)
     {
@@ -151,9 +152,9 @@ uint16_t
 LtePhy::GetSrsSubframeOffset(uint16_t srcCi) const
 {
     // from 3GPP TS 36.213 table 8.2-1 UE Specific SRS Periodicity
-    uint16_t SrsSubframeOffset[9] = {0, 0, 2, 7, 17, 37, 77, 157, 317};
-    uint16_t SrsCiLow[9] = {0, 0, 2, 7, 17, 37, 77, 157, 317};
-    uint16_t SrsCiHigh[9] = {0, 1, 6, 16, 36, 76, 156, 316, 636};
+    constexpr std::array<uint16_t, 9> SrsSubframeOffset{0, 0, 2, 7, 17, 37, 77, 157, 317};
+    constexpr std::array<uint16_t, 9> SrsCiLow{0, 0, 2, 7, 17, 37, 77, 157, 317};
+    constexpr std::array<uint16_t, 9> SrsCiHigh{0, 1, 6, 16, 36, 76, 156, 316, 636};
     uint8_t i;
     for (i = 8; i > 0; i--)
     {

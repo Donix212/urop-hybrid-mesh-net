@@ -10,6 +10,8 @@
 #include "ns3/log.h"
 #include "ns3/test.h"
 
+#include <array>
+
 NS_LOG_COMPONENT_DEFINE("GeoToCartesianTest");
 
 using namespace ns3;
@@ -18,7 +20,7 @@ using namespace ns3;
 // Cartesian coordinates on or above earth's surface
 const double TOLERANCE = 10;
 
-const double XSPHERE_MATLAB[216] = {
+constexpr std::array<double, 216> XSPHERE_MATLAB{
     6371000,           1968747.27116279,  -5154247.27116279, -5154247.27116279, 1968747.27116279,
     6371000,           1968747.27116279,  608376.364418605,  -1592750,          -1592750.00000000,
     608376.364418605,  1968747.27116279,  -5154247.27116279, -1592750,          4169873.63558139,
@@ -65,7 +67,7 @@ const double XSPHERE_MATLAB[216] = {
     6372000,
 };
 
-const double YSPHERE_MATLAB[216] = {
+constexpr std::array<double, 216> YSPHERE_MATLAB{
     0,
     6059181.06531642,
     3744779.84235535,
@@ -284,7 +286,7 @@ const double YSPHERE_MATLAB[216] = {
     -1.56068988083339e-09,
 };
 
-const double ZSPHERE_MATLAB[216] = {
+constexpr std::array<double, 216> ZSPHERE_MATLAB{
     0,
     0,
     0,
@@ -503,7 +505,7 @@ const double ZSPHERE_MATLAB[216] = {
     -1.56068988083339e-09,
 };
 
-const double XGRS80_MATLAB[216] = {
+constexpr std::array<double, 216> XGRS80_MATLAB{
     6378137,           1970952.72545164,  -5160021.22545164, -5160021.22545164, 1970952.72545164,
     6378137,           1976947.14312992,  610910.264208145,  -1599383.83577310, -1599383.83577310,
     610910.264208145,  1976947.14312992,  -5165998.77753988, -1596381.41518003, 4179380.80394997,
@@ -550,7 +552,7 @@ const double XGRS80_MATLAB[216] = {
     6379137,
 };
 
-const double YGRS80_MATLAB[216] = {
+constexpr std::array<double, 216> YGRS80_MATLAB{
     0,
     6065968.75567322,
     3748974.86570096,
@@ -769,7 +771,7 @@ const double YGRS80_MATLAB[216] = {
     -1.56243794167449e-09,
 };
 
-const double ZGRS80_MATLAB[216] = {
+constexpr std::array<double, 216> ZGRS80_MATLAB{
     0,
     0,
     0,
@@ -988,7 +990,7 @@ const double ZGRS80_MATLAB[216] = {
     -1.55198002798094e-09,
 };
 
-const double XWGS84_MATLAB[216] = {
+constexpr std::array<double, 216> XWGS84_MATLAB{
     6378137,           1970952.72545164,  -5160021.22545164, -5160021.22545164, 1970952.72545164,
     6378137,           1976947.14310045,  610910.264199039,  -1599383.83574926, -1599383.83574926,
     610910.264199039,  1976947.14310045,  -5165998.77751058, -1596381.41517097, 4179380.80392626,
@@ -1035,7 +1037,7 @@ const double XWGS84_MATLAB[216] = {
     6379137,
 };
 
-const double YWGS84_MATLAB[216] = {
+constexpr std::array<double, 216> YWGS84_MATLAB{
     0,
     6065968.75567322,
     3748974.86570096,
@@ -1254,7 +1256,7 @@ const double YWGS84_MATLAB[216] = {
     -1.56243794167449e-09,
 };
 
-const double ZWGS84_MATLAB[216] = {
+constexpr std::array<double, 216> ZWGS84_MATLAB{
     0,
     0,
     0,

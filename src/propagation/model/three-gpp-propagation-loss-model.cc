@@ -18,6 +18,7 @@
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
 
+#include <array>
 #include <cmath>
 
 namespace
@@ -90,7 +91,7 @@ const std::map<int, std::vector<float>> SFCL_SuburbanRural{
  * access the corresponding element in the array, that will give the attenuation at that frequency.
  * Data is obtained form ITU-R P.676 Figure 6.
  */
-const double atmosphericAbsorption[101] = {
+constexpr std::array<double, 101> atmosphericAbsorption{
     0,        0.0300,   0.0350,  0.0380,  0.0390,  0.0410,  0.0420,  0.0450,  0.0480,   0.0500,
     0.0530,   0.0587,   0.0674,  0.0789,  0.0935,  0.1113,  0.1322,  0.1565,  0.1841,   0.2153,
     0.2500,   0.3362,   0.4581,  0.5200,  0.5200,  0.5000,  0.4500,  0.3850,  0.3200,   0.2700,

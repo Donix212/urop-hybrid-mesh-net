@@ -22,6 +22,7 @@
 #include "ns3/log.h"
 #include "ns3/pointer.h"
 
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -36,7 +37,7 @@ NS_LOG_COMPONENT_DEFINE("LteMiErrorModel");
 // clang-format off
 
 /// global table of the effective code rates (ECR)s that have BLER performance curves
-static const double BlerCurvesEcrMap[38] = {
+constexpr std::array<double, 38> BlerCurvesEcrMap{
     // QPSK (M=2)
     0.01, 0.026, 0.04, // ECRs of MCS0 retx
     0.08, 0.1, 0.11, 0.15, 0.19, 0.24, 0.3, 0.37, 0.44, 0.51, // ECRs of MCSs
@@ -51,20 +52,20 @@ static const double BlerCurvesEcrMap[38] = {
 // clang-format on
 
 /// Table codifing standard MCSs ECR to available ECRs
-static const uint8_t McsEcrBlerTableMapping[29] = {
+constexpr std::array<uint8_t, 29> McsEcrBlerTableMapping{
     3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 16, 17, 18, 19, 20,
     21, 22, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
 };
 
 /// Table of ECR of the standard MCSs
-static const double McsEcrTable[29] = {
+constexpr std::array<double, 29> McsEcrTable{
     0.08, 0.1, 0.11, 0.15, 0.19, 0.24, 0.3, 0.37, 0.44, 0.51, 0.3, 0.33, 0.37, 0.42, 0.48,
     0.54, 0.6, 0.43, 0.45, 0.5,  0.55, 0.6, 0.65, 0.7,  0.75, 0.8, 0.85, 0.89, 0.92,
 };
 
 #if 0 // currently unused
 // Table with ECRs obtained with retransmissions with BLER curves
-static const double HarqRetxEcr[9] = {
+constexpr std::array<double, 9> HarqRetxEcr{
     0.00064, 0.000512, 0.000041, 0.09, 0.027, 0.0081, 0.185, 0.079, 0.034,
 };
 #endif
@@ -72,7 +73,7 @@ static const double HarqRetxEcr[9] = {
 /** PCFICH-PDCCH Error model based on 3GPP R4-081920 "LTE PDCCH/PCFICH
  *  Demodulation Performance Results with Implementation Margin"
  *  X axis */
-static const double PdcchPcfichBlerCurveXaxis[PDCCH_PCFICH_CURVE_SIZE] = {
+constexpr std::array<double, PDCCH_PCFICH_CURVE_SIZE> PdcchPcfichBlerCurveXaxis{
     -10,  -9.8, -9.6, -9.4, -9.2, -9.0, -8.8, -8.6, -8.4, -8.2, -8.0, -7.8, -7.6, -7.4, -7.2, -7.0,
     -6.8, -6.6, -6.4, -6.2, -6.0, -5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4.0, -3.8,
     -3.6, -3.4, -3.2, -3.0, -2.8, -2.6, -2.4, -2.2, -2.0, -1.8, -1.6, -1.4, -1.2, -1.0,
@@ -81,7 +82,7 @@ static const double PdcchPcfichBlerCurveXaxis[PDCCH_PCFICH_CURVE_SIZE] = {
 /** PCFICH-PDCCH Error model based on 3GPP R4-081920 "LTE PDCCH/PCFICH
  *  Demodulation Performance Results with Implementation Margin"
  *  Y axis */
-static const double PdcchPcfichBlerCurveYaxis[PDCCH_PCFICH_CURVE_SIZE] = {
+constexpr std::array<double, PDCCH_PCFICH_CURVE_SIZE> PdcchPcfichBlerCurveYaxis{
     0.922602,   0.871559,   0.82334,    0.777789,   0.734758,   0.694107,  0.655706,   0.619429,
     0.585159,   0.552785,   0.520927,   0.479229,   0.440869,   0.405579,  0.373114,   0.343104,
     0.309947,   0.279994,   0.252936,   0.228492,   0.206048,   0.181449,  0.159787,   0.140711,
@@ -92,13 +93,13 @@ static const double PdcchPcfichBlerCurveYaxis[PDCCH_PCFICH_CURVE_SIZE] = {
 };
 
 #if 0 // currently unused
-static const int TbsIndex[32] = {
+constexpr std::array<int, 32> TbsIndex{
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 13, 14, 15, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1,
 };
 #endif
 
 /// as K column of table 5.1.3-3 of TS 36,212
-static const uint16_t cbSizeTable[188] = {
+constexpr std::array<uint16_t, 188> cbSizeTable{
     40,   48,   56,   64,   72,   80,   88,   96,   104,  112,  120,  128,  136,  144,  152,  160,
     168,  176,  184,  192,  200,  208,  216,  224,  232,  240,  248,  256,  264,  272,  280,  288,
     296,  304,  312,  320,  328,  336,  344,  352,  360,  368,  376,  384,  392,  400,  408,  416,
@@ -114,10 +115,10 @@ static const uint16_t cbSizeTable[188] = {
 };
 
 /// MI size table
-static const uint16_t cbMiSizeTable[9] = {40, 104, 160, 256, 512, 1024, 2560, 4032, 6144};
+constexpr std::array<uint16_t, 9> cbMiSizeTable{40, 104, 160, 256, 512, 1024, 2560, 4032, 6144};
 
 /// MI map QPSK
-static const double MI_map_qpsk[MI_MAP_QPSK_SIZE] = {
+constexpr std::array<double, MI_MAP_QPSK_SIZE> MI_map_qpsk{
     0.008922, 0.011813, 0.014697, 0.017570, 0.020430, 0.023276, 0.026109, 0.028929, 0.031734,
     0.034526, 0.037304, 0.040069, 0.042821, 0.045559, 0.048285, 0.050999, 0.053700, 0.056389,
     0.059066, 0.061731, 0.064384, 0.067026, 0.069657, 0.072277, 0.074885, 0.077483, 0.080070,
@@ -210,7 +211,7 @@ static const double MI_map_qpsk[MI_MAP_QPSK_SIZE] = {
 };
 
 /// MI map QPSK axis
-static const double MI_map_qpsk_axis[MI_MAP_QPSK_SIZE] = {
+constexpr std::array<double, MI_MAP_QPSK_SIZE> MI_map_qpsk_axis{
     0.013000, 0.017000, 0.021000, 0.025000, 0.029000, 0.033000, 0.037000, 0.041000, 0.045000,
     0.049000, 0.053000, 0.057000, 0.061000, 0.065000, 0.069000, 0.073000, 0.077000, 0.081000,
     0.085000, 0.089000, 0.093000, 0.097000, 0.101000, 0.105000, 0.109000, 0.113000, 0.117000,
@@ -303,7 +304,7 @@ static const double MI_map_qpsk_axis[MI_MAP_QPSK_SIZE] = {
 };
 
 /// MI map QPSK 16QAM
-static const double MI_map_16qam[MI_MAP_16QAM_SIZE] = {
+constexpr std::array<double, MI_MAP_16QAM_SIZE> MI_map_16qam{
     0.018884, 0.021859, 0.024808, 0.027732, 0.030631, 0.033506, 0.036357, 0.039185, 0.041991,
     0.044776, 0.047538, 0.050280, 0.053002, 0.055703, 0.058385, 0.061048, 0.063692, 0.066318,
     0.068925, 0.071514, 0.074086, 0.076640, 0.079178, 0.081699, 0.084203, 0.086691, 0.089163,
@@ -418,7 +419,7 @@ static const double MI_map_16qam[MI_MAP_16QAM_SIZE] = {
 };
 
 /// MI map 16QAM axis
-static const double MI_map_16qam_axis[MI_MAP_16QAM_SIZE] = {
+constexpr std::array<double, MI_MAP_16QAM_SIZE> MI_map_16qam_axis{
     0.063000, 0.073000, 0.083000, 0.093000, 0.103000, 0.113000, 0.123000, 0.133000, 0.143000,
     0.153000, 0.163000, 0.173000, 0.183000, 0.193000, 0.203000, 0.213000, 0.223000, 0.233000,
     0.243000, 0.253000, 0.263000, 0.273000, 0.283000, 0.293000, 0.303000, 0.313000, 0.323000,
@@ -533,7 +534,7 @@ static const double MI_map_16qam_axis[MI_MAP_16QAM_SIZE] = {
 };
 
 /// MI map 64QAM
-static const double MI_map_64qam[MI_MAP_64QAM_SIZE] = {
+constexpr std::array<double, MI_MAP_64QAM_SIZE> MI_map_64qam{
     0.036455, 0.064415, 0.090225, 0.114215, 0.136597, 0.157298, 0.176808, 0.195063, 0.212193,
     0.228310, 0.243505, 0.257860, 0.271445, 0.284323, 0.296550, 0.308175, 0.319243, 0.329796,
     0.339870, 0.349499, 0.358715, 0.367545, 0.376015, 0.384150, 0.391971, 0.399498, 0.406751,
@@ -621,7 +622,7 @@ static const double MI_map_64qam[MI_MAP_64QAM_SIZE] = {
 };
 
 /// MI map 64QAM axis
-static const double MI_map_64qam_axis[MI_MAP_64QAM_SIZE] = {
+constexpr std::array<double, MI_MAP_64QAM_SIZE> MI_map_64qam_axis{
     0.250000,   0.460000,   0.670000,   0.880000,   1.090000,   1.300000,   1.510000,   1.720000,
     1.930000,   2.140000,   2.350000,   2.560000,   2.770000,   2.980000,   3.190000,   3.400000,
     3.610000,   3.820000,   4.030000,   4.240000,   4.450000,   4.660000,   4.870000,   5.080000,
@@ -721,7 +722,7 @@ static const double MI_map_64qam_axis[MI_MAP_64QAM_SIZE] = {
 // clang-format off
 
 /// BECR table
-static const double bEcrTable [9][38] = {
+constexpr std::array<std::array<double, 38>, 9> bEcrTable{{
     // CB of 40 bits
     {
         0.02472, 0.06352, 0.09516, // QPSK retx
@@ -803,10 +804,10 @@ static const double bEcrTable [9][38] = {
         0.13752, 0.18244, 0.27578,  // 64QAM retx
         0.49780, 0.51606, 0.5600, 0.6027, 0.6494, 0.6948, 0.7407, 0.7842, 0.8284, 0.8692, 0.9058, 0.9325  // 64QAM
     },
-};
+}};
 
 /// CECR table
-static const double cEcrTable [9][38] = {
+constexpr std::array<std::array<double, 38>, 9> cEcrTable{{
   // CB of 40 bits
   {
     0.00543, 0.01337, 0.01969, // QPSK retx
@@ -888,7 +889,7 @@ static const double cEcrTable [9][38] = {
     0.00303, 0.00377, 0.00507, // 64QAM retx
     0.0060, 0.00609, 0.0061, 0.0066, 0.0069, 0.0080, 0.0081, 0.0080, 0.0077, 0.0068, 0.0066, 0.0058 // 64QAM
   }
-};
+}};
 
 // clang-format on
 

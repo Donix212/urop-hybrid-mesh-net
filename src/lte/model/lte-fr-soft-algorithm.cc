@@ -12,6 +12,8 @@
 #include "ns3/boolean.h"
 #include "ns3/log.h"
 
+#include <array>
+
 namespace ns3
 {
 
@@ -29,7 +31,7 @@ struct FrSoftDownlinkDefaultConfiguration
 };
 
 /// Soft downlink default configuration
-static const FrSoftDownlinkDefaultConfiguration g_frSoftDownlinkDefaultConfiguration[]{
+constexpr std::array<FrSoftDownlinkDefaultConfiguration, 15> g_frSoftDownlinkDefaultConfiguration{{
     {1, 15, 0, 4},
     {2, 15, 4, 4},
     {3, 15, 8, 6},
@@ -45,7 +47,7 @@ static const FrSoftDownlinkDefaultConfiguration g_frSoftDownlinkDefaultConfigura
     {1, 100, 0, 32},
     {2, 100, 32, 32},
     {3, 100, 64, 36},
-};
+}};
 
 /// soft uplink default configuration
 struct FrSoftUplinkDefaultConfiguration
@@ -57,7 +59,7 @@ struct FrSoftUplinkDefaultConfiguration
 };
 
 /// Soft uplink default configuration
-static const FrSoftUplinkDefaultConfiguration g_frSoftUplinkDefaultConfiguration[]{
+constexpr std::array<FrSoftUplinkDefaultConfiguration, 15> g_frSoftUplinkDefaultConfiguration{{
     {1, 15, 0, 5},
     {2, 15, 5, 5},
     {3, 15, 10, 5},
@@ -73,14 +75,12 @@ static const FrSoftUplinkDefaultConfiguration g_frSoftUplinkDefaultConfiguration
     {1, 100, 0, 32},
     {2, 100, 32, 32},
     {3, 100, 64, 36},
-};
+}};
 
 /** @returns number of downlink configurations */
-const uint16_t NUM_DOWNLINK_CONFS(sizeof(g_frSoftDownlinkDefaultConfiguration) /
-                                  sizeof(FrSoftDownlinkDefaultConfiguration));
+constexpr uint16_t NUM_DOWNLINK_CONFS = g_frSoftDownlinkDefaultConfiguration.size();
 /** @returns number of uplink configurations */
-const uint16_t NUM_UPLINK_CONFS(sizeof(g_frSoftUplinkDefaultConfiguration) /
-                                sizeof(FrSoftUplinkDefaultConfiguration));
+constexpr uint16_t NUM_UPLINK_CONFS = g_frSoftUplinkDefaultConfiguration.size();
 
 LteFrSoftAlgorithm::LteFrSoftAlgorithm()
     : m_ffrSapUser(nullptr),

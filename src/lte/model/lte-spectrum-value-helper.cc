@@ -12,6 +12,7 @@
 #include "ns3/fatal-error.h"
 #include "ns3/log.h"
 
+#include <array>
 #include <cmath>
 #include <map>
 
@@ -69,7 +70,7 @@ struct EutraChannelNumbers
 };
 
 /// Eutra channel numbers
-static const EutraChannelNumbers g_eutraChannelNumbers[]{
+constexpr std::array<EutraChannelNumbers, 40> g_eutraChannelNumbers{{
     {1, 2110, 0, 0, 599, 1920, 18000, 18000, 18599},
     {2, 1930, 600, 600, 1199, 1850, 18600, 18600, 19199},
     {3, 1805, 1200, 1200, 1949, 1710, 19200, 19200, 19949},
@@ -97,10 +98,7 @@ static const EutraChannelNumbers g_eutraChannelNumbers[]{
     {38, 2570, 37750, 37750, 38249, 2570, 37750, 37750, 38249},
     {39, 1880, 38250, 38250, 38649, 1880, 38250, 38250, 38649},
     {40, 2300, 38650, 38650, 39649, 2300, 38650, 38650, 39649},
-};
-
-/// number of EUTRA bands
-#define NUM_EUTRA_BANDS (sizeof(g_eutraChannelNumbers) / sizeof(EutraChannelNumbers))
+}};
 
 double
 LteSpectrumValueHelper::GetCarrierFrequency(uint32_t earfcn)
@@ -122,7 +120,7 @@ uint16_t
 LteSpectrumValueHelper::GetDownlinkCarrierBand(uint32_t nDl)
 {
     NS_LOG_FUNCTION(nDl);
-    for (uint32_t i = 0; i < NUM_EUTRA_BANDS; ++i)
+    for (uint32_t i = 0; i < g_eutraChannelNumbers.size(); ++i)
     {
         if (g_eutraChannelNumbers[i].rangeNdl1 <= nDl && g_eutraChannelNumbers[i].rangeNdl2 >= nDl)
         {
@@ -131,14 +129,14 @@ LteSpectrumValueHelper::GetDownlinkCarrierBand(uint32_t nDl)
         }
     }
     NS_LOG_ERROR("invalid EARFCN " << nDl);
-    return NUM_EUTRA_BANDS;
+    return g_eutraChannelNumbers.size();
 }
 
 uint16_t
 LteSpectrumValueHelper::GetUplinkCarrierBand(uint32_t nUl)
 {
     NS_LOG_FUNCTION(nUl);
-    for (uint32_t i = 0; i < NUM_EUTRA_BANDS; ++i)
+    for (uint32_t i = 0; i < g_eutraChannelNumbers.size(); ++i)
     {
         if (g_eutraChannelNumbers[i].rangeNul1 <= nUl && g_eutraChannelNumbers[i].rangeNul2 >= nUl)
         {
@@ -147,7 +145,7 @@ LteSpectrumValueHelper::GetUplinkCarrierBand(uint32_t nUl)
         }
     }
     NS_LOG_ERROR("invalid EARFCN " << nUl);
-    return NUM_EUTRA_BANDS;
+    return g_eutraChannelNumbers.size();
 }
 
 double
@@ -155,7 +153,7 @@ LteSpectrumValueHelper::GetDownlinkCarrierFrequency(uint32_t nDl)
 {
     NS_LOG_FUNCTION(nDl);
     uint16_t i = GetDownlinkCarrierBand(nDl);
-    if (i == NUM_EUTRA_BANDS)
+    if (i == g_eutraChannelNumbers.size())
     {
         return 0.0;
     }
@@ -168,7 +166,7 @@ LteSpectrumValueHelper::GetUplinkCarrierFrequency(uint32_t nUl)
 {
     NS_LOG_FUNCTION(nUl);
     uint16_t i = GetUplinkCarrierBand(nUl);
-    if (i == NUM_EUTRA_BANDS)
+    if (i == g_eutraChannelNumbers.size())
     {
         return 0.0;
     }

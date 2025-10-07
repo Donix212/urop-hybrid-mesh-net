@@ -26,6 +26,8 @@
 #include "ns3/traced-callback.h"
 #include "ns3/uinteger.h"
 
+#include <array>
+
 namespace ns3
 {
 
@@ -420,9 +422,9 @@ UanPhyPerUmodem::NChooseK(uint32_t n, uint32_t k)
 double
 UanPhyPerUmodem::CalcPer(Ptr<Packet> pkt, double sinr, UanTxMode mode)
 {
-    uint32_t d[] = {12, 14, 16, 18, 20, 22, 24, 26, 28};
-    double Bd[] =
-        {33, 281, 2179, 15035LLU, 105166LLU, 692330LLU, 4580007LLU, 29692894LLU, 190453145LLU};
+    constexpr std::array<uint32_t, 9> d{12, 14, 16, 18, 20, 22, 24, 26, 28};
+    constexpr std::array<double, 9>
+        Bd{33, 281, 2179, 15035LLU, 105166LLU, 692330LLU, 4580007LLU, 29692894LLU, 190453145LLU};
 
     // double Rc = 1.0 / 2.0;
     double ebno = std::pow(10.0, sinr / 10.0);

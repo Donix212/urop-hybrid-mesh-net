@@ -14,6 +14,7 @@
 #include "ns3/string.h"
 #include "ns3/test.h"
 
+#include <array>
 #include <chrono> // seconds, milliseconds
 #include <ctime>
 #include <list>
@@ -278,24 +279,24 @@ class ThreadedSimulatorTestSuite : public TestSuite
     ThreadedSimulatorTestSuite()
         : TestSuite("threaded-simulator")
     {
-        std::string simulatorTypes[] = {
+        constexpr std::array<const char*, 2> simulatorTypes{
             "ns3::RealtimeSimulatorImpl",
             "ns3::DefaultSimulatorImpl",
         };
-        std::string schedulerTypes[] = {
+        constexpr std::array<const char*, 4> schedulerTypes{
             "ns3::ListScheduler",
             "ns3::HeapScheduler",
             "ns3::MapScheduler",
             "ns3::CalendarScheduler",
         };
-        unsigned int threadCounts[] = {0, 2, 10, 20};
+        constexpr std::array<unsigned int, 4> threadCounts{0, 2, 10, 20};
         ObjectFactory factory;
 
-        for (auto& simulatorType : simulatorTypes)
+        for (auto simulatorType : simulatorTypes)
         {
-            for (auto& schedulerType : schedulerTypes)
+            for (auto schedulerType : schedulerTypes)
             {
-                for (auto& threadCount : threadCounts)
+                for (auto threadCount : threadCounts)
                 {
                     factory.SetTypeId(schedulerType);
                     AddTestCase(

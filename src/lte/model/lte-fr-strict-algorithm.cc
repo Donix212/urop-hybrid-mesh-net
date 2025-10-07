@@ -12,6 +12,8 @@
 #include "ns3/boolean.h"
 #include "ns3/log.h"
 
+#include <array>
+
 namespace ns3
 {
 
@@ -30,23 +32,24 @@ struct FrStrictDownlinkDefaultConfiguration
 };
 
 /// The strict downlink default configuration
-static const FrStrictDownlinkDefaultConfiguration g_frStrictDownlinkDefaultConfiguration[]{
-    {1, 15, 2, 0, 4},
-    {2, 15, 2, 4, 4},
-    {3, 15, 2, 8, 4},
-    {1, 25, 6, 0, 6},
-    {2, 25, 6, 6, 6},
-    {3, 25, 6, 12, 6},
-    {1, 50, 21, 0, 9},
-    {2, 50, 21, 9, 9},
-    {3, 50, 21, 18, 11},
-    {1, 75, 36, 0, 12},
-    {2, 75, 36, 12, 12},
-    {3, 75, 36, 24, 15},
-    {1, 100, 28, 0, 24},
-    {2, 100, 28, 24, 24},
-    {3, 100, 28, 48, 24},
-};
+constexpr std::array<FrStrictDownlinkDefaultConfiguration, 15>
+    g_frStrictDownlinkDefaultConfiguration{{
+        {1, 15, 2, 0, 4},
+        {2, 15, 2, 4, 4},
+        {3, 15, 2, 8, 4},
+        {1, 25, 6, 0, 6},
+        {2, 25, 6, 6, 6},
+        {3, 25, 6, 12, 6},
+        {1, 50, 21, 0, 9},
+        {2, 50, 21, 9, 9},
+        {3, 50, 21, 18, 11},
+        {1, 75, 36, 0, 12},
+        {2, 75, 36, 12, 12},
+        {3, 75, 36, 24, 15},
+        {1, 100, 28, 0, 24},
+        {2, 100, 28, 24, 24},
+        {3, 100, 28, 48, 24},
+    }};
 
 /// FrStrictUplinkDefaultConfiguration structure
 struct FrStrictUplinkDefaultConfiguration
@@ -59,7 +62,7 @@ struct FrStrictUplinkDefaultConfiguration
 };
 
 /// The strict uplink default configuration
-static const FrStrictUplinkDefaultConfiguration g_frStrictUplinkDefaultConfiguration[]{
+constexpr std::array<FrStrictUplinkDefaultConfiguration, 15> g_frStrictUplinkDefaultConfiguration{{
     {1, 15, 3, 0, 4},
     {2, 15, 3, 4, 4},
     {3, 15, 3, 8, 4},
@@ -75,14 +78,12 @@ static const FrStrictUplinkDefaultConfiguration g_frStrictUplinkDefaultConfigura
     {1, 100, 28, 0, 24},
     {2, 100, 28, 24, 24},
     {3, 100, 28, 48, 24},
-};
+}};
 
 /** @returns number of downlink configurations */
-const uint16_t NUM_DOWNLINK_CONFS(sizeof(g_frStrictDownlinkDefaultConfiguration) /
-                                  sizeof(FrStrictDownlinkDefaultConfiguration));
+constexpr uint16_t NUM_DOWNLINK_CONFS = g_frStrictDownlinkDefaultConfiguration.size();
 /** @returns number of uplink configurations */
-const uint16_t NUM_UPLINK_CONFS(sizeof(g_frStrictUplinkDefaultConfiguration) /
-                                sizeof(FrStrictUplinkDefaultConfiguration));
+constexpr uint16_t NUM_UPLINK_CONFS = g_frStrictUplinkDefaultConfiguration.size();
 
 LteFrStrictAlgorithm::LteFrStrictAlgorithm()
     : m_ffrSapUser(nullptr),
