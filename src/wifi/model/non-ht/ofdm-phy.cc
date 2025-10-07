@@ -482,6 +482,7 @@ OfdmPhy::GetOfdmRate(uint64_t rate, MHz_u bw)
     }
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GET_OFDM_MODE(x, f)                                                                        \
     WifiMode OfdmPhy::Get##x()                                                                     \
     {                                                                                              \

@@ -108,8 +108,10 @@ SequenceNumberTestCase::SequenceNumberTracer(SequenceNumber32 oldval, SequenceNu
 void
 SequenceNumberTestCase::DoRun()
 {
+    // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define SEQ_TEST_ASSERT_EQUAL(a, b) NS_TEST_ASSERT_MSG_EQ(a, b, "foo")
 #define SEQ_TEST_ASSERT(a) NS_TEST_ASSERT_MSG_EQ(bool(a), true, "foo")
+    // NOLINTEND(cppcoreguidelines-macro-usage)
 
     {
         SequenceNumber32 num1(3);

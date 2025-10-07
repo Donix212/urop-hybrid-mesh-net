@@ -2230,6 +2230,7 @@ CtrlTriggerHeader::GetTypeString() const
 const char*
 CtrlTriggerHeader::GetTypeString(TriggerFrameType type)
 {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define FOO(x)                                                                                     \
     case TriggerFrameType::x:                                                                      \
         return #x;

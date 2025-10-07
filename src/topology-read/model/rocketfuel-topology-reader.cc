@@ -55,6 +55,8 @@ RocketfuelTopologyReader::~RocketfuelTopologyReader()
 
 /* uid @loc [+] [bb] (num_neigh) [&ext] -> <nuid-1> <nuid-2> ... {-euid} ... =name[!] rn */
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /// Start of a line
 #define START "^"
 /// End of a line
@@ -72,6 +74,8 @@ RocketfuelTopologyReader::~RocketfuelTopologyReader()
 
 /// Regex expression matching a WEIGHT line
 #define ROCKETFUEL_WEIGHTS_LINE START "([^ \t]+)" SPACE "([^ \t]+)" SPACE "([0-9.]+)" MAYSPACE END
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * Build a Regex object for RocketFuel topology maps file type

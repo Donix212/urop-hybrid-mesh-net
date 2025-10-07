@@ -46,6 +46,8 @@ SetCbArg(const std::string& val)
 
 } // unnamed namespace
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * Print a row containing the name, the default
  * and the final values of an argument.
@@ -58,6 +60,8 @@ SetCbArg(const std::string& val)
 #define DefaultFinal(label, defaultValue, finalValue)                                              \
     std::left << std::setw(20) << label + std::string(":") << std::setw(20) << defaultValue        \
               << finalValue << "\n"
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 int
 main(int argc, char* argv[])

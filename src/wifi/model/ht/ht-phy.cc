@@ -487,6 +487,7 @@ HtPhy::InitializeModes()
 WifiMode
 HtPhy::GetHtMcs(uint8_t index)
 {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CASE(x)                                                                                    \
     case x:                                                                                        \
         return GetHtMcs##x();
@@ -532,6 +533,7 @@ HtPhy::GetHtMcs(uint8_t index)
 #undef CASE
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GET_HT_MCS(x)                                                                              \
     WifiMode HtPhy::GetHtMcs##x()                                                                  \
     {                                                                                              \

@@ -22,6 +22,8 @@ namespace ns3
 
 extern bool gVerbose;
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 #define LOG(msg)                                                                                   \
     if (gVerbose)                                                                                  \
     {                                                                                              \
@@ -42,6 +44,8 @@ extern bool gVerbose;
     {                                                                                              \
         ABORT(msg, printErrno);                                                                    \
     }
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * @ingroup fd-net-device

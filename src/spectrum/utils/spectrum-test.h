@@ -19,6 +19,8 @@
  * @defgroup spectrum-test Spectrum module tests
  */
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup spectrum-tests
  *
@@ -147,5 +149,7 @@
                               (__LINE__));                                                         \
         }                                                                                          \
     } while (false);
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif // SPECTRUM_TEST_H

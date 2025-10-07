@@ -74,6 +74,8 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
 
 } // namespace ns3
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup fatal
  *
@@ -200,5 +202,7 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
  * including debug and optimized builds.
  */
 #define NS_FATAL_ERROR_CONT(msg) NS_FATAL_ERROR_IMPL(msg, false)
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif /* FATAL_ERROR_H */
