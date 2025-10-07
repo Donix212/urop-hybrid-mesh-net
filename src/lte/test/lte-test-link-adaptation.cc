@@ -72,7 +72,6 @@ LteLinkAdaptationTestSuite::LteLinkAdaptationTestSuite()
         {25.00000, 5.86271, 28}, {26.00000, 6.18980, 28}, {27.00000, 6.51792, 28},
         {28.00000, 6.84687, 28}, {29.00000, 7.17649, 28}, {30.00000, 7.50663, 28},
     }};
-    constexpr int numOfTests = snrEfficiencyMcs.size();
 
     double txPowerDbm = 30; // default eNB TX power over whole bandwidth
     double ktDbm = -174;    // reference LTE noise PSD
@@ -80,18 +79,14 @@ LteLinkAdaptationTestSuite::LteLinkAdaptationTestSuite()
         ktDbm + 10 * std::log10(25 * 180000); // corresponds to kT*bandwidth in linear units
     double receiverNoiseFigureDb = 9.0;       // default UE noise figure
 
-    for (int i = 0; i < numOfTests; i++)
+    for (const auto& sem : snrEfficiencyMcs)
     {
-        double lossDb =
-            txPowerDbm - snrEfficiencyMcs[i].snrDb - noisePowerDbm - receiverNoiseFigureDb;
+        double lossDb = txPowerDbm - sem.snrDb - noisePowerDbm - receiverNoiseFigureDb;
 
         std::ostringstream name;
-        name << " snr= " << snrEfficiencyMcs[i].snrDb << " dB, "
-             << " mcs= " << snrEfficiencyMcs[i].mcsIndex;
-        AddTestCase(new LteLinkAdaptationTestCase(name.str(),
-                                                  snrEfficiencyMcs[i].snrDb,
-                                                  lossDb,
-                                                  snrEfficiencyMcs[i].mcsIndex),
+        name << " snr= " << sem.snrDb << " dB, "
+             << " mcs= " << sem.mcsIndex;
+        AddTestCase(new LteLinkAdaptationTestCase(name.str(), sem.snrDb, lossDb, sem.mcsIndex),
                     TestCase::Duration::QUICK);
     }
 }

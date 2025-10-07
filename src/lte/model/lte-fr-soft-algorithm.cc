@@ -77,11 +77,6 @@ constexpr std::array<FrSoftUplinkDefaultConfiguration, 15> g_frSoftUplinkDefault
     {3, 100, 64, 36},
 }};
 
-/** @returns number of downlink configurations */
-constexpr uint16_t NUM_DOWNLINK_CONFS = g_frSoftDownlinkDefaultConfiguration.size();
-/** @returns number of uplink configurations */
-constexpr uint16_t NUM_UPLINK_CONFS = g_frSoftUplinkDefaultConfiguration.size();
-
 LteFrSoftAlgorithm::LteFrSoftAlgorithm()
     : m_ffrSapUser(nullptr),
       m_ffrRrcSapUser(nullptr),
@@ -250,13 +245,13 @@ void
 LteFrSoftAlgorithm::SetDownlinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_DOWNLINK_CONFS; ++i)
+
+    for (const auto& config : g_frSoftDownlinkDefaultConfiguration)
     {
-        if ((g_frSoftDownlinkDefaultConfiguration[i].cellId == cellId) &&
-            g_frSoftDownlinkDefaultConfiguration[i].dlBandwidth == m_dlBandwidth)
+        if (config.cellId == cellId && config.dlBandwidth == m_dlBandwidth)
         {
-            m_dlEdgeSubBandOffset = g_frSoftDownlinkDefaultConfiguration[i].dlEdgeSubBandOffset;
-            m_dlEdgeSubBandwidth = g_frSoftDownlinkDefaultConfiguration[i].dlEdgeSubBandwidth;
+            m_dlEdgeSubBandOffset = config.dlEdgeSubBandOffset;
+            m_dlEdgeSubBandwidth = config.dlEdgeSubBandwidth;
         }
     }
 }
@@ -265,13 +260,12 @@ void
 LteFrSoftAlgorithm::SetUplinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_UPLINK_CONFS; ++i)
+    for (const auto& config : g_frSoftUplinkDefaultConfiguration)
     {
-        if ((g_frSoftUplinkDefaultConfiguration[i].cellId == cellId) &&
-            g_frSoftUplinkDefaultConfiguration[i].ulBandwidth == m_ulBandwidth)
+        if (config.cellId == cellId && config.ulBandwidth == m_ulBandwidth)
         {
-            m_ulEdgeSubBandOffset = g_frSoftUplinkDefaultConfiguration[i].ulEdgeSubBandOffset;
-            m_ulEdgeSubBandwidth = g_frSoftUplinkDefaultConfiguration[i].ulEdgeSubBandwidth;
+            m_ulEdgeSubBandOffset = config.ulEdgeSubBandOffset;
+            m_ulEdgeSubBandwidth = config.ulEdgeSubBandwidth;
         }
     }
 }

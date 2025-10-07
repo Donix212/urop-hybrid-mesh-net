@@ -80,11 +80,6 @@ constexpr std::array<FfrSoftUplinkDefaultConfiguration, 15> g_ffrSoftUplinkDefau
     {3, 100, 28, 48, 24},
 }};
 
-/** @returns number of downlink configurations */
-constexpr uint16_t NUM_DOWNLINK_CONFS = g_ffrSoftDownlinkDefaultConfiguration.size();
-/** @returns number of uplink configurations */
-constexpr uint16_t NUM_UPLINK_CONFS = g_ffrSoftUplinkDefaultConfiguration.size();
-
 LteFfrSoftAlgorithm::LteFfrSoftAlgorithm()
     : m_ffrSapUser(nullptr),
       m_ffrRrcSapUser(nullptr),
@@ -278,14 +273,13 @@ void
 LteFfrSoftAlgorithm::SetDownlinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_DOWNLINK_CONFS; ++i)
+    for (const auto& config : g_ffrSoftDownlinkDefaultConfiguration)
     {
-        if ((g_ffrSoftDownlinkDefaultConfiguration[i].cellId == cellId) &&
-            g_ffrSoftDownlinkDefaultConfiguration[i].dlBandwidth == m_dlBandwidth)
+        if (config.cellId == cellId && config.dlBandwidth == m_dlBandwidth)
         {
-            m_dlCommonSubBandwidth = g_ffrSoftDownlinkDefaultConfiguration[i].dlCommonSubBandwidth;
-            m_dlEdgeSubBandOffset = g_ffrSoftDownlinkDefaultConfiguration[i].dlEdgeSubBandOffset;
-            m_dlEdgeSubBandwidth = g_ffrSoftDownlinkDefaultConfiguration[i].dlEdgeSubBandwidth;
+            m_dlCommonSubBandwidth = config.dlCommonSubBandwidth;
+            m_dlEdgeSubBandOffset = config.dlEdgeSubBandOffset;
+            m_dlEdgeSubBandwidth = config.dlEdgeSubBandwidth;
         }
     }
 }
@@ -294,14 +288,13 @@ void
 LteFfrSoftAlgorithm::SetUplinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_UPLINK_CONFS; ++i)
+    for (const auto& config : g_ffrSoftUplinkDefaultConfiguration)
     {
-        if ((g_ffrSoftUplinkDefaultConfiguration[i].cellId == cellId) &&
-            g_ffrSoftUplinkDefaultConfiguration[i].ulBandwidth == m_ulBandwidth)
+        if (config.cellId == cellId && config.ulBandwidth == m_ulBandwidth)
         {
-            m_ulCommonSubBandwidth = g_ffrSoftUplinkDefaultConfiguration[i].ulCommonSubBandwidth;
-            m_ulEdgeSubBandOffset = g_ffrSoftUplinkDefaultConfiguration[i].ulEdgeSubBandOffset;
-            m_ulEdgeSubBandwidth = g_ffrSoftUplinkDefaultConfiguration[i].ulEdgeSubBandwidth;
+            m_ulCommonSubBandwidth = config.ulCommonSubBandwidth;
+            m_ulEdgeSubBandOffset = config.ulEdgeSubBandOffset;
+            m_ulEdgeSubBandwidth = config.ulEdgeSubBandwidth;
         }
     }
 }

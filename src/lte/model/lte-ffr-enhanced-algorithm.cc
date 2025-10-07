@@ -100,11 +100,6 @@ constexpr std::array<FfrEnhancedUplinkDefaultConfiguration, 15>
         {3, 100, 64, 16, 16},
     }};
 
-/** @returns number of downlink configurations */
-constexpr uint16_t NUM_DOWNLINK_CONFS = g_ffrEnhancedDownlinkDefaultConfiguration.size();
-/** @returns number of uplink configurations */
-constexpr uint16_t NUM_UPLINK_CONFS = g_ffrEnhancedUplinkDefaultConfiguration.size();
-
 LteFfrEnhancedAlgorithm::LteFfrEnhancedAlgorithm()
     : m_ffrSapUser(nullptr),
       m_ffrRrcSapUser(nullptr),
@@ -289,16 +284,13 @@ void
 LteFfrEnhancedAlgorithm::SetDownlinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_DOWNLINK_CONFS; ++i)
+    for (const auto& config : g_ffrEnhancedDownlinkDefaultConfiguration)
     {
-        if ((g_ffrEnhancedDownlinkDefaultConfiguration[i].cellId == cellId) &&
-            g_ffrEnhancedDownlinkDefaultConfiguration[i].dlBandwidth == m_dlBandwidth)
+        if (config.cellId == cellId && config.dlBandwidth == m_dlBandwidth)
         {
-            m_dlSubBandOffset = g_ffrEnhancedDownlinkDefaultConfiguration[i].dlSubBandOffset;
-            m_dlReuse3SubBandwidth =
-                g_ffrEnhancedDownlinkDefaultConfiguration[i].dlReuse3SubBandwidth;
-            m_dlReuse1SubBandwidth =
-                g_ffrEnhancedDownlinkDefaultConfiguration[i].dlReuse1SubBandwidth;
+            m_dlSubBandOffset = config.dlSubBandOffset;
+            m_dlReuse3SubBandwidth = config.dlReuse3SubBandwidth;
+            m_dlReuse1SubBandwidth = config.dlReuse1SubBandwidth;
         }
     }
 }
@@ -307,16 +299,13 @@ void
 LteFfrEnhancedAlgorithm::SetUplinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_UPLINK_CONFS; ++i)
+    for (const auto& config : g_ffrEnhancedUplinkDefaultConfiguration)
     {
-        if ((g_ffrEnhancedUplinkDefaultConfiguration[i].cellId == cellId) &&
-            g_ffrEnhancedUplinkDefaultConfiguration[i].ulBandwidth == m_ulBandwidth)
+        if (config.cellId == cellId && config.ulBandwidth == m_ulBandwidth)
         {
-            m_ulSubBandOffset = g_ffrEnhancedUplinkDefaultConfiguration[i].ulSubBandOffset;
-            m_ulReuse3SubBandwidth =
-                g_ffrEnhancedUplinkDefaultConfiguration[i].ulReuse3SubBandwidth;
-            m_ulReuse1SubBandwidth =
-                g_ffrEnhancedUplinkDefaultConfiguration[i].ulReuse1SubBandwidth;
+            m_ulSubBandOffset = config.ulSubBandOffset;
+            m_ulReuse3SubBandwidth = config.ulReuse3SubBandwidth;
+            m_ulReuse1SubBandwidth = config.ulReuse1SubBandwidth;
         }
     }
 }
