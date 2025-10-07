@@ -853,8 +853,13 @@ macros, const, or enums. Use of ``static constexpr`` allows a single instance to
 evaluated at compile-time. Declaring the constant in the class enables it to share the scope
 of the class.
 
-If the constant is only used in one file, consider declaring the constant in the implementation
-file (``*.cc``).
+Prefer declaring constants and macros with the ``constexpr`` specifier instead of ``#define``,
+to allow better type safety. If the constant is only used in one file, consider declaring the
+constant in the implementation file (``*.cc``), rather than on the header file, to avoid exposing
+them to the ``ns3`` namespace and avoid recompilations if the value changes.
+
+If the constant should not be publicly exposed but is required in a header, consider declaring
+it in an anonymous namespace in the header file, or as a private ``static constexpr`` class member.
 
 .. sourcecode:: cpp
 
