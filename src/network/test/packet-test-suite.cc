@@ -488,18 +488,6 @@ struct Expected
 
 } // namespace
 
-// tag name, start, end
-#define E(name, start, end) name, start, end
-
-// tag name, start, end, data
-#define E_DATA(name, start, end, data) name, start, end, data
-
-// Check byte tags on a packet, checks name, start, end
-#define CHECK(p, n, ...) DoCheck(p, n, __VA_ARGS__)
-
-// Check byte tags on a packet, checks name, start, end, data
-#define CHECK_DATA(p, n, ...) DoCheckData(p, n, __VA_ARGS__)
-
 /**
  * @ingroup network-test
  * @ingroup tests
@@ -516,17 +504,15 @@ class PacketTest : public TestCase
     /**
      * Checks the packet
      * @param p The packet
-     * @param n The number of variable arguments
-     * @param ... The variable arguments
+     * @param expected The array of expected values
      */
-    void DoCheck(Ptr<const Packet> p, uint32_t n, ...);
+    void DoCheck(Ptr<const Packet> p, const std::vector<Expected>& expected);
     /**
      * Checks the packet and its data
      * @param p The packet
-     * @param n The number of variable arguments
-     * @param ... The variable arguments
+     * @param expected The array of expected values
      */
-    void DoCheckData(Ptr<const Packet> p, uint32_t n, ...);
+    void DoCheckData(Ptr<const Packet> p, const std::vector<Expected>& expected);
 };
 
 PacketTest::PacketTest()
@@ -535,20 +521,8 @@ PacketTest::PacketTest()
 }
 
 void
-PacketTest::DoCheck(Ptr<const Packet> p, uint32_t n, ...)
+PacketTest::DoCheck(Ptr<const Packet> p, const std::vector<Expected>& expected)
 {
-    std::vector<Expected> expected;
-    va_list ap;
-    va_start(ap, n);
-    for (uint32_t k = 0; k < n; ++k)
-    {
-        uint32_t N = va_arg(ap, uint32_t);
-        uint32_t start = va_arg(ap, uint32_t);
-        uint32_t end = va_arg(ap, uint32_t);
-        expected.emplace_back(N, start, end);
-    }
-    va_end(ap);
-
     ByteTagIterator i = p->GetByteTagIterator();
     uint32_t j = 0;
     while (i.HasNext() && j < expected.size())
@@ -572,21 +546,8 @@ PacketTest::DoCheck(Ptr<const Packet> p, uint32_t n, ...)
 }
 
 void
-PacketTest::DoCheckData(Ptr<const Packet> p, uint32_t n, ...)
+PacketTest::DoCheckData(Ptr<const Packet> p, const std::vector<Expected>& expected)
 {
-    std::vector<Expected> expected;
-    va_list ap;
-    va_start(ap, n);
-    for (uint32_t k = 0; k < n; ++k)
-    {
-        uint32_t N = va_arg(ap, uint32_t);
-        uint32_t start = va_arg(ap, uint32_t);
-        uint32_t end = va_arg(ap, uint32_t);
-        int data = va_arg(ap, int);
-        expected.emplace_back(N, start, end, data);
-    }
-    va_end(ap);
-
     ByteTagIterator i = p->GetByteTagIterator();
     uint32_t j = 0;
     while (i.HasNext() && j < expected.size())
@@ -632,60 +593,52 @@ PacketTest::DoRun()
     Ptr<const Packet> p = Create<Packet>(1000);
 
     p->AddByteTag(ATestTag<1>());
-    CHECK(p, 1, E(1, 0, 1000));
+    DoCheck(p, {{1, 0, 1000}});
     Ptr<const Packet> copy = p->Copy();
-    CHECK(copy, 1, E(1, 0, 1000));
+    DoCheck(copy, {{1, 0, 1000}});
 
     p->AddByteTag(ATestTag<2>());
-    CHECK(p, 2, E(1, 0, 1000), E(2, 0, 1000));
-    CHECK(copy, 1, E(1, 0, 1000));
+    DoCheck(p, {{1, 0, 1000}, {2, 0, 1000}});
+    DoCheck(copy, {{1, 0, 1000}});
 
     {
         Packet c0 = *copy;
         Packet c1 = *copy; // NOLINT(performance-unnecessary-copy-initialization)
         c0 = c1;
-        CHECK(&c0, 1, E(1, 0, 1000));
-        CHECK(&c1, 1, E(1, 0, 1000));
-        CHECK(copy, 1, E(1, 0, 1000));
+        DoCheck(&c0, {{1, 0, 1000}});
+        DoCheck(&c1, {{1, 0, 1000}});
+        DoCheck(copy, {{1, 0, 1000}});
         c0.AddByteTag(ATestTag<10>());
-        CHECK(&c0, 2, E(1, 0, 1000), E(10, 0, 1000));
-        CHECK(&c1, 1, E(1, 0, 1000));
-        CHECK(copy, 1, E(1, 0, 1000));
+        DoCheck(&c0, {{1, 0, 1000}, {10, 0, 1000}});
+        DoCheck(&c1, {{1, 0, 1000}});
+        DoCheck(copy, {{1, 0, 1000}});
     }
 
     Ptr<Packet> frag0 = p->CreateFragment(0, 10);
     Ptr<Packet> frag1 = p->CreateFragment(10, 90);
     Ptr<const Packet> frag2 = p->CreateFragment(100, 900);
     frag0->AddByteTag(ATestTag<3>());
-    CHECK(frag0, 3, E(1, 0, 10), E(2, 0, 10), E(3, 0, 10));
+    DoCheck(frag0, {{1, 0, 10}, {2, 0, 10}, {3, 0, 10}});
     frag1->AddByteTag(ATestTag<4>());
-    CHECK(frag1, 3, E(1, 0, 90), E(2, 0, 90), E(4, 0, 90));
+    DoCheck(frag1, {{1, 0, 90}, {2, 0, 90}, {4, 0, 90}});
     frag2->AddByteTag(ATestTag<5>());
-    CHECK(frag2, 3, E(1, 0, 900), E(2, 0, 900), E(5, 0, 900));
+    DoCheck(frag2, {{1, 0, 900}, {2, 0, 900}, {5, 0, 900}});
 
     frag1->AddAtEnd(frag2);
-    CHECK(frag1,
-          6,
-          E(1, 0, 90),
-          E(2, 0, 90),
-          E(4, 0, 90),
-          E(1, 90, 990),
-          E(2, 90, 990),
-          E(5, 90, 990));
+    DoCheck(frag1, {{1, 0, 90}, {2, 0, 90}, {4, 0, 90}, {1, 90, 990}, {2, 90, 990}, {5, 90, 990}});
 
-    CHECK(frag0, 3, E(1, 0, 10), E(2, 0, 10), E(3, 0, 10));
+    DoCheck(frag0, {{1, 0, 10}, {2, 0, 10}, {3, 0, 10}});
     frag0->AddAtEnd(frag1);
-    CHECK(frag0,
-          9,
-          E(1, 0, 10),
-          E(2, 0, 10),
-          E(3, 0, 10),
-          E(1, 10, 100),
-          E(2, 10, 100),
-          E(4, 10, 100),
-          E(1, 100, 1000),
-          E(2, 100, 1000),
-          E(5, 100, 1000));
+    DoCheck(frag0,
+            {{1, 0, 10},
+             {2, 0, 10},
+             {3, 0, 10},
+             {1, 10, 100},
+             {2, 10, 100},
+             {4, 10, 100},
+             {1, 100, 1000},
+             {2, 100, 1000},
+             {5, 100, 1000}});
 
     // force caching a buffer of the right size.
     frag0 = Create<Packet>(1000);
@@ -694,66 +647,66 @@ PacketTest::DoRun()
 
     p = Create<Packet>(1000);
     p->AddByteTag(ATestTag<20>());
-    CHECK(p, 1, E(20, 0, 1000));
+    DoCheck(p, {{20, 0, 1000}});
     frag0 = p->CreateFragment(10, 90);
-    CHECK(p, 1, E(20, 0, 1000));
-    CHECK(frag0, 1, E(20, 0, 90));
+    DoCheck(p, {{20, 0, 1000}});
+    DoCheck(frag0, {{20, 0, 90}});
     p = nullptr;
     frag0->AddHeader(ATestHeader<10>());
-    CHECK(frag0, 1, E(20, 10, 100));
+    DoCheck(frag0, {{20, 10, 100}});
 
     {
         Ptr<Packet> tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddHeader(ATestHeader<10>());
-        CHECK(tmp, 1, E(20, 10, 110));
+        DoCheck(tmp, {{20, 10, 110}});
         ATestHeader<10> h;
         tmp->RemoveHeader(h);
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddHeader(ATestHeader<10>());
-        CHECK(tmp, 1, E(20, 10, 110));
+        DoCheck(tmp, {{20, 10, 110}});
 
         tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddTrailer(ATestTrailer<10>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         ATestTrailer<10> t;
         tmp->RemoveTrailer(t);
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddTrailer(ATestTrailer<10>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
     }
 
     {
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<156>());
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 156));
+        DoCheck(tmp, {{20, 0, 156}});
         tmp->RemoveAtStart(120);
-        CHECK(tmp, 1, E(20, 0, 36));
+        DoCheck(tmp, {{20, 0, 36}});
         Ptr<Packet> a = Create<Packet>(0);
         a->AddAtEnd(tmp);
-        CHECK(a, 1, E(20, 0, 36));
+        DoCheck(a, {{20, 0, 36}});
     }
 
     {
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 0, E(20, 0, 0));
+        DoCheck(tmp, {{}});
     }
     {
         Ptr<Packet> tmp = Create<Packet>(1000);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 1000));
+        DoCheck(tmp, {{20, 0, 1000}});
         tmp->RemoveAtStart(1000);
-        CHECK(tmp, 0, E(0, 0, 0));
+        DoCheck(tmp, {{}});
         Ptr<Packet> a = Create<Packet>(10);
         a->AddByteTag(ATestTag<10>());
-        CHECK(a, 1, E(10, 0, 10));
+        DoCheck(a, {{10, 0, 10}});
         tmp->AddAtEnd(a);
-        CHECK(tmp, 1, E(10, 0, 10));
+        DoCheck(tmp, {{10, 0, 10}});
     }
 
     {
@@ -832,7 +785,7 @@ PacketTest::DoRun()
         p1->AddByteTag(b1);
         p1->AddByteTag(c1);
 
-        CHECK(p1, 3, E(10, 0, 1000), E(11, 0, 1000), E(12, 0, 1000));
+        DoCheck(p1, {{10, 0, 1000}, {11, 0, 1000}, {12, 0, 1000}});
 
         uint32_t serializedSize = p1->GetSerializedSize();
         auto buffer = new uint8_t[serializedSize];
@@ -842,11 +795,7 @@ PacketTest::DoRun()
 
         delete[] buffer;
 
-        CHECK_DATA(p2,
-                   3,
-                   E_DATA(10, 0, 1000, 65),
-                   E_DATA(11, 0, 1000, 66),
-                   E_DATA(12, 0, 1000, 67));
+        DoCheckData(p2, {{10, 0, 1000, 65}, {11, 0, 1000, 66}, {12, 0, 1000, 67}});
     }
 
     {
@@ -854,14 +803,14 @@ PacketTest::DoRun()
         /// See \bugid{572}
         Ptr<Packet> tmp = Create<Packet>(1000);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 1000));
+        DoCheck(tmp, {{20, 0, 1000}});
         tmp->AddHeader(ATestHeader<2>());
-        CHECK(tmp, 1, E(20, 2, 1002));
+        DoCheck(tmp, {{20, 2, 1002}});
         tmp->RemoveAtStart(1);
-        CHECK(tmp, 1, E(20, 1, 1001));
+        DoCheck(tmp, {{20, 1, 1001}});
 #if 0
     tmp->PeekData ();
-    CHECK (tmp, 1, E (20, 1, 1001));
+    DoCheck(tmp, {{20, 1, 1001}});
 #endif
     }
 
@@ -870,11 +819,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtStart(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddHeader(ATestHeader<50>());
-        CHECK(tmp, 1, E(25, 50, 100));
+        DoCheck(tmp, {{25, 50, 100}});
     }
 
     /* Similar test case, but using trailer instead of header. */
@@ -882,11 +831,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddTrailer(ATestTrailer<50>());
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test reducing tagged packet size and increasing it by half. */
@@ -894,11 +843,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtStart(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddHeader(ATestHeader<25>());
-        CHECK(tmp, 1, E(25, 25, 75));
+        DoCheck(tmp, {{25, 25, 75}});
     }
 
     /* Similar test case, but using trailer instead of header. */
@@ -906,11 +855,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddTrailer(ATestTrailer<25>());
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test AddPaddingAtEnd. */
@@ -918,11 +867,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddPaddingAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test reducing tagged packet size and increasing it back,
@@ -932,11 +881,11 @@ PacketTest::DoRun()
     {
         Ptr<Packet> tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddPaddingAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test ALargeTestTag */
