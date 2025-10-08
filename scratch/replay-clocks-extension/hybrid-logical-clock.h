@@ -3,7 +3,6 @@
 
 #include "ns3/local-clock.h"
 #include "ns3/nstime.h"
-#include "ns3/simulator.h"
 #include "ns3/type-id.h"
 
 using namespace ns3;

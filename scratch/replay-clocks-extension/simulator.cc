@@ -4,9 +4,15 @@
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
 
+#include "ns3/ptr.h"
+
 // Assumed to be in the scratch directory or a configured include path
 #include "end-node-application.h"
 #include "router-application.h"
+#include "hybrid-logical-clock.h"
+#include "ns3/unbounded-skew-clock.h"
+#include "ns3/replay-clock.h"
+#include "extended-replay-clock.h"
 
 #include <map>
 #include <string>
@@ -19,9 +25,11 @@ NS_LOG_COMPONENT_DEFINE("ClusteredMeshSimulation");
 int
 main(int argc, char* argv[])
 {
-    LogComponentEnable("ClusteredMeshSimulation", LOG_LEVEL_INFO);
+    LogComponentEnable("ClusteredMeshSimulation", LOG_LEVEL_WARN);
     LogComponentEnable("EndNodeApplication", LOG_LEVEL_INFO);
     LogComponentEnable("RouterApplication", LOG_LEVEL_INFO);
+    LogComponentEnable("ExtendedReplayClock", LOG_LEVEL_INFO);
+    LogComponentEnable("ReplayClock", LOG_LEVEL_INFO);
 
     uint32_t n = 3; // Nodes per cluster
     uint32_t k = 2; // Number of clusters
@@ -113,24 +121,45 @@ main(int argc, char* argv[])
             Ptr<Node> node = clusterNodes[i].Get(j);
             if (j == n-1) // Router node
             {
-                Ptr<RouterApplication> app = CreateObject<RouterApplication>();
-                app->SetAttribute("Epsilon", UintegerValue(e));
-                app->SetAttribute("Interval", TimeValue(MicroSeconds(v))); 
-                app->SetLocalPeers(localPeersMap[node->GetId()]);
-                app->SetRemotePeers(remotePeersMap[node->GetId()]);
-                app->SetNodeId(n-1);
-                app->SetRouterId(i);
+                Ptr<RouterApplication> app = CreateObject<RouterApplication> ();
+
+                // Make the clocks
+                Ptr<ExtendedReplayClock> clock = CreateObject<ExtendedReplayClock> ();
+                clock->SetAttribute("NodeId", UintegerValue(n-1));
+                clock->SetAttribute("RouterId", UintegerValue(i));
+                clock->SetAttribute("ClusterId", UintegerValue(i));
+                clock->SetAttribute("IsRouter", BooleanValue(true));
+
+                app->SetAttribute("Clock", PointerValue(clock));
+                app->Setup(
+                    Socket::CreateSocket(node, TypeId::LookupByName("ns3::UdpSocketFactory")),
+                    localPeersMap[node->GetId()],
+                    remotePeersMap[node->GetId()],
+                    node->GetId(),
+                    routerNodes.Get(i)->GetId(),
+                    i,
+                    true // isRouter
+                );
                 node->AddApplication(app);
                 apps.Add(app);
             }
             else // End node
             {
-                Ptr<EndNodeApplication> app = CreateObject<EndNodeApplication>();
-                app->SetAttribute("Epsilon", UintegerValue(e));
-                app->SetAttribute("Interval", TimeValue(MicroSeconds(v))); 
-                app->SetPeers(localPeersMap[node->GetId()]);
-                app->SetNodeId(j);
-                app->SetClusterId(i);
+                Ptr<EndNodeApplication> app = CreateObject<EndNodeApplication> ();
+
+                Ptr<ExtendedReplayClock> clock = CreateObject<ExtendedReplayClock> ();
+                clock->SetAttribute("NodeId", UintegerValue(j));
+                clock->SetAttribute("ClusterId", UintegerValue(i));
+
+                app->SetAttribute("Clock", PointerValue(clock));
+                app->Setup(
+                    Socket::CreateSocket(node, TypeId::LookupByName("ns3::UdpSocketFactory")),
+                    localPeersMap[node->GetId()],
+                    j,
+                    0,
+                    i,
+                    false // isRouter
+                );
                 node->AddApplication(app);
                 apps.Add(app);
             }

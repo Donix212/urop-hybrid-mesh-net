@@ -37,7 +37,8 @@ UnboundedSkewClock::UnboundedSkewClock()
 {
     NS_LOG_FUNCTION(this);
     // Initialize skew values vector with some example skew values (in nanoseconds)
-    m_skew_values = {0.0f, 0.01f, 0.1f, 1.0f, 1.01f, 1.1f}; // Example skew values
+    m_skew_values = {1.01f, 0.01f, 0.1f, 1.0f, 1.01f, 1.1f}; // Example skew values
+    ShuffleSkew();
 }
 
 UnboundedSkewClock::UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, uint32_t u_numSkews)
@@ -71,7 +72,7 @@ Time
 UnboundedSkewClock::Now()
 {
     NS_LOG_FUNCTION(this);
-
+    
     _Float32 current_skew = 1.0f; // Default skew is 1.0 (no skew)
     if (!m_skew_values.empty())
     {

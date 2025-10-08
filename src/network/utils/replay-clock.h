@@ -46,7 +46,7 @@ class ReplayClock : public LocalClock
                 Ptr<LocalClock> hlc,
                 const std::bitset<64>& bitmap,
                 const std::bitset<64>& offsets,
-                uint8_t counters);
+                uint64_t counters);
 
     /**
      * @brief Destructor for ReplayClock.
@@ -168,7 +168,7 @@ class ReplayClock : public LocalClock
      *
      * @param counters The new counters value to set.
      */
-    void SetCounters(int64_t counters)
+    void SetCounters(uint64_t counters)
     {
         m_counters = counters;
     }
@@ -370,7 +370,7 @@ class ReplayClock : public LocalClock
     Ptr<LocalClock> m_hlc;        //!< Hybrid Logical Clock value
     std::bitset<64> m_bitmap;     //!< Logical clock value
     std::bitset<64> m_offsets;    //!< Offset for the clock
-    int8_t m_counters;            //!< Counter for the clock
+    uint64_t m_counters;            //!< Counter for the clock
     uint64_t m_bitmapInt;         //!< Holder for bitset
     uint64_t m_offsetsInt;        //!< Holder for offsets
 };

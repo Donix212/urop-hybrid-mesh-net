@@ -81,7 +81,7 @@ ReplayClock::ReplayClock(uint32_t nodeId,
                          Ptr<LocalClock> hlc,
                          const std::bitset<64>& bitmap,
                          const std::bitset<64>& offsets,
-                         uint8_t counters)
+                         uint64_t counters)
     : m_nodeId(nodeId),
       m_localClock(localClock),
       m_hlc(hlc),
@@ -267,6 +267,13 @@ ReplayClock::Send(int64_t u_epsilon, Time u_interval)
 {
     NS_LOG_FUNCTION(this << m_localClock->Now() << m_nodeId);
 
+    NS_LOG_INFO("Before Send - NodeId: " << m_nodeId
+                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
+                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
+                     << ", Bitmap: " << m_bitmap
+                     << ", Offsets: " << m_offsets
+                     << ", Counters: " << m_counters);
+
     int64_t newHLC = std::max(m_localClock->Now().GetMicroSeconds() / u_interval.GetMicroSeconds(),
                               m_hlc->Now().GetMicroSeconds());
     int64_t newOffset = newHLC - m_hlc->Now().GetMicroSeconds();
@@ -335,12 +342,32 @@ ReplayClock::Send(int64_t u_epsilon, Time u_interval)
         m_hlc->SetLocalClock(MicroSeconds(newHLC));
         m_bitmap[m_nodeId] = 1;
     }
+
+    NS_LOG_INFO("After Send - NodeId: " << m_nodeId
+                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
+                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
+                     << ", Bitmap: " << m_bitmap
+                     << ", Offsets: " << m_offsets
+                     << ", Counters: " << m_counters);
 }
 
 void
 ReplayClock::Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_interval)
 {
     NS_LOG_FUNCTION(this);
+
+    NS_LOG_INFO("Before Recv - NodeId: " << m_nodeId
+                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
+                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
+                     << ", Bitmap: " << m_bitmap
+                     << ", Offsets: " << m_offsets
+                     << ", Counters: " << m_counters);
+
+    NS_LOG_INFO("Received Clock - NodeId: " << o_replayClock->m_nodeId
+                     << ", HLC: " << o_replayClock->m_hlc->Now().GetMicroSeconds()
+                     << ", Bitmap: " << o_replayClock->m_bitmap
+                     << ", Offsets: " << o_replayClock->m_offsets
+                     << ", Counters: " << o_replayClock->m_counters);
 
     int64_t newHLC =
         std::max((m_localClock->Now().GetMicroSeconds() / u_interval.GetMicroSeconds()),
@@ -390,6 +417,13 @@ ReplayClock::Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_inte
     }
 
     m_bitmap[m_nodeId] = 1;
+
+    NS_LOG_INFO("After Recv - NodeId: " << m_nodeId
+                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
+                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
+                     << ", Bitmap: " << m_bitmap
+                     << ", Offsets: " << m_offsets
+                     << ", Counters: " << m_counters);
 }
 
 } // namespace ns3
