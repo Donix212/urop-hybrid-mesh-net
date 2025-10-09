@@ -74,7 +74,7 @@ Node::GetTypeId()
                 MakeUintegerChecker<uint32_t>())
             .AddAttribute("LocalClock",
                           "The local clock of this node.",
-                          PointerValue(),
+                          PointerValue(nullptr),
                           MakePointerAccessor(&Node::m_localClock),
                           MakePointerChecker<LocalClock>());
     return tid;
@@ -117,7 +117,11 @@ Node::GetId() const
 Time
 Node::GetLocalTime() const
 {
-    return m_localClock->Now();
+    if (m_localClock)
+    {
+        return m_localClock->Now();
+    }
+    return Simulator::Now();
 }
 
 uint32_t
