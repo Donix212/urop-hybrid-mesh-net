@@ -70,7 +70,6 @@ TypeId VectorClockTag::GetTypeId() {
 }
 TypeId VectorClockTag::GetInstanceTypeId() const { return GetTypeId(); }
 uint32_t VectorClockTag::GetSerializedSize() const {
-    // This assumes m_vc has been set before serialization.
     return m_vc.size() * sizeof(uint64_t);
 }
 void VectorClockTag::Serialize(TagBuffer i) const {
@@ -80,11 +79,7 @@ void VectorClockTag::Serialize(TagBuffer i) const {
 }
 void VectorClockTag::Deserialize(TagBuffer i) {
     m_vc.clear();
-    // The number of nodes must be known. We get it from our global clock vector.
-    // This is a valid assumption for this self-contained simulation.
     uint32_t numNodes = GetVectorClock(0)->GetClockVector().size();
-    
-    // Read one uint64_t for each node.
     for (uint32_t k = 0; k < numNodes; ++k) {
         m_vc.push_back(i.ReadU64());
     }
@@ -95,8 +90,20 @@ void VectorClockTag::Print(std::ostream& os) const {
     os << "]";
 }
 
+size_t CalculateReplayClockSizeBytes(Ptr<ReplayClock> clock)
+{
+    if (!clock)
+    {
+        return 0;
+    }
+    size_t hlcSize = sizeof(uint64_t);
+    size_t countersSize = sizeof(uint64_t);
+    const std::bitset<64>& bitmap = clock->GetBitmap();
+    size_t offsetsSize = bitmap.count() * log2(g_epsilon) / 8;
+    return hlcSize + countersSize + offsetsSize;
+}
 
-// --- Simulation Application ---
+// In scratch/replay-clocks-efficiency/efficiency-test.cc
 void ReceivePacket(Ptr<Socket> socket)
 {
     Ptr<Packet> packet;
@@ -106,26 +113,49 @@ void ReceivePacket(Ptr<Socket> socket)
         uint32_t nodeId = socket->GetNode()->GetId();
         g_recvEvents++;
 
-        // --- Measure ReplayClock Recv ---
+        uint32_t senderNodeId = -1;
+        if (InetSocketAddress::IsMatchingType(from))
+        {
+            Ipv4Address senderIpv4 = InetSocketAddress::ConvertFrom(from).GetIpv4();
+            for (uint32_t i = 0; i < NodeList::GetNNodes(); ++i)
+            {
+                Ptr<Ipv4> ipv4 = NodeList::GetNode(i)->GetObject<Ipv4>();
+                Ipv4Address nodeAddress = ipv4->GetAddress(1, 0).GetLocal();
+                if (nodeAddress == senderIpv4)
+                {
+                    senderNodeId = i;
+                    break;
+                }
+            }
+        }
+
+        if (senderNodeId == (uint32_t)-1)
+        {
+            NS_LOG_WARN("Could not determine sender node ID. Skipping clock update.");
+            continue;
+        }
+
+        Ptr<ReplayClock> senderReplayClock = GetReplayClock(senderNodeId);
+        VectorClock receivedVC(0, vectorClocks.size());
+        VectorClockTag tag;
+        bool hasVectorTag = packet->PeekPacketTag(tag);
+        if (hasVectorTag)
+        {
+            receivedVC.SetClockVector(tag.GetClock());
+        }
+
         auto startReplay = std::chrono::high_resolution_clock::now();
-        Ptr<ReplayClock> senderReplayClock = GetReplayClock(0); // Simplified assumption
         GetReplayClock(nodeId)->Recv(senderReplayClock, g_epsilon, g_interval);
         auto endReplay = std::chrono::high_resolution_clock::now();
         g_totalReplayRecvTime += std::chrono::duration<double, std::micro>(endReplay - startReplay).count();
 
-        // --- Measure VectorClock Recv ---
-        VectorClockTag tag;
-        if (packet->PeekPacketTag(tag))
+        if (hasVectorTag)
         {
             auto startVector = std::chrono::high_resolution_clock::now();
-            VectorClock receivedVC(0, vectorClocks.size());
-            receivedVC.SetClockVector(tag.GetClock()); 
             GetVectorClock(nodeId)->Recv(receivedVC);
             auto endVector = std::chrono::high_resolution_clock::now();
             g_totalVectorRecvTime += std::chrono::duration<double, std::micro>(endVector - startVector).count();
         }
-
-        NS_LOG_INFO("Node " << nodeId << " received a packet.");
     }
 }
 
@@ -134,31 +164,26 @@ void SendPacket(Ptr<Socket> socket, uint32_t packetSize, uint32_t numNodes, int6
     uint32_t nodeId = socket->GetNode()->GetId();
     g_sendEvents++;
 
-    // --- Measure ReplayClock Send ---
     auto startReplay = std::chrono::high_resolution_clock::now();
     GetReplayClock(nodeId)->Send(epsilon, interval);
     auto endReplay = std::chrono::high_resolution_clock::now();
     g_totalReplaySendTime += std::chrono::duration<double, std::micro>(endReplay - startReplay).count();
 
-    // --- Measure VectorClock Send ---
     auto startVector = std::chrono::high_resolution_clock::now();
     GetVectorClock(nodeId)->Send();
     auto endVector = std::chrono::high_resolution_clock::now();
     g_totalVectorSendTime += std::chrono::duration<double, std::micro>(endVector - startVector).count();
 
-    // Create a packet and add the VectorClock tag
     Ptr<Packet> packet = Create<Packet>(packetSize);
     VectorClockTag tag;
     tag.SetClock(GetVectorClock(nodeId)->GetClockVector());
     packet->AddPacketTag(tag);
 
-    // Send to a random node other than self
     uint32_t destNodeId = (nodeId + 1 + rand() % (numNodes - 1)) % numNodes;
     Ipv4Address destAddress = NodeList::GetNode(destNodeId)->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
     socket->SendTo(packet, 0, InetSocketAddress(destAddress, 80));
-
-    NS_LOG_INFO("Node " << nodeId << " sent a packet to Node " << destNodeId);
 }
+
 
 void PrintResults(uint32_t numNodes)
 {
@@ -167,8 +192,6 @@ void PrintResults(uint32_t numNodes)
     std::cout << "Total Nodes: " << numNodes << ", Epsilon: " << g_epsilon << ", Interval: " << g_interval.GetMicroSeconds() << " us\n";
     std::cout << "Send Events: " << g_sendEvents << ", Recv Events: " << g_recvEvents << "\n";
     std::cout << "-------------------------------------------\n";
-
-    // --- Time Efficiency ---
     std::cout << "## Time Efficiency (microseconds per operation) ##\n";
     std::cout << "Replay Clock - Avg Send Time: " << (g_sendEvents > 0 ? g_totalReplaySendTime / g_sendEvents : 0) << " us\n";
     std::cout << "Vector Clock - Avg Send Time: " << (g_sendEvents > 0 ? g_totalVectorSendTime / g_sendEvents : 0) << " us\n";
@@ -176,8 +199,6 @@ void PrintResults(uint32_t numNodes)
     std::cout << "Replay Clock - Avg Recv Time: " << (g_recvEvents > 0 ? g_totalReplayRecvTime / g_recvEvents : 0) << " us\n";
     std::cout << "Vector Clock - Avg Recv Time: " << (g_recvEvents > 0 ? g_totalVectorRecvTime / g_recvEvents : 0) << " us\n";
     std::cout << "-------------------------------------------\n";
-    
-    // --- Space Efficiency ---
     std::cout << "## Space Efficiency (bytes per clock instance/packet) ##\n";
     if (numNodes > 0)
     {
@@ -186,10 +207,10 @@ void PrintResults(uint32_t numNodes)
         std::cout << "Replay Clock - Memory Size per Node: " << replayClockMemorySize << " bytes\n";
         std::cout << "Vector Clock - Memory Size per Node: " << vectorClockMemorySize << " bytes\n";
         
-        size_t replayClockPacketSize = sizeof(uint64_t) * 3; // Approx: bitmap, offsets, counters
+        size_t replayClockPacketSize = CalculateReplayClockSizeBytes(GetReplayClock(0));
         size_t vectorClockPacketSize = GetVectorClock(0)->GetSizeBytes();
         std::cout << "-------------------------------------------\n";
-        std::cout << "Replay Clock - Packet Overhead: " << replayClockPacketSize << " bytes (estimated)\n";
+        std::cout << "Replay Clock - Packet Overhead: " << replayClockPacketSize << " bytes\n";
         std::cout << "Vector Clock - Packet Overhead: " << vectorClockPacketSize << " bytes\n";
     }
      std::cout << "-------------------------------------------\n";
@@ -200,22 +221,27 @@ int main(int argc, char* argv[])
 {
     LogComponentEnable("ClockEfficiencyTest", LOG_LEVEL_INFO);
 
-    // Default simulation parameters
-    uint32_t nCsma = 5;
-    double packetIntervalSeconds = 0.1;
+    uint32_t nCsma = 16;
+    double packetIntervalSeconds = 0.5;
     uint32_t packetSize = 1024;
     double simulationTime = 10.0;
-    int64_t epsilon_param = 1000;
-    uint64_t intervalUs_param = 100;
+    int64_t epsilon_param = 10;
+    uint64_t intervalUs_param = 1000;
+    uint64_t channelDelayUs = 1;
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("nCsma", "Number of nodes in the simulation", nCsma);
     cmd.AddValue("packetInterval", "Interval between sending packets (seconds)", packetIntervalSeconds);
+    cmd.AddValue("channelDelay", "Channel delay (microseconds)", channelDelayUs);
     cmd.AddValue("epsilon", "Max deviation for ReplayClock (us)", epsilon_param);
     cmd.AddValue("interval", "HLC interval for ReplayClock (us)", intervalUs_param);
     cmd.Parse(argc, argv);
+
+    if(nCsma * log2(epsilon_param) > 64)
+    {
+        NS_ABORT_MSG("Epsilon too high for the number of nodes. Must satisfy n * log2(epsilon) <= 64.");
+    }
     
-    // Assign parsed values to global variables
     g_epsilon = epsilon_param;
     g_interval = MicroSeconds(intervalUs_param);
     Time packetInterval = Seconds(packetIntervalSeconds);
@@ -225,7 +251,7 @@ int main(int argc, char* argv[])
 
     CsmaHelper csma;
     csma.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma.SetChannelAttribute("Delay", TimeValue(MicroSeconds(channelDelayUs)));
     NetDeviceContainer csmaDevices = csma.Install(csmaNodes);
 
     InternetStackHelper stack;
@@ -234,7 +260,6 @@ int main(int argc, char* argv[])
     address.SetBase("10.1.1.0", "255.255.255.0");
     Ipv4InterfaceContainer csmaInterfaces = address.Assign(csmaDevices);
 
-    // --- Initialize Clocks for each node ---
     replayClocks.resize(nCsma);
     vectorClocks.resize(nCsma);
     for (uint32_t i = 0; i < nCsma; ++i)
@@ -250,7 +275,6 @@ int main(int argc, char* argv[])
         vectorClocks[i] = CreateObject<VectorClock>(i, nCsma);
     }
     
-    // --- Setup Applications ---
     for (uint32_t i = 0; i < nCsma; ++i)
     {
         Ptr<Socket> recvSocket = Socket::CreateSocket(csmaNodes.Get(i), UdpSocketFactory::GetTypeId());

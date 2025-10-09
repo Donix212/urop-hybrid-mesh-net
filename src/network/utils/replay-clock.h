@@ -335,7 +335,7 @@ class ReplayClock : public LocalClock
      * This function prints the current state of the clock, including HLC, bitmap, offsets, and
      * counters.
      */
-    void PrintClock();
+    void PrintClock(std::ostream& os, uint64_t u_epsilon);
 
     // Main functions
 

@@ -107,7 +107,7 @@ ReplayClock::Now()
 void
 ReplayClock::Shift(Time physicalTime, int64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this << physicalTime << m_nodeId << u_epsilon);
+    // NS_LOG_FUNCTION(this << physicalTime << m_nodeId << u_epsilon);
     int64_t index = 0;
     int64_t bitmap = m_bitmap.to_ullong();
     while (bitmap > 0)
@@ -137,7 +137,7 @@ ReplayClock::Shift(Time physicalTime, int64_t u_epsilon)
 void
 ReplayClock::MergeSameEpoch(ReplayClock o_replayClock, int64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this);
     ReplayClock temp = *this;
     temp.m_bitmap = m_bitmap | o_replayClock.m_bitmap;
     temp.m_offsets = 0;
@@ -190,7 +190,7 @@ ReplayClock::MergeSameEpoch(ReplayClock o_replayClock, int64_t u_epsilon)
 bool
 ReplayClock::EqualOffset(ReplayClock o_replayClock)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this);
     if (o_replayClock.m_hlc != m_hlc || o_replayClock.m_bitmap != m_bitmap ||
         o_replayClock.m_offsets != m_offsets)
     {
@@ -202,14 +202,14 @@ ReplayClock::EqualOffset(ReplayClock o_replayClock)
 int64_t
 ReplayClock::ExtractKBitsFromPositionP(int64_t number, int64_t k, int64_t p)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this);
     return ((number >> p) & ((1 << k) - 1));
 }
 
 int64_t
 ReplayClock::GetOffsetAtIndex(int64_t index, int64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this);
     int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
     return ExtractKBitsFromPositionP(m_offsets.to_ulong(), maxOffsetSize, maxOffsetSize * index);
 }
@@ -217,7 +217,7 @@ ReplayClock::GetOffsetAtIndex(int64_t index, int64_t u_epsilon)
 void
 ReplayClock::SetOffsetAtIndex(int64_t index, int64_t value, int64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this);
 
     int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
 
@@ -236,7 +236,7 @@ ReplayClock::SetOffsetAtIndex(int64_t index, int64_t value, int64_t u_epsilon)
 void
 ReplayClock::RemoveOffsetAtIndex(int64_t index, int64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this);
 
     int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
 
@@ -253,26 +253,30 @@ ReplayClock::RemoveOffsetAtIndex(int64_t index, int64_t u_epsilon)
 }
 
 void
-ReplayClock::PrintClock()
+ReplayClock::PrintClock(std::ostream& os, uint64_t u_epsilon)
 {
-    NS_LOG_FUNCTION(this);
-    NS_LOG_INFO("HLC: " << m_hlc->Now());
-    NS_LOG_INFO("Bitmap: " << m_bitmap);
-    NS_LOG_INFO("Offsets: " << m_offsets);
-    NS_LOG_INFO("Counters: " << m_counters);
+    std::cout << m_hlc->Now().GetMicroSeconds() << " | ";
+    std::cout << m_bitmap << " | ";
+    int64_t maxOffsetSize = std::bit_width(static_cast<uint64_t>(u_epsilon));
+    int64_t index = 0;
+    int64_t bitmap = m_bitmap.to_ullong();
+    while (bitmap > 0)
+    {
+        uint32_t processId = log2((~(bitmap ^ (~(bitmap - 1))) + 1) >> 1);
+        int64_t offsetAtIndex = GetOffsetAtIndex(index, u_epsilon);
+        std::cout << "[" << processId << ":" << offsetAtIndex << "] ";
+        bitmap &= (bitmap - 1);
+        index++;
+    }
+    std::cout << "| " << m_counters << std::endl;
 }
 
 void
 ReplayClock::Send(int64_t u_epsilon, Time u_interval)
 {
-    NS_LOG_FUNCTION(this << m_localClock->Now() << m_nodeId);
+    // NS_LOG_FUNCTION(this << m_localClock->Now() << m_nodeId);
 
-    NS_LOG_INFO("Before Send - NodeId: " << m_nodeId
-                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
-                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
-                     << ", Bitmap: " << m_bitmap
-                     << ", Offsets: " << m_offsets
-                     << ", Counters: " << m_counters);
+    // PrintClock(std::cout, u_epsilon);
 
     int64_t newHLC = std::max(m_localClock->Now().GetMicroSeconds() / u_interval.GetMicroSeconds(),
                               m_hlc->Now().GetMicroSeconds());
@@ -294,13 +298,11 @@ ReplayClock::Send(int64_t u_epsilon, Time u_interval)
             {
                 SetOffsetAtIndex(index, newOffset, u_epsilon);
                 m_bitmap[processId] = 1;
+                if(newOffset == offsetAtNodeId) m_counters += 1;
             }
             bitmap &= (bitmap - 1);
             index++;
         }
-
-        m_counters = 0;
-        m_bitmap[m_nodeId] = 1;
     }
     else
     {
@@ -343,31 +345,19 @@ ReplayClock::Send(int64_t u_epsilon, Time u_interval)
         m_bitmap[m_nodeId] = 1;
     }
 
-    NS_LOG_INFO("After Send - NodeId: " << m_nodeId
-                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
-                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
-                     << ", Bitmap: " << m_bitmap
-                     << ", Offsets: " << m_offsets
-                     << ", Counters: " << m_counters);
+    // PrintClock(std::cout, u_epsilon);
 }
 
 void
 ReplayClock::Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_interval)
 {
-    NS_LOG_FUNCTION(this);
+    // NS_LOG_FUNCTION(this); 
 
-    NS_LOG_INFO("Before Recv - NodeId: " << m_nodeId
-                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
-                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
-                     << ", Bitmap: " << m_bitmap
-                     << ", Offsets: " << m_offsets
-                     << ", Counters: " << m_counters);
+    // NS_LOG_INFO("Before Recv - NodeId: " << m_nodeId);
+    // PrintClock(std::cout, u_epsilon);
 
-    NS_LOG_INFO("Received Clock - NodeId: " << o_replayClock->m_nodeId
-                     << ", HLC: " << o_replayClock->m_hlc->Now().GetMicroSeconds()
-                     << ", Bitmap: " << o_replayClock->m_bitmap
-                     << ", Offsets: " << o_replayClock->m_offsets
-                     << ", Counters: " << o_replayClock->m_counters);
+    // NS_LOG_INFO("Received Clock - NodeId: " << o_replayClock->m_nodeId);
+    // o_replayClock->PrintClock(std::cout, u_epsilon);
 
     int64_t newHLC =
         std::max((m_localClock->Now().GetMicroSeconds() / u_interval.GetMicroSeconds()),
@@ -379,6 +369,12 @@ ReplayClock::Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_inte
 
     a.Shift(MicroSeconds(newHLC), u_epsilon);
     b.Shift(MicroSeconds(newHLC), u_epsilon);
+
+    // NS_LOG_INFO("After Shift A - NodeId: " << a.m_nodeId);
+    // a.PrintClock(std::cout, u_epsilon);
+
+    // NS_LOG_INFO("After Shift B - NodeId: " << b.m_nodeId);
+    // b.PrintClock(std::cout, u_epsilon);
 
     a.MergeSameEpoch(b, u_epsilon);
 
@@ -418,12 +414,8 @@ ReplayClock::Recv(Ptr<ReplayClock> o_replayClock, int64_t u_epsilon, Time u_inte
 
     m_bitmap[m_nodeId] = 1;
 
-    NS_LOG_INFO("After Recv - NodeId: " << m_nodeId
-                     << ",localTime: " << m_localClock->Now().GetMicroSeconds()
-                     << ", HLC: " << m_hlc->Now().GetMicroSeconds()
-                     << ", Bitmap: " << m_bitmap
-                     << ", Offsets: " << m_offsets
-                     << ", Counters: " << m_counters);
+    // NS_LOG_INFO("After Recv - NodeId: " << m_nodeId);
+    // PrintClock(std::cout, u_epsilon);
 }
 
 } // namespace ns3
