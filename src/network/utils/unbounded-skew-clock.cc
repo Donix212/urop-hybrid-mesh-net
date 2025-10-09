@@ -77,7 +77,7 @@ UnboundedSkewClock::Now()
     {
         current_skew = m_skew_values[m_index];
     }
-    m_ptime += (Simulator::Now() - m_lastreadptime) * current_skew; // Update current time
+    m_ptime += MicroSeconds((Simulator::Now() - m_lastreadptime).GetMicroSeconds() * current_skew); // Update current time
     m_lastreadptime = Simulator::Now();                             // Update last read time
     return m_ptime;
 }
