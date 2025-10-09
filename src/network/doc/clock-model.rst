@@ -92,3 +92,8 @@ WARN: Provided skew values vector is empty. No changes made.
 INFO: UnboundedSkewClock:Now(): [skew=1.01] advancing ptime from 1000ns to 1101ns
 
 This example log output shows the clock being initialized, a warning message, and a call to the `Now()` method where the local time is advanced at a 1.01x rate..
+
+References
+*****************
+
+[1] Ishaan Kiran Lagwankar and Sandeep S. Kulkarni. 2025. Clock Skew Models for ns-3. In Proceedings of the 2025 International Conference on ns-3 (ICNS3 '25). Association for Computing Machinery, New York, NY, USA, 70–81. https://doi.org/10.1145/3747204.3747208
