@@ -52,6 +52,7 @@
 #include "ns3/simulator.h"
 #include "ns3/single-model-spectrum-channel.h"
 #include "ns3/spectrum-wifi-phy.h"
+#include "ns3/units.h"
 #include "ns3/wifi-mac-trailer.h"
 #include "ns3/wifi-net-device.h"
 #include "ns3/wifi-psdu.h"
@@ -77,8 +78,8 @@ class InterferenceExperiment
         meter_u xB;            ///< x B
         std::string txModeA;   ///< transmit mode A
         std::string txModeB;   ///< transmit mode B
-        dBm_u txPowerA;        ///< transmit power A
-        dBm_u txPowerB;        ///< transmit power B
+        dBm_t txPowerA;        ///< transmit power A
+        dBm_t txPowerB;        ///< transmit power B
         uint32_t packetSizeA;  ///< packet size A
         uint32_t packetSizeB;  ///< packet size B
         uint8_t channelA;      ///< channel number A
@@ -89,7 +90,7 @@ class InterferenceExperiment
         WifiPhyBand band;      ///< band
         WifiPreamble preamble; ///< preamble
         bool captureEnabled;   ///< whether physical layer capture is enabled
-        dB_u captureMargin;    ///< margin used for physical layer capture
+        dB_t captureMargin;    ///< margin used for physical layer capture
     };
 
     InterferenceExperiment();
@@ -197,7 +198,7 @@ InterferenceExperiment::Input::Input()
       band(WIFI_PHY_BAND_5GHZ),
       preamble(WIFI_PREAMBLE_LONG),
       captureEnabled(false),
-      captureMargin(dB_u{0})
+      captureMargin(dB_t{0})
 {
 }
 
