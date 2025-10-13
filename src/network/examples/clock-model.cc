@@ -27,7 +27,7 @@ main(int argc, char* argv[])
     // Simulate for a certain period, printing local times
     for (int i = 0; i < 20; ++i)
     {
-        Simulator::Schedule(Seconds(i), [nodeA, nodeB, i]() {
+        Simulator::Schedule(Seconds(i), [nodeA, nodeB]() {
             Time timeA = nodeA->GetLocalTime();
             Time timeB = nodeB->GetLocalTime();
             NS_LOG_INFO("At simulation time " << Simulator::Now().GetSeconds()
