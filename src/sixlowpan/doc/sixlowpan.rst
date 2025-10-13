@@ -12,17 +12,9 @@ and :rfc:`6282` ("Compression Format for IPv6 Datagrams over IEEE 802.15.4-Based
 
 The 6LoWPAN optimized neighbour discovery (6LoWPAN-ND) is also implemented in this module, as specified by :rfc:`8505` ("Registration Extensions for IPv6 over Low-Power Wireless Personal Area Network (6LoWPAN) Neighbor Discovery") and :rfc:`6775` ("Neighbor Discovery Optimization for IPv6 over Low-Power Wireless Personal Area Networks (6LoWPANs)").
 
-The 6LoWPAN model design does not follow the standard from an architectural standpoint, as it does extend it beyond the original IEEE 802.15.4 (Lr-WPAN) scope by supporting also
+The 6LoWPAN model design does not follow the standard from an architectural standpoint, as it does extend it beyond the original IEEE 802.15.4 (Lr-WPAN) scope by supporting 
 other kinds of networks such as Sub-1 GHz low-power RF, Bluetooth LE, etc. Other than that, the module strictly follows :rfc:`4944` and :rfc:`6282`, with the exception of header compression 2 (HC2) encoding which is not supported, as it has been superseded by
 IP Header Compression (IPHC) and Next Header Compression (NHC) types (\ :rfc:`6282`).
-
-The model design does not follow strictly the standard from an architectural
-standpoint, as it does extend it beyond the original scope by supporting also
-other kinds of networks.
-
-Other than that, the module strictly follows :rfc:`4944` and :rfc:`6282`, with the
-exception that HC2 encoding is not supported, as it has been superseded by IPHC and NHC
-compression type (\ :rfc:`6282`).
 
 **SixLowPanNetDevice**
 
