@@ -78,12 +78,11 @@ class WifiTxStatsHelperTest : public TestCase
      * @param context the context
      * @param psduMap the PSDU map
      * @param txVector the TX vector
-     * @param txPower the tx power in Watts
      */
     void Transmit(std::string context,
                   WifiConstPsduMap psduMap,
                   WifiTxVector txVector,
-                  Watt_u txPower);
+                  Watt_u /* txPower */);
 
   private:
     TestOption m_option;          //!< Test option
@@ -124,7 +123,7 @@ void
 WifiTxStatsHelperTest::Transmit(std::string context,
                                 WifiConstPsduMap psduMap,
                                 WifiTxVector txVector,
-                                Watt_u txPower)
+                                Watt_u)
 {
     const auto linkId = atoi(context.c_str());
     if (linkId == 0)
