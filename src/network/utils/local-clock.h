@@ -22,13 +22,13 @@ class LocalClock : public Object
     static TypeId GetTypeId();
 
     LocalClock();
-    ~LocalClock() override;
+    ~LocalClock();
 
     /**
      * @brief Get the current time from the local clock.
      * @return Current time
      */
-    Time Now() override;
+    virtual Time Now() = 0;
 
   private:
     Time m_ptime; ///< Current time
