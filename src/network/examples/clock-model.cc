@@ -18,10 +18,10 @@ main(int argc, char* argv[])
     Ptr<Node> nodeB = CreateObject<Node>();
 
     // Create and assign UnboundedSkewClock to nodeA
-    Ptr<UnboundedSkewClock> clockA = CreateObject<UnboundedSkewClock>(0.0, 1.0, 10);
+    Ptr<UnboundedSkewClock> clockA = CreateObject<UnboundedSkewClock>(0.0f, 1.0f, 10);
     nodeA->SetAttribute("LocalClock", PointerValue(clockA));
     // Create and assign UnboundedSkewClock to nodeB
-    Ptr<UnboundedSkewClock> clockB = CreateObject<UnboundedSkewClock>(0.0, 1.0, 10);
+    Ptr<UnboundedSkewClock> clockB = CreateObject<UnboundedSkewClock>(0.0f, 1.0f, 10);
     nodeB->SetAttribute("LocalClock", PointerValue(clockB));
 
     // Simulate for a certain period, printing local times
