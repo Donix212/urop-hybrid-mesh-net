@@ -18,7 +18,7 @@ class UnboundedSkewClockTestCase : public TestCase
     {
     }
 
-    virtual void DoRun() override
+    void DoRun() override
     {
         NS_LOG_INFO("Starting UnboundedSkewClockTestCase");
 
