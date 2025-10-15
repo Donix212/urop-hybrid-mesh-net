@@ -22,7 +22,7 @@ class LocalClock : public Object
     static TypeId GetTypeId();
 
     LocalClock();
-    ~LocalClock();
+    ~LocalClock() override;
 
     /**
      * @brief Get the current time from the local clock.

@@ -25,7 +25,7 @@ class UnboundedSkewClock : public LocalClock
 
     UnboundedSkewClock();
     UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, uint32_t u_numSkews);
-    ~UnboundedSkewClock();
+    ~UnboundedSkewClock() override;
 
     /**
      * @brief Get the current time from the local clock.
