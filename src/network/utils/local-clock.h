@@ -19,6 +19,10 @@ namespace ns3
 class LocalClock : public Object
 {
   public:
+    /**
+     * @brief Get the type ID.
+     * @return The object TypeId.
+     */
     static TypeId GetTypeId();
 
     LocalClock();
