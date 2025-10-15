@@ -24,7 +24,15 @@ class UnboundedSkewClock : public LocalClock
     static TypeId GetTypeId();
 
     UnboundedSkewClock();
+    
+    /**
+     * @brief Construct an UnboundedSkewClock with a range of random skew values.
+     * @param u_minSkew The minimum skew value (e.g., 0.99).
+     * @param u_maxSkew The maximum skew value (e.g., 1.01).
+     * @param u_numSkews The number of random skew values to generate.
+     */
     UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, uint32_t u_numSkews);
+
     ~UnboundedSkewClock() override;
 
     /**

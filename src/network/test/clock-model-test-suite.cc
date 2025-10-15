@@ -9,7 +9,9 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("ClockModelTestSuite");
 
-// TestCase for UnboundedSkewClock
+/**
+ * @brief Test case to verify the functionality of the UnboundedSkewClock.
+ */
 class UnboundedSkewClockTestCase : public TestCase
 {
   public:
@@ -57,7 +59,9 @@ class UnboundedSkewClockTestCase : public TestCase
     }
 };
 
-// Test suite registration
+/**
+ * @brief Test suite for all clock models.
+ */
 class ClockModelTestSuite : public TestSuite
 {
   public:
