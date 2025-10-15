@@ -270,17 +270,44 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         const Ptr<const MobilityModel> aMob,
         const Ptr<const MobilityModel> bMob) const;
 
+    /**
+     * @brief Large-scale channel parameters (3GPP TR 38.901).
+     *
+     * Contains the large-scale statistics used by the channel model.
+     * Shadow fading (SF) is handled in the propagation loss model, not here.
+     *
+     * @note Units:
+     *   - DS: delay spread [s]
+     *   - ASD/ASA/ZSD/ZSA: angular spreads [deg]
+     *   - kFactor: Rician K-factor [dB] (LOS only; 0 for NLOS usage)
+     */
     struct LargeScaleParameters
     {
-        // NOTE the shadowing is generated in the propagation loss model
+        /** Delay spread [s]. */
         double DS{0};
+        /** Azimuth spread of departure [deg]. */
         double ASD{0};
+        /** Azimuth spread of arrival [deg]. */
         double ASA{0};
+        /** Zenith spread of arrival [deg]. */
         double ZSA{0};
+        /** Zenith spread of departure [deg]. */
         double ZSD{0};
+        /** Rician K-factor [dB] (used in LOS). */
         double kFactor{0};
     };
 
+    /**
+     * @brief Generate large-scale parameters (LSPs) for the current channel state.
+     *
+     * Draws correlated large-scale parameters according to the 3GPP table and the
+     * specified LOS/NLOS condition, including delay spread (DS), angular spreads
+     * (ASD/ASA/ZSD/ZSA), and K-factor for LOS.
+     *
+     * @param losCondition Line-of-sight condition (LOS or NLOS).
+     * @param table3gpp Pointer to the 3GPP parameters table (means, std-devs, sqrt correlation).
+     * @return LargeScaleParameters structure containing the generated LSPs.
+     */
     LargeScaleParameters GenerateLSPs(ChannelCondition::LosConditionValue losCondition,
                                       const Ptr<const ParamsTable> table3gpp) const;
 
@@ -407,11 +434,18 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                                   const Ptr<const ParamsTable> table3gpp,
                                   double kFactor);
 
+    /**
+     * @brief Per-cluster center angles for arrival/departure in azimuth and zenith.
+     */
     struct ClusterAngles
     {
+        /** Azimuth of arrival (AOA) center angles per cluster [deg]. */
         DoubleVector aoa;
+        /** Azimuth of departure (AOD) center angles per cluster [deg]. */
         DoubleVector aod;
+        /** Zenith of arrival (ZOA) center angles per cluster [deg]. */
         DoubleVector zoa;
+        /** Zenith of departure (ZOD) center angles per cluster [deg]. */
         DoubleVector zod;
     };
 
@@ -613,6 +647,32 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                                          const DoubleVector& clusterAoa,
                                          const DoubleVector& clusterZoa) const;
 
+    /**
+     * @brief Randomly couples rays within each cluster and computes per-ray angles in radians.
+     *
+     * For each cluster, generates per-ray azimuth/zenith angles of arrival and departure
+     * around the provided cluster center angles, using the 3GPP table parameters and
+     * the standard intra-cluster offsets. The resulting per-ray angles are shuffled to
+     * realize random coupling.
+     *
+     * @param channelParams Pointer to the channel parameters (number of reduced clusters, etc.).
+     * @param table3gpp Pointer to the 3GPP parameters table (rays per cluster, coupling constants).
+     * @param[out] rayAoaRadian Output per-ray azimuth-of-arrival angles [rad] as
+     *                          [numClusters][raysPerCluster].
+     * @param[out] rayAodRadian Output per-ray azimuth-of-departure angles [rad] as
+     *                          [numClusters][raysPerCluster].
+     * @param[out] rayZoaRadian Output per-ray zenith-of-arrival angles [rad] as
+     *                          [numClusters][raysPerCluster].
+     * @param[out] rayZodRadian Output per-ray zenith-of-departure angles [rad] as
+     *                          [numClusters][raysPerCluster].
+     * @param clusterAoa Input per-cluster azimuth-of-arrival center angles [deg].
+     * @param clusterAod Input per-cluster azimuth-of-departure center angles [deg].
+     * @param clusterZoa Input per-cluster zenith-of-arrival center angles [deg].
+     * @param clusterZod Input per-cluster zenith-of-departure center angles [deg].
+     *
+     * @note Angles in clusterA* and clusterZ* are degrees; outputs are radians.
+     * @pre ray* output containers are cleared and resized by this function.
+     */
     void RandomRaysCoupling(const Ptr<const ThreeGppChannelParams> channelParams,
                             const Ptr<const ParamsTable> table3gpp,
                             Double2DVector* rayAoaRadian,
@@ -623,12 +683,40 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                             const DoubleVector& clusterAod,
                             const DoubleVector& clusterZoa,
                             const DoubleVector& clusterZod) const;
-
+    /**
+     * @brief Generate cross-polarization power ratios and initial per-ray phases.
+     *
+     * For each cluster and ray, draws the cross-polarization power ratio (XPR) according
+     * to the 3GPP parameters and initializes four polarization-dependent phases uniformly
+     * in [-pi, pi]. The outputs are resized/filled by this function.
+     *
+     * @param[out] crossPolarizationPowerRatios Matrix [numClusters][raysPerCluster] with XPR values
+     * (linear scale).
+     * @param[out] clusterPhase 3D array [numClusters][raysPerCluster][4] with initial phases
+     * (radians).
+     * @param reducedClusterNumber Number of (possibly reduced) clusters to generate.
+     * @param table3gpp Pointer to the 3GPP parameters table (uXpr, sigXpr, rays per cluster).
+     */
     void GenerateCrossPolPowerRatiosAndInitialPhases(Double2DVector* crossPolarizationPowerRatios,
                                                      Double3DVector* clusterPhase,
                                                      uint8_t reducedClusterNumber,
                                                      const Ptr<const ParamsTable> table3gpp) const;
-
+    /**
+     * @brief Identify the two strongest clusters and derive sub-cluster parameters.
+     *
+     * Finds the indices of the two strongest clusters by power, and appends delayed copies
+     * and duplicated angles for the strongest clusters as per 3GPP procedure (sub-clusters).
+     *
+     * @param channelParams Current channel parameters (cluster powers, counts).
+     * @param table3gpp Pointer to 3GPP parameters table (cDS, rays per cluster).
+     * @param[out] cluster1st Index of the strongest cluster.
+     * @param[out] cluster2nd Index of the second strongest cluster.
+     * @param[in,out] clusterDelay Per-cluster delays [s]; sub-cluster delays are appended.
+     * @param[in,out] clusterAoa Per-cluster AOA centers [deg]; duplicated for sub-clusters.
+     * @param[in,out] clusterAod Per-cluster AOD centers [deg]; duplicated for sub-clusters.
+     * @param[in,out] clusterZoa Per-cluster ZOA centers [deg]; duplicated for sub-clusters.
+     * @param[in,out] clusterZod Per-cluster ZOD centers [deg]; duplicated for sub-clusters.
+     */
     void FindStrongestClusters(const Ptr<const ThreeGppChannelParams> channelParams,
                                const Ptr<const ParamsTable> table3gpp,
                                uint8_t* cluster1st,
@@ -655,6 +743,17 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         Ptr<const ThreeGppChannelParams> channelParams,
         std::vector<std::vector<std::pair<double, double>>>* cachedAngleSinCos) const;
 
+    /**
+     * @brief Generate additional Doppler terms for delayed (reflected) paths.
+     *
+     * Produces per-cluster Doppler parameters used to model moving scatterers
+     * as per TR 37.885. Two (or four) extra terms are included to account for
+     * first/second strongest cluster sub-rays.
+     *
+     * @param reducedClusterNumber Number of (possibly reduced) clusters.
+     * @param[out] dopplerTermAlpha Per-cluster alpha terms in [-1, 1].
+     * @param[out] dopplerTermD Per-cluster Doppler speed terms in [-vScatt, vScatt] [m/s].
+     */
     void GenerateDopplerTerms(uint8_t reducedClusterNumber,
                               DoubleVector* dopplerTermAlpha,
                               DoubleVector* dopplerTermD) const;
@@ -733,6 +832,15 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                                 Ptr<const PhasedArrayModel> aAntenna,
                                 Ptr<const PhasedArrayModel> bAntenna);
 
+    /**
+     * @brief Check if spatial-consistency requires updating channel parameters.
+     *
+     * Returns true when spatial consistency is enabled and the coherence time
+     * (UpdatePeriod) has elapsed since the parameters were generated.
+     *
+     * @param channelParams Channel parameters whose generation time is checked.
+     * @return true if a parameter update is needed; false otherwise.
+     */
     bool SpatialConsistencyUpdate(Ptr<const ThreeGppChannelParams> channelParams);
 
     /**
