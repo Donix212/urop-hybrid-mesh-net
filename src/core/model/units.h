@@ -86,6 +86,28 @@ operator*(const FrequencyType& lhs, const power::dBm_per_MHz_t& rhs) noexcept
     return rhs * lhs;
 }
 
+// Disable addition operator for dBm_t and dBW_t types.  Adding two power levels in
+// logarithmic scale is not meaningful for ns-3 (power-squared) and is likely a bug.
+// The nholthaus library's operator+ for dBm_t and dBW_t types produces a squared unit
+// (e.g., dBm + dBm -> dB(mW^2)).  Use linear scale (Watt_t, mWatt_t) for power addition,
+// or add dB_t (relative power) to dBm_t/dBW_t (absolute power) to get another absolute
+// power level.
+//
+// Note: operator- is not disabled because dBm - dBm = dB (power ratio) is meaningful,
+// such as in SNR calculations.
+
+/// Deleted operator+ for dBm_t + dBm_t (not physically meaningful)
+constexpr inline void operator+(const power::dBm_t& lhs, const power::dBm_t& rhs) noexcept = delete;
+
+/// Deleted operator+ for dBW_t + dBW_t (not physically meaningful)
+constexpr inline void operator+(const power::dBW_t& lhs, const power::dBW_t& rhs) noexcept = delete;
+
+/// Deleted operator+ for dBm_t + dBW_t (not physically meaningful)
+constexpr inline void operator+(const power::dBm_t& lhs, const power::dBW_t& rhs) noexcept = delete;
+
+/// Deleted operator+ for dBW_t + dBm_t (not physically meaningful)
+constexpr inline void operator+(const power::dBW_t& lhs, const power::dBm_t& rhs) noexcept = delete;
+
 } // namespace units
 
 namespace ns3
