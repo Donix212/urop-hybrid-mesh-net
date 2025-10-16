@@ -902,7 +902,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         m_channelParamsMap; //!< map containing the common channel parameters per pair of nodes, the
                             //!< key of this map is reciprocal and uniquely identifies a pair of
                             //!< nodes
-    Time m_updatePeriod;    //!< the channel update period
+    Time m_updatePeriod; //!< the channel update period, enables spatial consistency, procedure A
     double m_frequency;     //!< the operating frequency
     std::string m_scenario; //!< the 3GPP scenario
     Ptr<ChannelConditionModel> m_channelConditionModel; //!< the channel condition model
@@ -917,9 +917,6 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                      //!< paths
     Ptr<UniformRandomVariable> m_uniformRvDoppler; //!< uniform random variable, used to compute the
                                                    //!< additional Doppler contribution
-    // parameters for the spatial consistency update
-    bool m_spatial_consistency; //!< enables spatial consistency, procedure A
-
     // parameters for the blockage model
     bool m_blockage;               //!< enables the blockage model A
     uint16_t m_numNonSelfBlocking; //!< number of non-self-blocking regions

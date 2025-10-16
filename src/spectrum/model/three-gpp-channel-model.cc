@@ -1149,7 +1149,8 @@ ThreeGppChannelModel::GetTypeId()
                                               &ThreeGppChannelModel::GetChannelConditionModel),
                           MakePointerChecker<ChannelConditionModel>())
             .AddAttribute("UpdatePeriod",
-                          "Specify the channel coherence time",
+                          "Specify the channel coherence time. If set to different value than zero,"
+                          "then the spatial consistency update feature is enabled according the procedure A (7.6.3.2) ",
                           TimeValue(MilliSeconds(0)),
                           MakeTimeAccessor(&ThreeGppChannelModel::m_updatePeriod),
                           MakeTimeChecker())
@@ -1181,13 +1182,7 @@ ThreeGppChannelModel::GetTypeId()
                           "delayed (reflected) paths",
                           DoubleValue(0.0),
                           MakeDoubleAccessor(&ThreeGppChannelModel::m_vScatt),
-                          MakeDoubleChecker<double>(0.0))
-            // attributes for the spatial consistency model
-            .AddAttribute("Consistency",
-                          "Enable the spatial consistency update, procedure A (7.6.3.2)",
-                          BooleanValue(false),
-                          MakeBooleanAccessor(&ThreeGppChannelModel::m_spatial_consistency),
-                          MakeBooleanChecker());
+                          MakeDoubleChecker<double>(0.0));
     return tid;
 }
 
@@ -2457,12 +2452,29 @@ ThreeGppChannelModel::NewChannelParamsNeeded(uint64_t channelParamsKey,
     auto it = m_channelParamsMap.find(channelParamsKey);
     if (it == m_channelParamsMap.end())
     {
+        NS_LOG_DEBUG(
+            "New channel parameters will be created for the first time for this link:"<<
+            channelParamsKey);
         return true;
     }
     else
     {
+        if (!m_updatePeriod.IsZero())
+        {
+            Time deltaT = Simulator::Now() - it->second->m_generatedTime;
+            Vector vPrimeRx = it->second->m_rxSpeed - it->second->m_txSpeed;
+            double distance = vPrimeRx.GetLength() * deltaT.GetSeconds();
+            if (distance > 1)
+            {
+                NS_LOG_DEBUG(
+                    "New channel parameters needed because of the relative distance change > 1");
+                return true;
+            }
+        }
+
         if (!condition->IsEqual(it->second->m_losCondition, it->second->m_o2iCondition))
         {
+            NS_LOG_DEBUG("New channel parameters needed because LOS or O2I condition changed");
             return true;
         }
     }
@@ -2502,8 +2514,9 @@ bool
 ThreeGppChannelModel::SpatialConsistencyUpdate(Ptr<const ThreeGppChannelParams> channelParams)
 {
     // if the coherence time is over, the channel has to be updated
-    if (m_spatial_consistency && !m_updatePeriod.IsZero() &&
-        Simulator::Now() - channelParams->m_generatedTime > m_updatePeriod)
+    if (!m_updatePeriod.IsZero() &&
+        Simulator::Now() - channelParams->m_generatedTime > m_updatePeriod
+    )
     {
         NS_LOG_DEBUG("Generation time " << channelParams->m_generatedTime.As(Time::NS) << " now "
                                         << Now().As(Time::NS));
@@ -3669,10 +3682,10 @@ ThreeGppChannelModel::UpdateChannelParametersForConsistency(
                        &channelParams->m_newChannel,
                        channelParams);
     // Generate cluster powers
-    GenerateClusterPowers(channelParams->m_delayConsistency,
-                          channelParams->m_DS,
+    /*GenerateClusterPowers(channelParams->m_delayConsistency,
+    channelParams->m_DS,
                           table3gpp,
-                          &channelParams->m_clusterPowers);
+                          &channelParams->m_clusterPowers);*/
     // Update cluster count
     channelParams->m_reducedClusterNumber = channelParams->m_clusterPowers.size();
     // Adjust delays for LOS condition
@@ -3720,33 +3733,60 @@ ThreeGppChannelModel::UpdateChannelParametersForConsistency(
                                         clusterAoa,
                                         clusterZoa);
     }
-    // Generate ray coupling
-    RandomRaysCoupling(channelParams,
-                       table3gpp,
-                       &channelParams->m_rayAoaRadian,
-                       &channelParams->m_rayAodRadian,
-                       &channelParams->m_rayZoaRadian,
-                       &channelParams->m_rayZodRadian,
-                       clusterAoa,
-                       clusterAod,
-                       clusterZoa,
-                       clusterZod);
-    // Generate cross-pol power ratios and phases
-    GenerateCrossPolPowerRatiosAndInitialPhases(&channelParams->m_crossPolarizationPowerRatios,
-                                                &channelParams->m_clusterPhase,
-                                                channelParams->m_reducedClusterNumber,
-                                                table3gpp);
-    // Find the strongest clusters
-    FindStrongestClusters(channelParams,
-                          table3gpp,
-                          &channelParams->m_cluster1st,
-                          &channelParams->m_cluster2nd,
-                          &channelParams->m_delayConsistency,
-                          &clusterAoa,
-                          &clusterAod,
-                          &clusterZoa,
-                          &clusterZod);
+    // Do NOT regenerate ray coupling, XPR, or initial phases for Spatial Consistency Procedure A.
+    // However, ray angles must track the updated cluster mean angles while preserving
+    // intra-cluster offsets and the existing random coupling permutation. We therefore
+    // delta-shift each ray's azimuth and zenith by the change in the corresponding
+    // cluster mean.
+    {
+        using MBCM = MatrixBasedChannelModel;
+        // Previous cluster means are in channelParams->m_angle (degrees)
+        NS_ASSERT(channelParams->m_angle.size() == 4);
+        NS_ASSERT(channelParams->m_angle[MBCM::AOA_INDEX].size() == channelParams->m_reducedClusterNumber);
+        NS_ASSERT(channelParams->m_angle[MBCM::AOD_INDEX].size() == channelParams->m_reducedClusterNumber);
+        NS_ASSERT(channelParams->m_angle[MBCM::ZOA_INDEX].size() == channelParams->m_reducedClusterNumber);
+        NS_ASSERT(channelParams->m_angle[MBCM::ZOD_INDEX].size() == channelParams->m_reducedClusterNumber);
 
+        // Compute per-cluster mean deltas (degrees)
+        std::vector<double> dAoa(channelParams->m_reducedClusterNumber);
+        std::vector<double> dAod(channelParams->m_reducedClusterNumber);
+        std::vector<double> dZoa(channelParams->m_reducedClusterNumber);
+        std::vector<double> dZod(channelParams->m_reducedClusterNumber);
+        for (uint8_t n = 0; n < channelParams->m_reducedClusterNumber; ++n)
+        {
+            dAoa[n] = clusterAoa[n] - channelParams->m_angle[MBCM::AOA_INDEX][n];
+            dAod[n] = clusterAod[n] - channelParams->m_angle[MBCM::AOD_INDEX][n];
+            dZoa[n] = clusterZoa[n] - channelParams->m_angle[MBCM::ZOA_INDEX][n];
+            dZod[n] = clusterZod[n] - channelParams->m_angle[MBCM::ZOD_INDEX][n];
+        }
+
+        // Apply deltas to each ray angle, preserving coupling and offsets
+        for (uint8_t n = 0; n < channelParams->m_reducedClusterNumber; ++n)
+        {
+            const double dAoaRad = DegreesToRadians(dAoa[n]);
+            const double dAodRad = DegreesToRadians(dAod[n]);
+            const double dZoaRad = DegreesToRadians(dZoa[n]);
+            const double dZodRad = DegreesToRadians(dZod[n]);
+
+            NS_ASSERT(n < channelParams->m_rayAoaRadian.size());
+            NS_ASSERT(n < channelParams->m_rayAodRadian.size());
+            NS_ASSERT(n < channelParams->m_rayZoaRadian.size());
+            NS_ASSERT(n < channelParams->m_rayZodRadian.size());
+
+            for (size_t m = 0; m < channelParams->m_rayAoaRadian[n].size(); ++m)
+            {
+                // WrapAngles expects (azimuthRad, inclinationRad)
+                std::tie(channelParams->m_rayAoaRadian[n][m], channelParams->m_rayZoaRadian[n][m]) =
+                    WrapAngles(channelParams->m_rayAoaRadian[n][m] + dAoaRad,
+                               channelParams->m_rayZoaRadian[n][m] + dZoaRad);
+                std::tie(channelParams->m_rayAodRadian[n][m], channelParams->m_rayZodRadian[n][m]) =
+                    WrapAngles(channelParams->m_rayAodRadian[n][m] + dAodRad,
+                               channelParams->m_rayZodRadian[n][m] + dZodRad);
+            }
+        }
+    }
+
+    // Update stored cluster means to the new values (degrees)
     channelParams->m_angle.clear();
     channelParams->m_angle.push_back(clusterAoa);
     channelParams->m_angle.push_back(clusterZoa);
@@ -3761,7 +3801,7 @@ ThreeGppChannelModel::UpdateChannelParametersForConsistency(
                          &channelParams->m_alpha,
                          &channelParams->m_D);
 
-    NS_LOG_DEBUG("Updated channel parameters for consistency. "
+    NS_LOG_DEBUG("Updated channel parameters for consistency (Procedure A): "
                  << "Clusters: " << channelParams->m_reducedClusterNumber
                  << ", DS: " << channelParams->m_DS << ", K-factor: " << channelParams->m_K_factor);
 }

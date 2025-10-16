@@ -156,7 +156,6 @@ ThreeGppChannelMatrixComputationTest::DoRun()
     channelModel->SetAttribute("Scenario", StringValue("RMa"));
     channelModel->SetAttribute("ChannelConditionModel", PointerValue(channelConditionModel));
     channelModel->SetAttribute("UpdatePeriod", TimeValue(MilliSeconds(updatePeriodMs - 1)));
-    channelModel->SetAttribute("Consistency", BooleanValue(true));
     channelModel->AssignStreams(1);
 
     // create the tx and rx nodes
@@ -256,21 +255,29 @@ ThreeGppChannelMatrixComputationTest::DoRun()
     }
     sampleStd = std::sqrt(sampleStd / (numIt - 1));
 
-    // perform the one sample t-test with a significance level of 0.05 to test
-    // the hypothesis "E [|H|^2] = M*N, where |H| indicates the Frobenius norm of
-    // H, M is the number of transmit antenna elements, and N is the number of
-    // the receive antenna elements"
-    double t = (sampleMean - m_txAntennaElements * m_txAntennaElements * m_rxAntennaElements *
-                                 m_rxAntennaElements) /
-               (sampleStd / std::sqrt(numIt));
+    NS_TEST_ASSERT_MSG_NE(sampleStd,
+                          0,
+                          "The STD should be different from zero. Channem matrix not updated");
 
-    // Using a significance level of 0.05, we reject the null hypothesis if |t| is
-    // greater than the critical value from a t-distribution with df = numIt-1
-    NS_TEST_ASSERT_MSG_EQ_TOL(
-        std::abs(t),
-        0,
-        1.65,
-        "We reject the hypothesis E[|H|^2] = M*N with a significance level of 0.05");
+    if (sampleStd != 0)
+    {
+        // perform the one sample t-test with a significance level of 0.05 to test
+        // the hypothesis "E [|H|^2] = M*N, where |H| indicates the Frobenius norm of
+        // H, M is the number of transmit antenna elements, and N is the number of
+        // the receive antenna elements"
+        double t = (sampleMean - m_txAntennaElements * m_txAntennaElements * m_rxAntennaElements *
+                    m_rxAntennaElements) /
+                   (sampleStd / std::sqrt(numIt));
+
+        // Using a significance level of 0.05, we reject the null hypothesis if |t| is
+        // greater than the critical value from a t-distribution with df = numIt-1
+
+        NS_TEST_ASSERT_MSG_EQ_TOL(
+            std::abs(t),
+            0,
+            1.65,
+            "We reject the hypothesis E[|H|^2] = M*N with a significance level of 0.05");
+    }
 
     Simulator::Destroy();
 }
@@ -396,7 +403,6 @@ ThreeGppChannelMatrixUpdateTest::DoRun()
     channelModel->SetAttribute("Scenario", StringValue("UMa"));
     channelModel->SetAttribute("ChannelConditionModel", PointerValue(channelConditionModel));
     channelModel->SetAttribute("UpdatePeriod", TimeValue(MilliSeconds(updatePeriodMs)));
-    channelModel->SetAttribute("Consistency", BooleanValue(true));
 
     // create the tx and rx nodes
     NodeContainer nodes;
@@ -854,7 +860,6 @@ ThreeGppSpectrumPropagationLossModelTest::DoRun()
 {
     // Build the scenario for the test
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod", TimeValue(MilliSeconds(100)));
-    Config::SetDefault("ns3::ThreeGppChannelModel::Consistency", BooleanValue(true));
 
     // create the ChannelConditionModel object to be used to retrieve the
     // channel condition
