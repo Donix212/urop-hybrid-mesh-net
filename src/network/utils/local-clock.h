@@ -16,6 +16,13 @@
 namespace ns3
 {
 
+/**
+ * @ingroup clocks
+ * @brief Abstract base class for local clock implementations
+ *
+ * This class serves as an abstract base for different local clock models.
+ * It defines the interface for obtaining the current time from the local clock.
+ */
 class LocalClock : public Object
 {
   public:
