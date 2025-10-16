@@ -21,6 +21,10 @@ namespace ns3
 class UnboundedSkewClock : public LocalClock
 {
   public:
+    /**
+     * @brief Get the type ID.
+     * @return The object TypeId.
+     */
     static TypeId GetTypeId();
 
     UnboundedSkewClock();
