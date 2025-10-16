@@ -18,6 +18,14 @@
 namespace ns3
 {
 
+/**
+ * @ingroup clocks
+ * @brief Implementation of a local clock with unbounded skew
+ *
+ * This class simulates a local clock with unbounded skew by maintaining a vector of skew values.
+ * The skew values are randomly generated within a specified range and can be shuffled to simulate
+ * changing skew over time. The clock's time is adjusted based on the current skew value.
+ */
 class UnboundedSkewClock : public LocalClock
 {
   public:
