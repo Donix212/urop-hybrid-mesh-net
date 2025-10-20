@@ -272,11 +272,11 @@ The following is a list of attributes connected to the 6lowPAN-ND implementation
 * ``AddressRegistrationJitter``: The amount of jitter (in milliseconds) applied before sending an Address Registration. This jitter, sampled uniformly between 0 and the maximum value, helps avoid packet collisions among nodes registering simultaneously.
 * ``RegistrationLifetime``: Specifies the lifetime of a registered address in the neighbor cache of a router. The value is in units of 60 seconds (i.e., a value of 65535 represents the maximum of ~45 days).
 * ``AdvanceTime``: Time (in seconds) before expiration that the protocol proactively maintains or refreshes Router Advertisement and registration state. Useful for avoiding expiry during active operation.
-* ``DefaultRouterLifeTime``: Lifetime assigned to a default router entry. After this period, the router will no longer be considered valid unless refreshed. Default is 60 minutes.
-* ``DefaultPrefixInformationPreferredLifeTime``: Preferred lifetime for prefix information sent in Router Advertisements. Affects address autoconfiguration preferences. Default is 10 minutes.
-* ``DefaultPrefixInformationValidLifeTime``: Valid lifetime for prefixes advertised. Beyond this period, the prefix is no longer valid for use in address formation. Default is 10 minutes.
-* ``DefaultContextValidLifeTime``: Lifetime of 6LoWPAN Context Information Options (CIOs). Determines how long compression context information remains valid. Default is 10 minutes.
-* ``DefaultAbroValidLifeTime``: Lifetime of Authoritative Border Router Option (ABRO) information. Default is 10 minutes. This is relevant in multihop 6LoWPAN ND deployments with multiple border routers.
+* ``DefaultRouterLifetime``: Lifetime assigned to a default router entry. After this period, the router will no longer be considered valid unless refreshed. Default is 60 minutes.
+* ``DefaultPrefixInformationPreferredLifetime``: Preferred lifetime for prefix information sent in Router Advertisements. Affects address autoconfiguration preferences. Default is 10 minutes.
+* ``DefaultPrefixInformationValidLifetime``: Valid lifetime for prefixes advertised. Beyond this period, the prefix is no longer valid for use in address formation. Default is 10 minutes.
+* ``DefaultContextValidLifetime``: Lifetime of 6LoWPAN Context Information Options (CIOs). Determines how long compression context information remains valid. Default is 10 minutes.
+* ``DefaultAbroValidLifetime``: Lifetime of Authoritative Border Router Option (ABRO) information. Default is 10 minutes. This is relevant in multihop 6LoWPAN ND deployments with multiple border routers.
 * ``MaxRtrSolicitationInterval``: The maximum interval between sending Router Solicitations when retrying with backoff. This controls how long a node waits between RS attempts. Default is 60 seconds.
 
 Traces
