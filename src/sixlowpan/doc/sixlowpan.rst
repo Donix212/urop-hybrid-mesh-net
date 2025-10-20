@@ -236,7 +236,13 @@ The main helper is ``SixLowPanHelper``, which provides methods to install 6LoWPA
         SixLowPanHelper sixlowpan;
         NetDeviceContainer sixlowpanNetDevices = sixlowpan.Install(csmaNetDevices);
 
-We can opt to install 6LoWPAN-ND on the ``sixlowpanNetDevices``. This will involve calling ``SixLowPanHelper::InstallSixLowPanNdNode`` and ``SixLowPanHelper::InstallSixLowPanNdBorderRouter`` to instantiate the 6LN and 6LBR roles on the nodes, respectively. The helper also provides methods to set the advertised prefix and other attributes related to 6LoWPAN-ND.::
+Users have two options for neighbor discovery in their 6LoWPAN networks:
+
+1. **Use standard IPv6 Neighbor Discovery**: If 6LoWPAN-ND is not installed, the simulation will use the standard IPv6 Neighbor Discovery protocol (:rfc:`4861`) with manual IPv6 address assignment. This approach works but lacks the optimizations for low-power networks.
+
+2. **Use 6LoWPAN-ND (Recommended for realistic scenarios)**: Installing 6LoWPAN-ND provides optimized neighbor discovery with automatic address configuration, energy-efficient unicast communication, and context distribution for header compression.
+
+To install 6LoWPAN-ND, call ``SixLowPanHelper::InstallSixLowPanNdNode`` and ``SixLowPanHelper::InstallSixLowPanNdBorderRouter`` to instantiate the 6LN and 6LBR roles on the nodes, respectively. The helper also provides methods to set the advertised prefix and other attributes related to 6LoWPAN-ND.::
 
         // Configure 6LoWPAN ND
         // Node 0 = 6LBR, Node 1 = 6LN
