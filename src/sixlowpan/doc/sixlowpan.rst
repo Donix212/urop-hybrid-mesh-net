@@ -310,7 +310,7 @@ The following shows 6lowPAN usage under |ns3|:
 
 The following examples have been created to show the 6lowPAN-ND usage:
 
-* ``example-sixlowpan-nd-basic.cc``: A simple example showing the setup of n 6LNs registering with and pinging a 6LBR node once.
+* ``example-sixlowpan-nd-basic.cc``: An example showing how to instantiate the 6LBR and 6LN in 6lowpan-nd with the helper methods in a typical 6lowpan network, enabling features like automatic address configuration.
 
 The following tests have been created to verify the correct behavior of 6lowPAN-ND:
 
