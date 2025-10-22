@@ -36,7 +36,9 @@ using namespace ns3::lrwpan;
 static void
 DataIndication(McpsDataIndicationParams params, Ptr<Packet> p)
 {
-    NS_LOG_UNCOND("Received packet of size " << p->GetSize());
+    NS_LOG_UNCOND("Received packet of size: "
+                  << p->GetSize() << " | LQI: " << static_cast<uint16_t>(params.m_mpduLinkQuality)
+                  << " | RSSI: " << static_cast<int16_t>(params.m_rssi));
 }
 
 /**
@@ -199,6 +201,7 @@ main(int argc, char* argv[])
     }
     params.m_msduHandle = 0;
     params.m_txOptions = TX_OPTION_ACK;
+
     //  dev0->GetMac ()->McpsDataRequest (params, p0);
     Simulator::ScheduleWithContext(1,
                                    Seconds(0),
