@@ -10,7 +10,10 @@
 #define PMP_REGRESSION_H
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
+#include "ns3/packet.h"
 #include "ns3/test.h"
+#include "ns3/uinteger.h"
+#include "ns3/wifi-tx-vector.h"
 
 using namespace ns3;
 
@@ -22,7 +25,7 @@ using namespace ns3;
  * Initiate scenario with 2 stations. Procedure of opening peer link
  * is the following:
  * @verbatim
- * |----------->|  Beacon
+ * |<-----------|  Beacon
  * |----------->|  Peer Link Open frame
  * |<-----------|  Peer Link Confirm frame
  * |<-----------|  Peer Link Open frame
@@ -42,13 +45,21 @@ class PeerManagementProtocolRegressionTest : public TestCase
     NodeContainer* m_nodes;
     /// Simulation time
     Time m_time;
+    /// Packet counter
+    uint8_t m_count;
+    /// MonitorSnifferRx callback
+    void MonitorSnifferRxCallback(std::string context,
+                                  Ptr<const Packet> const_packet,
+                                  uint16_t channelFreqMhz,
+                                  WifiTxVector txVector,
+                                  MpduInfo aMpduInfo,
+                                  SignalNoiseDbm signalNoise,
+                                  uint16_t channelNumber);
 
     /// Create nodes function
     void CreateNodes();
     /// Create devices function
     void CreateDevices();
-    /// Check results function
-    void CheckResults();
     void DoRun() override;
 };
 #endif /* PMP_REGRESSION_H */
