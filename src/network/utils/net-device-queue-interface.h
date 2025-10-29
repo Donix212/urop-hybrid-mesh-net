@@ -27,11 +27,6 @@ class NetDeviceQueueInterface;
 class QueueItem;
 
 /**
- * @ingroup network
- * @defgroup netdevice Network Device
- */
-
-/**
  * @ingroup netdevice
  *
  * @brief Network device transmission queue

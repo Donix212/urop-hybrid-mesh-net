@@ -19,11 +19,6 @@ namespace ns3
 class Packet;
 
 /**
- * @ingroup network
- * @defgroup netdevice Network Device
- */
-
-/**
  * @ingroup netdevice
  * @brief Base class to represent items of packet Queues
  *
