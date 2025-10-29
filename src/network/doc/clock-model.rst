@@ -200,4 +200,4 @@ References
 
 [1] Ishaan Kiran Lagwankar and Sandeep S. Kulkarni. 2025. Clock Skew Models for ns-3.
 In Proceedings of the 2025 International Conference on ns-3 (ICNS3 '25). Association for
-Computing Machinery, New York, NY, USA, https://doi.org/10.1145/3747204.3747208
+Computing Machinery, New York, NY, USA.
