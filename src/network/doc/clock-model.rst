@@ -2,7 +2,7 @@ Local Clock Model
 ============================
 
 This model provides a framework for simulating imperfect hardware clocks within the ns-3
-simulator. Real-world hardware clocks are not perfect and can suffer from phenomena like
+simulator [1]. Real-world hardware clocks are not perfect and can suffer from phenomena like
 **clock skew**, where they run consistently faster or slower than true time. This model aims
 to capture such behavior.
 
@@ -14,10 +14,6 @@ local time source without being tied to a specific imperfection model.
 The primary concrete implementation provided is the ``ns3::UnboundedSkewClock``. This class
 simulates clock skew by maintaining a local time that drifts from the true simulator time
 at a configurable rate.
-
-.. A visual summary is also recommended.
-.. 
-
 ----
 
 Scope and Limitations
@@ -200,7 +196,7 @@ deterministic skew.
 ----
 
 References
-*****************
+----------
 
 [1] Ishaan Kiran Lagwankar and Sandeep S. Kulkarni. 2025. Clock Skew Models for ns-3.
 In Proceedings of the 2025 International Conference on ns-3 (ICNS3 '25). Association for
