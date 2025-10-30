@@ -334,34 +334,10 @@ SixLowPanHelper::InitializeRovr(Ptr<Node> node)
     Ptr<SixLowPanNdProtocol> sixLowPanNdProtocol = node->GetObject<SixLowPanNdProtocol>();
     NS_ASSERT_MSG(sixLowPanNdProtocol, "6LoWPAN ND protocol not found on node");
 
-    Address macAddress;
-    uint32_t maxLen = 0;
-
-    for (uint32_t i = 0; i < node->GetNDevices(); i++)
-    {
-        Ptr<NetDevice> dev = node->GetDevice(i);
-
-        // Skip loopback
-        if (DynamicCast<LoopbackNetDevice>(dev))
-        {
-            continue;
-        }
-
-        Address addr = dev->GetAddress();
-        if (addr.GetLength() > maxLen)
-        {
-            macAddress = addr;
-            maxLen = addr.GetLength();
-        }
-    }
-
-    NS_ASSERT_MSG(!macAddress.IsInvalid(), "No valid MAC address found for ROVR");
-
-    // Create ROVR vector (16 bytes, zero-padded)
+    // Initialize ROVR as a 16-byte vector of zeros (explicitly zeroed ROVR)
     std::vector<uint8_t> rovr(16, 0);
-    macAddress.CopyTo(rovr.data());
 
-    NS_LOG_INFO("ROVR for node " << node->GetId() << " set from MAC: " << macAddress);
+    NS_LOG_INFO("ROVR for node " << node->GetId() << " initialized to all zeros");
     sixLowPanNdProtocol->SetRovr(rovr);
 }
 
