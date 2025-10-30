@@ -586,7 +586,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
         m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
                                          true,
                                          earo.GetStatus());
-        AddressRegistrationSuccess(src, earo.GetTransactionId());
+        AddressRegistrationSuccess(src);
     }
     else /* status NOT 0, fail! */
     {
@@ -894,7 +894,6 @@ SixLowPanNdProtocol::AddressRegistration()
     //                     << static_cast<int>(m_addressRegistrationCounter));
 
     Ipv6Address addressToRegister;
-    LollipopCounter8 tid;
 
     if (m_addressRegistrationTimeoutEvent.IsPending() || m_addressRegistrationEvent.IsPending())
     {
@@ -973,21 +972,9 @@ SixLowPanNdProtocol::AddressRegistration()
         }
     }
 
-    // Don't handle TID update and checking currently
-    // addressToRegister = m_addrPendingReg.addressPendingRegistration;
-    // Ipv6Address registeringAddressNodeAddr = addressToRegister.IsLinkLocal()
-    //                                              ? m_addrPendingReg.registrar
-    //                                              : m_addrPendingReg.abroAddress;
-    // auto it =
-    //     m_tidContainer.find(std::make_pair(addressToRegister, registeringAddressNodeAddr));
-    // if (it == m_tidContainer.end())
-    // {
-    //     NS_ABORT_MSG("Registration retry and missing the TID");
-    // }
-    // tid = m_tidContainer[std::make_pair(addressToRegister, registeringAddressNodeAddr)];
-
     m_addressRegistrationCounter++;
 
+    // tid defaults to 0 currently
     Simulator::Schedule(additionalDelay + MilliSeconds(m_addressRegistrationJitter->GetValue()),
                         &SixLowPanNdProtocol::SendSixLowPanNsWithEaro,
                         this,
@@ -996,7 +983,7 @@ SixLowPanNdProtocol::AddressRegistration()
                         m_addrPendingReg.registrarMacAddr,
                         m_regTime,
                         m_rovr,
-                        tid.GetValue(),
+                        0,
                         m_addrPendingReg.sixDevice);
 
     m_addressRegistrationTimeoutEvent =
@@ -1007,10 +994,8 @@ SixLowPanNdProtocol::AddressRegistration()
 }
 
 void
-SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid)
+SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar)
 {
-    NS_LOG_FUNCTION(this << registrar << tid);
-
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
                         << registrar << "  vs expected " << m_addrPendingReg.registrar);
