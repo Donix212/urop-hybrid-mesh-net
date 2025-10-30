@@ -330,7 +330,7 @@ ThreeGppPropagationLossModel::ThreeGppPropagationLossModel()
     m_normalO2iHighLossVar->SetStdDev(6.5);
 
     m_normalO2iVehicularLossVar = CreateObject<NormalRandomVariable>();
-    m_normalO2iVehicularLossVar->SetAttribute("Mean", DoubleValue(m_meanVehicleO2iLoss));
+    // mean is set via an attribute, so must be set in NotifyConstructionCompleted
     m_normalO2iVehicularLossVar->SetStdDev(5);
 }
 
@@ -345,6 +345,12 @@ ThreeGppPropagationLossModel::DoDispose()
     m_channelConditionModel->Dispose();
     m_channelConditionModel = nullptr;
     m_shadowingMap.clear();
+}
+
+void
+ThreeGppPropagationLossModel::NotifyConstructionCompleted()
+{
+    m_normalO2iVehicularLossVar->SetAttribute("Mean", DoubleValue(m_meanVehicleO2iLoss));
 }
 
 void
@@ -758,7 +764,7 @@ ThreeGppPropagationLossModel::DoAssignStreams(int64_t stream)
     m_normalO2iLowLossVar->SetStream(stream + 3);
     m_normalO2iHighLossVar->SetStream(stream + 4);
     m_normalO2iVehicularLossVar->SetStream(stream + 5);
-    return 5;
+    return stream + 6;
 }
 
 double
@@ -1351,9 +1357,9 @@ ThreeGppUmaPropagationLossModel::DoAssignStreams(int64_t stream)
 {
     NS_LOG_FUNCTION(this);
 
-    m_normRandomVariable->SetStream(stream);
-    m_uniformVar->SetStream(stream + 1);
-    return 2;
+    stream = ThreeGppPropagationLossModel::DoAssignStreams(stream);
+    m_uniformVar->SetStream(stream);
+    return stream + 1;
 }
 
 // ------------------------------------------------------------------------- //

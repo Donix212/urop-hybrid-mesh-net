@@ -96,8 +96,6 @@ class ThreeGppPropagationLossModel : public PropagationLossModel
                          Ptr<MobilityModel> a,
                          Ptr<MobilityModel> b) const override;
 
-    int64_t DoAssignStreams(int64_t stream) override;
-
     /**
      * @brief Computes the pathloss between a and b
      * @param cond the channel condition
@@ -290,7 +288,7 @@ class ThreeGppPropagationLossModel : public PropagationLossModel
 
   protected:
     void DoDispose() override;
-
+    void NotifyConstructionCompleted() override;
     /**
      * @brief Returns a a single, link-specific, uniformly distributed variable
      *        value depending on the specific 3GPP scenario (UMa, UMi-Street Canyon, RMa),
@@ -359,6 +357,7 @@ class ThreeGppPropagationLossModel : public PropagationLossModel
     Ptr<NormalRandomVariable>
         m_normalO2iVehicularLossVar; //!< a normal random variable for the calculation of
                                      //!< penetration loss for vehicles see TR38.901 section 7.4.3.2
+    int64_t DoAssignStreams(int64_t stream) override;
 };
 
 /**
