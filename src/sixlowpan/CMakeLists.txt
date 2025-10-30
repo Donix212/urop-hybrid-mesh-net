@@ -16,6 +16,7 @@ build_lib(
     model/sixlowpan-nd-protocol.cc
     model/sixlowpan-ndisc-cache.cc
     model/sixlowpan-net-device.cc
+    model/sixlowpan-nd-binding-table.cc
   HEADER_FILES
     helper/sixlowpan-helper.h
     model/sixlowpan-header.h
@@ -25,6 +26,7 @@ build_lib(
     model/sixlowpan-nd-protocol.h
     model/sixlowpan-ndisc-cache.h
     model/sixlowpan-net-device.h
+    model/sixlowpan-nd-binding-table.h
   LIBRARIES_TO_LINK ${libinternet}
   TEST_SOURCES
     ${example_as_test_suite}
@@ -36,4 +38,5 @@ build_lib(
     test/sixlowpan-nd-packet-test.cc
     test/sixlowpan-nd-reg-test.cc
     test/sixlowpan-nd-rovr-test.cc
+    test/sixlowpan-nd-binding-table-test.cc
 )
