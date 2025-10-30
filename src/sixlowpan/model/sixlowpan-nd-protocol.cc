@@ -496,27 +496,6 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
         if (!entry)
         {
             entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
-            entry->SetRovr(earoHdr.GetRovr());
-        }
-        else
-        {
-            // Check if the ROVR is empty (Only), and set it if so
-            if (entry->GetRovr().empty())
-            {
-                entry->SetRovr(earoHdr.GetRovr());
-            }
-            else if (entry->GetRovr() != earoHdr.GetRovr())
-            {
-                SendSixLowPanNaWithEaro(dst,
-                                        src,
-                                        target,
-                                        earoHdr.GetRegTime(),
-                                        earoHdr.GetRovr(),
-                                        earoHdr.GetTransactionId(),
-                                        sixDevice,
-                                        1);
-                return; // discard the packet since the rovr doesn't match
-            }
         }
         entry->SetRouter(false);
         entry->SetMacAddress(sllaoHdr.GetAddress());
@@ -539,18 +518,6 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     {
         if (entry)
         {
-            if (entry->GetRovr() != earoHdr.GetRovr())
-            {
-                SendSixLowPanNaWithEaro(dst,
-                                        src,
-                                        target,
-                                        earoHdr.GetRegTime(),
-                                        earoHdr.GetRovr(),
-                                        earoHdr.GetTransactionId(),
-                                        sixDevice,
-                                        1);
-                return; // discard the packet since the rovr doesn't match
-            }
             cache->Remove(entry);
         }
         if (!target.IsLinkLocal())
@@ -603,13 +570,6 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     {
         Ipv6Address target = naHdr.GetIpv6Target();
         HandleNA(p, target, dst, interface); /* Handle response of Address Resolution */
-        return;
-    }
-
-    // Check if EARO ROVR matches 6LN's ROVR
-    if (earo.GetRovr() != m_rovr)
-    {
-        NS_LOG_INFO(" Received ROVR mismatch... discard.");
         return;
     }
 
