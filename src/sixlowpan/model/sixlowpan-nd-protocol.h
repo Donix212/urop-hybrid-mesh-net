@@ -649,7 +649,7 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
      * @param registrar node that performs the registration. Registered Node or a proxy.
      * @param tid Transaction ID
      */
-    void AddressRegistrationSuccess(Ipv6Address registrar, LollipopCounter8 tid);
+    void AddressRegistrationSuccess(Ipv6Address registrar);
 
     /**
      * Address registration timeout handler
@@ -663,12 +663,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
     EventId m_addressRegistrationTimeoutEvent; //!< Address Registration timeout event.
 
     EventId m_addressRegistrationEvent; //!< Address Registration event.
-
-    /**
-     * Container of TIDs for each pair <Registered LinkLocal Address, Registrar address>
-     * For LLaddr, the registrar is the node we're registering to. For Gaddr, it is "::".
-     */
-    std::map<std::pair<Ipv6Address, Ipv6Address>, LollipopCounter8> m_tidContainer;
 
     std::map<Ipv6Address, Time> m_neighborBlacklist; //!< Blacklist of the neighbors that didn't
                                                      //!< allow registration or didn't reply.
