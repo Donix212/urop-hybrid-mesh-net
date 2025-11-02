@@ -621,23 +621,6 @@ class SixLowPanNdProtocol : public Icmpv6L4Protocol
                            const Ipv6Address& dst,
                            Ptr<Ipv6Interface> interface);
 
-    /*
-     * @brief Receive DAC for 6LoWPAN ND method.
-     * @param packet the packet
-     * @param src source address
-     * @param dst destination address
-     * @param interface the interface from which the packet is coming
-     */
-    // void HandleSixLowPanDAC (Ptr<Packet> packet, Ipv6Address const &src, Ipv6Address const &dst,
-    //                         Ptr<Ipv6Interface> interface);
-
-    /**
-     * Check an RA for consistency with the ones in the RA cache
-     * @param ra the RA to check
-     * @return true if the RA is not consistent (must be discarded)
-     */
-    bool ScreeningRas(Ptr<SixLowPanRaEntry> ra);
-
     /**
      * Address registration procedure
      */
