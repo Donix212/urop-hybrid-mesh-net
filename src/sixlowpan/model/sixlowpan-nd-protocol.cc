@@ -471,44 +471,26 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
     entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
 
-    if (earoHdr.GetRegTime() > 0)
+    // De-registration is not supported for now
+    if (!entry)
     {
-        if (!entry)
-        {
-            entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
-        }
-        entry->SetRouter(false);
-        entry->SetMacAddress(sllaoHdr.GetAddress());
-        entry->MarkReachable();
-        entry->StartReachableTimer();
-        entry->MarkRegistered(earoHdr.GetRegTime());
-        if (!target.IsLinkLocal())
-        {
-            Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-            ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
-                target,
-                Ipv6Prefix(128),
-                src,
-                ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-            // Forward the registration to the 6LBR.
-            // Unless we're the 6LBR, of course.
-        }
+        entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
     }
-    else // Remove the entry (if any) and remove the RT entry (if any)
+    entry->SetRouter(false);
+    entry->SetMacAddress(sllaoHdr.GetAddress());
+    entry->MarkReachable();
+    entry->StartReachableTimer();
+    entry->MarkRegistered(earoHdr.GetRegTime());
+    if (!target.IsLinkLocal())
     {
-        if (entry)
-        {
-            cache->Remove(entry);
-        }
-        if (!target.IsLinkLocal())
-        {
-            Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
-            ipv6l3Protocol->GetRoutingProtocol()->NotifyRemoveRoute(
-                target,
-                Ipv6Prefix(128),
-                src,
-                ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-        }
+        Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
+        ipv6l3Protocol->GetRoutingProtocol()->NotifyAddRoute(
+            target,
+            Ipv6Prefix(128),
+            src,
+            ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
+        // Forward the registration to the 6LBR.
+        // Unless we're the 6LBR, of course.
     }
 
     SendSixLowPanNaWithEaro(dst,
@@ -655,10 +637,6 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     NS_ASSERT_MSG(
         sixDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
-
-    // Address macAddr = sixDevice->GetAddress();
-    //
-    // Ptr<Ipv6L3Protocol> ipv6 = GetNode()->GetObject<Ipv6L3Protocol>();
 
     // Decode the RA
     Icmpv6RA raHdr;
