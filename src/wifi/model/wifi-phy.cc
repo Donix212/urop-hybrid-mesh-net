@@ -172,7 +172,7 @@ WifiPhy::GetTypeId()
                           "Number of transmission power levels available between "
                           "TxPowerStart and TxPowerEnd included.",
                           UintegerValue(1),
-                          MakeUintegerAccessor(&WifiPhy::m_nTxPower),
+                          MakeUintegerAccessor(&WifiPhy::m_nTxPowerLevels),
                           MakeUintegerChecker<uint8_t>())
             .AddAttribute("TxPowerEnd",
                           "Maximum available transmission level (dBm).",
@@ -595,16 +595,16 @@ WifiPhy::GetTxPowerEnd() const
 }
 
 void
-WifiPhy::SetNTxPower(uint8_t n)
+WifiPhy::SetNTxPowerLevels(uint8_t n)
 {
     NS_LOG_FUNCTION(this << +n);
-    m_nTxPower = n;
+    m_nTxPowerLevels = n;
 }
 
 uint8_t
-WifiPhy::GetNTxPower() const
+WifiPhy::GetNTxPowerLevels() const
 {
-    return m_nTxPower;
+    return m_nTxPowerLevels;
 }
 
 void
@@ -728,20 +728,19 @@ WifiPhy::SetWifiRadioEnergyModel(const Ptr<WifiRadioEnergyModel> wifiRadioEnergy
 dBm_u
 WifiPhy::GetPower(uint8_t powerLevel) const
 {
+    NS_ASSERT_MSG((powerLevel >= WIFI_MIN_TX_PWR_LEVEL) &&
+                      (powerLevel < (WIFI_MIN_TX_PWR_LEVEL + m_nTxPowerLevels)),
+                  "Invalid TX power level");
     NS_ASSERT(m_txPowerBase <= m_txPowerEnd);
-    NS_ASSERT(m_nTxPower > 0);
-    dBm_u dbm;
-    if (m_nTxPower > 1)
+    NS_ASSERT(m_nTxPowerLevels > 0);
+    NS_ASSERT((m_nTxPowerLevels > 1) || (m_txPowerBase == m_txPowerEnd));
+    auto power{m_txPowerBase};
+    if (m_nTxPowerLevels > 1)
     {
-        dbm = m_txPowerBase + dB_u{powerLevel * (m_txPowerEnd - m_txPowerBase) / (m_nTxPower - 1)};
+        power += dB_u{(powerLevel - WIFI_MIN_TX_PWR_LEVEL) * (m_txPowerEnd - m_txPowerBase) /
+                      (m_nTxPowerLevels - 1)};
     }
-    else
-    {
-        NS_ASSERT_MSG(m_txPowerBase == m_txPowerEnd,
-                      "cannot have TxPowerEnd != TxPowerStart with TxPowerLevels == 1");
-        dbm = m_txPowerBase;
-    }
-    return dbm;
+    return power;
 }
 
 Time
