@@ -200,10 +200,7 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
                                              uint8_t tid,
                                              Ptr<NetDevice> sixDevice)
 {
-    // std::cout << Now ().As (Time::S) << " Sending NS(EARO) addrToRegister :" << addrToRegister <<
-    // std::endl;
-
-    NS_LOG_FUNCTION(this << addrToRegister << dst << time);
+    NS_LOG_FUNCTION(this << addrToRegister << dst << dstMac << time << rovr << tid << sixDevice);
 
     NS_ASSERT_MSG(!dst.IsMulticast(),
                   "Destination address must not be a multicast address in EARO messages.");
@@ -212,7 +209,7 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
     Icmpv6NS nsHdr(addrToRegister);
 
     // Build EARO option
-    /* EARO (request) + SLLAO + TLLAO (SLLAO and TLLAO must be identical, RFC 8505, section 5.6) */
+    // EARO (request) + SLLAO + TLLAO (SLLAO and TLLAO must be identical, RFC 8505, section 5.6)
     Icmpv6OptionSixLowPanExtendedAddressRegistration earo(time, rovr, tid);
     Icmpv6OptionLinkLayerAddress tlla(false, sixDevice->GetAddress());
     Icmpv6OptionLinkLayerAddress slla(true, sixDevice->GetAddress());
@@ -247,12 +244,7 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
                                              Ptr<NetDevice> sixDevice,
                                              uint8_t status)
 {
-    // std::cout << Now ().As (Time::S) << " Sending NA(EARO) addrToRegister : " << target<<
-    // std::endl;
-
-    NS_LOG_FUNCTION(this << src << dst << static_cast<uint32_t>(status) << time);
-
-    NS_LOG_LOGIC("Send NA ( from " << src << " to " << dst << ")");
+    NS_LOG_FUNCTION(this << src << dst << target << time << rovr << tid << sixDevice << status);
 
     // Build the NA Header
     Icmpv6NA naHdr;
@@ -273,12 +265,9 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
 void
 SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareAddress)
 {
-    // Behaviour follows RFC6775 5.3
-    // Interval between RSes: 10s, 10s, 20s, 40s, 60s, 60s, ...
-    m_multicastRsTrace(src);
     NS_LOG_FUNCTION(this << src << hardwareAddress);
-    // NS_LOG_INFO("SendSixLowPanMulticastRS called at time " << Simulator::Now().GetSeconds() <<
-    // "s");
+
+    m_multicastRsTrace(src);
 
     Ptr<Packet> p = Create<Packet>();
     Icmpv6RS rs;
@@ -339,8 +328,6 @@ SixLowPanNdProtocol::SendSixLowPanMulticastRS(Ipv6Address src, Address hardwareA
 void
 SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6Interface> interface)
 {
-    // std::cout << Now ().As (Time::S) << " ***src*** " << src << " ***dst*** " << dst
-    // << "***Node ID=***" << m_node->GetId () << std::endl;
     NS_LOG_FUNCTION(this << src << dst << interface);
 
     Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
@@ -378,7 +365,7 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
         ipHeader.SetPayloadLength(p->GetSize());
         ipHeader.SetHopLimit(255);
 
-        /* send RA */
+        // send RA
         NS_LOG_LOGIC("Send RA to " << dst);
 
         interface->Send(p, ipHeader, dst);
@@ -390,7 +377,7 @@ SixLowPanNdProtocol::Receive(Ptr<Packet> packet,
                              const Ipv6Header& header,
                              Ptr<Ipv6Interface> interface)
 {
-    NS_LOG_FUNCTION(this << packet << header.GetSource() << header.GetDestination() << interface);
+    NS_LOG_FUNCTION(this << *packet << header << interface);
     Ptr<Ipv6> ipv6 = GetNode()->GetObject<Ipv6>();
 
     uint8_t type;
@@ -410,9 +397,6 @@ SixLowPanNdProtocol::Receive(Ptr<Packet> packet,
     case Icmpv6Header::ICMPV6_ND_NEIGHBOR_ADVERTISEMENT:
         HandleSixLowPanNA(packet, header.GetSource(), header.GetDestination(), interface);
         break;
-        //    case Icmpv6Header::ICMPV6_ND_DUPLICATE_ADDRESS_CONFIRM:
-        //      HandleSixLowPanDAC (packet, header.GetSource (), header.GetDestination (),
-        //      interface); break;
     default:
         return Icmpv6L4Protocol::Receive(packet, header, interface);
         break;
@@ -457,12 +441,11 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     }
 
     Ptr<Packet> packet = pkt->Copy();
-    // std::cout << *packet << "\n";
 
     Icmpv6NS nsHdr;
-    Icmpv6OptionLinkLayerAddress sllaoHdr(true);              /* SLLAO */
-    Icmpv6OptionLinkLayerAddress tllaoHdr(false);             /* TLLAO */
-    Icmpv6OptionSixLowPanExtendedAddressRegistration earoHdr; /* EARO */
+    Icmpv6OptionLinkLayerAddress sllaoHdr(true);
+    Icmpv6OptionLinkLayerAddress tllaoHdr(false);
+    Icmpv6OptionSixLowPanExtendedAddressRegistration earoHdr;
     bool hasEaro = false;
 
     bool isValid =
@@ -482,14 +465,11 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     }
 
     // NS (EARO)
-    /* Update NDISC table with information of src */
+    // Update NDISC table with information of src
     Ptr<NdiscCache> cache = FindCache(sixDevice);
 
     SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
     entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
-
-    // \todo double check the NCE statuses.
-    // \todo set the registered status.
 
     if (earoHdr.GetRegTime() > 0)
     {
@@ -547,7 +527,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
                                        const Ipv6Address& dst,
                                        Ptr<Ipv6Interface> interface)
 {
-    NS_LOG_FUNCTION(this << packet << src << dst << interface);
+    NS_LOG_FUNCTION(this << *packet << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanNA");
 
     m_naRxTrace(packet->Copy());
@@ -555,7 +535,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     Ptr<Packet> p = packet->Copy();
 
     Icmpv6NA naHdr;
-    Icmpv6OptionLinkLayerAddress tlla(false); /* TLLAO */
+    Icmpv6OptionLinkLayerAddress tlla(false);
     Icmpv6OptionSixLowPanExtendedAddressRegistration earo;
 
     bool hasEaro = false;
@@ -569,7 +549,7 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     if (!hasEaro)
     {
         Ipv6Address target = naHdr.GetIpv6Target();
-        HandleNA(p, target, dst, interface); /* Handle response of Address Resolution */
+        HandleNA(p, target, dst, interface); // Handle response of Address Resolution
         return;
     }
 
@@ -581,14 +561,14 @@ SixLowPanNdProtocol::HandleSixLowPanNA(Ptr<Packet> packet,
     }
 
     // switch statement on EARO status
-    if (earo.GetStatus() == SUCCESS) /* status=0, success! */
+    if (earo.GetStatus() == SUCCESS)
     {
         m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
                                          true,
                                          earo.GetStatus());
         AddressRegistrationSuccess(src);
     }
-    else /* status NOT 0, fail! */
+    else
     {
         m_addressRegistrationResultTrace(m_addrPendingReg.addressPendingRegistration,
                                          false,
@@ -635,7 +615,7 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
         return;
     }
 
-    /* Update Neighbor Cache */
+    // Update Neighbor Cache
     Ptr<SixLowPanNdiscCache> sixCache = DynamicCast<SixLowPanNdiscCache>(FindCache(sixDevice));
     NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
     SixLowPanNdiscCache::SixLowPanEntry* sixEntry = nullptr;
@@ -682,11 +662,11 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
 
     // Decode the RA
     Icmpv6RA raHdr;
-    Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro; /* ABRO  */
-    Icmpv6OptionLinkLayerAddress slla(true);             /* SLLAO */
-    Icmpv6OptionSixLowPanCapabilityIndication cio;       /* 6CIO */
-    std::list<Icmpv6OptionPrefixInformation> pios;       /* PIO */
-    std::list<Icmpv6OptionSixLowPanContext> contexts;    /* 6CO */
+    Icmpv6OptionSixLowPanAuthoritativeBorderRouter abro; // ABRO
+    Icmpv6OptionLinkLayerAddress slla(true);             // SLLAO
+    Icmpv6OptionSixLowPanCapabilityIndication cio;       // 6CIO
+    std::list<Icmpv6OptionPrefixInformation> pios;       // PIO
+    std::list<Icmpv6OptionSixLowPanContext> contexts;    // 6CO
     bool isValid = ParseAndValidateRaPacket(packet, raHdr, pios, abro, slla, cio, contexts);
     if (!isValid)
     {
@@ -748,59 +728,6 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
     AddressRegistration();
 }
 
-/*
-void
-SixLowPanNdProtocol::HandleSixLowPanDAC (Ptr<Packet> packet, Ipv6Address const &src,
-                                         Ipv6Address const &dst, Ptr<Ipv6Interface> interface)
-{
-  NS_LOG_FUNCTION (this << packet << src << dst << interface);
-
-  Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice> (interface->GetDevice ());
-  NS_ASSERT_MSG (
-    sixDevice,
-    "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
-
-  Icmpv6SixLowPanExtendedDuplicateAddressReqOrConf dacHdr (0);
-  packet->RemoveHeader (dacHdr);
-
-  Ipv6Address reg = dacHdr.GetRegAddress ();
-
-  if (!reg.IsMulticast () && src != Ipv6Address::GetAny () && !src.IsMulticast ())
-    {
-      Ptr<SixLowPanNdiscCache> cache = DynamicCast<SixLowPanNdiscCache> (FindCache (sixDevice));
-      NS_ASSERT_MSG (cache, "Can not find a SixLowPanNdiscCache");
-
-      SixLowPanNdiscCache::SixLowPanEntry *entry = 0;
-      entry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry *> (cache->Lookup (reg));
-
-      if (dacHdr.GetStatus () == 0)           // mark the entry as registered, send ARO with
-status=0
-        {
-          entry->MarkRegistered (dacHdr.GetRegTime ());
-
-          //              SendSixLowPanNaWithAro (dst, dacHdr.GetRegAddress (), dacHdr.GetStatus (),
-dacHdr.GetRegTime (),
-          //                                dacHdr.GetRovr (), sixDevice);
-        }
-      else           // remove the tentative entry, send ARO with error code
-        {
-          cache->Remove (entry);
-
-          //              Ipv6Address address = Ipv6Address::MakeAutoconfiguredLinkLocalAddress
-(dacHdr.GetRovr ());
-          // Ipv6Address address = sixDevice->MakeLinkLocalAddressFromMac (dacHdr.GetEui64 ());
-
-          //              SendSixLowPanNaWithAro (dst, address, dacHdr.GetStatus (),
-dacHdr.GetRegTime (), dacHdr.GetRovr (), sixDevice);
-        }
-    }
-  else
-    {
-      NS_LOG_ERROR ("Validity checks for DAR not satisfied.");
-      return;
-    }
-}
-*/
 Ptr<NdiscCache>
 SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface)
 {
@@ -834,7 +761,6 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
 {
     if (!cache)
     {
-        /* try to find the cache */
         cache = FindCache(device);
     }
     if (!cache)
@@ -862,36 +788,11 @@ SixLowPanNdProtocol::SetRovr(std::vector<uint8_t> rovr)
     m_rovr = rovr;
 }
 
-bool
-SixLowPanNdProtocol::ScreeningRas(Ptr<SixLowPanRaEntry> ra)
-{
-    auto it = m_raCache.find(
-        ra->GetAbroBorderRouterAddress()); // Check 6LBR address in the m_raCache if found
-    if (it != m_raCache.end())
-    {
-        if (ra->GetAbroVersion() < it->second->GetAbroVersion()) // Check New Version < Old Version
-        {
-            return true;
-        }
-        if (ra->GetAbroVersion() == it->second->GetAbroVersion()) // Check New Version = Old Version
-        {
-            if (ra->GetPrefixes() == it->second->GetPrefixes() &&
-                ra->GetContexts() == it->second->GetContexts())
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 void
 SixLowPanNdProtocol::AddressRegistration()
 {
     NS_LOG_FUNCTION(this);
     NS_LOG_INFO("AddressRegistration for node: " << m_node->GetId());
-    // NS_LOG_INFO("Node " << m_node->GetId() << " initial m_addressRegistrationCounter = "
-    //                     << static_cast<int>(m_addressRegistrationCounter));
 
     Ipv6Address addressToRegister;
 
@@ -945,8 +846,6 @@ SixLowPanNdProtocol::AddressRegistration()
         else
         {
             // Send a multicast RS to solicit RA from routers
-            // NS_ABORT_MSG("SixLowPanNdProtocol::Address Registration called but no address to "
-            //  "register - error.");
             Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
             NS_ASSERT(ipv6);
 
@@ -996,6 +895,7 @@ SixLowPanNdProtocol::AddressRegistration()
 void
 SixLowPanNdProtocol::AddressRegistrationSuccess(Ipv6Address registrar)
 {
+    NS_LOG_FUNCTION(this << registrar);
     NS_ABORT_MSG_IF(registrar != m_addrPendingReg.registrar,
                     "AddressRegistrationSuccess, mismatch between sender and expected sender "
                         << registrar << "  vs expected " << m_addrPendingReg.registrar);
@@ -1388,7 +1288,7 @@ Icmpv6RA
 SixLowPanNdProtocol::SixLowPanRaEntry::BuildRouterAdvertisementHeader() const
 {
     Icmpv6RA raHdr;
-    /* set RA header information */
+    // set RA header information
     raHdr.SetFlagM(IsManagedFlag());
     raHdr.SetFlagO(IsOtherConfigFlag());
     raHdr.SetFlagH(IsHomeAgentFlag());
@@ -1699,7 +1599,6 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     hasEaro = false;
     bool next = true;
 
-    /* search all options following the NS header */
     while (next)
     {
         uint8_t type;
@@ -1729,7 +1628,7 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
             }
             break;
         default:
-            /* unknown option, quit */
+            // unknown option, quit
             next = false;
         }
         if (p->GetSize() == 0)
@@ -1741,7 +1640,7 @@ SixLowPanNdProtocol::ParseAndValidateNsEaroPacket(
     // If it contains EARO, then it must have SLLAO and TLLAO, and SLLAO address == TLLAO address
     if (hasEaro)
     {
-        if (!(hasSllao && hasTllao)) /* error! */
+        if (!(hasSllao && hasTllao)) // error
         {
             // We don't support yet address registration proxy.
             NS_LOG_WARN(
@@ -1771,7 +1670,7 @@ SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
     hasEaro = false;
     bool next = true;
 
-    /* search all options following the NA header */
+    // search all options following the NA header
     while (next)
     {
         uint8_t type;
@@ -1779,15 +1678,15 @@ SixLowPanNdProtocol::ParseAndValidateNaEaroPacket(
 
         switch (type)
         {
-        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET: /* NA + EARO + TLLAO */
+        case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_TARGET: // NA + EARO + TLLAO
             p->RemoveHeader(tlla);
             break;
-        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION: /* NA + EARO */
+        case Icmpv6Header::ICMPV6_OPT_EXTENDED_ADDRESS_REGISTRATION: // NA + EARO
             p->RemoveHeader(earo);
             hasEaro = true;
             break;
         default:
-            /* unknown option, quit */
+            // unknown option, quit
             next = false;
         }
         if (p->GetSize() == 0)
@@ -1889,10 +1788,8 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
             hasAbro = true;
             break;
         case Icmpv6Header::ICMPV6_OPT_LINK_LAYER_SOURCE:
-            //           generates an entry in NDISC table with m_router = true
-            //           Deferred to when we receive the address registration confirmation
-            //          std::cout << "I want this: " << llaHdr.GetAddress() << std::endl;
-            //           ReceiveLLA (llaHdr, src, dst, interface);
+            // generates an entry in NDISC table with m_router = true
+            // Deferred to when we receive the address registration confirmation
             p->RemoveHeader(slla);
             hasSlla = true;
             break;
@@ -1901,7 +1798,6 @@ SixLowPanNdProtocol::ParseAndValidateRaPacket(Ptr<Packet> p,
             hasCio = true;
             break;
         default:
-            /*RA message includes unknown option, stop processing*/
             NS_ABORT_MSG("RA message includes unknown option, stop processing");
             next = false;
             break;
