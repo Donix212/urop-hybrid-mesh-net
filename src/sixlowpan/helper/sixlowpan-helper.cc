@@ -246,11 +246,14 @@ SixLowPanHelper::InstallSixLowPanNd(NetDeviceContainer c, bool borderRouter)
 
         if (borderRouter)
         {
+            // Get the IPv6 interface
+            Ptr<Ipv6Interface> interface = ipv6->GetInterface(interfaceId);
+
+            // Create binding table for border router functionality
+            sixLowPanNdProtocol->CreateBindingTable(dev, interface);
+
             ipv6->SetForwarding(interfaceId, true);
         }
-        // bool isForwarding = ipv6->IsForwarding(interfaceId);
-        // NS_LOG_INFO("Node " << node->GetId() << ", Interface " << interfaceId
-        //                     << " forwarding: " << (isForwarding ? "true" : "false"));
     }
 }
 

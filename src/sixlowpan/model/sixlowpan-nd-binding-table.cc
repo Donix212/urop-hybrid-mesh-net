@@ -388,27 +388,6 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::FunctionTimeout()
     }
 }
 
-std::vector<uint8_t>
-SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetRovr() const
-{
-    return m_rovr;
-}
-
-void
-SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SetRovr(const std::vector<uint8_t>& rovr)
-{
-    NS_LOG_FUNCTION(this);
-
-    if (rovr.size() != 16)
-    {
-        NS_LOG_WARN("ROVR size should be 16 bytes, got " << rovr.size() << " bytes");
-    }
-
-    m_rovr = rovr;
-    // Ensure it's always 16 bytes
-    m_rovr.resize(16, 0);
-}
-
 void
 SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SetIpv6Address(Ipv6Address ipv6Address)
 {
@@ -428,36 +407,6 @@ SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetBindingTable() const
 {
     NS_LOG_FUNCTION(this);
     return m_bindingTable;
-}
-
-void
-SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SetLinkLocalAddress(
-    Ipv6Address linkLocalAddress)
-{
-    NS_LOG_FUNCTION(this << linkLocalAddress);
-    m_linkLocalAddress = linkLocalAddress;
-}
-
-Ipv6Address
-SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetLinkLocalAddress() const
-{
-    NS_LOG_FUNCTION(this);
-    return m_linkLocalAddress;
-}
-
-void
-SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::SetRouterLinkLocalAddress(
-    Ipv6Address routerLinkLocalAddress)
-{
-    NS_LOG_FUNCTION(this << routerLinkLocalAddress);
-    m_routerLinkLocalAddress = routerLinkLocalAddress;
-}
-
-Ipv6Address
-SixLowPanNdBindingTable::SixLowPanNdBindingTableEntry::GetRouterLinkLocalAddress() const
-{
-    NS_LOG_FUNCTION(this);
-    return m_routerLinkLocalAddress;
 }
 
 // Stream operator implementation
