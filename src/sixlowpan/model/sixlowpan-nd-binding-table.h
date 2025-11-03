@@ -147,18 +147,6 @@ class SixLowPanNdBindingTable : public Object
         void FunctionTimeout();
 
         /**
-         * @brief Get the ROVR field.
-         * @return the ROVR
-         */
-        std::vector<uint8_t> GetRovr() const;
-
-        /**
-         * @brief Set the ROVR field.
-         * @param rovr the ROVR value
-         */
-        void SetRovr(const std::vector<uint8_t>& rovr);
-
-        /**
          * @brief Get the binding table this entry belongs to.
          * @return pointer to the binding table
          */
@@ -175,30 +163,6 @@ class SixLowPanNdBindingTable : public Object
          * @return the IPv6 address
          */
         Ipv6Address GetIpv6Address() const;
-
-        /**
-         * @brief Set the link-local IPv6 address for this entry.
-         * @param linkLocalAddress the link-local IPv6 address
-         */
-        void SetLinkLocalAddress(Ipv6Address linkLocalAddress);
-
-        /**
-         * @brief Get the link-local IPv6 address for this entry.
-         * @return the link-local IPv6 address
-         */
-        Ipv6Address GetLinkLocalAddress() const;
-
-        /**
-         * @brief Set the router link-local IPv6 address for this entry.
-         * @param routerLinkLocalAddress the router's link-local IPv6 address
-         */
-        void SetRouterLinkLocalAddress(Ipv6Address routerLinkLocalAddress);
-
-        /**
-         * @brief Get the router link-local IPv6 address for this entry.
-         * @return the router's link-local IPv6 address
-         */
-        Ipv6Address GetRouterLinkLocalAddress() const;
 
       private:
         /**

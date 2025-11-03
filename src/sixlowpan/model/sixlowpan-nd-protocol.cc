@@ -756,6 +756,53 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
 }
 
 void
+SixLowPanNdProtocol::CreateBindingTable(Ptr<NetDevice> device, Ptr<Ipv6Interface> interface)
+{
+    NS_LOG_FUNCTION(this << device << interface);
+
+    Ptr<SixLowPanNdBindingTable> table = CreateObject<SixLowPanNdBindingTable>();
+    table->SetDevice(device, interface, this);
+
+    m_bindingTableList.push_back(table);
+}
+
+Ptr<SixLowPanNdBindingTable>
+SixLowPanNdProtocol::FindBindingTable(Ptr<Ipv6Interface> interface)
+{
+    NS_LOG_FUNCTION(this << interface);
+
+    if (!interface)
+    {
+        NS_LOG_WARN("Interface is null, cannot find binding table");
+        return nullptr;
+    }
+
+    // Get the device from the interface
+    Ptr<NetDevice> device = interface->GetDevice();
+
+    if (!device)
+    {
+        NS_LOG_WARN("Interface has no associated device, cannot find binding table");
+        return nullptr;
+    }
+
+    // Search through the binding table list to find the one associated with this device
+    for (auto it = m_bindingTableList.begin(); it != m_bindingTableList.end(); ++it)
+    {
+        Ptr<SixLowPanNdBindingTable> bindingTable = *it;
+
+        if (bindingTable && bindingTable->GetDevice() == device)
+        {
+            NS_LOG_DEBUG("Found binding table for interface on device " << device->GetIfIndex());
+            return bindingTable;
+        }
+    }
+
+    NS_LOG_DEBUG("No binding table found for interface on device " << device->GetIfIndex());
+    return nullptr;
+}
+
+void
 SixLowPanNdProtocol::FunctionDadTimeout(Ipv6Interface* interface, Ipv6Address addr)
 {
 }

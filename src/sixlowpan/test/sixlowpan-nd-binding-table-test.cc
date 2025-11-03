@@ -40,14 +40,6 @@ class SixLowPanNdBindingTableBasicTest : public TestCase
         Ipv6Address addr2("2001:db8::2");
         Ipv6Address addr3("2001:db8::3");
 
-        // Test link-local addresses
-        Ipv6Address linkLocal1("fe80::1");
-        Ipv6Address linkLocal2("fe80::2");
-
-        // Test router link-local addresses
-        Ipv6Address routerLinkLocal1("fe80::abcd:ef01");
-        Ipv6Address routerLinkLocal2("fe80::1234:5678");
-
         // Test 1: Add TENTATIVE entries
         auto entry1 = bindingTable->Add(addr1);
         auto entry2 = bindingTable->Add(addr2);
@@ -57,43 +49,7 @@ class SixLowPanNdBindingTableBasicTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(entry1->IsTentative(), true, "Entry1 should be TENTATIVE by default");
         NS_TEST_ASSERT_MSG_EQ(entry2->IsTentative(), true, "Entry2 should be TENTATIVE by default");
 
-        // Test 2: Default link-local address should be GetAny()
-        NS_TEST_ASSERT_MSG_EQ(entry1->GetLinkLocalAddress(),
-                              Ipv6Address::GetAny(),
-                              "Entry1 default link-local should be GetAny()");
-        NS_TEST_ASSERT_MSG_EQ(entry2->GetLinkLocalAddress(),
-                              Ipv6Address::GetAny(),
-                              "Entry2 default link-local should be GetAny()");
-
-        // Test 3: Set and get link-local addresses
-        entry1->SetLinkLocalAddress(linkLocal1);
-        entry2->SetLinkLocalAddress(linkLocal2);
-
-        NS_TEST_ASSERT_MSG_EQ(entry1->GetLinkLocalAddress(),
-                              linkLocal1,
-                              "Entry1 should have correct link-local address");
-        NS_TEST_ASSERT_MSG_EQ(entry2->GetLinkLocalAddress(),
-                              linkLocal2,
-                              "Entry2 should have correct link-local address");
-
-        // Test router link-local address
-        entry1->SetRouterLinkLocalAddress(routerLinkLocal1);
-        entry2->SetRouterLinkLocalAddress(routerLinkLocal2);
-
-        NS_TEST_ASSERT_MSG_EQ(entry1->GetRouterLinkLocalAddress(),
-                              routerLinkLocal1,
-                              "Entry1 should have correct router link-local address");
-        NS_TEST_ASSERT_MSG_EQ(entry2->GetRouterLinkLocalAddress(),
-                              routerLinkLocal2,
-                              "Entry2 should have correct router link-local address");
-
-        // Test default router link-local address should be GetAny()
-        auto entry3 = bindingTable->Add(Ipv6Address("2001:db8::300"));
-        NS_TEST_ASSERT_MSG_EQ(entry3->GetRouterLinkLocalAddress(),
-                              Ipv6Address::GetAny(),
-                              "Default router link-local address should be GetAny()");
-
-        // Test 4: Lookup entries
+        // Test 2: Lookup entries
         auto foundEntry1 = bindingTable->Lookup(addr1);
         auto foundEntry2 = bindingTable->Lookup(addr2);
         auto notFoundEntry = bindingTable->Lookup(addr3);
@@ -104,39 +60,23 @@ class SixLowPanNdBindingTableBasicTest : public TestCase
                               nullptr,
                               "Lookup for non-existent entry should return nullptr");
 
-        // Test 5: Try to add duplicate entry (should return existing entry)
+        // Test 3: Try to add duplicate entry (should return existing entry)
         auto duplicateEntry = bindingTable->Add(addr1);
         NS_TEST_ASSERT_MSG_EQ(duplicateEntry,
                               entry1,
                               "Adding duplicate should return existing entry");
 
-        // Test 6: Link-local address should persist after lookup
-        NS_TEST_ASSERT_MSG_EQ(foundEntry1->GetLinkLocalAddress(),
-                              linkLocal1,
-                              "Found entry1 should retain link-local address");
-        NS_TEST_ASSERT_MSG_EQ(foundEntry2->GetLinkLocalAddress(),
-                              linkLocal2,
-                              "Found entry2 should retain link-local address");
-
-        // Test 7: Mark entry as REACHABLE
+        // Test 4: Mark entry as REACHABLE
         entry1->MarkReachable(10); // 10 minutes lifetime
         NS_TEST_ASSERT_MSG_EQ(entry1->IsReachable(), true, "Entry1 should be REACHABLE");
         NS_TEST_ASSERT_MSG_EQ(entry1->IsTentative(), false, "Entry1 should not be TENTATIVE");
         NS_TEST_ASSERT_MSG_EQ(entry1->IsStale(), false, "Entry1 should not be STALE");
 
-        // Test 8: Mark entry as STALE
+        // Test 5: Mark entry as STALE
         entry2->MarkStale();
         NS_TEST_ASSERT_MSG_EQ(entry2->IsStale(), true, "Entry2 should be STALE");
         NS_TEST_ASSERT_MSG_EQ(entry2->IsTentative(), false, "Entry2 should not be TENTATIVE");
         NS_TEST_ASSERT_MSG_EQ(entry2->IsReachable(), false, "Entry2 should not be REACHABLE");
-
-        // Test 9: Link-local address should persist after state changes
-        NS_TEST_ASSERT_MSG_EQ(entry1->GetLinkLocalAddress(),
-                              linkLocal1,
-                              "Entry1 link-local should persist after MarkReachable");
-        NS_TEST_ASSERT_MSG_EQ(entry2->GetLinkLocalAddress(),
-                              linkLocal2,
-                              "Entry2 link-local should persist after MarkStale");
 
         // Cleanup
         Simulator::Destroy();
