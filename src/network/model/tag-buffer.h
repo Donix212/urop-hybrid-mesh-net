@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#define TAG_BUFFER_USE_INLINE 1
+#define TAG_BUFFER_USE_INLINE
 
 #ifdef TAG_BUFFER_USE_INLINE
 #define TAG_BUFFER_INLINE inline

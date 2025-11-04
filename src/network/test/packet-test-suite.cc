@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits> // std:numeric_limits
 #include <string>
+#include <tuple>
 
 using namespace ns3;
 
@@ -909,6 +910,21 @@ class PacketTagListTest : public TestCase
 
   private:
     void DoRun() override;
+
+    /**
+     * Create a set of tags with data value 1, to check COW.
+     *
+     * @return Tuple of tags, from 1 to 7, and the index of the last tag.
+     */
+    std::tuple<ATestTag<1>,
+               ATestTag<2>,
+               ATestTag<3>,
+               ATestTag<4>,
+               ATestTag<5>,
+               ATestTag<6>,
+               ATestTag<7>,
+               int>
+    MakeTestTags();
     /**
      * Checks against a reference PacketTagList
      * @param ref Reference
@@ -916,14 +932,35 @@ class PacketTagListTest : public TestCase
      * @param msg Message
      * @param miss Expected miss/hit
      */
-    void CheckRef(const PacketTagList& ref, ATestTagBase& t, const char* msg, bool miss = false);
+    void CheckRef(const PacketTagList& ref,
+                  ATestTagBase& t,
+                  const std::string& msg,
+                  bool miss = false);
     /**
      * Checks against a reference PacketTagList
      * @param ref Reference
      * @param msg Message
      * @param miss Expected miss/hit
      */
-    void CheckRefList(const PacketTagList& ref, const char* msg, int miss = 0);
+    void CheckRefList(const PacketTagList& ref, const std::string& msg, int miss = 0);
+
+    /**
+     * Check if a tag was correctly removed from a PacketTagList
+     *
+     * @param ref Reference
+     * @param t List to test
+     * @param miss Expected miss/hit
+     */
+    void RemoveTagCheck(const PacketTagList& ref, ATestTagBase& t, int miss);
+
+    /**
+     * Check if a tag was correctly replaced in a PacketTagList
+     *
+     * @param ref Reference
+     * @param t List to test
+     * @param miss Expected miss/hit
+     */
+    void ReplaceTagCheck(const PacketTagList& ref, ATestTagBase& t, int miss);
 
     /**
      * Prints the remove time
@@ -932,7 +969,7 @@ class PacketTagListTest : public TestCase
      * @param msg Message - prints on cout if msg is not null.
      * @return the ticks to remove the tags.
      */
-    int RemoveTime(const PacketTagList& ref, ATestTagBase& t, const char* msg = nullptr);
+    int RemoveTime(const PacketTagList& ref, ATestTagBase& t, const std::string& msg = "");
 
     /**
      * Prints the remove time
@@ -951,8 +988,33 @@ PacketTagListTest::~PacketTagListTest()
 {
 }
 
+std::tuple<ATestTag<1>,
+           ATestTag<2>,
+           ATestTag<3>,
+           ATestTag<4>,
+           ATestTag<5>,
+           ATestTag<6>,
+           ATestTag<7>,
+           int>
+PacketTagListTest::MakeTestTags()
+{
+    return {
+        ATestTag<1>(1),
+        ATestTag<2>(1),
+        ATestTag<3>(1),
+        ATestTag<4>(1),
+        ATestTag<5>(1),
+        ATestTag<6>(1),
+        ATestTag<7>(1),
+        7, // length of ref PacketTagList
+    };
+}
+
 void
-PacketTagListTest::CheckRef(const PacketTagList& ref, ATestTagBase& t, const char* msg, bool miss)
+PacketTagListTest::CheckRef(const PacketTagList& ref,
+                            ATestTagBase& t,
+                            const std::string& msg,
+                            bool miss)
 {
     int expect = t.GetData(); // the value we should find
     bool found = ref.Peek(t); // rewrites t with actual value
@@ -965,21 +1027,12 @@ PacketTagListTest::CheckRef(const PacketTagList& ref, ATestTagBase& t, const cha
     }
 }
 
-// A set of tags with data value 1, to check COW
-#define MAKE_TEST_TAGS                                                                             \
-    ATestTag<1> t1(1);                                                                             \
-    ATestTag<2> t2(1);                                                                             \
-    ATestTag<3> t3(1);                                                                             \
-    ATestTag<4> t4(1);                                                                             \
-    ATestTag<5> t5(1);                                                                             \
-    ATestTag<6> t6(1);                                                                             \
-    ATestTag<7> t7(1);                                                                             \
-    constexpr int TAG_LAST [[maybe_unused]] = 7; /* length of ref PacketTagList */
-
 void
-PacketTagListTest::CheckRefList(const PacketTagList& ptl, const char* msg, int miss /* = 0 */)
+PacketTagListTest::CheckRefList(const PacketTagList& ptl,
+                                const std::string& msg,
+                                int miss /* = 0 */)
 {
-    MAKE_TEST_TAGS;
+    auto [t1, t2, t3, t4, t5, t6, t7, TAG_LAST] = MakeTestTags();
     CheckRef(ptl, t1, msg, miss == 1);
     CheckRef(ptl, t2, msg, miss == 2);
     CheckRef(ptl, t3, msg, miss == 3);
@@ -989,8 +1042,29 @@ PacketTagListTest::CheckRefList(const PacketTagList& ptl, const char* msg, int m
     CheckRef(ptl, t7, msg, miss == 7);
 }
 
+void
+PacketTagListTest::RemoveTagCheck(const PacketTagList& ref, ATestTagBase& t, int miss)
+{
+    PacketTagList ptl = ref;
+    ptl.Remove(t);
+    CheckRefList(ptl, "remove " + std::to_string(miss) + " copy", miss);
+    CheckRefList(ref, "remove " + std::to_string(miss) + " orig");
+}
+
+void
+PacketTagListTest::ReplaceTagCheck(const PacketTagList& ref, ATestTagBase& t, int miss)
+{
+    t.m_data = 2;
+    PacketTagList ptl = ref;
+    ptl.Replace(t);
+    CheckRefList(ref, "replace " + std::to_string(miss) + " orig");
+    CheckRef(ptl, t, "replace " + std::to_string(miss) + " copy");
+}
+
 int
-PacketTagListTest::RemoveTime(const PacketTagList& ref, ATestTagBase& t, const char* msg /* = 0 */)
+PacketTagListTest::RemoveTime(const PacketTagList& ref,
+                              ATestTagBase& t,
+                              const std::string& msg /* = "" */)
 {
     const int reps = 10000;
     std::vector<PacketTagList> ptv(reps, ref);
@@ -1001,7 +1075,7 @@ PacketTagListTest::RemoveTime(const PacketTagList& ref, ATestTagBase& t, const c
     }
     int stop = clock();
     int delta = stop - start;
-    if (msg)
+    if (!msg.empty())
     {
         std::cout << GetName() << "remove time: " << msg << ": " << std::setw(8) << delta
                   << " ticks to remove " << reps << " times" << std::endl;
@@ -1036,7 +1110,7 @@ PacketTagListTest::DoRun()
 {
     std::cout << GetName() << "begin" << std::endl;
 
-    MAKE_TEST_TAGS;
+    auto [t1, t2, t3, t4, t5, t6, t7, TAG_LAST] = MakeTestTags();
 
     PacketTagList ref; // empty list
     ref.Add(t1);       // last
@@ -1075,22 +1149,16 @@ PacketTagListTest::DoRun()
 
     // Removal
     {
-#define RemoveCheck(n)                                                                             \
-    PacketTagList p##n = ref;                                                                      \
-    p##n.Remove(t##n);                                                                             \
-    CheckRefList(ref, "remove " #n " orig");                                                       \
-    CheckRefList(p##n, "remove " #n " copy", n);
-
         // Remove single tags from list
         {
             std::cout << GetName() << "check removal of each tag" << std::endl;
-            RemoveCheck(1);
-            RemoveCheck(2);
-            RemoveCheck(3);
-            RemoveCheck(4);
-            RemoveCheck(5);
-            RemoveCheck(6);
-            RemoveCheck(7);
+            RemoveTagCheck(ref, t1, 1);
+            RemoveTagCheck(ref, t2, 2);
+            RemoveTagCheck(ref, t3, 3);
+            RemoveTagCheck(ref, t4, 4);
+            RemoveTagCheck(ref, t5, 5);
+            RemoveTagCheck(ref, t6, 6);
+            RemoveTagCheck(ref, t7, 7);
         }
 
         // Remove in the presence of a merge
@@ -1117,29 +1185,19 @@ PacketTagListTest::DoRun()
             CheckRef(mrg, t4, msg, false);
             CheckRef(mrg, m5, msg, false);
         }
-#undef RemoveCheck
     }
 
     // Replace
     {
         std::cout << GetName() << "check replacing each tag" << std::endl;
 
-#define ReplaceCheck(n)                                                                            \
-    t##n.m_data = 2;                                                                               \
-    {                                                                                              \
-        PacketTagList p##n = ref;                                                                  \
-        p##n.Replace(t##n);                                                                        \
-        CheckRefList(ref, "replace " #n " orig");                                                  \
-        CheckRef(p##n, t##n, "replace " #n " copy");                                               \
-    }
-
-        ReplaceCheck(1);
-        ReplaceCheck(2);
-        ReplaceCheck(3);
-        ReplaceCheck(4);
-        ReplaceCheck(5);
-        ReplaceCheck(6);
-        ReplaceCheck(7);
+        ReplaceTagCheck(ref, t1, 1);
+        ReplaceTagCheck(ref, t2, 2);
+        ReplaceTagCheck(ref, t3, 3);
+        ReplaceTagCheck(ref, t4, 4);
+        ReplaceTagCheck(ref, t5, 5);
+        ReplaceTagCheck(ref, t6, 6);
+        ReplaceTagCheck(ref, t7, 7);
     }
 
     // Timing

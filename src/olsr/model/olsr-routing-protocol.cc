@@ -35,6 +35,7 @@
 #include "ns3/ipv4-routing-table-entry.h"
 #include "ns3/log.h"
 #include "ns3/names.h"
+#include "ns3/nstime.h"
 #include "ns3/simulator.h"
 #include "ns3/socket-factory.h"
 #include "ns3/trace-source-accessor.h"
@@ -45,16 +46,6 @@
 #include <iostream>
 
 /********** Useful macros **********/
-
-///
-/// @brief Gets the delay between a given time and the current time.
-///
-/// If given time is previous to the current one, then this macro returns
-/// a number close to 0. This is used for scheduling events at a certain moment.
-///
-#define DELAY(time)                                                                                \
-    (((time) < (Simulator::Now())) ? Seconds(0.000001)                                             \
-                                   : (time - Simulator::Now() + Seconds(0.000001)))
 
 ///
 /// @brief Period at which a node must cite every link and every neighbor.
@@ -95,6 +86,27 @@ NS_LOG_COMPONENT_DEFINE("OlsrRoutingProtocol");
 
 namespace olsr
 {
+
+/**
+ * @brief Gets the delay between a given time and the current time.
+ * If given time is previous to the current one, then this macro returns
+ * a number close to 0. This is used for scheduling events at a certain moment.
+ */
+inline Time
+CalculateDelay(const Time& time)
+{
+    Time now = Simulator::Now();
+    Time delay = Seconds(0.000001);
+
+    if (time < now)
+    {
+        return delay;
+    }
+    else
+    {
+        return time - now + delay;
+    }
+}
 
 /**
  * @ingroup olsr
@@ -1415,7 +1427,7 @@ RoutingProtocol::ProcessTc(const olsr::MessageHeader& msg, const Ipv4Address& se
             AddTopologyTuple(topologyTuple);
 
             // Schedules topology tuple deletion
-            m_events.Track(Simulator::Schedule(DELAY(topologyTuple.expirationTime),
+            m_events.Track(Simulator::Schedule(CalculateDelay(topologyTuple.expirationTime),
                                                &RoutingProtocol::TopologyTupleTimerExpire,
                                                this,
                                                topologyTuple.destAddr,
@@ -1479,7 +1491,7 @@ RoutingProtocol::ProcessMid(const olsr::MessageHeader& msg, const Ipv4Address& s
             AddIfaceAssocTuple(tuple);
             NS_LOG_LOGIC("New IfaceAssoc added: " << tuple);
             // Schedules iface association tuple deletion
-            Simulator::Schedule(DELAY(tuple.time),
+            Simulator::Schedule(CalculateDelay(tuple.time),
                                 &RoutingProtocol::IfaceAssocTupleTimerExpire,
                                 this,
                                 tuple.ifaceAddr);
@@ -1552,7 +1564,7 @@ RoutingProtocol::ProcessHna(const olsr::MessageHeader& msg, const Ipv4Address& s
             AddAssociationTuple(assocTuple);
 
             // Schedule Association Tuple deletion
-            Simulator::Schedule(DELAY(assocTuple.expirationTime),
+            Simulator::Schedule(CalculateDelay(assocTuple.expirationTime),
                                 &RoutingProtocol::AssociationTupleTimerExpire,
                                 this,
                                 assocTuple.gatewayAddr,
@@ -2101,10 +2113,11 @@ RoutingProtocol::LinkSensing(const olsr::MessageHeader& msg,
     if (created)
     {
         LinkTupleAdded(*link_tuple, hello.willingness);
-        m_events.Track(Simulator::Schedule(DELAY(std::min(link_tuple->time, link_tuple->symTime)),
-                                           &RoutingProtocol::LinkTupleTimerExpire,
-                                           this,
-                                           link_tuple->neighborIfaceAddr));
+        m_events.Track(
+            Simulator::Schedule(CalculateDelay(std::min(link_tuple->time, link_tuple->symTime)),
+                                &RoutingProtocol::LinkTupleTimerExpire,
+                                this,
+                                link_tuple->neighborIfaceAddr));
     }
     NS_LOG_DEBUG("@" << now.As(Time::S) << ": Olsr node " << m_mainAddress << ": LinkSensing END");
 }
@@ -2189,11 +2202,12 @@ RoutingProtocol::PopulateTwoHopNeighborSet(const olsr::MessageHeader& msg,
                         new_nb2hop_tuple.expirationTime = now + msg.GetVTime();
                         AddTwoHopNeighborTuple(new_nb2hop_tuple);
                         // Schedules nb2hop tuple deletion
-                        m_events.Track(Simulator::Schedule(DELAY(new_nb2hop_tuple.expirationTime),
-                                                           &RoutingProtocol::Nb2hopTupleTimerExpire,
-                                                           this,
-                                                           new_nb2hop_tuple.neighborMainAddr,
-                                                           new_nb2hop_tuple.twoHopNeighborAddr));
+                        m_events.Track(
+                            Simulator::Schedule(CalculateDelay(new_nb2hop_tuple.expirationTime),
+                                                &RoutingProtocol::Nb2hopTupleTimerExpire,
+                                                this,
+                                                new_nb2hop_tuple.neighborMainAddr,
+                                                new_nb2hop_tuple.twoHopNeighborAddr));
                     }
                     else
                     {
@@ -2261,10 +2275,11 @@ RoutingProtocol::PopulateMprSelectorSet(const olsr::MessageHeader& msg,
                         AddMprSelectorTuple(mprsel_tuple);
 
                         // Schedules mpr selector tuple deletion
-                        m_events.Track(Simulator::Schedule(DELAY(mprsel_tuple.expirationTime),
-                                                           &RoutingProtocol::MprSelTupleTimerExpire,
-                                                           this,
-                                                           mprsel_tuple.mainAddr));
+                        m_events.Track(
+                            Simulator::Schedule(CalculateDelay(mprsel_tuple.expirationTime),
+                                                &RoutingProtocol::MprSelTupleTimerExpire,
+                                                this,
+                                                mprsel_tuple.mainAddr));
                     }
                     else
                     {
@@ -2645,7 +2660,7 @@ RoutingProtocol::DupTupleTimerExpire(Ipv4Address address, uint16_t sequenceNumbe
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(tuple->expirationTime),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->expirationTime),
                                            &RoutingProtocol::DupTupleTimerExpire,
                                            this,
                                            address,
@@ -2679,14 +2694,14 @@ RoutingProtocol::LinkTupleTimerExpire(Ipv4Address neighborIfaceAddr)
             NeighborLoss(*tuple);
         }
 
-        m_events.Track(Simulator::Schedule(DELAY(tuple->time),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->time),
                                            &RoutingProtocol::LinkTupleTimerExpire,
                                            this,
                                            neighborIfaceAddr));
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(std::min(tuple->time, tuple->symTime)),
+        m_events.Track(Simulator::Schedule(CalculateDelay(std::min(tuple->time, tuple->symTime)),
                                            &RoutingProtocol::LinkTupleTimerExpire,
                                            this,
                                            neighborIfaceAddr));
@@ -2709,7 +2724,7 @@ RoutingProtocol::Nb2hopTupleTimerExpire(Ipv4Address neighborMainAddr,
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(tuple->expirationTime),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->expirationTime),
                                            &RoutingProtocol::Nb2hopTupleTimerExpire,
                                            this,
                                            neighborMainAddr,
@@ -2731,7 +2746,7 @@ RoutingProtocol::MprSelTupleTimerExpire(Ipv4Address mainAddr)
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(tuple->expirationTime),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->expirationTime),
                                            &RoutingProtocol::MprSelTupleTimerExpire,
                                            this,
                                            mainAddr));
@@ -2752,7 +2767,7 @@ RoutingProtocol::TopologyTupleTimerExpire(Ipv4Address destAddr, Ipv4Address last
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(tuple->expirationTime),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->expirationTime),
                                            &RoutingProtocol::TopologyTupleTimerExpire,
                                            this,
                                            tuple->destAddr,
@@ -2774,7 +2789,7 @@ RoutingProtocol::IfaceAssocTupleTimerExpire(Ipv4Address ifaceAddr)
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(tuple->time),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->time),
                                            &RoutingProtocol::IfaceAssocTupleTimerExpire,
                                            this,
                                            ifaceAddr));
@@ -2797,7 +2812,7 @@ RoutingProtocol::AssociationTupleTimerExpire(Ipv4Address gatewayAddr,
     }
     else
     {
-        m_events.Track(Simulator::Schedule(DELAY(tuple->expirationTime),
+        m_events.Track(Simulator::Schedule(CalculateDelay(tuple->expirationTime),
                                            &RoutingProtocol::AssociationTupleTimerExpire,
                                            this,
                                            gatewayAddr,

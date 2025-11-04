@@ -16,17 +16,38 @@
 
 using namespace ns3;
 
-#define GET_RANDOM_UINT32(RandomVariable)                                                          \
-    static_cast<uint32_t>(RandomVariable->GetInteger(0, UINT32_MAX))
+/**
+ * Get a sample from a uniform random variable generator.
+ *
+ * @param rv Uniform random variable generator.
+ * @return Uniform random variable.
+ * @{
+ */
+inline uint32_t
+GetRandomUint32(Ptr<UniformRandomVariable> rv)
+{
+    return rv->GetInteger(0, UINT32_MAX);
+}
 
-#define GET_RANDOM_UINT16(RandomVariable)                                                          \
-    static_cast<uint16_t>(RandomVariable->GetInteger(0, UINT16_MAX))
+inline uint16_t
+GetRandomUint16(Ptr<UniformRandomVariable> rv)
+{
+    return static_cast<uint16_t>(rv->GetInteger(0, UINT16_MAX));
+}
 
-#define GET_RANDOM_UINT8(RandomVariable)                                                           \
-    static_cast<uint8_t>(RandomVariable->GetInteger(0, UINT8_MAX))
+inline uint8_t
+GetRandomUint8(Ptr<UniformRandomVariable> rv)
+{
+    return static_cast<uint8_t>(rv->GetInteger(0, UINT8_MAX));
+}
 
-#define GET_RANDOM_UINT6(RandomVariable)                                                           \
-    static_cast<uint8_t>(RandomVariable->GetInteger(0, UINT8_MAX >> 2))
+inline uint8_t
+GetRandomUint6(Ptr<UniformRandomVariable> rv)
+{
+    return static_cast<uint8_t>(rv->GetInteger(0, UINT8_MAX >> 2));
+}
+
+/** @} */
 
 /**
  * @ingroup internet-test
@@ -69,13 +90,13 @@ TcpHeaderGetSetTestCase::DoRun()
     Ptr<UniformRandomVariable> x = CreateObject<UniformRandomVariable>();
     for (uint32_t i = 0; i < 1000; ++i)
     {
-        sourcePort = GET_RANDOM_UINT16(x);
-        destinationPort = GET_RANDOM_UINT16(x);
-        sequenceNumber = SequenceNumber32(GET_RANDOM_UINT32(x));
-        ackNumber = SequenceNumber32(GET_RANDOM_UINT32(x));
-        flags = GET_RANDOM_UINT6(x);
-        windowSize = GET_RANDOM_UINT16(x);
-        urgentPointer = GET_RANDOM_UINT16(x);
+        sourcePort = GetRandomUint16(x);
+        destinationPort = GetRandomUint16(x);
+        sequenceNumber = SequenceNumber32(GetRandomUint32(x));
+        ackNumber = SequenceNumber32(GetRandomUint32(x));
+        flags = GetRandomUint6(x);
+        windowSize = GetRandomUint16(x);
+        urgentPointer = GetRandomUint16(x);
 
         header.SetSourcePort(sourcePort);
         header.SetDestinationPort(destinationPort);
