@@ -25,8 +25,8 @@
 
 #include <iomanip>
 
-#define RIPNG_ALL_NODE "ff02::9"
-#define RIPNG_PORT 521
+constexpr auto RIPNG_ALL_NODE = "ff02::9";
+constexpr uint16_t RIPNG_PORT = 521;
 
 namespace ns3
 {

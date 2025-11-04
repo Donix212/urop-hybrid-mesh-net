@@ -22,7 +22,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define EMU_MAGIC 65867
+constexpr uint32_t EMU_MAGIC = 65867;
 
 using namespace ns3;
 

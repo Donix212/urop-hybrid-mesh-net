@@ -24,7 +24,7 @@ namespace ns3
 /**
  * This defines the BSS membership value for VHT PHY.
  */
-#define VHT_PHY 126
+constexpr uint64_t VHT_PHY = 126;
 
 /**
  * @brief PHY entity for VHT (11ac)

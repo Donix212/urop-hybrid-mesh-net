@@ -13,9 +13,9 @@
 
 #include <cmath>
 
-#define IPV4_ADDRESS_SIZE 4
-#define OLSR_MSG_HEADER_SIZE 12
-#define OLSR_PKT_HEADER_SIZE 4
+constexpr uint32_t IPV4_ADDRESS_SIZE = 4;
+constexpr uint32_t OLSR_MSG_HEADER_SIZE = 12;
+constexpr uint32_t OLSR_PKT_HEADER_SIZE = 4;
 
 namespace ns3
 {
@@ -26,7 +26,7 @@ namespace olsr
 {
 
 /// Scaling factor used in RFC 3626.
-#define OLSR_C 0.0625
+constexpr double OLSR_C = 0.0625;
 
 ///
 /// @brief Converts a decimal number of seconds to the mantissa/exponent format.

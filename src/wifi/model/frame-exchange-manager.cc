@@ -25,7 +25,7 @@
 // Time (in nanoseconds) to be added to the PSDU duration to yield the duration
 // of the timer that is started when the PHY indicates the start of the reception
 // of a frame and we are waiting for a response.
-#define PSDU_DURATION_SAFEGUARD 400
+constexpr uint64_t PSDU_DURATION_SAFEGUARD = 400;
 
 namespace ns3
 {

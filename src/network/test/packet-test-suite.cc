@@ -153,8 +153,7 @@ class ATestTag : public ATestTagBase
 };
 
 // Previous versions of ns-3 limited the tag size to 20 bytes or less
-// static const uint8_t LARGE_TAG_BUFFER_SIZE = 64;
-#define LARGE_TAG_BUFFER_SIZE 64
+constexpr uint8_t LARGE_TAG_BUFFER_SIZE = 64;
 
 /**
  * @ingroup network-test

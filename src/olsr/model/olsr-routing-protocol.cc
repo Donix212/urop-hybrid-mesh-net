@@ -81,12 +81,12 @@
 /// Maximum allowed jitter.
 #define OLSR_MAXJITTER (m_helloInterval.GetSeconds() / 4)
 /// Maximum allowed sequence number.
-#define OLSR_MAX_SEQ_NUM 65535
+constexpr uint16_t OLSR_MAX_SEQ_NUM = 65535;
 /// Random number between [0-OLSR_MAXJITTER] used to jitter OLSR packet transmission.
 #define JITTER (Seconds(m_uniformRandomVariable->GetValue(0, OLSR_MAXJITTER)))
 
 /// Maximum number of messages per packet.
-#define OLSR_MAX_MSGS 64
+constexpr uint32_t OLSR_MAX_MSGS = 64;
 
 namespace ns3
 {

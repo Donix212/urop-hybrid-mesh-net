@@ -43,13 +43,13 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("Ns2MobilityHelper");
 
 // Constants definitions
-#define NS2_AT "at"
-#define NS2_X_COORD "X_"
-#define NS2_Y_COORD "Y_"
-#define NS2_Z_COORD "Z_"
-#define NS2_SETDEST "setdest"
-#define NS2_SET "set"
-#define NS2_NS_SCH "$ns_"
+constexpr auto NS2_AT = "at";
+constexpr auto NS2_X_COORD = "X_";
+constexpr auto NS2_Y_COORD = "Y_";
+constexpr auto NS2_Z_COORD = "Z_";
+constexpr auto NS2_SETDEST = "setdest";
+constexpr auto NS2_SET = "set";
+constexpr auto NS2_NS_SCH = "$ns_";
 
 /**
  * Type to maintain line parsed and its values

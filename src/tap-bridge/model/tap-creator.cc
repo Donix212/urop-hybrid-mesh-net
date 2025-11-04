@@ -27,7 +27,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define TAP_MAGIC 95549
+constexpr uint32_t TAP_MAGIC = 95549;
 
 static bool gVerbose = false; // Set to true to turn on logging messages.
 

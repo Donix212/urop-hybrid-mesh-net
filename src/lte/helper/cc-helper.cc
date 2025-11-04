@@ -18,8 +18,11 @@
 
 #include <iostream>
 
-#define MIN_CC 1
-#define MAX_CC 2
+/// Minimum number of carrier components allowed by 3GPP up to R13
+constexpr uint16_t MIN_CC = 1;
+
+/// Maximum number of carrier components allowed by 3GPP up to R13
+constexpr uint16_t MAX_CC = 2;
 
 namespace ns3
 {

@@ -25,7 +25,7 @@
 #include "ns3/random-variable-stream.h"
 #include "ns3/timer.h"
 
-#define BURST_RESET_TIMEOUT 1.5
+constexpr double BURST_RESET_TIMEOUT = 1.5;
 
 class PieQueueDiscTestCase; // Forward declaration for unit test
 

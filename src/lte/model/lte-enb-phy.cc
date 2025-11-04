@@ -339,7 +339,7 @@ LteEnbPhy::SetMacChDelay(uint8_t delay)
         std::list<UlDciLteControlMessage> l1;
         m_ulDciQueue.push_back(l1);
     }
-    for (int i = 0; i < UL_PUSCH_TTIS_DELAY; i++)
+    for (uint32_t i = 0; i < UL_PUSCH_TTIS_DELAY; i++)
     {
         std::list<UlDciLteControlMessage> l1;
         m_ulDciQueue.push_back(l1);

@@ -14,9 +14,9 @@
 #include <cmath>
 
 // see 36.213 section 8
-#define UL_PUSCH_TTIS_DELAY 4
+constexpr uint32_t UL_PUSCH_TTIS_DELAY = 4;
 
-#define HARQ_PERIOD 7
+constexpr uint32_t HARQ_PERIOD = 7;
 
 namespace ns3
 {

@@ -35,7 +35,7 @@ class ObssPdAlgorithm;
 /**
  * This defines the BSS membership value for HE PHY.
  */
-#define HE_PHY 122
+constexpr uint64_t HE_PHY = 122;
 
 /**
  * Parameters for received HE-SIG-A for OBSS_PD based SR

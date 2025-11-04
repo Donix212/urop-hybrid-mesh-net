@@ -29,9 +29,9 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("Ipv4ClickRouting");
 
 // Values from nsclick ExtRouter implementation
-#define INTERFACE_ID_KERNELTAP 0
-#define INTERFACE_ID_FIRST 1
-#define INTERFACE_ID_FIRST_DROP 33
+constexpr int INTERFACE_ID_KERNELTAP = 0;
+constexpr int INTERFACE_ID_FIRST = 1;
+constexpr int INTERFACE_ID_FIRST_DROP = 33;
 
 NS_OBJECT_ENSURE_REGISTERED(Ipv4ClickRouting);
 

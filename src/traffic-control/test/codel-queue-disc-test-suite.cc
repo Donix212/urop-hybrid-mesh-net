@@ -20,10 +20,10 @@
 using namespace ns3;
 
 // The following code borrowed from Linux codel.h, for unit testing
-#define REC_INV_SQRT_BITS_ns3 (8 * sizeof(uint16_t))
+constexpr uint32_t REC_INV_SQRT_BITS_ns3 = 8 * sizeof(uint16_t);
 /* or sizeof_in_bits(rec_inv_sqrt) */
 /* needed shift to get a Q0.32 number from rec_inv_sqrt */
-#define REC_INV_SQRT_SHIFT_ns3 (32 - REC_INV_SQRT_BITS_ns3)
+constexpr uint32_t REC_INV_SQRT_SHIFT_ns3 = 32 - REC_INV_SQRT_BITS_ns3;
 
 static uint16_t
 _codel_Newton_step(uint16_t rec_inv_sqrt, uint32_t count)

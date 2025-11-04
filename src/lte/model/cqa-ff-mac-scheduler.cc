@@ -406,7 +406,7 @@ CqaFfMacScheduler::DoCschedUeReleaseReq(
 {
     NS_LOG_FUNCTION(this);
 
-    for (int i = 0; i < MAX_LC_LIST; i++)
+    for (uint32_t i = 0; i < MAX_LC_LIST; i++)
     {
         LteFlowId_t flowId = LteFlowId_t(params.m_rnti, i);
         // find the logical channel with the same Logical Channel Identity in the current list,
