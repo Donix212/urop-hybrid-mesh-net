@@ -11,10 +11,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 
 using namespace ns3;
+namespace fs = std::filesystem;
 
 NS_LOG_COMPONENT_DEFINE("pcap-file-test-suite");
 
@@ -36,33 +38,14 @@ Swap(uint32_t val)
 }
 
 static bool
-CheckFileExists(std::string filename)
+CheckFileLength(std::string filename, unsigned sizeExpected)
 {
-    FILE* p = std::fopen(filename.c_str(), "rb");
-    if (p == nullptr)
+    if (!fs::exists(filename))
     {
         return false;
     }
 
-    std::fclose(p);
-    return true;
-}
-
-static bool
-CheckFileLength(std::string filename, long sizeExpected)
-{
-    FILE* p = std::fopen(filename.c_str(), "rb");
-    if (p == nullptr)
-    {
-        return false;
-    }
-
-    std::fseek(p, 0, SEEK_END);
-
-    auto sizeActual = std::ftell(p);
-    std::fclose(p);
-
-    return sizeActual == sizeExpected;
+    return fs::file_size(filename) == sizeExpected;
 }
 
 /**
@@ -127,7 +110,7 @@ WriteModeCreateTestCase::DoRun()
     NS_TEST_ASSERT_MSG_EQ(f.Fail(), false, "Open (" << m_testFilename << ", \"w\") returns error");
     f.Close();
 
-    NS_TEST_ASSERT_MSG_EQ(CheckFileExists(m_testFilename),
+    NS_TEST_ASSERT_MSG_EQ(fs::exists(m_testFilename),
                           true,
                           "Open (" << m_testFilename
                                    << ", \"std::ios::out\") does not create file");
@@ -255,7 +238,7 @@ ReadModeCreateTestCase::DoRun()
                               << m_testFilename << ", \"std::ios::in\") does not return error");
     f.Close();
     f.Clear();
-    NS_TEST_ASSERT_MSG_EQ(CheckFileExists(m_testFilename),
+    NS_TEST_ASSERT_MSG_EQ(fs::exists(m_testFilename),
                           false,
                           "Open (" << m_testFilename
                                    << ", \"std::ios::in\") unexpectedly created a file");
@@ -373,7 +356,7 @@ AppendModeCreateTestCase::DoRun ()
   f.Close ();
   f.Clear ();
 
-  NS_TEST_ASSERT_MSG_EQ (CheckFileExists (m_testFilename), false,
+  NS_TEST_ASSERT_MSG_EQ (fs::exists(m_testFilename), false,
                          "Open (" << m_testFilename << ", \"std::ios::app\") unexpectedly created a file");
 
   //

@@ -17,6 +17,7 @@
 #include "ns3/node-list.h"
 #include "ns3/ppp-header.h"
 #include "ns3/simulator.h"
+#include "ns3/system-path.h"
 #include "ns3/wifi-mac-header.h"
 #include "ns3/wifi-net-device.h"
 
@@ -28,21 +29,10 @@ NS_LOG_COMPONENT_DEFINE("PyViz");
 static std::vector<std::string>
 PathSplit(std::string str)
 {
-    std::vector<std::string> results;
-    size_t cutAt;
-    while ((cutAt = str.find_first_of('/')) != std::string::npos)
-    {
-        if (cutAt > 0)
-        {
-            results.push_back(str.substr(0, cutAt));
-        }
-        str = str.substr(cutAt + 1);
-    }
-    if (!str.empty())
-    {
-        results.push_back(str);
-    }
-    return results;
+  auto dirs = SystemPath::Split(str);
+  std::vector<std::string> results(std::make_move_iterator(dirs.begin()),
+				   std::make_move_iterator(dirs.end()));
+  return results;
 }
 
 namespace ns3
