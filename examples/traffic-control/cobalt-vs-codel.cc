@@ -45,7 +45,7 @@ CheckQueueSize(Ptr<QueueDisc> queue, std::string queue_disc_type)
 }
 
 static void
-CwndTrace(Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
+CwndTrace(Ptr<OutputStreamWrapper> stream, uint32_t, uint32_t newCwnd)
 {
     *stream->GetStream() << Simulator::Now().GetSeconds() << " " << newCwnd / 1446.0 << std::endl;
 }

@@ -93,7 +93,7 @@ CheckQueueSize(Ptr<QueueDisc> qd)
 
 // Trace congestion window
 static void
-CwndTracer(Ptr<OutputStreamWrapper> stream, uint32_t oldval, uint32_t newval)
+CwndTracer(Ptr<OutputStreamWrapper> stream, uint32_t, uint32_t newval)
 {
     *stream->GetStream() << Simulator::Now().GetSeconds() << " " << newval / 1448.0 << std::endl;
 }

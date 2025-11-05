@@ -83,7 +83,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("PingEmulationExample");
 
 static void
-PingRtt(std::string context, uint16_t seqNo, Time rtt)
+PingRtt(std::string, uint16_t seqNo, Time rtt)
 {
     NS_LOG_UNCOND("Received " << seqNo << " Response with RTT = " << rtt);
 }

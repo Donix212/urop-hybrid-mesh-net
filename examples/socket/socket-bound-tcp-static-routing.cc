@@ -45,8 +45,6 @@ void WriteUntilBufferFull(Ptr<Socket>, uint32_t);
 
 void SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
 void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
-void srcSocketRecv(Ptr<Socket> socket);
-void dstSocketRecv(Ptr<Socket> socket);
 
 int
 main(int argc, char* argv[])

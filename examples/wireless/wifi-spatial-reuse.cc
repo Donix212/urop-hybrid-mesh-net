@@ -108,7 +108,7 @@ ContextToNodeId(std::string context)
 }
 
 void
-SocketRx(std::string context, Ptr<const Packet> p, const Address& addr)
+SocketRx(std::string context, Ptr<const Packet> p, const Address&)
 {
     uint32_t nodeId = ContextToNodeId(context);
     bytesReceived[nodeId] += p->GetSize();

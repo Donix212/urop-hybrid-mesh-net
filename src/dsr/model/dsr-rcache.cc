@@ -121,8 +121,6 @@ DsrLinkStab::Print() const
     NS_LOG_LOGIC("LifeTime: " << GetLinkStability().As(Time::S));
 }
 
-typedef std::list<DsrRouteCacheEntry>::value_type route_pair;
-
 DsrRouteCacheEntry::DsrRouteCacheEntry(IP_VECTOR const& ip, Ipv4Address dst, Time exp)
     : m_ackTimer(Timer::CANCEL_ON_DESTROY),
       m_dst(dst),

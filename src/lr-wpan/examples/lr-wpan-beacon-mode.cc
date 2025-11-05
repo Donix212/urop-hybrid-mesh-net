@@ -37,13 +37,13 @@ using namespace ns3;
 using namespace ns3::lrwpan;
 
 void
-BeaconIndication(MlmeBeaconNotifyIndicationParams params)
+BeaconIndication(MlmeBeaconNotifyIndicationParams)
 {
     NS_LOG_UNCOND(Simulator::Now().GetSeconds() << " secs | Received BEACON packet of size ");
 }
 
 void
-DataIndication(McpsDataIndicationParams params, Ptr<Packet> p)
+DataIndication(McpsDataIndicationParams, Ptr<Packet> p)
 {
     NS_LOG_UNCOND(Simulator::Now().GetSeconds()
                   << " secs | Received DATA packet of size " << p->GetSize());
@@ -61,7 +61,7 @@ TransEndIndication(McpsDataConfirmParams params)
 }
 
 void
-DataIndicationCoordinator(McpsDataIndicationParams params, Ptr<Packet> p)
+DataIndicationCoordinator(McpsDataIndicationParams, Ptr<Packet> p)
 {
     NS_LOG_UNCOND(Simulator::Now().GetSeconds()
                   << "s Coordinator Received DATA packet (size " << p->GetSize() << " bytes)");

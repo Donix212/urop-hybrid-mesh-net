@@ -40,12 +40,9 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
-NodeContainer nodes;
-NodeContainer coordinators;
-AnimationInterface* anim = nullptr;
 
 static void
-UpdateAnimation()
+UpdateAnimation(const NodeContainer& nodes, AnimationInterface* anim)
 {
     std::cout << Simulator::Now().As(Time::S) << " | Animation Updated, End of simulation.\n";
     for (uint32_t i = 0; i < nodes.GetN(); ++i)
@@ -330,7 +327,9 @@ main(int argc, char* argv[])
 {
     LogComponentEnableAll(LogLevel(LOG_PREFIX_TIME | LOG_PREFIX_FUNC | LOG_PREFIX_NODE));
 
+    NodeContainer nodes;
     nodes.Create(100);
+    NodeContainer coordinators;
     coordinators.Create(2);
 
     MobilityHelper mobility;
@@ -461,7 +460,7 @@ main(int argc, char* argv[])
                                    coor2Device->GetMac(),
                                    params2);
 
-    anim = new AnimationInterface("lrwpan-bootstrap.xml");
+    auto anim = new AnimationInterface("lrwpan-bootstrap.xml");
     anim->SkipPacketTracing();
     anim->UpdateNodeDescription(coordinators.Get(0), "Coordinator (PAN 5)");
     anim->UpdateNodeDescription(coordinators.Get(1), "Coordinator (PAN 7)");
@@ -470,7 +469,7 @@ main(int argc, char* argv[])
     anim->UpdateNodeSize(nodes.GetN(), 9, 9);
     anim->UpdateNodeSize(nodes.GetN() + 1, 9, 9);
 
-    Simulator::Schedule(Seconds(1499), &UpdateAnimation);
+    Simulator::Schedule(Seconds(1499), &UpdateAnimation, nodes, anim);
     Simulator::Stop(Seconds(1500));
     Simulator::Run();
 
