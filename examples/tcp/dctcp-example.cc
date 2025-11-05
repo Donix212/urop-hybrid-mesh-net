@@ -111,20 +111,27 @@ PrintProgress(Time interval)
     Simulator::Schedule(interval, &PrintProgress, interval);
 }
 
+/**
+ * Accumulate the number of bytes received.
+ * @param index The accumulator to increment.
+ * @param p The received Packet.
+ */
 void
-TraceS1R1Sink(std::size_t index, Ptr<const Packet> p, const Address& a)
+TraceS1R1Sink(std::size_t index, Ptr<const Packet> p, const Address&)
 {
     rxS1R1Bytes[index] += p->GetSize();
 }
 
+/** @copydoc TraceS1R1Sink() */
 void
-TraceS2R2Sink(std::size_t index, Ptr<const Packet> p, const Address& a)
+TraceS2R2Sink(std::size_t index, Ptr<const Packet> p, const Address&)
 {
     rxS2R2Bytes[index] += p->GetSize();
 }
 
+/** @copydoc TraceS1R1Sink() */
 void
-TraceS3R1Sink(std::size_t index, Ptr<const Packet> p, const Address& a)
+TraceS3R1Sink(std::size_t index, Ptr<const Packet> p, const Address&)
 {
     rxS3R1Bytes[index] += p->GetSize();
 }

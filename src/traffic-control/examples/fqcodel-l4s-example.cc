@@ -281,7 +281,7 @@ uint32_t g_marksObserved = 0;
 uint32_t g_dropsObserved = 0;
 
 void
-TraceN0Cwnd(std::ofstream* ofStream, uint32_t oldCwnd, uint32_t newCwnd)
+TraceN0Cwnd(std::ofstream* ofStream, uint32_t, uint32_t newCwnd)
 {
     // TCP segment size is configured below to be 1448 bytes
     // so that we can report cwnd in units of segments
@@ -290,7 +290,7 @@ TraceN0Cwnd(std::ofstream* ofStream, uint32_t oldCwnd, uint32_t newCwnd)
 }
 
 void
-TraceN1Cwnd(std::ofstream* ofStream, uint32_t oldCwnd, uint32_t newCwnd)
+TraceN1Cwnd(std::ofstream* ofStream, uint32_t, uint32_t newCwnd)
 {
     // TCP segment size is configured below to be 1448 bytes
     // so that we can report cwnd in units of segments
@@ -299,13 +299,13 @@ TraceN1Cwnd(std::ofstream* ofStream, uint32_t oldCwnd, uint32_t newCwnd)
 }
 
 void
-TraceN0Rtt(std::ofstream* ofStream, Time oldRtt, Time newRtt)
+TraceN0Rtt(std::ofstream* ofStream, Time, Time newRtt)
 {
     *ofStream << Simulator::Now().GetSeconds() << " " << newRtt.GetSeconds() * 1000 << std::endl;
 }
 
 void
-TraceN1Rtt(std::ofstream* ofStream, Time oldRtt, Time newRtt)
+TraceN1Rtt(std::ofstream* ofStream, Time, Time newRtt)
 {
     *ofStream << Simulator::Now().GetSeconds() << " " << newRtt.GetSeconds() * 1000 << std::endl;
 }
@@ -318,13 +318,13 @@ TracePingRtt(std::ofstream* ofStream, uint16_t seqNo, Time rtt)
 }
 
 void
-TraceN0Rx(Ptr<const Packet> packet, const Address& address)
+TraceN0Rx(Ptr<const Packet> packet, const Address&)
 {
     g_n0BytesReceived += packet->GetSize();
 }
 
 void
-TraceN1Rx(Ptr<const Packet> packet, const Address& address)
+TraceN1Rx(Ptr<const Packet> packet, const Address&)
 {
     g_n1BytesReceived += packet->GetSize();
 }
@@ -337,14 +337,14 @@ TraceDrop(std::ofstream* ofStream, Ptr<const QueueDiscItem> item)
 }
 
 void
-TraceMark(std::ofstream* ofStream, Ptr<const QueueDiscItem> item, const char* reason)
+TraceMark(std::ofstream* ofStream, Ptr<const QueueDiscItem> item, const char*)
 {
     *ofStream << Simulator::Now().GetSeconds() << " " << std::hex << item->Hash() << std::endl;
     g_marksObserved++;
 }
 
 void
-TraceQueueLength(std::ofstream* ofStream, DataRate linkRate, uint32_t oldVal, uint32_t newVal)
+TraceQueueLength(std::ofstream* ofStream, DataRate linkRate, uint32_t, uint32_t newVal)
 {
     // output in units of ms
     *ofStream << Simulator::Now().GetSeconds() << " " << std::fixed
