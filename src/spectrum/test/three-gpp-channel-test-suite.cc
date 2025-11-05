@@ -9,6 +9,7 @@
 #include "ns3/channel-condition-model.h"
 #include "ns3/config.h"
 #include "ns3/constant-position-mobility-model.h"
+#include "ns3/constant-velocity-mobility-model.h"
 #include "ns3/double.h"
 #include "ns3/ism-spectrum-value-helper.h"
 #include "ns3/isotropic-antenna-model.h"
@@ -148,14 +149,14 @@ ThreeGppChannelMatrixComputationTest::DoRun()
 
     // create the channel condition model
     Ptr<ChannelConditionModel> channelConditionModel =
-        CreateObject<NeverLosChannelConditionModel>();
+        CreateObject<AlwaysLosChannelConditionModel>();
 
     // create the ThreeGppChannelModel object used to generate the channel matrix
     Ptr<ThreeGppChannelModel> channelModel = CreateObject<ThreeGppChannelModel>();
     channelModel->SetAttribute("Frequency", DoubleValue(60.0e9));
     channelModel->SetAttribute("Scenario", StringValue("RMa"));
     channelModel->SetAttribute("ChannelConditionModel", PointerValue(channelConditionModel));
-    channelModel->SetAttribute("UpdatePeriod", TimeValue(MilliSeconds(updatePeriodMs - 1)));
+    channelModel->SetAttribute("UpdatePeriod", TimeValue(MilliSeconds(updatePeriodMs)));
     channelModel->AssignStreams(1);
 
     // create the tx and rx nodes
@@ -175,8 +176,9 @@ ThreeGppChannelMatrixComputationTest::DoRun()
     // create the tx and rx mobility models and set their positions
     Ptr<MobilityModel> txMob = CreateObject<ConstantPositionMobilityModel>();
     txMob->SetPosition(Vector(0.0, 0.0, 10.0));
-    Ptr<MobilityModel> rxMob = CreateObject<ConstantPositionMobilityModel>();
-    rxMob->SetPosition(Vector(100.0, 0.0, 10.0));
+    Ptr<ConstantVelocityMobilityModel> rxMob = CreateObject<ConstantVelocityMobilityModel>();
+    rxMob->SetPosition(Vector(30.0, 0.0, 10.0));
+    rxMob->SetVelocity(Vector(50, 0, 0));
 
     // associate the nodes and the mobility models
     nodes.Get(0)->AggregateObject(txMob);
@@ -221,10 +223,10 @@ ThreeGppChannelMatrixComputationTest::DoRun()
         "The second dimension of H should be equal to the number of rx antenna elements");
 
     // test if the channel matrix is correctly generated
-    uint16_t numIt = 1000;
+    uint16_t numIt = 2000;
     for (uint16_t i = 0; i < numIt; i++)
     {
-        Simulator::Schedule(MilliSeconds(updatePeriodMs * i),
+        Simulator::Schedule(MilliSeconds(updatePeriodMs * i + i),
                             &ThreeGppChannelMatrixComputationTest::DoComputeNorm,
                             this,
                             channelModel,
@@ -257,7 +259,7 @@ ThreeGppChannelMatrixComputationTest::DoRun()
 
     NS_TEST_ASSERT_MSG_NE(sampleStd,
                           0,
-                          "The STD should be different from zero. Channem matrix not updated");
+                          "The STD should be different from zero. Channel matrix not updated");
 
     if (sampleStd != 0)
     {
@@ -266,7 +268,7 @@ ThreeGppChannelMatrixComputationTest::DoRun()
         // H, M is the number of transmit antenna elements, and N is the number of
         // the receive antenna elements"
         double t = (sampleMean - m_txAntennaElements * m_txAntennaElements * m_rxAntennaElements *
-                    m_rxAntennaElements) /
+                                     m_rxAntennaElements) /
                    (sampleStd / std::sqrt(numIt));
 
         // Using a significance level of 0.05, we reject the null hypothesis if |t| is
@@ -371,19 +373,34 @@ ThreeGppChannelMatrixUpdateTest::DoGetChannel(Ptr<ThreeGppChannelModel> channelM
     Ptr<const ThreeGppChannelModel::ChannelMatrix> channelMatrix =
         channelModel->GetChannel(txMob, rxMob, txAntenna, rxAntenna);
 
-    if (!m_currentChannel)
+    // For in-place updates, the ChannelMatrix pointer may remain the same.
+    // Deep-compare the matrix values with a small tolerance.
+    static bool s_initialized = false;
+    static ComplexMatrixArray s_prev;
+
+    if (!s_initialized)
     {
-        // this is the first time we compute the channel matrix, we initialize
-        // m_currentChannel
+        s_prev = channelMatrix->m_channel; // deep copy
         m_currentChannel = channelMatrix;
+        s_initialized = true;
+        return;
     }
-    else
+
+    // Use absolute tolerance on complex values (magnitude comparison)
+    std::complex<double> tol(1e-12, 0.0);
+    bool equal = s_prev.IsAlmostEqual(channelMatrix->m_channel, tol);
+    bool changed = !equal;
+
+    NS_TEST_ASSERT_MSG_EQ(changed,
+                          update,
+                          Simulator::Now().GetMilliSeconds()
+                              << " The channel matrix is not correctly updated");
+
+    // Update previous snapshot if an update was expected and occurred
+    if (changed)
     {
-        // compare the old and the new channel matrices
-        NS_TEST_ASSERT_MSG_EQ((m_currentChannel->m_channel != channelMatrix->m_channel),
-                              update,
-                              Simulator::Now().GetMilliSeconds()
-                                  << " The channel matrix is not correctly updated");
+        s_prev = channelMatrix->m_channel;
+        m_currentChannel = channelMatrix;
     }
 }
 
@@ -1479,6 +1496,7 @@ ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
     : TestSuite("three-gpp-channel", Type::UNIT)
 {
     AddTestCase(new ThreeGppChannelMatrixComputationTest(2, 2, 1, 1), TestCase::Duration::QUICK);
+
     AddTestCase(new ThreeGppChannelMatrixComputationTest(4, 2, 1, 1), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(2, 2, 2, 2), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(4, 4, 2, 2), TestCase::Duration::QUICK);
@@ -1507,6 +1525,7 @@ ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
      *   (0,0)   (0,0)   (-5.8,)   (-5.8,0)
      *   (0,0)   (0,0)   (-5.8,0)  (-5.8,0)
      */
+
     std::valarray<std::complex<double>> testChannel1 =
         {5.9, 5.9, 0, 0, 5.9, 5.9, 0, 0, 0, 0, -5.8, -5.8, 0, 0, -5.8, -5.8};
     AddTestCase(new ThreeGppMimoPolarizationTest("Face-to-face. 0 and 0 pol. slant angles.",
@@ -1609,6 +1628,7 @@ ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
      *   (0,0)   (0,0)    (-2.4,4)    (-2.4,4)
      *   (0,0)   (0,0)    (-2.4,4)    (-2.4,4)
      */
+
     AddTestCase(new ThreeGppMimoPolarizationTest(
                     "Not face-to-face. Different heights. 0 and 0 pol. slant angles.",
                     Vector{0, 0, 10},
