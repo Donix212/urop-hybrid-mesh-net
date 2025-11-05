@@ -123,12 +123,12 @@ class FlowMonitor : public Object
         /// DROP_BAD_CHECKSUM (a packet had bad IPv4 header checksum and
         /// had to be dropped).
         /// packetsDropped[reasonCode] => number of dropped packets
-        std::vector<uint32_t> packetsDropped;
+        std::map<uint32_t, uint32_t> packetsDropped;
 
         /// This attribute also tracks the number of lost bytes.  See also
         /// comment in attribute packetsDropped.
         /// bytesDropped[reasonCode] => number of dropped bytes
-        std::vector<uint64_t> bytesDropped;
+        std::map<uint32_t, uint64_t> bytesDropped;
 
         /// Histogram of durations of flow interruptions
         Histogram flowInterruptionsHistogram;

@@ -283,11 +283,6 @@ FlowMonitor::ReportDrop(Ptr<FlowProbe> probe,
 
     FlowStats& stats = GetStatsForFlow(flowId);
     stats.lostPackets++;
-    if (stats.packetsDropped.size() < reasonCode + 1)
-    {
-        stats.packetsDropped.resize(reasonCode + 1, 0);
-        stats.bytesDropped.resize(reasonCode + 1, 0);
-    }
     ++stats.packetsDropped[reasonCode];
     stats.bytesDropped[reasonCode] += packetSize;
     NS_LOG_DEBUG("++stats.packetsDropped["
@@ -461,17 +456,17 @@ FlowMonitor::SerializeToXmlStream(std::ostream& os,
 #undef ATTRIB
 
         indent += 2;
-        for (uint32_t reasonCode = 0; reasonCode < flowStats.packetsDropped.size(); reasonCode++)
+        for (const auto& [reasonCode, packetsDropped] : flowStats.packetsDropped)
         {
             os << std::string(indent, ' ');
             os << "<packetsDropped reasonCode=\"" << reasonCode << "\""
-               << " number=\"" << flowStats.packetsDropped[reasonCode] << "\" />\n";
+               << " number=\"" << packetsDropped << "\" />\n";
         }
-        for (uint32_t reasonCode = 0; reasonCode < flowStats.bytesDropped.size(); reasonCode++)
+        for (const auto& [reasonCode, bytesDropped] : flowStats.bytesDropped)
         {
             os << std::string(indent, ' ');
             os << "<bytesDropped reasonCode=\"" << reasonCode << "\""
-               << " bytes=\"" << flowStats.bytesDropped[reasonCode] << "\" />\n";
+               << " bytes=\"" << bytesDropped << "\" />\n";
         }
         if (enableHistograms)
         {
