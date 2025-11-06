@@ -190,9 +190,9 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         Vector m_rxSpeed;                   //!< RX velocity
         DoubleVector m_delayConsistency;
         //!< cluster delay for consistency update
-        //!< the vector of the distance between the nodes at the moment of the generation of the
-        //!< channel parameters
         Vector2D m_distance2D;
+        //!< the vector of the distance between the nodes at the moment of the generation of the
+               //!< channel parameters
     };
 
     /**
@@ -560,12 +560,9 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      *      Pointer to a 2D vector representing the existing or to-be-generated non-self-blocking
      *      regions. Each inner vector contains the parameters for a single blocker:
      *      [phi_k, x_k, theta_k, y_k, r_k], as defined in 3GPP Table 7.6.4.1-2.
-     *      If empty, this function will generate a new set based on the scenario.
      *
-     * @param [in,out] attenuation_dB A vector of attenuation values in decibels (dB),
-     *      with one value per cluster. The attenuation includes:
-     *         - 30 dB for clusters blocked by the self-blocking region.
-     *         - A variable value based on the attenuation formula in Eq. (7.6-22) for non-self
+     * @param [in,out] powerAttenuation A vector of attenuation values in decibels (dB),
+     *      with one value per cluster to be generated.
      * blockers.
      *
      * @param [in] channelParams
@@ -592,7 +589,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      */
     void CalcAttenuationOfBlockage(
         Double2DVector* nonSelfBlocking,
-        DoubleVector* attenuation_dB,
+        DoubleVector* powerAttenuation,
         const Ptr<const ThreeGppChannelModel::ThreeGppChannelParams> channelParams,
         const DoubleVector& clusterAOA,
         const DoubleVector& clusterZOA) const;
@@ -611,7 +608,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                             DoubleVector* delayConsistency,
                             const Ptr<const ThreeGppChannelParams> channelParams) const;
 
-    /*
+    /**
      * @brief Rotate a 3D velocity vector by specified angles, around y-axis and z-axis.
      * Rotation matrices being used are the ones defined in 38.901 in Equation (7.1-2).
      * The formula being applied is the one from Procedure A, Rn,rx and Rn,ry from formula 7.6-10b
@@ -716,6 +713,11 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      * P' = \frac{P}{10^{A_{\text{dB}}/10}}
      * \f]
      * where \f$ A_{\text{dB}} \f$ is the blockage attenuation for the cluster.
+     *
+     *@param [in,out] nonSelfBlocking
+     *      Pointer to the 2D vector of non-self-blocking regions to be generated.
+     *      Each inner vector contains the parameters for a single blocker as defined in
+     *      3GPP Table 7.6.4.1-2.
      *
      * @param [in,out] clusterPowers
      *      Pointer to the vector of cluster powers (linear scale), modified in-place
@@ -913,7 +915,6 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      * @param channelCondition current channel condition
      * @param aMob mobility model of device A
      * @param bMob mobility model of device B
-     * @param dis2D current 2D distance between devices
      */
     void UpdateChannelParameters(Ptr<ThreeGppChannelParams> channelParams,
                                  Ptr<const ChannelCondition> channelCondition,
@@ -922,8 +923,8 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
 
     /**
      * Check if the channel params has to be updated
-     * @param channelParams channel params
-     * @param channelCondition the channel condition
+     * @param channelParamsKey the channel params key
+     * @param condition the pointer to the channel condition instance
      * @return true if the channel params has to be updated, false otherwise
      */
     bool NewChannelParamsNeeded(uint64_t channelParamsKey,
@@ -998,17 +999,6 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                                          double dis2D,
                                          double hBS,
                                          double hUT) const;
-
-    /**
-     * Applies the blockage model A described in 3GPP TR 38.901
-     * @param params the channel matrix
-     * @param clusterAOA vector containing the azimuth angle of arrival for each cluster
-     * @param clusterZOA vector containing the zenith angle of arrival for each cluster
-     * @return vector containing the power attenuation for each cluster
-     */
-    DoubleVector CalcAttenuationOfBlockage(Ptr<ChannelMatrix> params,
-                                           const DoubleVector& clusterAOA,
-                                           const DoubleVector& clusterZOA) const;
 
     std::unordered_map<uint64_t, Ptr<ChannelMatrix>> m_channelMatrixMap;
     //!< map containing the channel realizations per pair of
