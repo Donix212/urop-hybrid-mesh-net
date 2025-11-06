@@ -192,7 +192,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         //!< cluster delay for consistency update
         Vector2D m_distance2D;
         //!< the vector of the distance between the nodes at the moment of the generation of the
-               //!< channel parameters
+        //!< channel parameters
     };
 
     /**

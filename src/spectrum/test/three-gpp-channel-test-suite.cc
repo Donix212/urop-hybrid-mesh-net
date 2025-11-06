@@ -516,6 +516,274 @@ ThreeGppChannelMatrixUpdateTest::DoRun()
 /**
  * @ingroup spectrum-tests
  *
+ * Test case for channel consistency Procedure A according to 3GPP Section 7.6.3.
+ * This test verifies that consistent updates produce smoother changes
+ * than generating a completely new channel.
+ */
+class ThreeGppChannelConsistencyTest : public TestCase
+{
+  public:
+    /**
+     *Constructor
+     */
+    ThreeGppChannelConsistencyTest();
+
+    /**
+     * Destructor
+     */
+    ~ThreeGppChannelConsistencyTest() override;
+
+  private:
+    /**
+     * Build the test scenario
+     */
+    void DoRun() override;
+
+    /**
+     * Compute the Frobenius norm of the channel matrix and stores it in m_normVector
+     * @param channelModel the ThreeGppChannelModel object used to generate the channel matrix
+     * @param txMob the mobility model of the first node
+     * @param rxMob the mobility model of the second node
+     * @param txAntenna the antenna object associated to the first node
+     * @param rxAntenna the antenna object associated to the second node
+     * @param normVectorToBeUsed the norm vector to be used as the output of the function
+     * @param distancesVectorToBeUsed the distances vector to be used as the output of the function
+     */
+    void DoComputeNorm(Ptr<ThreeGppChannelModel> channelModel,
+                       Ptr<MobilityModel> txMob,
+                       Ptr<MobilityModel> rxMob,
+                       Ptr<PhasedArrayModel> txAntenna,
+                       Ptr<PhasedArrayModel> rxAntenna,
+                       std::vector<double>* normVectorToBeUsed,
+                       std::vector<double>* distancesVectorToBeUsed);
+
+    std::vector<double> m_normsChannelUpdates; //!< each element is the norm of channel updates
+    std::vector<double> m_normsNewChannelRealizations;
+    //!< each element is the norm of new channel realizations
+    std::vector<double> m_channelUpdateDistance;
+    //!< each element is the distance between two consecutive channel updates
+    std::vector<double> m_newChannelRealizationDistance;
+    //!< each element is the distance between two consecutive new channel realizations
+
+    uint32_t m_txAntennaElements{4}; //!< number of rows and columns of tx antenna array
+    uint32_t m_rxAntennaElements{4}; //!< number of rows and columns of rx antenna array
+    uint32_t m_txPorts{1}; //!< number of horizontal and vertical ports of tx antenna array
+    uint32_t m_rxPorts{1}; //!< number of horizontal and vertical ports of rx antenna array
+};
+
+ThreeGppChannelConsistencyTest::ThreeGppChannelConsistencyTest()
+    : TestCase("Check the channel consistency feature")
+{
+}
+
+ThreeGppChannelConsistencyTest::~ThreeGppChannelConsistencyTest()
+{
+}
+
+void
+ThreeGppChannelConsistencyTest::DoComputeNorm(Ptr<ThreeGppChannelModel> channelModel,
+                                              Ptr<MobilityModel> txMob,
+                                              Ptr<MobilityModel> rxMob,
+                                              Ptr<PhasedArrayModel> txAntenna,
+                                              Ptr<PhasedArrayModel> rxAntenna,
+                                              std::vector<double>* normVectorToBeUsed,
+                                              std::vector<double>* distancesVectorToBeUsed)
+{
+    uint64_t txAntennaElements = txAntenna->GetNumElems();
+    uint64_t rxAntennaElements = rxAntenna->GetNumElems();
+
+    Ptr<const ThreeGppChannelModel::ChannelMatrix> channelMatrix =
+        channelModel->GetChannel(txMob, rxMob, txAntenna, rxAntenna);
+
+    double channelNorm = 0;
+    uint16_t numTotalClusters = channelMatrix->m_channel.GetNumPages();
+    for (uint16_t cIndex = 0; cIndex < numTotalClusters; cIndex++)
+    {
+        double clusterNorm = 0;
+        for (uint64_t sIndex = 0; sIndex < txAntennaElements; sIndex++)
+        {
+            for (uint64_t uIndex = 0; uIndex < rxAntennaElements; uIndex++)
+            {
+                clusterNorm +=
+                    std::pow(std::abs(channelMatrix->m_channel(uIndex, sIndex, cIndex)), 2);
+            }
+        }
+        channelNorm += clusterNorm;
+    }
+    normVectorToBeUsed->push_back(channelNorm);
+
+    if (normVectorToBeUsed->size() > 1)
+    {
+        // we calculate the absolute value of the difference between the last two norms
+        distancesVectorToBeUsed->push_back(
+            std::abs(channelNorm - normVectorToBeUsed->at(normVectorToBeUsed->size() - 2)));
+    }
+}
+
+void
+ThreeGppChannelConsistencyTest::DoRun()
+{
+    RngSeedManager::SetSeed(1);
+    RngSeedManager::SetRun(1);
+    // Build the scenario for the test
+    uint32_t updatePeriodMs = 1; // update period in ms
+
+    // create the channel condition model
+    Ptr<ChannelConditionModel> channelConditionModel =
+        CreateObject<AlwaysLosChannelConditionModel>();
+
+    // create the ThreeGppChannelModel object used to generate the channel matrix
+    Ptr<ThreeGppChannelModel> channelModel = CreateObject<ThreeGppChannelModel>();
+    channelModel->SetAttribute("Frequency", DoubleValue(4.0e9));
+    channelModel->SetAttribute("Scenario", StringValue("RMa"));
+    channelModel->SetAttribute("ChannelConditionModel", PointerValue(channelConditionModel));
+    channelModel->SetAttribute("UpdatePeriod", TimeValue(MilliSeconds(updatePeriodMs)));
+    channelModel->AssignStreams(1);
+
+    // create the tx and rx nodes
+    NodeContainer nodeTx;
+    NodeContainer nodeRx;
+    NodeContainer nodesRxOther;
+    // we compare the channel update between the TX1 and RX1, and the independent channel
+    // generations between the same TX and 100 different RX that are at the time instant of the
+    // channel generation at the same position as the RX1
+    nodeTx.Create(1);
+    nodeRx.Create(1);
+    nodesRxOther.Create(100);
+
+    Ptr<SimpleNetDevice> txDev = CreateObject<SimpleNetDevice>();
+    Ptr<SimpleNetDevice> rxDev = CreateObject<SimpleNetDevice>();
+    std::vector<Ptr<SimpleNetDevice>> rxDevOther{100};
+
+    for (uint32_t i = 0; i < 100; i++)
+    {
+        rxDevOther[i] = CreateObject<SimpleNetDevice>();
+    }
+
+    // associate the nodes and the devices
+    nodeTx.Get(0)->AddDevice(txDev);
+    txDev->SetNode(nodeTx.Get(0));
+
+    nodeRx.Get(0)->AddDevice(rxDev);
+    rxDev->SetNode(nodeRx.Get(0));
+
+    for (uint32_t i = 0; i < 100; i++)
+    {
+        nodesRxOther.Get(i)->AddDevice(rxDevOther[i]);
+        rxDevOther[i]->SetNode(nodesRxOther.Get(i));
+    }
+
+    // create the tx and rx mobility models and set their positions
+    Ptr<MobilityModel> txMob = CreateObject<ConstantPositionMobilityModel>();
+    txMob->SetPosition(Vector(0.0, 0.0, 10.0));
+    Ptr<ConstantVelocityMobilityModel> rxMob = CreateObject<ConstantVelocityMobilityModel>();
+    rxMob->SetPosition(Vector(30.0, 0.0, 10.0));
+    rxMob->SetVelocity(Vector(10, 0, 0));
+
+    // associate the nodes and the mobility models
+    nodeTx.Get(0)->AggregateObject(txMob);
+    nodeRx.Get(0)->AggregateObject(rxMob);
+
+    std::vector<Ptr<ConstantVelocityMobilityModel>> rxMobCopies{100};
+    for (uint32_t i = 0; i < 100; i++)
+    {
+        Ptr<ConstantVelocityMobilityModel> rxMobCopy =
+            CreateObject<ConstantVelocityMobilityModel>();
+        rxMob->SetPosition(Vector(30.0, 0.0, 10.0));
+        rxMob->SetVelocity(Vector(10, 0, 0));
+        nodesRxOther.Get(i)->AggregateObject(rxMobCopy);
+        rxMobCopies[i] = rxMobCopy;
+    }
+
+    // create the tx and rx antennas and set the their dimensions
+    Ptr<PhasedArrayModel> txAntenna = CreateObjectWithAttributes<UniformPlanarArray>(
+        "NumColumns",
+        UintegerValue(m_txAntennaElements),
+        "NumRows",
+        UintegerValue(m_txAntennaElements),
+        "AntennaElement",
+        PointerValue(CreateObject<IsotropicAntennaModel>()),
+        "NumVerticalPorts",
+        UintegerValue(m_txPorts),
+        "NumHorizontalPorts",
+        UintegerValue(m_txPorts));
+
+    Ptr<PhasedArrayModel> rxAntenna = CreateObjectWithAttributes<UniformPlanarArray>(
+        "NumColumns",
+        UintegerValue(m_rxAntennaElements),
+        "NumRows",
+        UintegerValue(m_rxAntennaElements),
+        "AntennaElement",
+        PointerValue(CreateObject<IsotropicAntennaModel>()),
+        "NumVerticalPorts",
+        UintegerValue(m_rxPorts),
+        "NumHorizontalPorts",
+        UintegerValue(m_rxPorts));
+
+    // test if the channel matrix is correctly updated
+    uint16_t numIt = 100;
+    for (uint16_t i = 0; i < numIt; i++)
+    {
+        Simulator::Schedule(MilliSeconds(updatePeriodMs * i + 1),
+                            &ThreeGppChannelConsistencyTest::DoComputeNorm,
+                            this,
+                            channelModel,
+                            txMob,
+                            rxMob,
+                            txAntenna,
+                            rxAntenna,
+                            &m_normsChannelUpdates,
+                            &m_channelUpdateDistance);
+
+        Simulator::Schedule(MilliSeconds(updatePeriodMs * i + 1),
+                            &ThreeGppChannelConsistencyTest::DoComputeNorm,
+                            this,
+                            channelModel,
+                            txMob,
+                            rxMobCopies[i],
+                            txAntenna,
+                            rxAntenna,
+                            &m_normsNewChannelRealizations,
+                            &m_newChannelRealizationDistance);
+    }
+
+    Simulator::Run();
+
+    // compute the sample mean of the channel updates
+    double sampleMeanChannelUpdates = 0;
+    for (auto i : m_channelUpdateDistance)
+    {
+        sampleMeanChannelUpdates += i;
+    }
+    sampleMeanChannelUpdates /= m_channelUpdateDistance.size();
+
+    // compute the sample mean of the channel updates
+    double sampleMeanIndependentChannels = 0;
+    for (auto i : m_newChannelRealizationDistance)
+    {
+        sampleMeanIndependentChannels += i;
+    }
+    sampleMeanIndependentChannels /= m_newChannelRealizationDistance.size();
+
+    NS_TEST_ASSERT_MSG_EQ(
+        sampleMeanChannelUpdates < sampleMeanIndependentChannels,
+        true,
+        "Check that the average distances between channel norms of the consecutive channel updates "
+        "is lower tan of the consecutive new channel generations.");
+
+    /*
+    std::cout
+        << "The average distances between channel norms of the consecutive channel updates is:"
+        << sampleMeanChannelUpdates << std::endl;
+    std::cout << "The average distances between new channel generations is:"
+              << sampleMeanIndependentChannels << std::endl;*/
+
+    Simulator::Destroy();
+}
+
+/**
+ * @ingroup spectrum-tests
+ *
  * Test case for the ThreeGppChannelModel class.
  * It checks if the channel realizations are correctly
  * updated after a change in the number of antenna elements.
@@ -1495,8 +1763,8 @@ class ThreeGppChannelTestSuite : public TestSuite
 ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
     : TestSuite("three-gpp-channel", Type::UNIT)
 {
+    AddTestCase(new ThreeGppChannelConsistencyTest(), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(2, 2, 1, 1), TestCase::Duration::QUICK);
-
     AddTestCase(new ThreeGppChannelMatrixComputationTest(4, 2, 1, 1), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(2, 2, 2, 2), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(4, 4, 2, 2), TestCase::Duration::QUICK);
@@ -1525,7 +1793,6 @@ ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
      *   (0,0)   (0,0)   (-5.8,)   (-5.8,0)
      *   (0,0)   (0,0)   (-5.8,0)  (-5.8,0)
      */
-
     std::valarray<std::complex<double>> testChannel1 =
         {5.9, 5.9, 0, 0, 5.9, 5.9, 0, 0, 0, 0, -5.8, -5.8, 0, 0, -5.8, -5.8};
     AddTestCase(new ThreeGppMimoPolarizationTest("Face-to-face. 0 and 0 pol. slant angles.",
@@ -1628,7 +1895,6 @@ ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
      *   (0,0)   (0,0)    (-2.4,4)    (-2.4,4)
      *   (0,0)   (0,0)    (-2.4,4)    (-2.4,4)
      */
-
     AddTestCase(new ThreeGppMimoPolarizationTest(
                     "Not face-to-face. Different heights. 0 and 0 pol. slant angles.",
                     Vector{0, 0, 10},
