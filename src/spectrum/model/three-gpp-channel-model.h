@@ -653,7 +653,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      * @param channelParams Pointer to the channel parameters containing node velocities,
      *                      LOS condition, and reduced cluster number. Must contain valid
      *                      m_rxSpeed, m_txSpeed, m_losCondition, and m_reducedClusterNumber.
-     * @oaram clusterAngles Cluster angles {AOA, ZOA, AOD, ZOD}
+     * @param clusterAngles Cluster angles {AOA, ZOA, AOD, ZOD}
      * @param prevClusterDelay Vector containing the previous cluster delays in seconds.
      *                         Used in the angle update calculations. Size must equal
      *                         channelParams->m_reducedClusterNumber.
