@@ -33,6 +33,9 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("TimeProbeExample");
 
+/** Control of verbosity in this example */
+static bool g_verbose{false};
+
 /**
  * This is our test object, an object that emits values according to
  * a Poisson arrival process.   It emits a traced Time value as a
@@ -101,9 +104,7 @@ Emitter::Emit()
 void
 NotifyViaTraceSource(std::string context, Time oldVal, Time newVal)
 {
-    BooleanValue verbose;
-    GlobalValue::GetValueByName("verbose", verbose);
-    if (verbose.Get())
+    if (g_verbose)
     {
         std::cout << "context: " << context << " old " << oldVal.As(Time::S) << " new "
                   << newVal.As(Time::S) << std::endl;
@@ -114,35 +115,26 @@ NotifyViaTraceSource(std::string context, Time oldVal, Time newVal)
 void
 NotifyViaProbe(std::string context, double oldVal, double newVal)
 {
-    BooleanValue verbose;
-    GlobalValue::GetValueByName("verbose", verbose);
-    if (verbose.Get())
+    if (g_verbose)
     {
         std::cout << "context: " << context << " old " << oldVal << " new " << newVal << std::endl;
     }
 }
 
-static ns3::GlobalValue g_verbose("verbose",
-                                  "Whether to enable verbose output",
-                                  ns3::BooleanValue(false),
-                                  ns3::MakeBooleanChecker());
-
 int
 main(int argc, char* argv[])
 {
     double stopTime = 100.0;
-    bool verbose = false;
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("stopTime", "Time (seconds) to terminate simulation", stopTime);
-    cmd.AddValue("verbose", "Whether to enable verbose output", verbose);
+    cmd.AddValue("verbose", "Whether to enable verbose output", g_verbose);
     cmd.Parse(argc, argv);
     bool connected;
 
     // Set a global value, so that the callbacks can access it
-    if (verbose)
+    if (g_verbose)
     {
-        GlobalValue::Bind("verbose", BooleanValue(true));
         LogComponentEnable("TimeProbeExample", LOG_LEVEL_ALL);
     }
 
