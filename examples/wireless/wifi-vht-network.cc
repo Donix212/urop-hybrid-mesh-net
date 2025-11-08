@@ -10,7 +10,6 @@
 #include "ns3/boolean.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
-#include "ns3/double.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"

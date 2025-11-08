@@ -14,6 +14,7 @@
 #include "ns3/boolean.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/dbm.h"
 #include "ns3/double.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
@@ -138,8 +139,8 @@ main(int argc, char* argv[])
             channel.AddPropagationLoss("ns3::FriisPropagationLossModel");
             channel.SetPropagationDelay("ns3::ConstantSpeedPropagationDelayModel");
             yansPhy.SetChannel(channel.Create());
-            yansPhy.Set("TxPowerStart", DoubleValue(1));
-            yansPhy.Set("TxPowerEnd", DoubleValue(1));
+            yansPhy.Set("TxPowerStart", DbmValue(dBm_t{1}));
+            yansPhy.Set("TxPowerEnd", DbmValue(dBm_t{1}));
 
             if (i > 31 && i <= 63)
             {
@@ -161,8 +162,8 @@ main(int argc, char* argv[])
 
             spectrumPhy.SetChannel(spectrumChannel);
             spectrumPhy.SetErrorRateModel(errorModelType);
-            spectrumPhy.Set("TxPowerStart", DoubleValue(1));
-            spectrumPhy.Set("TxPowerEnd", DoubleValue(1));
+            spectrumPhy.Set("TxPowerStart", DbmValue(dBm_t{1}));
+            spectrumPhy.Set("TxPowerEnd", DbmValue(dBm_t{1}));
 
             if (i > 31 && i <= 63)
             {
