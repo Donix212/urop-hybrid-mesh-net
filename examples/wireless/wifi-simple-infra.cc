@@ -71,6 +71,7 @@
 
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/db.h"
 #include "ns3/double.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
@@ -132,7 +133,7 @@ int
 main(int argc, char* argv[])
 {
     std::string phyMode{"DsssRate1Mbps"};
-    dBm_u rss{-80};
+    dBm_t rss{-80};
     uint32_t packetSize{1000}; // bytes
     uint32_t numPackets{1};
     Time interval{"1s"};
@@ -164,7 +165,7 @@ main(int argc, char* argv[])
     YansWifiPhyHelper wifiPhy;
     // This is one parameter that matters when using FixedRssLossModel
     // set it to zero; otherwise, gain will be added
-    wifiPhy.Set("RxGain", DoubleValue(0));
+    wifiPhy.Set("RxGain", DbValue(dB_t{0}));
     // ns-3 supports RadioTap and Prism tracing extensions for 802.11b
     wifiPhy.SetPcapDataLinkType(WifiPhyHelper::DLT_IEEE802_11_RADIO);
 
@@ -172,7 +173,7 @@ main(int argc, char* argv[])
     wifiChannel.SetPropagationDelay("ns3::ConstantSpeedPropagationDelayModel");
     // The below FixedRssLossModel will cause the rss to be fixed regardless
     // of the distance between the two stations, and the transmit power
-    wifiChannel.AddPropagationLoss("ns3::FixedRssLossModel", "Rss", DoubleValue(rss));
+    wifiChannel.AddPropagationLoss("ns3::FixedRssLossModel", "Rss", DoubleValue(rss.to<double>()));
     wifiPhy.SetChannel(wifiChannel.Create());
 
     // Add a mac and disable rate control

@@ -45,7 +45,8 @@
 #include "ns3/boolean.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
-#include "ns3/double.h"
+#include "ns3/db.h"
+#include "ns3/dbm.h"
 #include "ns3/gnuplot.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
@@ -250,8 +251,8 @@ main(int argc, char* argv[])
     // is around -101 dBm, 2) lower the CCA sensitivity to a value that
     // disables it (e.g. -110 dBm), and 3) disable the Wi-Fi preamble
     // detection model.
-    wifiPhy.Set("CcaSensitivity", DoubleValue(-110));
-    wifiPhy.Set("RxNoiseFigure", DoubleValue(0));
+    wifiPhy.Set("CcaSensitivity", DbmValue(dBm_t{-110}));
+    wifiPhy.Set("RxNoiseFigure", DbValue(dB_t{0}));
     wifiPhy.DisablePreambleDetectionModel();
 
     NetDeviceContainer wifiApDevices;

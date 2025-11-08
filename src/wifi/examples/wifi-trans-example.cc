@@ -7,6 +7,7 @@
  */
 
 #include "ns3/command-line.h"
+#include "ns3/dbm.h"
 #include "ns3/gnuplot.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/spectrum-analyzer-helper.h"
@@ -45,7 +46,7 @@ main(int argc, char** argv)
 {
     std::string standardStr = "11a";
     MHz_u bw{20};
-    dBm_u pow{23};
+    dBm_t pow{23};
     bool verbose = false;
     CommandLine cmd(__FILE__);
     cmd.AddValue("standard",
@@ -235,8 +236,8 @@ main(int argc, char** argv)
     SpectrumWifiPhyHelper spectrumPhy;
     spectrumPhy.SetChannel(channel);
     spectrumPhy.SetErrorRateModel("ns3::NistErrorRateModel");
-    spectrumPhy.Set("TxPowerStart", DoubleValue(pow)); // dBm
-    spectrumPhy.Set("TxPowerEnd", DoubleValue(pow));
+    spectrumPhy.Set("TxPowerStart", DbmValue(pow));
+    spectrumPhy.Set("TxPowerEnd", DbmValue(pow));
     auto channelNumber = WifiPhyOperatingChannel::FindFirst(0, freq, bw, standard, phyBand)->number;
     std::ostringstream channelSettings;
     channelSettings << "{" << +channelNumber << ", " << bw << ", " << channelBand << ", 0}";

@@ -70,7 +70,7 @@
 
 #include "ns3/command-line.h"
 #include "ns3/config.h"
-#include "ns3/double.h"
+#include "ns3/dbm.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/log.h"
 #include "ns3/mobility-helper.h"
@@ -150,8 +150,8 @@ int
 main(int argc, char* argv[])
 {
     std::string phyMode{"DsssRate1Mbps"};
-    dBm_u Prss{-80};
-    dBm_u Irss{-95};
+    dBm_t Prss{-80};
+    dBm_t Irss{-95};
     Time delta{"0ns"};
     uint32_t PpacketSize{1000}; // bytes
     uint32_t IpacketSize{1000}; // bytes
@@ -163,8 +163,8 @@ main(int argc, char* argv[])
     Time startTime{"10s"};
     meter_u distanceToRx{100.0};
 
-    double offset{91}; // This is a magic number used to set the
-                       // transmit power, based on other configuration
+    dB_t offset{91}; // This is a magic number used to adjust the
+                     // transmit power, based on other configuration
     CommandLine cmd(__FILE__);
     cmd.AddValue("phyMode", "Wifi Phy mode", phyMode);
     cmd.AddValue("Prss", "Intended primary received signal strength (dBm)", Prss);
@@ -211,9 +211,9 @@ main(int argc, char* argv[])
     NetDeviceContainer devices = wifi.Install(wifiPhy, wifiMac, c.Get(0));
     // This will disable these sending devices from detecting a signal
     // so that they do not backoff
-    wifiPhy.Set("TxGain", DoubleValue(offset + Prss));
+    wifiPhy.Set("TxGain", DbmValue(offset + Prss));
     devices.Add(wifi.Install(wifiPhy, wifiMac, c.Get(1)));
-    wifiPhy.Set("TxGain", DoubleValue(offset + Irss));
+    wifiPhy.Set("TxGain", DbmValue(offset + Irss));
     devices.Add(wifi.Install(wifiPhy, wifiMac, c.Get(2)));
 
     // Note that with FixedRssLossModel, the positions below are not

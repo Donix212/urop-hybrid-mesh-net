@@ -8,6 +8,8 @@
 
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/db.h"
+#include "ns3/dbm.h"
 #include "ns3/double.h"
 #include "ns3/gnuplot.h"
 #include "ns3/internet-stack-helper.h"
@@ -257,10 +259,10 @@ main(int argc, char* argv[])
 
             NS_LOG_DEBUG(modes[i]);
             experiment = Experiment(modes[i]);
-            wifiPhy.Set("TxPowerStart", DoubleValue(15.0));
-            wifiPhy.Set("TxPowerEnd", DoubleValue(15.0));
-            wifiPhy.Set("RxGain", DoubleValue(0));
-            wifiPhy.Set("RxNoiseFigure", DoubleValue(7));
+            wifiPhy.Set("TxPowerStart", DbmValue(dBm_t{15.0}));
+            wifiPhy.Set("TxPowerEnd", DbmValue(dBm_t{15.0}));
+            wifiPhy.Set("RxGain", DbValue(dB_t{0}));
+            wifiPhy.Set("RxNoiseFigure", DbValue(dB_t{7}));
             uint32_t pktsRecvd = experiment.Run(wifi, wifiPhy, wifiMac, wifiChannel);
             dataset.Add(rss, pktsRecvd);
         }
