@@ -4356,8 +4356,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SchedulePowerMeasurementChecks(
     const auto nonOfdmaDuration = phyEntity->CalculateNonHeDurationForHeTb(txVectorSta2);
     NS_TEST_ASSERT_MSG_EQ(nonOfdmaDuration,
                           phyEntity->CalculateNonHeDurationForHeTb(txVectorSta1),
-                          "OFDMA durations for "
-                          "both STAs should be equal.");
+                          "OFDMA durations for both STAs should be equal.");
 
     std::vector<Watt_u> rxPowerNonOfdma{rxPowerNonOfdmaRu1, rxPowerNonOfdmaRu2};
     std::vector<WifiSpectrumBandInfo> nonOfdmaBand{phyEntity->GetNonOfdmaBand(txVectorSta1, 1),
