@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * Author: Ankit Deepak <adadeepak8@gmail.com>
+ * Modified by: S B L Prateek <sblprateek@gmail.com>
  *
  */
 
@@ -44,10 +45,10 @@ TcpLedbat::GetTypeId()
                           MakeUintegerAccessor(&TcpLedbat::m_noiseFilterLen),
                           MakeUintegerChecker<uint32_t>())
             .AddAttribute("Gain",
-                          "Offset Gain",
-                          DoubleValue(1.0),
-                          MakeDoubleAccessor(&TcpLedbat::m_gain),
-                          MakeDoubleChecker<double>())
+                          "Offset Gain [Percentage]",
+                          UintegerValue(100),
+                          MakeUintegerAccessor(&TcpLedbat::m_gain),
+                          MakeUintegerChecker<uint32_t>(1))
             .AddAttribute("SSParam",
                           "Possibility of Slow Start",
                           EnumValue(DO_SLOWSTART),
@@ -57,7 +58,12 @@ TcpLedbat::GetTypeId()
                           "Minimum cWnd for Ledbat",
                           UintegerValue(2),
                           MakeUintegerAccessor(&TcpLedbat::m_minCwnd),
-                          MakeUintegerChecker<uint32_t>());
+                          MakeUintegerChecker<uint32_t>())
+            .AddAttribute("AllowedIncrease",
+                          "Allowed Increase [Percentage]",
+                          UintegerValue(100),
+                          MakeUintegerAccessor(&TcpLedbat::m_allowed_increase),
+                          MakeUintegerChecker<uint32_t>(1));
     return tid;
 }
 
@@ -80,17 +86,12 @@ TcpLedbat::TcpLedbat()
     : TcpNewReno()
 {
     NS_LOG_FUNCTION(this);
-    m_target = MilliSeconds(100);
-    m_gain = 1;
     m_doSs = DO_SLOWSTART;
-    m_baseHistoLen = 10;
-    m_noiseFilterLen = 4;
     InitCircBuf(m_baseHistory);
     InitCircBuf(m_noiseFilter);
     m_lastRollover = 0;
     m_sndCwndCnt = 0;
     m_flag = LEDBAT_CAN_SS;
-    m_minCwnd = 2;
 }
 
 void
@@ -116,6 +117,7 @@ TcpLedbat::TcpLedbat(const TcpLedbat& sock)
     m_sndCwndCnt = sock.m_sndCwndCnt;
     m_flag = sock.m_flag;
     m_minCwnd = sock.m_minCwnd;
+    m_allowed_increase = sock.m_allowed_increase;
 }
 
 TcpLedbat::~TcpLedbat()
@@ -210,13 +212,13 @@ TcpLedbat::CongestionAvoidance(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
         queue_delay = static_cast<int64_t>(base_delay - current_delay);
         offset = m_target.GetMilliSeconds() + queue_delay;
     }
-    offset *= m_gain;
+    offset = (offset * m_gain) / 100;
     m_sndCwndCnt = static_cast<int32_t>(offset * segmentsAcked * tcb->m_segmentSize);
     double inc = (m_sndCwndCnt * 1.0) / (m_target.GetMilliSeconds() * tcb->m_cWnd.Get());
     cwnd += (inc * tcb->m_segmentSize);
 
     max_cwnd = static_cast<uint32_t>(tcb->m_highTxMark.Get() - tcb->m_lastAckedSeq) +
-               segmentsAcked * tcb->m_segmentSize;
+               segmentsAcked * tcb->m_segmentSize + (m_allowed_increase * tcb->m_segmentSize) / 100;
     cwnd = std::min(cwnd, max_cwnd);
     cwnd = std::max(cwnd, m_minCwnd * tcb->m_segmentSize);
     tcb->m_cWnd = cwnd;
