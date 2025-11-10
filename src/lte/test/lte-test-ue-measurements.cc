@@ -849,7 +849,10 @@ LteUeMeasurementsPiecewiseTestCase1::DoTeardown()
                           true,
                           "Reporting should have occurred at " << m_itExpectedTime->As(Time::S));
     hasEnded = m_itExpectedRsrp == m_expectedRsrp.end();
-    NS_ASSERT(hasEnded);
+    NS_TEST_ASSERT_MSG_EQ(hasEnded,
+                          true,
+                          "Expected Reference Signal Received Power (RSRP) iterator to have "
+                          "reached the end.");
 }
 
 void
@@ -861,8 +864,8 @@ LteUeMeasurementsPiecewiseTestCase1::RecvMeasurementReportCallback(
     LteRrcSap::MeasurementReport report)
 {
     NS_LOG_FUNCTION(this << context);
-    NS_ASSERT(rnti == 1);
-    NS_ASSERT(cellId == 1);
+    NS_TEST_ASSERT_MSG_EQ(rnti, 1, "Expected Radio Network Temporary Identifier (RNTI) to be 1.");
+    NS_TEST_ASSERT_MSG_EQ(cellId, 1, "Expected cell identifier to be 1.");
 
     if (report.measResults.measId == m_expectedMeasId)
     {
@@ -888,7 +891,10 @@ LteUeMeasurementsPiecewiseTestCase1::RecvMeasurementReportCallback(
         if (!hasEnded)
         {
             hasEnded = m_itExpectedRsrp == m_expectedRsrp.end();
-            NS_ASSERT(!hasEnded);
+            NS_TEST_ASSERT_MSG_EQ(hasEnded,
+                                  false,
+                                  "Expected Reference Signal Received Power (RSRP) iterator "
+                                  "should not have ended yet.");
 
             // using milliseconds to avoid floating-point comparison
             uint64_t timeNowMs = Simulator::Now().GetMilliSeconds();
@@ -1554,7 +1560,10 @@ LteUeMeasurementsPiecewiseTestCase2::DoTeardown()
                           true,
                           "Reporting should have occurred at " << m_itExpectedTime->As(Time::S));
     hasEnded = m_itExpectedRsrp == m_expectedRsrp.end();
-    NS_ASSERT(hasEnded);
+    NS_TEST_ASSERT_MSG_EQ(hasEnded,
+                          true,
+                          "Expected Reference Signal Received Power (RSRP) iterator to have "
+                          "reached the end.");
 }
 
 void
@@ -1566,8 +1575,8 @@ LteUeMeasurementsPiecewiseTestCase2::RecvMeasurementReportCallback(
     LteRrcSap::MeasurementReport report)
 {
     NS_LOG_FUNCTION(this << context);
-    NS_ASSERT(rnti == 1);
-    NS_ASSERT(cellId == 1);
+    NS_TEST_ASSERT_MSG_EQ(rnti, 1, "Expected Radio Network Temporary Identifier (RNTI) to be 1.");
+    NS_TEST_ASSERT_MSG_EQ(cellId, 1, "Expected cell identifier to be 1.");
 
     if (report.measResults.measId != m_expectedMeasId)
     {
@@ -1598,8 +1607,9 @@ LteUeMeasurementsPiecewiseTestCase2::RecvMeasurementReportCallback(
                               true,
                               "Unexpected report content");
         auto it = measResults.measResultListEutra.begin();
-        NS_ASSERT(it != measResults.measResultListEutra.end());
-        NS_ASSERT(it->physCellId == 2);
+        NS_ASSERT_MSG(it != measResults.measResultListEutra.end(),
+                      "Measurement result list should not be empty.");
+        NS_TEST_ASSERT_MSG_EQ(it->physCellId, 2, "Expected physical cell identifier to be 2.");
         NS_TEST_ASSERT_MSG_EQ(it->haveCgiInfo,
                               false,
                               "Report contains cgi-info, which is not supported");
@@ -1627,7 +1637,10 @@ LteUeMeasurementsPiecewiseTestCase2::RecvMeasurementReportCallback(
     }
 
     hasEnded = m_itExpectedRsrp == m_expectedRsrp.end();
-    NS_ASSERT(!hasEnded);
+    NS_TEST_ASSERT_MSG_EQ(hasEnded,
+                          false,
+                          "Expected Reference Signal Received Power (RSRP) iterator should not "
+                          "have ended yet.");
 
     // using milliseconds to avoid floating-point comparison
     uint64_t timeNowMs = Simulator::Now().GetMilliSeconds();
@@ -1856,8 +1869,8 @@ LteUeMeasurementsPiecewiseTestCase3::RecvMeasurementReportCallback(
     LteRrcSap::MeasurementReport report)
 {
     NS_LOG_FUNCTION(this << context);
-    NS_ASSERT(rnti == 1);
-    NS_ASSERT(cellId == 1);
+    NS_TEST_ASSERT_MSG_EQ(rnti, 1, "Expected Radio Network Temporary Identifier (RNTI) to be 1.");
+    NS_TEST_ASSERT_MSG_EQ(cellId, 1, "Expected cell identifier to be 1.");
 
     if (report.measResults.measId != m_expectedMeasId)
     {
@@ -1888,10 +1901,13 @@ LteUeMeasurementsPiecewiseTestCase3::RecvMeasurementReportCallback(
                               true,
                               "Unexpected report content");
         auto it = measResults.measResultListEutra.begin();
-        NS_ASSERT(it != measResults.measResultListEutra.end());
+        NS_ASSERT_MSG(it != measResults.measResultListEutra.end(),
+                      "Measurement result list should not be empty.");
         for (const auto& it : measResults.measResultListEutra)
         {
-            NS_ASSERT(it.physCellId == 2 || it.physCellId == 3);
+            NS_TEST_ASSERT_MSG_EQ((it.physCellId == 2 || it.physCellId == 3),
+                                  true,
+                                  "Expected physical cell identifier to be either 2 or 3.");
             NS_TEST_ASSERT_MSG_EQ(it.haveCgiInfo,
                                   false,
                                   "Report contains cgi-info, which is not supported");
@@ -2455,7 +2471,10 @@ LteUeMeasurementsHandoverTestCase::DoTeardown()
                           true,
                           "Reporting should have occurred at " << m_itExpectedTime->As(Time::S));
     hasEnded = m_itExpectedRsrp == m_expectedRsrp.end();
-    NS_ASSERT(hasEnded);
+    NS_TEST_ASSERT_MSG_EQ(hasEnded,
+                          true,
+                          "Expected Reference Signal Received Power (RSRP) iterator to have "
+                          "reached the end.");
 }
 
 void
@@ -2514,9 +2533,15 @@ LteUeMeasurementsHandoverTestCase::RecvMeasurementReportCallback(
                               true,
                               "Unexpected report content");
         auto it = measResults.measResultListEutra.begin();
-        NS_ASSERT(it != measResults.measResultListEutra.end());
-        NS_ASSERT(it->physCellId != cellId);
-        NS_ASSERT(it->physCellId <= 2);
+        NS_ASSERT_MSG(it != measResults.measResultListEutra.end(),
+                      "Measurement result list should not be empty.");
+        NS_TEST_ASSERT_MSG_NE(it->physCellId,
+                              cellId,
+                              "Physical cell identifier should not match the serving cell "
+                              "identifier.");
+        NS_TEST_ASSERT_MSG_LT_OR_EQ(it->physCellId,
+                                    2,
+                                    "Physical cell identifier should be less than or equal to 2.");
         NS_TEST_ASSERT_MSG_EQ(it->haveCgiInfo,
                               false,
                               "Report contains cgi-info, which is not supported");
@@ -2544,7 +2569,10 @@ LteUeMeasurementsHandoverTestCase::RecvMeasurementReportCallback(
     }
 
     hasEnded = m_itExpectedRsrp == m_expectedRsrp.end();
-    NS_ASSERT(!hasEnded);
+    NS_TEST_ASSERT_MSG_EQ(hasEnded,
+                          false,
+                          "Expected Reference Signal Received Power (RSRP) iterator should not "
+                          "have ended yet.");
 
     // using milliseconds to avoid floating-point comparison
     uint64_t timeNowMs = Simulator::Now().GetMilliSeconds();

@@ -233,7 +233,9 @@ LteHandoverDelayTestCase::UeHandoverEndOkCallback(std::string context,
                                                   uint16_t rnti)
 {
     NS_LOG_FUNCTION(this << context);
-    NS_ASSERT(m_ueHandoverStart.IsStrictlyPositive());
+    NS_TEST_ASSERT_MSG_EQ(m_ueHandoverStart.IsStrictlyPositive(),
+                          true,
+                          "User Equipment (UE) handover start time must be positive.");
     Time delay = Simulator::Now() - m_ueHandoverStart;
 
     NS_LOG_DEBUG(this << " UE delay = " << delay.As(Time::S));
@@ -262,7 +264,9 @@ LteHandoverDelayTestCase::EnbHandoverEndOkCallback(std::string context,
                                                    uint16_t rnti)
 {
     NS_LOG_FUNCTION(this << context);
-    NS_ASSERT(m_enbHandoverStart.IsStrictlyPositive());
+    NS_TEST_ASSERT_MSG_EQ(m_enbHandoverStart.IsStrictlyPositive(),
+                          true,
+                          "Evolved Node B (eNodeB) handover start time must be positive.");
     Time delay = Simulator::Now() - m_enbHandoverStart;
 
     NS_LOG_DEBUG(this << " eNodeB delay = " << delay.As(Time::S));

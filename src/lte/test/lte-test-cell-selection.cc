@@ -227,7 +227,10 @@ LteCellSelectionTestCase::DoRun()
 
     NetDeviceContainer ueDevs;
     Time lastCheckPoint;
-    NS_ASSERT(m_ueSetupList.size() == ueNodes.GetN());
+    NS_TEST_ASSERT_MSG_EQ(
+        m_ueSetupList.size(),
+        ueNodes.GetN(),
+        "Number of User Equipment setups must match the respective number of nodes.");
     NodeContainer::Iterator itNode;
     for (itSetup = m_ueSetupList.begin(), itNode = ueNodes.Begin();
          itSetup != m_ueSetupList.end() || itNode != ueNodes.End();
@@ -244,7 +247,9 @@ LteCellSelectionTestCase::DoRun()
 
         NetDeviceContainer devs = lteHelper->InstallUeDevice(*itNode);
         Ptr<LteUeNetDevice> ueDev = devs.Get(0)->GetObject<LteUeNetDevice>();
-        NS_ASSERT(ueDev);
+        NS_ASSERT_MSG(
+            ueDev,
+            "Type casting to LteUeNetDevice failed - ensure the device is properly initialized.");
         ueDevs.Add(devs);
         Simulator::Schedule(itSetup->checkPoint,
                             &LteCellSelectionTestCase::CheckPoint,
@@ -263,7 +268,10 @@ LteCellSelectionTestCase::DoRun()
     stream += lteHelper->AssignStreams(ueDevs, stream);
 
     // Tests
-    NS_ASSERT(m_ueSetupList.size() == ueDevs.GetN());
+    NS_TEST_ASSERT_MSG_EQ(
+        m_ueSetupList.size(),
+        ueDevs.GetN(),
+        "Number of User Equipment setups must match the respective number of nodes.");
     NetDeviceContainer::Iterator itDev;
     for (itSetup = m_ueSetupList.begin(), itDev = ueDevs.Begin();
          itSetup != m_ueSetupList.end() || itDev != ueDevs.End();

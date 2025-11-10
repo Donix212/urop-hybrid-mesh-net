@@ -23,6 +23,7 @@
 #include "ns3/simulator.h"
 #include "ns3/socket-factory.h"
 #include "ns3/string.h"
+#include "ns3/test.h"
 #include "ns3/udp-header.h"
 #include "ns3/udp-l4-protocol.h"
 #include "ns3/uinteger.h"
@@ -118,7 +119,9 @@ TcRegressionTest::ReceivePktProbeA(Ptr<Socket> socket)
     uint32_t availableData;
     availableData = socket->GetRxAvailable();
     Ptr<Packet> receivedPacketProbe = socket->Recv(std::numeric_limits<uint32_t>::max(), 0);
-    NS_ASSERT(availableData == receivedPacketProbe->GetSize());
+    NS_TEST_ASSERT_MSG_EQ(availableData,
+                          receivedPacketProbe->GetSize(),
+                          "Mismatch between available data and received packet size.");
 
     Ipv4Header ipHdr;
     receivedPacketProbe->RemoveHeader(ipHdr);
@@ -221,7 +224,9 @@ TcRegressionTest::ReceivePktProbeB(Ptr<Socket> socket)
     uint32_t availableData;
     availableData = socket->GetRxAvailable();
     Ptr<Packet> receivedPacketProbe = socket->Recv(std::numeric_limits<uint32_t>::max(), 0);
-    NS_ASSERT(availableData == receivedPacketProbe->GetSize());
+    NS_TEST_ASSERT_MSG_EQ(availableData,
+                          receivedPacketProbe->GetSize(),
+                          "Mismatch between available data and received packet size.");
 
     Ipv4Header ipHdr;
     receivedPacketProbe->RemoveHeader(ipHdr);
@@ -293,7 +298,9 @@ TcRegressionTest::ReceivePktProbeC(Ptr<Socket> socket)
     uint32_t availableData;
     availableData = socket->GetRxAvailable();
     Ptr<Packet> receivedPacketProbe = socket->Recv(std::numeric_limits<uint32_t>::max(), 0);
-    NS_ASSERT(availableData == receivedPacketProbe->GetSize());
+    NS_TEST_ASSERT_MSG_EQ(availableData,
+                          receivedPacketProbe->GetSize(),
+                          "Mismatch between available data and received packet size.");
 
     Ipv4Header ipHdr;
     receivedPacketProbe->RemoveHeader(ipHdr);

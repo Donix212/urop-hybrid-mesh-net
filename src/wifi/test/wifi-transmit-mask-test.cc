@@ -126,8 +126,13 @@ void
 WifiOfdmMaskSlopesTestCase::DoSetup()
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(!m_centerFreqs.empty());
-    NS_ASSERT(m_expectedPsd.size() % 2 == 0); // start/stop pairs expected
+    NS_TEST_ASSERT_MSG_EQ(m_centerFreqs.empty(),
+                          false,
+                          "Center frequencies vector should not be empty.");
+    NS_TEST_ASSERT_MSG_EQ(
+        m_expectedPsd.size() % 2,
+        0,
+        "Expected PSD size must be even (start/stop pairs)"); // start/stop pairs expected
 
     dBr_u outerBandMaximumRejection{0.0};
     switch (m_band)
@@ -148,8 +153,10 @@ WifiOfdmMaskSlopesTestCase::DoSetup()
     switch (m_standard)
     {
     case WIFI_STANDARD_80211p:
-        NS_ASSERT(m_band == WIFI_PHY_BAND_5GHZ);
-        NS_ASSERT((m_channelWidth == MHz_u{5}) || (m_channelWidth == MHz_u{10}));
+        NS_TEST_ASSERT_MSG_EQ(m_band, WIFI_PHY_BAND_5GHZ, "802.11p requires 5 GHz band.");
+        NS_TEST_ASSERT_MSG_EQ((m_channelWidth == MHz_u{5}) || (m_channelWidth == MHz_u{10}),
+                              true,
+                              "802.11p requires 5 MHz or 10 MHz channel width.");
         m_actualSpectrum =
             WifiSpectrumValueHelper::CreateOfdmTxPowerSpectralDensity(m_centerFreqs.front(),
                                                                       m_channelWidth,
@@ -161,8 +168,8 @@ WifiOfdmMaskSlopesTestCase::DoSetup()
         break;
 
     case WIFI_STANDARD_80211g:
-        NS_ASSERT(m_band == WIFI_PHY_BAND_2_4GHZ);
-        NS_ASSERT(m_channelWidth == MHz_u{20});
+        NS_TEST_ASSERT_MSG_EQ(m_band, WIFI_PHY_BAND_2_4GHZ, "802.11g requires 2.4 GHz band.");
+        NS_TEST_ASSERT_MSG_EQ(m_channelWidth, MHz_u{20}, "802.11g requires 20 MHz channel width.");
         m_actualSpectrum =
             WifiSpectrumValueHelper::CreateOfdmTxPowerSpectralDensity(m_centerFreqs.front(),
                                                                       m_channelWidth,
@@ -174,8 +181,8 @@ WifiOfdmMaskSlopesTestCase::DoSetup()
         break;
 
     case WIFI_STANDARD_80211a:
-        NS_ASSERT(m_band == WIFI_PHY_BAND_5GHZ);
-        NS_ASSERT(m_channelWidth == MHz_u{20});
+        NS_TEST_ASSERT_MSG_EQ(m_band, WIFI_PHY_BAND_5GHZ, "802.11a requires 5 GHz band.");
+        NS_TEST_ASSERT_MSG_EQ(m_channelWidth, MHz_u{20}, "802.11a requires 20 MHz channel width.");
         m_actualSpectrum =
             WifiSpectrumValueHelper::CreateOfdmTxPowerSpectralDensity(m_centerFreqs.front(),
                                                                       m_channelWidth,
@@ -187,7 +194,9 @@ WifiOfdmMaskSlopesTestCase::DoSetup()
         break;
 
     case WIFI_STANDARD_80211n:
-        NS_ASSERT(m_channelWidth == MHz_u{20} || m_channelWidth == MHz_u{40});
+        NS_TEST_ASSERT_MSG_EQ(m_channelWidth == MHz_u{20} || m_channelWidth == MHz_u{40},
+                              true,
+                              "802.11n requires 20 MHz or 40 MHz channel width.");
         m_actualSpectrum =
             WifiSpectrumValueHelper::CreateHtOfdmTxPowerSpectralDensity(m_centerFreqs,
                                                                         m_channelWidth,
@@ -199,9 +208,11 @@ WifiOfdmMaskSlopesTestCase::DoSetup()
         break;
 
     case WIFI_STANDARD_80211ac:
-        NS_ASSERT(m_band == WIFI_PHY_BAND_5GHZ);
-        NS_ASSERT(m_channelWidth == MHz_u{20} || m_channelWidth == MHz_u{40} ||
-                  m_channelWidth == MHz_u{80} || m_channelWidth == MHz_u{160});
+        NS_TEST_ASSERT_MSG_EQ(m_band, WIFI_PHY_BAND_5GHZ, "802.11ac requires 5 GHz band.");
+        NS_TEST_ASSERT_MSG_EQ(m_channelWidth == MHz_u{20} || m_channelWidth == MHz_u{40} ||
+                                  m_channelWidth == MHz_u{80} || m_channelWidth == MHz_u{160},
+                              true,
+                              "802.11ac requires 20/40/80/160 MHz channel width.");
         m_actualSpectrum =
             WifiSpectrumValueHelper::CreateHtOfdmTxPowerSpectralDensity(m_centerFreqs,
                                                                         m_channelWidth,
@@ -214,11 +225,14 @@ WifiOfdmMaskSlopesTestCase::DoSetup()
 
     case WIFI_STANDARD_80211ax:
     case WIFI_STANDARD_80211be:
-        NS_ASSERT((m_band != WIFI_PHY_BAND_2_4GHZ) ||
-                  (m_channelWidth < MHz_u{80})); // not enough space in 2.4 GHz bands
-        NS_ASSERT(m_channelWidth == MHz_u{20} || m_channelWidth == MHz_u{40} ||
-                  m_channelWidth == MHz_u{80} || m_channelWidth == MHz_u{160} ||
-                  m_channelWidth == MHz_u{320});
+        NS_TEST_ASSERT_MSG_EQ((m_band != WIFI_PHY_BAND_2_4GHZ) || (m_channelWidth < MHz_u{80}),
+                              true,
+                              "2.4 GHz band does not have enough space for 80+ MHz channels");
+        NS_TEST_ASSERT_MSG_EQ(m_channelWidth == MHz_u{20} || m_channelWidth == MHz_u{40} ||
+                                  m_channelWidth == MHz_u{80} || m_channelWidth == MHz_u{160} ||
+                                  m_channelWidth == MHz_u{320},
+                              true,
+                              "802.11ax/be requires 20/40/80/160/320 MHz channel width");
         m_actualSpectrum =
             WifiSpectrumValueHelper::CreateHeOfdmTxPowerSpectralDensity(m_centerFreqs,
                                                                         m_channelWidth,

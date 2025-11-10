@@ -1058,35 +1058,36 @@ TcpSocketMsgBase::Fork()
 void
 TcpSocketMsgBase::SetRcvAckCb(AckManagementCb cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetRcvAck callback must not be null");
     m_rcvAckCb = cb;
 }
 
 void
 TcpSocketMsgBase::SetProcessedAckCb(AckManagementCb cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetProcessedAck callback must not be null");
     m_processedAckCb = cb;
 }
 
 void
 TcpSocketMsgBase::SetAfterRetransmitCb(RetrCb cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetAfterRetransmit callback must not be null");
     m_afterRetrCallback = cb;
 }
 
 void
 TcpSocketMsgBase::SetBeforeRetransmitCb(RetrCb cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetBeforeRetransmit callback must not be null");
     m_beforeRetrCallback = cb;
 }
 
 void
 TcpSocketMsgBase::ReceivedAck(Ptr<Packet> packet, const TcpHeader& tcpHeader)
 {
-    NS_ASSERT(!(m_rcvAckCb.IsNull() || m_processedAckCb.IsNull()));
+    NS_ASSERT_MSG(!(m_rcvAckCb.IsNull() || m_processedAckCb.IsNull()),
+                  "ReceivedAck or ProcessedAck callbacks must not be null");
     m_rcvAckCb(packet, tcpHeader, this);
 
     TcpSocketBase::ReceivedAck(packet, tcpHeader);
@@ -1105,14 +1106,14 @@ TcpSocketMsgBase::ReTxTimeout()
 void
 TcpSocketMsgBase::SetForkCb(Callback<void, Ptr<TcpSocketMsgBase>> cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetFork callback must not be null");
     m_forkCb = cb;
 }
 
 void
 TcpSocketMsgBase::SetUpdateRttHistoryCb(UpdateRttCallback cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetUpdateRttHistory callback must not be null");
     m_updateRttCb = cb;
 }
 

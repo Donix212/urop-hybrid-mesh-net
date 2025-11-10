@@ -855,7 +855,9 @@ ChannelAccessManagerTest<TxopType>::AddAccessRequestWithSuccessfulAck(uint64_t a
                                                                       uint32_t ackDelay,
                                                                       uint32_t from)
 {
-    NS_ASSERT(ackDelay < m_ackTimeoutValue);
+    NS_TEST_ASSERT_MSG_LT(ackDelay,
+                          m_ackTimeoutValue,
+                          "Acknowledgment (ACK) delay must be less than the ACK timeout value.");
     Simulator::Schedule(MicroSeconds(at) - Now(),
                         &ChannelAccessManagerTest::DoAccessRequest,
                         this,

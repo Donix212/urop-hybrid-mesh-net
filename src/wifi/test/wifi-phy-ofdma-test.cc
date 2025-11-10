@@ -600,7 +600,10 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::SendMuPpdu(uint16_t rxStaId1, u
     }
     else if (m_channelWidth == MHz_u{320})
     {
-        NS_ASSERT(m_modClass >= WIFI_MOD_CLASS_EHT);
+        NS_TEST_ASSERT_MSG_GT_OR_EQ(
+            m_modClass,
+            WIFI_MOD_CLASS_EHT,
+            "320 MHz channel width requires EHT Modulation Class or higher.");
         ruType = RuType::RU_2x996_TONE;
         txVector.SetRuAllocation({88, 30, 88, 30, 88, 30, 88, 30, 30, 88, 30, 88, 30, 88, 30, 88},
                                  0);
@@ -4351,7 +4354,10 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SchedulePowerMeasurementChecks(
     const auto phyEntity =
         std::dynamic_pointer_cast<OfdmaTestPhy<LatestPhyEntityType>>(m_phyAp->GetPhyEntity());
     const auto nonOfdmaDuration = phyEntity->CalculateNonHeDurationForHeTb(txVectorSta2);
-    NS_ASSERT(nonOfdmaDuration == phyEntity->CalculateNonHeDurationForHeTb(txVectorSta1));
+    NS_TEST_ASSERT_MSG_EQ(nonOfdmaDuration,
+                          phyEntity->CalculateNonHeDurationForHeTb(txVectorSta1),
+                          "OFDMA durations for "
+                          "both STAs should be equal.");
 
     std::vector<Watt_u> rxPowerNonOfdma{rxPowerNonOfdmaRu1, rxPowerNonOfdmaRu2};
     std::vector<WifiSpectrumBandInfo> nonOfdmaBand{phyEntity->GetNonOfdmaBand(txVectorSta1, 1),
@@ -5911,8 +5917,9 @@ TestUlOfdmaPowerControl::SendMuBar(std::vector<uint16_t> staIds)
         }
         else
         {
-            NS_ASSERT(staIds.front() ==
-                      DynamicCast<StaWifiMac>(m_sta2Dev->GetMac())->GetAssociationId());
+            NS_TEST_ASSERT_MSG_EQ(staIds.front(),
+                                  DynamicCast<StaWifiMac>(m_sta2Dev->GetMac())->GetAssociationId(),
+                                  "Station ID should match STA2's association ID");
             receiver = Mac48Address::ConvertFrom(m_sta2Dev->GetAddress());
         }
     }
@@ -5948,7 +5955,10 @@ TestUlOfdmaPowerControl::ReceiveOkCallbackAtAp(Ptr<const WifiPsdu> psdu,
 {
     NS_TEST_ASSERT_MSG_EQ(txVector.GetPreambleType(), WIFI_PREAMBLE_HE_TB, "HE TB PPDU expected");
     const auto rssi = rxSignalInfo.rssi;
-    NS_ASSERT(psdu->GetNMpdus() == 1);
+    NS_TEST_ASSERT_MSG_EQ(psdu->GetNMpdus(),
+                          1,
+                          "Physical Layer Service Data Unit (PSDU) should contain exactly one MAC "
+                          "Protocol Data Unit (MPDU).");
     const auto& hdr = psdu->GetHeader(0);
     NS_TEST_ASSERT_MSG_EQ(hdr.GetType(), WIFI_MAC_CTL_BACKRESP, "Block ACK expected");
     if (hdr.GetAddr2() == m_sta1Dev->GetAddress())
@@ -6014,9 +6024,13 @@ TestUlOfdmaPowerControl::DoSetup()
     auto staDevs = wifi.Install(spectrumPhy, mac, staNodes);
     WifiHelper::AssignStreams(staDevs, 0);
     m_sta1Dev = DynamicCast<WifiNetDevice>(staDevs.Get(0));
-    NS_ASSERT(m_sta1Dev);
+    NS_TEST_ASSERT_MSG_NE(m_sta1Dev,
+                          nullptr,
+                          "Failed to cast Station (STA) 1 device to WifiNetDevice.");
     m_sta2Dev = DynamicCast<WifiNetDevice>(staDevs.Get(1));
-    NS_ASSERT(m_sta2Dev);
+    NS_TEST_ASSERT_MSG_NE(m_sta2Dev,
+                          nullptr,
+                          "Failed to cast Station (STA) 2 device to WifiNetDevice.");
 
     // Set the beacon interval long enough so that associated STAs may not consider link lost when
     // beacon generation is disabled during the actual tests. Having such a long interval also
@@ -6027,10 +6041,15 @@ TestUlOfdmaPowerControl::DoSetup()
                 "BeaconInterval",
                 TimeValue(MicroSeconds(1024 * 600)));
     m_apDev = DynamicCast<WifiNetDevice>(wifi.Install(spectrumPhy, mac, apNode).Get(0));
-    NS_ASSERT(m_apDev);
+    NS_TEST_ASSERT_MSG_NE(m_apDev,
+                          nullptr,
+                          "Failed to cast Access Point (AP) device to WifiNetDevice.");
     m_apDev->GetHeConfiguration()->m_bssColor = m_bssColor;
     m_phyAp = DynamicCast<SpectrumWifiPhy>(m_apDev->GetPhy());
-    NS_ASSERT(m_phyAp);
+    NS_TEST_ASSERT_MSG_NE(
+        m_phyAp,
+        nullptr,
+        "Failed to cast Access Point (AP) Physical Layer (PHY) to SpectrumWifiPhy.");
     // ReceiveOkCallback of AP will be set to corresponding test's method once BA sessions have been
     // set up for both STAs
 

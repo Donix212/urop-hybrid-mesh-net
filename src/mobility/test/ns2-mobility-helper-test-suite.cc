@@ -244,9 +244,9 @@ class Ns2MobilityHelperTest : public TestCase
     {
         Time time = Simulator::Now();
         Ptr<Node> node = mobility->GetObject<Node>();
-        NS_ASSERT(node);
+        NS_TEST_ASSERT_MSG_NE(node, nullptr, "Failed to retrieve node from mobility model");
         std::string id = Names::FindName(node);
-        NS_ASSERT(!id.empty());
+        NS_TEST_ASSERT_MSG_EQ(id.empty(), false, "Node name is empty or not assigned");
         Vector pos = mobility->GetPosition();
         Vector vel = mobility->GetVelocity();
 

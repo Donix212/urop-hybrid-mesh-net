@@ -130,7 +130,7 @@ template <int N>
 void
 HistoryHeader<N>::Print(std::ostream& os) const
 {
-    NS_ASSERT(false);
+    NS_ASSERT_MSG(false, "Print() should never be called on test header objects");
 }
 
 template <int N>
@@ -271,7 +271,7 @@ template <int N>
 void
 HistoryTrailer<N>::Print(std::ostream& os) const
 {
-    NS_ASSERT(false);
+    NS_ASSERT_MSG(false, "Print() should never be called on test header objects");
 }
 
 template <int N>
@@ -404,7 +404,8 @@ PacketMetadataTest::CheckHistory(Ptr<Packet> p, uint32_t n, ...)
 
     for (auto i = got.begin(), j = expected.begin(); i != got.end(); i++, j++)
     {
-        NS_ASSERT(j != expected.end());
+        NS_ASSERT_MSG(j != expected.end(),
+                      "Unexpectedly reached end of expected list without a match");
         if (*j != *i)
         {
             goto error;

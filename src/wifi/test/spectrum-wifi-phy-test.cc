@@ -840,12 +840,20 @@ SpectrumWifiPhyGetBandTest::RunOne(
     m_phy->SetOperatingChannel(channelSegments);
 
     const auto& bandInfo = m_phy->GetBand(bandWidth, bandIndex);
-    NS_ASSERT(expectedIndices.size() == expectedFrequencies.size());
-    NS_ASSERT(expectedIndices.size() == bandInfo.indices.size());
-    NS_ASSERT(expectedFrequencies.size() == bandInfo.frequencies.size());
+    NS_TEST_ASSERT_MSG_EQ(expectedIndices.size(),
+                          expectedFrequencies.size(),
+                          "Expected indices size must match frequencies size");
+    NS_TEST_ASSERT_MSG_EQ(expectedIndices.size(),
+                          bandInfo.indices.size(),
+                          "Expected indices size must match band info indices size");
+    NS_TEST_ASSERT_MSG_EQ(expectedFrequencies.size(),
+                          bandInfo.frequencies.size(),
+                          "Expected frequencies size must match band info frequencies size");
     for (std::size_t i = 0; i < expectedIndices.size(); ++i)
     {
-        NS_ASSERT(bandInfo.indices.at(i).first == expectedIndices.at(i).first);
+        NS_TEST_ASSERT_MSG_EQ(bandInfo.indices.at(i).first,
+                              expectedIndices.at(i).first,
+                              "Start indice must match expected value");
         NS_TEST_ASSERT_MSG_EQ(bandInfo.indices.at(i).first,
                               expectedIndices.at(i).first,
                               "Incorrect start indice for segment " << i);
@@ -1897,7 +1905,9 @@ SpectrumWifiPhyMultipleInterfacesTest::CheckResults(
         }
     }
     NS_TEST_ASSERT_MSG_EQ(numActiveInterfaces, 1, "There should always be one active interface");
-    NS_ASSERT(expectedConnectedPhysPerChannel.size() == m_spectrumChannels.size());
+    NS_TEST_ASSERT_MSG_EQ(expectedConnectedPhysPerChannel.size(),
+                          m_spectrumChannels.size(),
+                          "Expected connected PHYs size must match spectrum channels size");
     for (std::size_t i = 0; i < m_spectrumChannels.size(); ++i)
     {
         NS_TEST_ASSERT_MSG_EQ(m_spectrumChannels.at(i)->GetNDevices(),
@@ -2608,21 +2618,27 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
     // Verify each PHY has 3 interfaces
     auto phyLink0 =
         DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(0));
-    NS_ASSERT(phyLink0);
+    NS_TEST_ASSERT_MSG_NE(phyLink0,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 0 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink0->GetSpectrumPhyInterfaces().size(),
                           3,
                           "Incorrect number of PHY interfaces added to PHY link ID 0");
 
     auto phyLink1 =
         DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(1));
-    NS_ASSERT(phyLink1);
+    NS_TEST_ASSERT_MSG_NE(phyLink1,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 1 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink1->GetSpectrumPhyInterfaces().size(),
                           3,
                           "Incorrect number of PHY interfaces added to PHY link ID 1");
 
     auto phyLink2 =
         DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(2));
-    NS_ASSERT(phyLink2);
+    NS_TEST_ASSERT_MSG_NE(phyLink2,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 2 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink1->GetSpectrumPhyInterfaces().size(),
                           3,
                           "Incorrect number of PHY interfaces added to PHY link ID 2");
@@ -2635,7 +2651,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
 
     // Verify each PHY has a single interface
     phyLink0 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(0));
-    NS_ASSERT(phyLink0);
+    NS_TEST_ASSERT_MSG_NE(phyLink0,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 0 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink0->GetSpectrumPhyInterfaces().size(),
                           1,
                           "Incorrect number of PHY interfaces added to PHY link ID 0");
@@ -2644,7 +2662,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
                           "Incorrect PHY interfaces added to PHY link ID 0");
 
     phyLink1 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(1));
-    NS_ASSERT(phyLink1);
+    NS_TEST_ASSERT_MSG_NE(phyLink1,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 1 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink1->GetSpectrumPhyInterfaces().size(),
                           1,
                           "Incorrect number of PHY interfaces added to PHY link ID 1");
@@ -2653,7 +2673,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
                           "Incorrect PHY interfaces added to PHY link ID 1");
 
     phyLink2 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(2));
-    NS_ASSERT(phyLink2);
+    NS_TEST_ASSERT_MSG_NE(phyLink2,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 2 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink2->GetSpectrumPhyInterfaces().size(),
                           1,
                           "Incorrect number of PHY interfaces added to PHY link ID 2");
@@ -2667,7 +2689,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
 
     // Verify each PHY has a single interface except PHY 0 that should have 2 interfaces
     phyLink0 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(0));
-    NS_ASSERT(phyLink0);
+    NS_TEST_ASSERT_MSG_NE(phyLink0,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 0 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink0->GetSpectrumPhyInterfaces().size(),
                           2,
                           "Incorrect number of PHY interfaces added to PHY link ID 0");
@@ -2679,7 +2703,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
                           "Incorrect PHY interfaces added to PHY link ID 0");
 
     phyLink1 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(1));
-    NS_ASSERT(phyLink1);
+    NS_TEST_ASSERT_MSG_NE(phyLink1,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 1 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink1->GetSpectrumPhyInterfaces().size(),
                           1,
                           "Incorrect number of PHY interfaces added to PHY link ID 1");
@@ -2688,7 +2714,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
                           "Incorrect PHY interfaces added to PHY link ID 1");
 
     phyLink2 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(2));
-    NS_ASSERT(phyLink2);
+    NS_TEST_ASSERT_MSG_NE(phyLink2,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 2 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink2->GetSpectrumPhyInterfaces().size(),
                           1,
                           "Incorrect number of PHY interfaces added to PHY link ID 2");
@@ -2702,7 +2730,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
 
     // Verify each PHY has 3 interfaces
     phyLink0 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(0));
-    NS_ASSERT(phyLink0);
+    NS_TEST_ASSERT_MSG_NE(phyLink0,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 0 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink0->GetSpectrumPhyInterfaces().size(),
                           3,
                           "Incorrect number of PHY interfaces added to PHY link ID 0");
@@ -2717,7 +2747,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
                           "Incorrect PHY interfaces added to PHY link ID 0");
 
     phyLink1 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(1));
-    NS_ASSERT(phyLink1);
+    NS_TEST_ASSERT_MSG_NE(phyLink1,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 1 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink1->GetSpectrumPhyInterfaces().size(),
                           3,
                           "Incorrect number of PHY interfaces added to PHY link ID 1");
@@ -2732,7 +2764,9 @@ SpectrumWifiPhyInterfacesHelperTest::DoRun()
                           "Incorrect PHY interfaces added to PHY link ID 0");
 
     phyLink2 = DynamicCast<SpectrumWifiPhy>(DynamicCast<WifiNetDevice>(device.Get(0))->GetPhy(2));
-    NS_ASSERT(phyLink2);
+    NS_TEST_ASSERT_MSG_NE(phyLink2,
+                          nullptr,
+                          "Failed to cast Physical Layer (PHY) link 2 to SpectrumWifiPhy.");
     NS_TEST_ASSERT_MSG_EQ(phyLink2->GetSpectrumPhyInterfaces().size(),
                           3,
                           "Incorrect number of PHY interfaces added to PHY link ID 2");

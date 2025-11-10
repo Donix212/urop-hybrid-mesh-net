@@ -454,7 +454,9 @@ MultiLinkOperationsTestBase::CheckAddresses(Ptr<const WifiPsdu> psdu,
     {
         direction = (!psdu->GetHeader(0).IsToDs() && psdu->GetHeader(0).IsFromDs()) ? DL : UL;
     }
-    NS_ASSERT(direction);
+    NS_TEST_ASSERT_MSG_EQ(direction.has_value(),
+                          true,
+                          "Direction could not be determined for PSDU");
 
     if (direction == DL)
     {

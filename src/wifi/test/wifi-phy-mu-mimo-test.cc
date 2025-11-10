@@ -532,7 +532,7 @@ void
 TestDlMuMimoPhyTransmission::SendMuPpdu(const std::vector<StaInfo>& staInfos)
 {
     NS_LOG_FUNCTION(this << staInfos.size());
-    NS_ASSERT(staInfos.size() > 1);
+    NS_TEST_ASSERT_MSG_GT(staInfos.size(), 1, "MU-MIMO requires at least two STAs");
 
     WifiTxVector txVector = WifiTxVector(HePhy::GetHeMcs7(),
                                          WIFI_MIN_TX_PWR_LEVEL,
@@ -567,8 +567,8 @@ TestDlMuMimoPhyTransmission::SendMuPpdu(const std::vector<StaInfo>& staInfos)
 
     txVector.SetSigBMode(VhtPhy::GetVhtMcs5());
 
-    NS_ASSERT(txVector.IsDlMuMimo());
-    NS_ASSERT(!txVector.IsDlOfdma());
+    NS_TEST_EXPECT_MSG_EQ(txVector.IsDlMuMimo(), true, "TX vector MU type should be MU-MIMO");
+    NS_TEST_EXPECT_MSG_EQ(txVector.IsDlOfdma(), false, "TX vector MU type should not be OFDMA");
 
     m_phyAp->Send(psdus, txVector);
 }

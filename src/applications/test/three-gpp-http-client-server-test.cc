@@ -331,7 +331,9 @@ ThreeGppHttpObjectTestCase::ThreeGppHttpObjectTestCase(const std::string& name,
     NS_LOG_FUNCTION(this << GetName());
 
     // NS_ASSERT (tcpType.IsChildOf (TypeId::LookupByName ("ns3::TcpSocketBase")));
-    NS_ASSERT(channelDelay.IsPositive());
+    NS_TEST_ASSERT_MSG_EQ(channelDelay.IsPositive(),
+                          true,
+                          "Channel delay time must be a positive value");
 
     m_errorModel = CreateObject<RateErrorModel>();
     m_errorModel->SetRate(bitErrorRate);
@@ -377,7 +379,7 @@ ThreeGppHttpObjectTestCase::AssignIpv4Address(Ptr<NetDevice> dev, bool logging)
 {
     NS_LOG_FUNCTION(this);
     Ipv4InterfaceContainer ipv4Ifs = m_ipv4AddressHelper.Assign(NetDeviceContainer(dev));
-    NS_ASSERT(ipv4Ifs.GetN() == 1);
+    NS_TEST_EXPECT_MSG_EQ(ipv4Ifs.GetN(), 1, "Expected exactly one IPv4 interface to be assigned");
     const auto assignedAddress = ipv4Ifs.GetAddress(0, 0);
     if (logging)
     {
@@ -391,7 +393,7 @@ ThreeGppHttpObjectTestCase::AssignIpv6Address(Ptr<NetDevice> dev, bool logging)
 {
     NS_LOG_FUNCTION(this);
     Ipv6InterfaceContainer ipv6Ifs = m_ipv6AddressHelper.Assign(NetDeviceContainer(dev));
-    NS_ASSERT(ipv6Ifs.GetN() == 1);
+    NS_TEST_EXPECT_MSG_EQ(ipv6Ifs.GetN(), 1, "Expected exactly one IPv6 interface to be assigned");
     const auto assignedAddress = ipv6Ifs.GetAddress(0, 0);
     if (logging)
     {
@@ -509,59 +511,83 @@ ThreeGppHttpObjectTestCase::DoRun()
     bool traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "TxMainObjectRequest",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientTxMainObjectRequestCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source TxMainObjectRequest");
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "TxEmbeddedObjectRequest",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientTxEmbeddedObjectRequestCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source TxEmbeddedObjectRequest");
     traceSourceConnected = httpServer->TraceConnectWithoutContext(
         "RxWithAddresses",
         MakeCallback(&ThreeGppHttpObjectTestCase::ServerRxCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to server receive trace source RxWithAddresses");
 
     // Downlink (main objects) trace sources.
     traceSourceConnected = httpServer->TraceConnectWithoutContext(
         "MainObject",
         MakeCallback(&ThreeGppHttpObjectTestCase::ServerMainObjectCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to server trace source MainObject");
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "RxMainObjectPacket",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientRxMainObjectPacketCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source for RxMainObjectPacket");
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "RxMainObject",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientRxMainObjectCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source RxMainObject");
 
     // Downlink (embedded objects) trace sources.
     traceSourceConnected = httpServer->TraceConnectWithoutContext(
         "EmbeddedObject",
         MakeCallback(&ThreeGppHttpObjectTestCase::ServerEmbeddedObjectCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to server trace source for EmbeddedObject");
 
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "RxEmbeddedObjectPacket",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientRxEmbeddedObjectPacketCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source for RxEmbeddedObjectPacket");
 
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "RxEmbeddedObject",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientRxEmbeddedObjectCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source for RxEmbeddedObject");
 
     // Other trace sources.
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "StateTransition",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientStateTransitionCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source for StateTransition");
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "RxDelay",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientRxDelayCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source for RxDelay");
     traceSourceConnected = httpClient->TraceConnectWithoutContext(
         "RxRtt",
         MakeCallback(&ThreeGppHttpObjectTestCase::ClientRxRttCallback, this));
-    NS_ASSERT(traceSourceConnected);
+    NS_TEST_ASSERT_MSG_EQ(traceSourceConnected,
+                          true,
+                          "Failed to connect to client trace source for RxRtt");
 
     Simulator::Schedule(Seconds(1), &ThreeGppHttpObjectTestCase::ProgressCallback, this);
 

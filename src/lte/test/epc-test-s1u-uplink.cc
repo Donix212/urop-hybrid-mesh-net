@@ -210,7 +210,7 @@ void
 EpsBearerTagUdpClient::Send()
 {
     NS_LOG_FUNCTION_NOARGS();
-    NS_ASSERT(m_sendEvent.IsExpired());
+    NS_ASSERT_MSG(m_sendEvent.IsExpired(), "Send event should have expired.");
     SeqTsHeader seqTs;
     seqTs.SetSeq(m_sent);
     Ptr<Packet> p = Create<Packet>(m_size - (8 + 4)); // 8+4 : the size of the seqTs header
@@ -386,7 +386,7 @@ EpcS1uUlTestCase::DoRun()
 
         // Plug test RRC entity
         Ptr<EpcEnbApplication> enbApp = enb->GetApplication(0)->GetObject<EpcEnbApplication>();
-        NS_ASSERT_MSG(enbApp, "cannot retrieve EpcEnbApplication");
+        NS_TEST_ASSERT_MSG_NE(enbApp, nullptr, "cannot retrieve EpcEnbApplication");
         Ptr<EpcTestRrc> rrc = CreateObject<EpcTestRrc>();
         enb->AggregateObject(rrc);
         rrc->SetS1SapProvider(enbApp->GetS1SapProvider());

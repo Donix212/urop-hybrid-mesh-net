@@ -215,7 +215,10 @@ LteRrcConnectionEstablishmentTestCase::LteRrcConnectionEstablishmentTestCase(
     }
     else
     {
-        NS_ASSERT(nUes <= 50);
+        NS_TEST_ASSERT_MSG_LT_OR_EQ(
+            nUes,
+            50,
+            "Number of User Equipment (UE) devices should be less than or equal to 50.");
         nRaAttempts += 10;
     }
 
@@ -424,7 +427,9 @@ LteRrcConnectionEstablishmentTestCase::CheckConnected(Ptr<NetDevice> ueDevice,
     if (hasContext)
     {
         Ptr<UeManager> ueManager = enbRrc->GetUeManager(rnti);
-        NS_ASSERT(ueManager);
+        NS_ASSERT_MSG(ueManager,
+                      "Failed to retrieve User Equipment (UE) Manager for Radio Network Temporary "
+                      "Identifier (RNTI).");
         NS_TEST_ASSERT_MSG_EQ(ueManager->GetState(),
                               UeManager::CONNECTED_NORMALLY,
                               "The context of RNTI " << rnti << " is in invalid state");
@@ -465,7 +470,9 @@ LteRrcConnectionEstablishmentTestCase::CheckConnected(Ptr<NetDevice> ueDevice,
     if (hasContext)
     {
         Ptr<UeManager> ueManager = enbRrc->GetUeManager(rnti);
-        NS_ASSERT(ueManager);
+        NS_ASSERT_MSG(ueManager,
+                      "Failed to retrieve User Equipment (UE) Manager for Radio Network Temporary "
+                      "Identifier (RNTI).");
         UeManager::State state = ueManager->GetState();
         uint16_t enbImsi = ueManager->GetImsi();
         NS_TEST_ASSERT_MSG_EQ(ueImsi, enbImsi, "inconsistent Imsi");
@@ -540,7 +547,9 @@ LteRrcConnectionEstablishmentTestCase::CheckNotConnected(Ptr<NetDevice> ueDevice
     if (hasContext)
     {
         Ptr<UeManager> ueManager = enbRrc->GetUeManager(rnti);
-        NS_ASSERT(ueManager);
+        NS_ASSERT_MSG(ueManager,
+                      "Failed to retrieve User Equipment (UE) Manager for Radio Network Temporary "
+                      "Identifier (RNTI).");
         contextStateIsConnectedNormally = (UeManager::CONNECTED_NORMALLY == ueManager->GetState());
     }
     NS_TEST_ASSERT_MSG_EQ(

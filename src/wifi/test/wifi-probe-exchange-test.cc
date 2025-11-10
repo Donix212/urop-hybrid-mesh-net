@@ -233,7 +233,7 @@ ProbeExchTest::SetupDevices()
                 BooleanValue(false));
     NetDeviceContainer apDevices = wifi.Install(apPhyHelper, mac, apNode);
     m_apDev = DynamicCast<WifiNetDevice>(apDevices.Get(0));
-    NS_ASSERT(m_apDev);
+    NS_ASSERT_MSG(m_apDev, "Failed to cast AP device to WifiNetDevice");
 
     mac.SetType("ns3::StaWifiMac",
                 "Ssid",
@@ -242,7 +242,7 @@ ProbeExchTest::SetupDevices()
                 BooleanValue(false));
     auto clientDevices = wifi.Install(clientPhyHelper, mac, clientNode);
     m_clientDev = DynamicCast<WifiNetDevice>(clientDevices.Get(0));
-    NS_ASSERT(m_clientDev);
+    NS_ASSERT_MSG(m_clientDev, "Failed to cast client device to WifiNetDevice");
 
     // Assign fixed streams to random variables in use
     auto streamNumber = DEFAULT_STREAM_INDEX;
@@ -289,7 +289,7 @@ Mac48Address
 ProbeExchTest::GetLinkMacAddr(Ptr<WifiNetDevice> dev, uint8_t linkId)
 {
     auto mac = dev->GetMac();
-    NS_ASSERT(linkId < mac->GetNLinks());
+    NS_ASSERT_MSG(linkId < mac->GetNLinks(), "Expected valid link ID for MAC address retrieval");
     return mac->GetFrameExchangeManager(linkId)->GetAddress();
 }
 
@@ -323,7 +323,7 @@ void
 ProbeExchTest::SendProbeReq()
 {
     auto clientMac = DynamicCast<StaWifiMac>(m_clientDev->GetMac());
-    NS_ASSERT(clientMac);
+    NS_ASSERT_MSG(clientMac, "Failed to cast client mac to StaWifiMac");
 
     const auto& reqTxLinkId = m_testVec.reqTxLinkId;
     MgtProbeRequestHeader probeReq;

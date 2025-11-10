@@ -155,7 +155,7 @@ TcpBbrCheckGainValuesTest::ExecuteTest()
         desiredMode = TcpBbr::BBR_PROBE_RTT;
         break;
     default:
-        NS_ASSERT(false);
+        NS_FATAL_ERROR("Invalid TcpBbrCheckGainValuesTest: " << m_mode);
     }
 
     actualPacingGain = cong->GetPacingGain();
