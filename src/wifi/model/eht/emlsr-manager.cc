@@ -863,7 +863,7 @@ EmlsrManager::SetCcaEdThresholdOnLinkSwitch(Ptr<WifiPhy> phy, uint8_t linkId)
         // store the current CCA ED threshold in the m_prevCcaEdThreshold map, if not present
         m_prevCcaEdThreshold.try_emplace(phy, phy->GetCcaEdThreshold());
 
-        phy->SetCcaEdThreshold(m_msdOfdmEdThreshold);
+        phy->SetCcaEdThreshold(dBm_t(m_msdOfdmEdThreshold));
     }
     // otherwise, restore the previous value for the CCA ED threshold (if any)
     else if (auto threshIt = m_prevCcaEdThreshold.find(phy);
@@ -1037,7 +1037,7 @@ EmlsrManager::StartMediumSyncDelayTimer(uint8_t linkId)
         NS_LOG_DEBUG("Setting CCA ED threshold on link "
                      << +linkId << " to " << +m_msdOfdmEdThreshold << " PHY " << +phy->GetPhyId());
         m_prevCcaEdThreshold[phy] = phy->GetCcaEdThreshold();
-        phy->SetCcaEdThreshold(m_msdOfdmEdThreshold);
+        phy->SetCcaEdThreshold(dBm_t(m_msdOfdmEdThreshold));
     }
 
     // (re)start the timer

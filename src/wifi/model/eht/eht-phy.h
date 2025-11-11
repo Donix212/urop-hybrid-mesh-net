@@ -10,6 +10,7 @@
 #define EHT_PHY_H
 
 #include "ns3/he-phy.h"
+#include "ns3/units.h"
 
 /**
  * @file
@@ -253,7 +254,7 @@ class EhtPhy : public HePhy
     WifiPhyRxfailureReason GetFailureReason(WifiPpduField field) const override;
     uint32_t GetSigBSize(const WifiTxVector& txVector) const override;
     uint32_t GetMaxPsduSize() const override;
-    dBm_u GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
+    dBm_t GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
                           WifiChannelListType channelType) const override;
     const std::map<MHz_u, WifiChannelListType>& GetCcaSecondaryChannels() const override;
     PhyEntity::CcaIndication GetCcaIndicationOnSecondary(const Ptr<const WifiPpdu> ppdu) override;
@@ -298,7 +299,7 @@ class EhtPhy : public HePhy
      * @param ppdu the incoming PPDU or nullptr for any signal
      * @return the CCA threshold for Per 20MHz check
      */
-    dBm_u Per20MHzCcaThreshold(const Ptr<const WifiPpdu> ppdu) const;
+    dBm_t Per20MHzCcaThreshold(const Ptr<const WifiPpdu> ppdu) const;
 
     static const PpduFormats m_ehtPpduFormats; //!< EHT PPDU formats
 };

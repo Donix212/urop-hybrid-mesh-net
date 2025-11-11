@@ -143,7 +143,7 @@ ParfWifiManager::CheckInit(ParfWifiRemoteStation* station)
         auto channelWidth = GetChannelWidth(station);
         DataRate rate(mode.GetDataRate(channelWidth));
         const auto power = GetPhy()->GetPower(m_maxPowerLevel);
-        m_powerChange(power, power, station->m_state->m_address);
+        m_powerChange(power.to<double>(), power.to<double>(), station->m_state->m_address);
         m_rateChange(rate, rate, station->m_state->m_address);
         station->m_initialized = true;
     }
@@ -323,7 +323,7 @@ ParfWifiManager::DoGetDataTxVector(WifiRemoteStation* st, MHz_u allowedWidth)
     const auto prevPower = GetPhy()->GetPower(station->m_prevPowerLevel);
     if (station->m_prevPowerLevel != station->m_powerLevel)
     {
-        m_powerChange(prevPower, power, station->m_state->m_address);
+        m_powerChange(prevPower.to<double>(), power.to<double>(), station->m_state->m_address);
         station->m_prevPowerLevel = station->m_powerLevel;
     }
     if (station->m_prevRateIndex != station->m_rateIndex)

@@ -353,7 +353,7 @@ OfdmPhy::IsAllConfigSupported(WifiPpduField /* field */, Ptr<const WifiPpdu> ppd
 }
 
 Ptr<SpectrumValue>
-OfdmPhy::GetTxPowerSpectralDensity(Watt_u txPower, Ptr<const WifiPpdu> ppdu) const
+OfdmPhy::GetTxPowerSpectralDensity(Watt_t txPower, Ptr<const WifiPpdu> ppdu) const
 {
     const auto& centerFrequencies = ppdu->GetTxCenterFreqs();
     const auto& txVector = ppdu->GetTxVector();
@@ -663,15 +663,15 @@ OfdmPhy::GetMeasurementChannelWidth(const Ptr<const WifiPpdu> ppdu) const
     return GetRxChannelWidth(ppdu->GetTxVector());
 }
 
-dBm_u
+dBm_t
 OfdmPhy::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu, WifiChannelListType channelType) const
 {
     if (ppdu && ppdu->GetTxVector().GetChannelWidth() < MHz_u{20})
     {
         // scale CCA sensitivity threshold for BW of 5 and 10 MHz
         const auto bw = GetRxChannelWidth(ppdu->GetTxVector());
-        const auto thresholdW = DbmToW(m_wifiPhy->GetCcaSensitivityThreshold()) * (bw / MHz_u{20});
-        return WToDbm(thresholdW);
+        const auto thresholdW = Watt_t{m_wifiPhy->GetCcaSensitivityThreshold()} * (bw / MHz_u{20});
+        return dBm_t{thresholdW};
     }
     return PhyEntity::GetCcaThreshold(ppdu, channelType);
 }

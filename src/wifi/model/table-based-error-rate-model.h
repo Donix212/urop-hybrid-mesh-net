@@ -14,6 +14,7 @@
 #include "wifi-mode.h"
 
 #include "ns3/error-rate-tables.h"
+#include "ns3/units.h"
 
 #include <optional>
 
@@ -49,7 +50,7 @@ class TableBasedErrorRateModel : public ErrorRateModel
   private:
     double DoGetChunkSuccessRate(WifiMode mode,
                                  const WifiTxVector& txVector,
-                                 double snr,
+                                 scalar_t snr,
                                  uint64_t nbits,
                                  uint8_t numRxAntennas,
                                  WifiPpduField field,
@@ -62,7 +63,7 @@ class TableBasedErrorRateModel : public ErrorRateModel
      * @param precision the precision to use
      * @return the rounded SNR to the specified precision
      */
-    dB_u RoundSnr(dB_u snr, double precision) const;
+    dB_t RoundSnr(dB_t snr, double precision) const;
 
     /**
      * Fetch the frame success rate for a given Wi-Fi mode, TXVECTOR, SNR and frame size.
@@ -72,7 +73,10 @@ class TableBasedErrorRateModel : public ErrorRateModel
      * @param nbits the number of bits
      * @return the frame success rate for a given Wi-Fi mode, TXVECTOR, SNR and frame size
      */
-    double FetchFsr(WifiMode mode, const WifiTxVector& txVector, double snr, uint64_t nbits) const;
+    double FetchFsr(WifiMode mode,
+                    const WifiTxVector& txVector,
+                    scalar_t snr,
+                    uint64_t nbits) const;
 
     Ptr<ErrorRateModel>
         m_fallbackErrorModel; //!< Error rate model to fallback to if no value is found in the table

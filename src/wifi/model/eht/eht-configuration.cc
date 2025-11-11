@@ -11,6 +11,7 @@
 
 #include "ns3/attribute-container.h"
 #include "ns3/boolean.h"
+#include "ns3/dbm.h"
 #include "ns3/double.h"
 #include "ns3/enum.h"
 #include "ns3/integer.h"
@@ -166,9 +167,9 @@ EhtConfiguration::GetTypeId()
                             MakeUintegerChecker<uint8_t>()))))
             .AddAttribute("Per20CcaSensitivityThreshold",
                           "CCA threshold (dBm) for Per 20MHz check.",
-                          DoubleValue(-72.0),
-                          MakeDoubleAccessor(&EhtConfiguration::m_per20CcaSensitivityThreshold),
-                          MakeDoubleChecker<dBm_u>());
+                          DbmValue(dBm_t{-72.0}),
+                          MakeDbmAccessor(&EhtConfiguration::m_per20CcaSensitivityThreshold),
+                          MakeDbmChecker());
     return tid;
 }
 

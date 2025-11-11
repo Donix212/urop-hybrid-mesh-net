@@ -13,6 +13,7 @@
 
 #include "ns3/object.h"
 #include "ns3/traced-callback.h"
+#include "ns3/units.h"
 #include "ns3/wifi-units.h"
 
 namespace ns3
@@ -72,19 +73,19 @@ class ObssPdAlgorithm : public Object
      * @param [in] txPowerMaxDbmMimo The MIMO TX power restricted level (dBm)
      */
     typedef void (*ResetTracedCallback)(uint8_t bssColor,
-                                        double rssiDbm,
+                                        dBm_t rssiDbm,
                                         bool powerRestricted,
-                                        double txPowerMaxDbmSiso,
-                                        double txPowerMaxDbmMimo);
+                                        dBm_t txPowerMaxDbmSiso,
+                                        dBm_t txPowerMaxDbmMimo);
 
     /**
      * @param level the current OBSS PD level
      */
-    void SetObssPdLevel(dBm_u level);
+    void SetObssPdLevel(dBm_t level);
     /**
      * @return the current OBSS PD level
      */
-    dBm_u GetObssPdLevel() const;
+    dBm_t GetObssPdLevel() const;
 
   protected:
     void DoDispose() override;
@@ -92,16 +93,16 @@ class ObssPdAlgorithm : public Object
     Ptr<WifiNetDevice> m_device; ///< Pointer to the WifiNetDevice
 
   private:
-    dBm_u m_obssPdLevel;    ///< Current OBSS PD level
-    dBm_u m_obssPdLevelMin; ///< Minimum OBSS PD level
-    dBm_u m_obssPdLevelMax; ///< Maximum OBSS PD level
-    dBm_u m_txPowerRefSiso; ///< SISO reference TX power level
-    dBm_u m_txPowerRefMimo; ///< MIMO reference TX power level
+    dBm_t m_obssPdLevel;    ///< Current OBSS PD level
+    dBm_t m_obssPdLevelMin; ///< Minimum OBSS PD level
+    dBm_t m_obssPdLevelMax; ///< Maximum OBSS PD level
+    dBm_t m_txPowerRefSiso; ///< SISO reference TX power level
+    dBm_t m_txPowerRefMimo; ///< MIMO reference TX power level
 
     /**
      * TracedCallback signature for PHY reset events.
      */
-    TracedCallback<uint8_t, double, bool, double, double> m_resetEvent;
+    TracedCallback<uint8_t, dBm_t, bool, dBm_t, dBm_t> m_resetEvent;
 };
 
 } // namespace ns3

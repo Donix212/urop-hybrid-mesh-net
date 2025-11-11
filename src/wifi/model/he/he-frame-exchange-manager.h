@@ -11,6 +11,7 @@
 
 #include "mu-snr-tag.h"
 
+#include "ns3/units.h"
 #include "ns3/vht-frame-exchange-manager.h"
 
 #include <map>
@@ -93,7 +94,7 @@ class HeFrameExchangeManager : public VhtFrameExchangeManager
      * @param address of the remote station
      * @return the RSSI of the most recent packet received from the remote station
      */
-    virtual std::optional<dBm_u> GetMostRecentRssi(const Mac48Address& address) const;
+    virtual std::optional<dBm_t> GetMostRecentRssi(const Mac48Address& address) const;
 
     /**
      * Return whether the received frame is classified as intra-BSS. It is assumed that

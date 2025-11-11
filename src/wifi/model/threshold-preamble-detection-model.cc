@@ -10,6 +10,8 @@
 
 #include "wifi-utils.h"
 
+#include "ns3/db.h"
+#include "ns3/dbm.h"
 #include "ns3/double.h"
 #include "ns3/log.h"
 
@@ -31,14 +33,14 @@ ThresholdPreambleDetectionModel::GetTypeId()
             .AddAttribute("Threshold",
                           "Preamble is successfully detected if the SNR is at or above this value "
                           "(expressed in dB).",
-                          DoubleValue(4),
-                          MakeDoubleAccessor(&ThresholdPreambleDetectionModel::m_threshold),
-                          MakeDoubleChecker<dB_u>())
+                          DbValue(dB_t{4}),
+                          MakeDbAccessor(&ThresholdPreambleDetectionModel::m_threshold),
+                          MakeDbChecker())
             .AddAttribute("MinimumRssi",
                           "Preamble is dropped if the RSSI is below this value (expressed in dBm).",
-                          DoubleValue(-82),
-                          MakeDoubleAccessor(&ThresholdPreambleDetectionModel::m_rssiMin),
-                          MakeDoubleChecker<dBm_u>());
+                          DbmValue(dBm_t{-82}),
+                          MakeDbmAccessor(&ThresholdPreambleDetectionModel::m_rssiMin),
+                          MakeDbmChecker());
     return tid;
 }
 
@@ -53,14 +55,14 @@ ThresholdPreambleDetectionModel::~ThresholdPreambleDetectionModel()
 }
 
 bool
-ThresholdPreambleDetectionModel::IsPreambleDetected(dBm_u rssi,
-                                                    double snr,
+ThresholdPreambleDetectionModel::IsPreambleDetected(dBm_t rssi,
+                                                    scalar_t snr,
                                                     MHz_u channelWidth) const
 {
-    NS_LOG_FUNCTION(this << rssi << RatioToDb(snr) << channelWidth);
+    NS_LOG_FUNCTION(this << rssi << dB_t{snr} << channelWidth);
     if (rssi >= m_rssiMin)
     {
-        if (RatioToDb(snr) >= m_threshold)
+        if (dB_t{snr} >= m_threshold)
         {
             return true;
         }

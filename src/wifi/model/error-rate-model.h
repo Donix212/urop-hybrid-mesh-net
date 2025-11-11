@@ -12,6 +12,7 @@
 #include "wifi-mode.h"
 
 #include "ns3/object.h"
+#include "ns3/units.h"
 
 namespace ns3
 {
@@ -36,7 +37,7 @@ class ErrorRateModel : public Object
      *
      * @return the SNR which corresponds to the requested BER
      */
-    double CalculateSnr(const WifiTxVector& txVector, double ber) const;
+    scalar_t CalculateSnr(const WifiTxVector& txVector, double ber) const;
 
     /**
      * @return true if the model is for AWGN channels,
@@ -75,7 +76,7 @@ class ErrorRateModel : public Object
      */
     double GetChunkSuccessRate(WifiMode mode,
                                const WifiTxVector& txVector,
-                               double snr,
+                               scalar_t snr,
                                uint64_t nbits,
                                uint8_t numRxAntennas = 1,
                                WifiPpduField field = WIFI_PPDU_FIELD_DATA,
@@ -107,7 +108,7 @@ class ErrorRateModel : public Object
      */
     virtual double DoGetChunkSuccessRate(WifiMode mode,
                                          const WifiTxVector& txVector,
-                                         double snr,
+                                         scalar_t snr,
                                          uint64_t nbits,
                                          uint8_t numRxAntennas,
                                          WifiPpduField field,

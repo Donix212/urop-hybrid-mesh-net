@@ -12,6 +12,8 @@
 #include "error-rate-model.h"
 #include "wifi-mode.h"
 
+#include "ns3/units.h"
+
 namespace ns3
 {
 
@@ -37,7 +39,7 @@ class NistErrorRateModel : public ErrorRateModel
   private:
     double DoGetChunkSuccessRate(WifiMode mode,
                                  const WifiTxVector& txVector,
-                                 double snr,
+                                 scalar_t snr,
                                  uint64_t nbits,
                                  uint8_t numRxAntennas,
                                  WifiPpduField field,
@@ -66,7 +68,7 @@ class NistErrorRateModel : public ErrorRateModel
      *
      * @return BER of BPSK at the given SNR
      */
-    double GetBpskBer(double snr) const;
+    double GetBpskBer(scalar_t snr) const;
     /**
      * Return BER of QPSK at the given SNR.
      *
@@ -74,7 +76,7 @@ class NistErrorRateModel : public ErrorRateModel
      *
      * @return BER of QPSK at the given SNR
      */
-    double GetQpskBer(double snr) const;
+    double GetQpskBer(scalar_t snr) const;
     /**
      * Return BER of QAM for a given constellation size at the given SNR.
      *
@@ -82,7 +84,7 @@ class NistErrorRateModel : public ErrorRateModel
      * @param snr SNR ratio (in linear scale)
      * @return BER of QAM for a given constellation size at the given SNR
      */
-    double GetQamBer(uint16_t constellationSize, double snr) const;
+    double GetQamBer(uint16_t constellationSize, scalar_t snr) const;
     /**
      * Return BER of BPSK at the given SNR after applying FEC.
      *
@@ -92,7 +94,7 @@ class NistErrorRateModel : public ErrorRateModel
      *
      * @return BER of BPSK at the given SNR after applying FEC
      */
-    double GetFecBpskBer(double snr, uint64_t nbits, uint8_t bValue) const;
+    double GetFecBpskBer(scalar_t snr, uint64_t nbits, uint8_t bValue) const;
     /**
      * Return BER of QPSK at the given SNR after applying FEC.
      *
@@ -102,7 +104,7 @@ class NistErrorRateModel : public ErrorRateModel
      *
      * @return BER of QPSK at the given SNR after applying FEC
      */
-    double GetFecQpskBer(double snr, uint64_t nbits, uint8_t bValue) const;
+    double GetFecQpskBer(scalar_t snr, uint64_t nbits, uint8_t bValue) const;
     /**
      * Return BER of QAM for a given constellation size at the given SNR after applying FEC.
      *
@@ -114,7 +116,7 @@ class NistErrorRateModel : public ErrorRateModel
      * @return BER of QAM for a given constellation size at the given SNR after applying FEC
      */
     double GetFecQamBer(uint16_t constellationSize,
-                        double snr,
+                        scalar_t snr,
                         uint64_t nbits,
                         uint8_t bValue) const;
 };

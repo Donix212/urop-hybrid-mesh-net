@@ -24,7 +24,7 @@ ErrorRateModel::GetTypeId()
     return tid;
 }
 
-double
+scalar_t
 ErrorRateModel::CalculateSnr(const WifiTxVector& txVector, double ber) const
 {
     // This is a very simple binary search.
@@ -38,7 +38,7 @@ ErrorRateModel::CalculateSnr(const WifiTxVector& txVector, double ber) const
     {
         NS_ASSERT(high >= low);
         double middle = low + (high - low) / 2;
-        if ((1 - GetChunkSuccessRate(txVector.GetMode(), txVector, middle, 1)) > ber)
+        if ((1 - GetChunkSuccessRate(txVector.GetMode(), txVector, scalar_t{middle}, 1)) > ber)
         {
             low = middle;
         }
@@ -53,7 +53,7 @@ ErrorRateModel::CalculateSnr(const WifiTxVector& txVector, double ber) const
 double
 ErrorRateModel::GetChunkSuccessRate(WifiMode mode,
                                     const WifiTxVector& txVector,
-                                    double snr,
+                                    scalar_t snr,
                                     uint64_t nbits,
                                     uint8_t numRxAntennas,
                                     WifiPpduField field,
