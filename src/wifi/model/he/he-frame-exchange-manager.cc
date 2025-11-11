@@ -1543,16 +1543,20 @@ HeFrameExchangeManager::GetHeTbTxVector(CtrlTriggerHeader trigger, Mac48Address 
     int8_t pathLossDb =
         trigger.GetApTxPower() -
         static_cast<int8_t>(
-            *optRssi); // cast RSSI to be on equal footing with AP Tx power information
-    auto reqTxPower = dBm_u{static_cast<double>(userInfoIt->GetUlTargetRxPower() + pathLossDb)};
+            optRssi.value()
+                .to<double>()); // cast RSSI to be on equal footing with AP Tx power information
+    auto reqTxPower = dBm_t(userInfoIt->GetUlTargetRxPower() + pathLossDb);
 
     // Convert the transmit power to a power level
     const auto numPowerLevels = m_phy->GetNTxPowerLevels();
     if (numPowerLevels > 1)
     {
-        dBm_u step = (m_phy->GetTxPowerEnd() - m_phy->GetTxPowerStart()) / (numPowerLevels - 1);
+        // Should probably be changed to linear units before dividing
+        double step =
+            (m_phy->GetTxPowerEnd().to<double>() - m_phy->GetTxPowerStart().to<double>()) /
+            (numPowerLevels - 1);
         powerLevel = static_cast<uint8_t>(
-            ceil((reqTxPower - m_phy->GetTxPowerStart()) /
+            ceil((reqTxPower.to<double>() - m_phy->GetTxPowerStart().to<double>()) /
                  step)); // better be slightly above so as to satisfy target UL RSSI
         if (powerLevel > numPowerLevels)
         {
@@ -1561,8 +1565,8 @@ HeFrameExchangeManager::GetHeTbTxVector(CtrlTriggerHeader trigger, Mac48Address 
     }
     if (reqTxPower > m_phy->GetPower(powerLevel))
     {
-        NS_LOG_WARN("The requested power level (" << reqTxPower << "dBm) cannot be satisfied (max: "
-                                                  << m_phy->GetTxPowerEnd() << "dBm)");
+        NS_LOG_WARN("The requested power level ("
+                    << reqTxPower << ") cannot be satisfied (max: " << m_phy->GetTxPowerEnd());
     }
     v.SetTxPowerLevel(powerLevel);
     NS_LOG_LOGIC("UL power control: input "
@@ -1576,7 +1580,7 @@ HeFrameExchangeManager::GetHeTbTxVector(CtrlTriggerHeader trigger, Mac48Address 
     return v;
 }
 
-std::optional<dBm_u>
+std::optional<dBm_t>
 HeFrameExchangeManager::GetMostRecentRssi(const Mac48Address& address) const
 {
     return GetWifiRemoteStationManager()->GetMostRecentRssi(address);
@@ -1589,7 +1593,7 @@ HeFrameExchangeManager::SetTargetRssi(CtrlTriggerHeader& trigger) const
     NS_ASSERT(m_apMac);
 
     trigger.SetApTxPower(static_cast<int8_t>(
-        m_phy->GetPower(GetWifiRemoteStationManager()->GetDefaultTxPowerLevel())));
+        m_phy->GetPower(GetWifiRemoteStationManager()->GetDefaultTxPowerLevel()).to<double>()));
     for (auto& userInfo : trigger)
     {
         const auto staList = m_apMac->GetStaList(m_linkId);
@@ -1604,8 +1608,8 @@ HeFrameExchangeManager::SetTargetRssi(CtrlTriggerHeader& trigger) const
             continue;
         }
 
-        NS_ASSERT(optRssi);
-        auto rssi = static_cast<int8_t>(*optRssi);
+        NS_ASSERT(optRssi.has_value());
+        auto rssi = static_cast<int8_t>(optRssi.value().to<double>());
         rssi = (rssi >= -20)
                    ? -20
                    : ((rssi <= -110) ? -110 : rssi); // cap so as to keep within [-110; -20] dBm

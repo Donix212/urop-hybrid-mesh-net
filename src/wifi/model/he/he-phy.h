@@ -14,6 +14,7 @@
 #include "he-ppdu.h"
 
 #include "ns3/callback.h"
+#include "ns3/units.h"
 #include "ns3/vht-phy.h"
 #include "ns3/wifi-phy-band.h"
 #include "ns3/wifi-types.h"
@@ -42,7 +43,7 @@ class ObssPdAlgorithm;
  */
 struct HeSigAParameters
 {
-    dBm_u rssi;       ///< RSSI
+    dBm_t rssi;       ///< RSSI
     uint8_t bssColor; ///< BSS color
 };
 
@@ -101,7 +102,7 @@ class HePhy : public VhtPhy
                              const WifiTxVector& txVector,
                              WifiPhyBand band) const override;
     void SwitchMaybeToCcaBusy(const Ptr<const WifiPpdu> ppdu) override;
-    dBm_u GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
+    dBm_t GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
                           WifiChannelListType channelType) const override;
     void NotifyCcaBusy(const Ptr<const WifiPpdu> ppdu,
                        Time duration,
@@ -474,7 +475,7 @@ class HePhy : public VhtPhy
     void DoAbortCurrentReception(WifiPhyRxfailureReason reason) override;
     uint64_t ObtainNextUid(const WifiTxVector& txVector) override;
     Time GetMaxDelayPpduSameUid(const WifiTxVector& txVector) override;
-    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_u txPower,
+    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_t txPower,
                                                  Ptr<const WifiPpdu> ppdu) const override;
     uint32_t GetMaxPsduSize() const override;
     WifiConstPsduMap GetWifiConstPsduMap(Ptr<const WifiPsdu> psdu,
@@ -580,7 +581,7 @@ class HePhy : public VhtPhy
      * @param flag flag indicating whether the PSD is for non-HE portion or HE portion
      * @return Pointer to SpectrumValue
      */
-    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_u txPower,
+    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_t txPower,
                                                  Ptr<const WifiPpdu> ppdu,
                                                  HePpdu::TxPsdFlag flag) const;
 
@@ -593,7 +594,7 @@ class HePhy : public VhtPhy
      * @param hePortionDuration the duration of the HE portion
      */
     void StartTxHePortion(Ptr<const WifiPpdu> ppdu,
-                          dBm_u txPower,
+                          dBm_t txPower,
                           Ptr<SpectrumValue> txPowerSpectrum,
                           Time hePortionDuration);
 

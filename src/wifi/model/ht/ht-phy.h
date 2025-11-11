@@ -11,6 +11,7 @@
 #define HT_PHY_H
 
 #include "ns3/ofdm-phy.h"
+#include "ns3/units.h"
 
 /**
  * @file
@@ -455,7 +456,7 @@ class HtPhy : public OfdmPhy
     PhyFieldRxStatus DoEndReceiveField(WifiPpduField field, Ptr<Event> event) override;
     bool IsAllConfigSupported(WifiPpduField field, Ptr<const WifiPpdu> ppdu) const override;
     bool IsConfigSupported(Ptr<const WifiPpdu> ppdu) const override;
-    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_u txPower,
+    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_t txPower,
                                                  Ptr<const WifiPpdu> ppdu) const override;
     uint32_t GetMaxPsduSize() const override;
     CcaIndication GetCcaIndication(const Ptr<const WifiPpdu> ppdu) override;

@@ -13,6 +13,7 @@
 #include "ns3/mac48-address.h"
 #include "ns3/object.h"
 #include "ns3/sta-wifi-mac.h"
+#include "ns3/units.h"
 #include "ns3/wifi-phy-operating-channel.h"
 
 #include <map>
@@ -680,7 +681,7 @@ class EmlsrManager : public Object
 
     std::map<uint8_t, MediumSyncDelayStatus>
         m_mediumSyncDelayStatus; //!< the status of MediumSyncDelay timers (link ID-indexed)
-    std::map<Ptr<WifiPhy>, dBm_u> m_prevCcaEdThreshold; //!< the CCA sensitivity threshold
+    std::map<Ptr<WifiPhy>, dBm_t> m_prevCcaEdThreshold; //!< the CCA sensitivity threshold
                                                         //!< to restore once the MediumSyncDelay
                                                         //!< timer expires or the PHY moves to a
                                                         //!< link on which the timer is not running

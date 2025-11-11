@@ -523,7 +523,7 @@ VhtPhy::GetMaxPsduSize() const
     return WIFI_PSDU_MAX_LENGTH_VHT;
 }
 
-dBm_u
+dBm_t
 VhtPhy::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu, WifiChannelListType channelType) const
 {
     if (ppdu)

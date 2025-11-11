@@ -18,6 +18,7 @@
 #include "ns3/mgt-action-headers.h"
 #include "ns3/spectrum-signal-parameters.h"
 #include "ns3/sta-wifi-mac.h"
+#include "ns3/units.h"
 #include "ns3/wifi-mac-queue.h"
 #include "ns3/wifi-net-device.h"
 #include "ns3/wifi-spectrum-phy-interface.h"
@@ -515,7 +516,7 @@ EhtFrameExchangeManager::GenerateInDeviceInterferenceForAll(const Time& txDurati
             phy != m_phy && (!id || m_staMac->IsEmlsrLink(*id)))
         {
             const auto txPower = phy->GetPower(txVector.GetTxPowerLevel()) + phy->GetTxGain();
-            GenerateInDeviceInterference(phy, txDuration, DbmToW(txPower));
+            GenerateInDeviceInterference(phy, txDuration, Watt_t{txPower});
         }
     }
 }
@@ -523,7 +524,7 @@ EhtFrameExchangeManager::GenerateInDeviceInterferenceForAll(const Time& txDurati
 void
 EhtFrameExchangeManager::GenerateInDeviceInterference(Ptr<WifiPhy> phy,
                                                       Time duration,
-                                                      Watt_u txPower)
+                                                      Watt_t txPower)
 {
     NS_LOG_FUNCTION(this << phy << duration.As(Time::US) << txPower);
 
@@ -549,7 +550,7 @@ EhtFrameExchangeManager::GenerateInDeviceInterference(Ptr<WifiPhy> phy,
         }
 
         auto psd = Create<SpectrumValue>(interface->GetRxSpectrumModel());
-        *psd = txPower;
+        *psd = txPower.to<double>();
 
         auto spectrumSignalParams = Create<SpectrumSignalParameters>();
         spectrumSignalParams->duration = duration;
@@ -779,7 +780,7 @@ EhtFrameExchangeManager::SendEmlOmn(const Mac48Address& dest, const MgtEmlOmn& f
     m_mac->GetQosTxop(AC_VO)->Queue(Create<WifiMpdu>(packet, hdr));
 }
 
-std::optional<dBm_u>
+std::optional<dBm_t>
 EhtFrameExchangeManager::GetMostRecentRssi(const Mac48Address& address) const
 {
     auto optRssi = HeFrameExchangeManager::GetMostRecentRssi(address);

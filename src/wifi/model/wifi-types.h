@@ -65,7 +65,14 @@ enum MpduType
     LAST_MPDU_IN_AGGREGATE
 };
 
-/// SignalNoiseDbm structure
+/// SignalNoise structure for internal model use
+struct SignalNoise
+{
+    dBm_t signal; ///< signal strength
+    dBm_t noise;  ///< noise power
+};
+
+/// SignalNoiseDbm structure for backward compatibility in WifiPhy traces
 struct SignalNoiseDbm
 {
     dBm_u signal; ///< signal strength

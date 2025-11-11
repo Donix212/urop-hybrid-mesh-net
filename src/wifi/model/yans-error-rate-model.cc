@@ -38,10 +38,10 @@ YansErrorRateModel::YansErrorRateModel()
 }
 
 double
-YansErrorRateModel::GetBpskBer(double snr, MHz_u signalSpread, uint64_t phyRate) const
+YansErrorRateModel::GetBpskBer(scalar_t snr, MHz_u signalSpread, uint64_t phyRate) const
 {
     NS_LOG_FUNCTION(this << snr << signalSpread << phyRate);
-    double EbNo = snr * signalSpread * 1e6 / phyRate;
+    double EbNo = snr.to<double>() * signalSpread * 1e6 / phyRate;
     double z = std::sqrt(EbNo);
     double ber = 0.5 * erfc(z);
     NS_LOG_INFO("bpsk snr=" << snr << " ber=" << ber);
@@ -49,13 +49,13 @@ YansErrorRateModel::GetBpskBer(double snr, MHz_u signalSpread, uint64_t phyRate)
 }
 
 double
-YansErrorRateModel::GetQamBer(double snr,
+YansErrorRateModel::GetQamBer(scalar_t snr,
                               unsigned int m,
                               MHz_u signalSpread,
                               uint64_t phyRate) const
 {
     NS_LOG_FUNCTION(this << snr << m << signalSpread << phyRate);
-    double EbNo = snr * signalSpread * 1e6 / phyRate;
+    double EbNo = snr.to<double>() * signalSpread * 1e6 / phyRate;
     double z = std::sqrt((1.5 * log2(m) * EbNo) / (m - 1.0));
     double z1 = ((1.0 - 1.0 / std::sqrt(m)) * erfc(z));
     double z2 = 1 - std::pow((1 - z1), 2);
@@ -134,7 +134,7 @@ YansErrorRateModel::CalculatePd(double ber, unsigned int d) const
 }
 
 double
-YansErrorRateModel::GetFecBpskBer(double snr,
+YansErrorRateModel::GetFecBpskBer(scalar_t snr,
                                   uint64_t nbits,
                                   MHz_u signalSpread,
                                   uint64_t phyRate,
@@ -155,7 +155,7 @@ YansErrorRateModel::GetFecBpskBer(double snr,
 }
 
 double
-YansErrorRateModel::GetFecQamBer(double snr,
+YansErrorRateModel::GetFecQamBer(scalar_t snr,
                                  uint64_t nbits,
                                  MHz_u signalSpread,
                                  uint64_t phyRate,
@@ -185,7 +185,7 @@ YansErrorRateModel::GetFecQamBer(double snr,
 double
 YansErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
                                           const WifiTxVector& txVector,
-                                          double snr,
+                                          scalar_t snr,
                                           uint64_t nbits,
                                           uint8_t numRxAntennas,
                                           WifiPpduField field,

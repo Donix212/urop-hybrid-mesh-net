@@ -15,8 +15,10 @@
 #include "wifi-standards.h"
 #include "wifi-types.h"
 
+#include "ns3/db.h"
 #include "ns3/fatal-error.h"
 #include "ns3/ptr.h"
+#include "ns3/units.h"
 
 #include <ostream>
 #include <set>
@@ -720,12 +722,12 @@ bool IsEht(WifiPreamble preamble);
 /**
  * @brief map a given channel list type to the corresponding scaling factor
  */
-const std::map<WifiChannelListType, dBm_u> channelTypeToScalingFactor{
-    {WIFI_CHANLIST_PRIMARY, 0.0},
-    {WIFI_CHANLIST_SECONDARY, 0.0},
-    {WIFI_CHANLIST_SECONDARY40, 3.0},
-    {WIFI_CHANLIST_SECONDARY80, 6.0},
-    {WIFI_CHANLIST_SECONDARY160, 12.0},
+const std::map<WifiChannelListType, dB_t> channelTypeToScalingFactor{
+    {WIFI_CHANLIST_PRIMARY, dB_t{0.0}},
+    {WIFI_CHANLIST_SECONDARY, dB_t{0.0}},
+    {WIFI_CHANLIST_SECONDARY40, dB_t{3.0}},
+    {WIFI_CHANLIST_SECONDARY80, dB_t{6.0}},
+    {WIFI_CHANLIST_SECONDARY160, dB_t{12.0}},
 };
 
 /**
@@ -733,8 +735,8 @@ const std::map<WifiChannelListType, dBm_u> channelTypeToScalingFactor{
  */
 struct SnrPer
 {
-    double snr{0.0}; ///< SNR in linear scale
-    double per{1.0}; ///< PER
+    scalar_t snr{0.0}; ///< SNR in linear scale
+    double per{1.0};   ///< PER
 
     /**
      * Default constructor.
@@ -749,7 +751,7 @@ struct SnrPer
      * @param s the SNR in linear scale
      * @param p the PER
      */
-    SnrPer(double s, double p)
+    SnrPer(scalar_t s, double p)
         : snr(s),
           per(p)
     {
