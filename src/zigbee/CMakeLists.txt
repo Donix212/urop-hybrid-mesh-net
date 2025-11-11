@@ -2,7 +2,6 @@ build_lib(
   LIBNAME zigbee
   SOURCE_FILES
     helper/zigbee-helper.cc
-    helper/zigbee-stack-container.cc
     model/zigbee-aps-header.cc
     model/zigbee-aps-tables.cc
     model/zigbee-aps.cc
