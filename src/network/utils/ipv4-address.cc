@@ -136,24 +136,10 @@ Ipv4Mask::GetPrefixLength() const
     return tmp;
 }
 
-/**
- *  Value of a not-yet-initialized IPv4 address, corresponding to 102.102.102.102.
- *  This is totally arbitrary.
- */
-static constexpr uint32_t UNINITIALIZED = 0x66666666U;
-
-Ipv4Address::Ipv4Address()
-    : m_address(UNINITIALIZED),
-      m_initialized(false)
-{
-    NS_LOG_FUNCTION(this);
-}
-
 Ipv4Address::Ipv4Address(uint32_t address)
 {
     NS_LOG_FUNCTION(this << address);
     m_address = address;
-    m_initialized = true;
 }
 
 Ipv4Address::Ipv4Address(const char* address)
@@ -162,13 +148,25 @@ Ipv4Address::Ipv4Address(const char* address)
 
     if (inet_pton(AF_INET, address, &m_address) <= 0)
     {
-        NS_LOG_LOGIC("Error, can not build an IPv4 address from an invalid string: " << address);
-        m_address = 0;
-        m_initialized = false;
+        NS_ABORT_MSG("Error, can not build an IPv4 address from an invalid string: " << address);
         return;
     }
-    m_initialized = true;
     m_address = ntohl(m_address);
+}
+
+bool
+Ipv4Address::CheckCompatible(const std::string& addressStr)
+{
+    NS_LOG_FUNCTION(addressStr);
+
+    uint32_t buffer;
+
+    if (inet_pton(AF_INET, addressStr.c_str(), &buffer) <= 0)
+    {
+        NS_LOG_WARN("Error, can not build an IPv4 address from an invalid string: " << addressStr);
+        return false;
+    }
+    return true;
 }
 
 uint32_t
@@ -183,7 +181,6 @@ Ipv4Address::Set(uint32_t address)
 {
     NS_LOG_FUNCTION(this << address);
     m_address = address;
-    m_initialized = true;
 }
 
 void
@@ -192,12 +189,9 @@ Ipv4Address::Set(const char* address)
     NS_LOG_FUNCTION(this << address);
     if (inet_pton(AF_INET, address, &m_address) <= 0)
     {
-        NS_LOG_LOGIC("Error, can not build an IPv4 address from an invalid string: " << address);
-        m_address = 0;
-        m_initialized = false;
+        NS_ABORT_MSG("Error, can not build an IPv4 address from an invalid string: " << address);
         return;
     }
-    m_initialized = true;
     m_address = ntohl(m_address);
 }
 
@@ -237,7 +231,7 @@ bool
 Ipv4Address::IsInitialized() const
 {
     NS_LOG_FUNCTION(this);
-    return m_initialized;
+    return true;
 }
 
 bool
@@ -311,7 +305,6 @@ Ipv4Address::Deserialize(const uint8_t buf[4])
     ipv4.m_address |= buf[2];
     ipv4.m_address <<= 8;
     ipv4.m_address |= buf[3];
-    ipv4.m_initialized = true;
 
     return ipv4;
 }
