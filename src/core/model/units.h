@@ -108,6 +108,80 @@ constexpr inline void operator+(const power::dBm_t& lhs, const power::dBW_t& rhs
 /// Deleted operator+ for dBW_t + dBm_t (not physically meaningful)
 constexpr inline void operator+(const power::dBW_t& lhs, const power::dBm_t& rhs) noexcept = delete;
 
+/// Add dB_t (relative power) to dBm_t (absolute power) → dBm_t
+constexpr inline power::dBm_t
+operator+(const power::dBm_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    return power::dBm_t(lhs() + rhs());
+}
+
+/// Add dB_t (relative power) to dBm_t (absolute power) → dBm_t (reversed operands)
+constexpr inline power::dBm_t
+operator+(const dimensionless::dB_t& lhs, const power::dBm_t& rhs) noexcept
+{
+    return power::dBm_t(lhs() + rhs());
+}
+
+/// Add dB_t (relative power) to dBW_t (absolute power) → dBW_t
+constexpr inline power::dBW_t
+operator+(const power::dBW_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    return power::dBW_t(lhs() + rhs());
+}
+
+/// Add dB_t (relative power) to dBW_t (absolute power) → dBW_t (reversed operands)
+constexpr inline power::dBW_t
+operator+(const dimensionless::dB_t& lhs, const power::dBW_t& rhs) noexcept
+{
+    return power::dBW_t(lhs() + rhs());
+}
+
+/// Subtract dB_t (relative power) from dBm_t (absolute power) → dBm_t
+constexpr inline power::dBm_t
+operator-(const power::dBm_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    return power::dBm_t(lhs() - rhs());
+}
+
+/// Subtract dB_t (relative power) from dBW_t (absolute power) → dBW_t
+constexpr inline power::dBW_t
+operator-(const power::dBW_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    return power::dBW_t(lhs() - rhs());
+}
+
+/// Add-assign dB_t (relative power) to dBm_t (absolute power) → dBm_t
+constexpr inline power::dBm_t&
+operator+=(power::dBm_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    lhs = lhs + rhs;
+    return lhs;
+}
+
+/// Subtract-assign dB_t (relative power) from dBm_t (absolute power) → dBm_t
+constexpr inline power::dBm_t&
+operator-=(power::dBm_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    lhs = lhs - rhs;
+    return lhs;
+}
+
+/// Add-assign dB_t (relative power) to dBW_t (absolute power) → dBW_t
+constexpr inline power::dBW_t&
+operator+=(power::dBW_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    lhs = lhs + rhs;
+    return lhs;
+}
+
+/// Subtract-assign dB_t (relative power) from dBW_t (absolute power) → dBW_t
+constexpr inline power::dBW_t&
+operator-=(power::dBW_t& lhs, const dimensionless::dB_t& rhs) noexcept
+{
+    lhs = lhs - rhs;
+    return lhs;
+}
+
 } // namespace units
 
 namespace ns3
