@@ -415,6 +415,88 @@ operator>>(std::istream& is, units::power::milliwatt_t& milliwatt)
     return is;
 }
 
+/**
+ * @brief Stream extraction operator for units::frequency::megahertz_t
+ *
+ * Accepts two formats:
+ * - With unit suffix: "2400.0_MHz"
+ * - Without unit suffix: "2400.0" (assumes megahertz)
+ *
+ * @param [in,out] is The stream
+ * @param [out] megahertz the output value
+ * @return The stream
+ */
+inline std::istream&
+operator>>(std::istream& is, units::frequency::megahertz_t& megahertz)
+{
+    std::string value;
+    is >> value;
+    std::string number;
+    const auto pos = value.find('_');
+
+    if (pos == std::string::npos)
+    {
+        // No underscore found - assume plain number without unit suffix
+        number = value;
+    }
+    else
+    {
+        // Underscore found - validate unit suffix
+        auto unit = value.substr(pos + 1);
+        if (unit != "MHz")
+        {
+            // Invalid unit suffix
+            is.setstate(std::ios_base::failbit);
+            return is;
+        }
+        number = value.substr(0, pos);
+    }
+
+    megahertz = units::frequency::megahertz_t(std::strtod(number.c_str(), nullptr));
+    return is;
+}
+
+/**
+ * @brief Stream extraction operator for units::power::dBm_per_MHz_t
+ *
+ * Accepts two formats:
+ * - With unit suffix: "30.0_dBm_per_MHz"
+ * - Without unit suffix: "30.0" (assumes dBm_per_MHz)
+ *
+ * @param [in,out] is The stream
+ * @param [out] dBmPerMhz the output value
+ * @return The stream
+ */
+inline std::istream&
+operator>>(std::istream& is, units::power::dBm_per_MHz_t& dBmPerMhz)
+{
+    std::string value;
+    is >> value;
+    std::string number;
+    const auto pos = value.find('_');
+
+    if (pos == std::string::npos)
+    {
+        // No underscore found - assume plain number without unit suffix
+        number = value;
+    }
+    else
+    {
+        // Underscore found - validate unit suffix
+        auto unit = value.substr(pos + 1);
+        if (unit != "dBm_per_MHz")
+        {
+            // Invalid unit suffix
+            is.setstate(std::ios_base::failbit);
+            return is;
+        }
+        number = value.substr(0, pos);
+    }
+
+    dBmPerMhz = units::power::dBm_per_MHz_t(std::strtod(number.c_str(), nullptr));
+    return is;
+}
+
 } // namespace ns3
 
 #endif // NS3_UNITS_H

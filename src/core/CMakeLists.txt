@@ -175,6 +175,8 @@ set(source_files
     model/config.cc
     model/db.cc
     model/dbm.cc
+    model/dbm-per-mhz.cc
+    model/mhz.cc
     model/callback.cc
     model/names.cc
     model/vector.cc
@@ -226,6 +228,8 @@ set(header_files
     model/config.h
     model/db.h
     model/dbm.h
+    model/dbm-per-mhz.h
+    model/mhz.h
     model/default-deleter.h
     model/default-simulator-impl.h
     model/demangle.h
