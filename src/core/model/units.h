@@ -86,6 +86,22 @@ operator*(const FrequencyType& lhs, const power::dBm_per_MHz_t& rhs) noexcept
     return rhs * lhs;
 }
 
+/// Division of dBm by frequency to yield dBm_per_MHz
+template <
+    class FrequencyType,
+    std::enable_if_t<traits::is_convertible_unit_t<FrequencyType, frequency::megahertz_t>::value,
+                     int> = 0>
+constexpr inline power::dBm_per_MHz_t
+operator/(const power::dBm_t& lhs, const FrequencyType& rhs) noexcept
+{
+    using underlying_type =
+        typename units::traits::unit_t_traits<power::dBm_per_MHz_t>::underlying_type;
+    auto linear_lhs = lhs.template toLinearized<underlying_type>();
+    auto freq_mhz = convert<typename units::traits::unit_t_traits<FrequencyType>::unit_type,
+                            frequency::megahertz>(rhs());
+    return power::dBm_per_MHz_t(linear_lhs / freq_mhz, std::true_type());
+}
+
 // Disable addition operator for dBm_t and dBW_t types.  Adding two power levels in
 // logarithmic scale is not meaningful for ns-3 (power-squared) and is likely a bug.
 // The nholthaus library's operator+ for dBm_t and dBW_t types produces a squared unit
@@ -495,6 +511,30 @@ operator>>(std::istream& is, units::power::dBm_per_MHz_t& dBmPerMhz)
 
     dBmPerMhz = units::power::dBm_per_MHz_t(std::strtod(number.c_str(), nullptr));
     return is;
+}
+
+/**
+ * User-defined literal operator for MHz_t (megahertz strong type)
+ *
+ * @param value the numeric value
+ * @return the corresponding MHz_t value
+ */
+inline constexpr MHz_t
+operator""_MHz(long double value) noexcept
+{
+    return MHz_t(value);
+}
+
+/**
+ * User-defined literal operator for MHz_t (megahertz strong type)
+ *
+ * @param value the numeric value
+ * @return the corresponding MHz_t value
+ */
+inline constexpr MHz_t
+operator""_MHz(unsigned long long value) noexcept
+{
+    return MHz_t(static_cast<double>(value));
 }
 
 } // namespace ns3
