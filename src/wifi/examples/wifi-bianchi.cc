@@ -20,6 +20,7 @@
 #include "ns3/boolean.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/dbm.h"
 #include "ns3/double.h"
 #include "ns3/gnuplot.h"
 #include "ns3/integer.h"
