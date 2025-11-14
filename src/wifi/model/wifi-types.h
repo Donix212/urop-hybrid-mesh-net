@@ -129,7 +129,7 @@ struct WifiChannelConfig
     struct Segment
     {
         uint8_t number{};                            ///< channel number
-        MHz_u width{};                               ///< channel width
+        MHz_t width{};                               ///< channel width
         WifiPhyBand band{WIFI_PHY_BAND_UNSPECIFIED}; ///< PHY band
         uint8_t p20Index{};                          ///< primary20 index
 
@@ -141,7 +141,7 @@ struct WifiChannelConfig
          * @param b the PHY band
          * @param i the primary20 index
          */
-        Segment(uint8_t n, MHz_u w, WifiPhyBand b, uint8_t i)
+        Segment(uint8_t n, MHz_t w, WifiPhyBand b, uint8_t i)
             : number(n),
               width(w),
               band(b),
@@ -156,19 +156,11 @@ struct WifiChannelConfig
          */
         Segment(const SegmentWithoutUnits& s)
             : number(s.number),
-              width(MHz_u{s.width}),
+              width(MHz_t{s.width}),
               band(s.band),
               p20Index(s.p20Index)
         {
         }
-
-        /**
-         * Three-way comparison operator
-         *
-         * @param rhs right hand side
-         * @return deduced comparison type
-         */
-        auto operator<=>(const Segment& rhs) const = default;
     };
 
     std::vector<Segment> segments; ///< channel config
@@ -232,12 +224,29 @@ struct WifiChannelConfig
     }
 
     /**
-     * Three-way comparison operator
+     * Equality comparison operator
      *
-     * @param rhs right hand side
-     * @return deduced comparison type
+     * @param other the other WifiChannelConfig to compare with
+     * @return true if both configs have identical segments
      */
-    auto operator<=>(const WifiChannelConfig& rhs) const = default;
+    bool operator==(const WifiChannelConfig& other) const
+    {
+        if (segments.size() != other.segments.size())
+        {
+            return false;
+        }
+        for (std::size_t i = 0; i < segments.size(); ++i)
+        {
+            const auto& s1 = segments[i];
+            const auto& s2 = other.segments[i];
+            if (s1.number != s2.number || s1.width != s2.width || s1.band != s2.band ||
+                s1.p20Index != s2.p20Index)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 /**
@@ -305,7 +314,7 @@ using SubcarrierRange = std::pair<int16_t, int16_t>;
 using SubcarrierGroup = std::vector<SubcarrierRange>;
 
 /// (bandwidth, number of tones) pair
-using BwTonesPair = std::pair<MHz_u, RuType>;
+using BwTonesPair = std::pair<MHz_t, RuType>;
 
 /// map (bandwidth, number of tones) pairs to the group of subcarrier ranges
 using SubcarrierGroups = std::map<BwTonesPair, std::vector<SubcarrierGroup>>;

@@ -42,7 +42,7 @@ class PreambleDetectionModel : public Object
      * @return true if the preamble has been detected,
      *         false otherwise
      */
-    virtual bool IsPreambleDetected(dBm_t rssi, scalar_t snr, MHz_u channelWidth) const = 0;
+    virtual bool IsPreambleDetected(dBm_t rssi, scalar_t snr, MHz_t channelWidth) const = 0;
 };
 
 } // namespace ns3

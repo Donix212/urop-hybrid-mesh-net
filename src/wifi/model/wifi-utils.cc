@@ -76,7 +76,7 @@ GetBlockAckRequestSize(BlockAckReqType type)
 }
 
 uint32_t
-GetMuBarSize(TriggerFrameVariant variant, MHz_u bw, const std::list<BlockAckReqType>& types)
+GetMuBarSize(TriggerFrameVariant variant, MHz_t bw, const std::list<BlockAckReqType>& types)
 {
     WifiMacHeader hdr;
     hdr.SetType(WIFI_MAC_CTL_TRIGGER);

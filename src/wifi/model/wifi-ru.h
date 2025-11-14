@@ -37,7 +37,7 @@ class WifiRu
          * @param channelWidth the channel width
          * @param p20Index the index of the primary20 channel
          */
-        RuSpecCompare(MHz_u channelWidth, uint8_t p20Index);
+        RuSpecCompare(MHz_t channelWidth, uint8_t p20Index);
         /**
          * Function call operator.
          *
@@ -50,7 +50,7 @@ class WifiRu
         bool operator()(const RuSpec& lhs, const RuSpec& rhs) const;
 
       private:
-        MHz_u m_channelWidth; ///< The channel width
+        MHz_t m_channelWidth; ///< The channel width
         uint8_t m_p20Index;   ///< Primary20 channel index
     };
 
@@ -78,7 +78,7 @@ class WifiRu
      * @param p20Index the index of the primary20 channel
      * @return the RU PHY index
      */
-    static std::size_t GetPhyIndex(RuSpec ru, MHz_u bw, uint8_t p20Index);
+    static std::size_t GetPhyIndex(RuSpec ru, MHz_t bw, uint8_t p20Index);
 
     /**
      * Get the approximate bandwidth occupied by a RU.
@@ -86,7 +86,7 @@ class WifiRu
      * @param ruType the RU type
      * @return the approximate bandwidth occupied by the RU
      */
-    static MHz_u GetBandwidth(RuType ruType);
+    static MHz_t GetBandwidth(RuType ruType);
 
     /**
      * Get the RU corresponding to the approximate bandwidth.
@@ -94,7 +94,7 @@ class WifiRu
      * @param bandwidth the approximate bandwidth occupied by the RU
      * @return the RU type
      */
-    static RuType GetRuType(MHz_u bandwidth);
+    static RuType GetRuType(MHz_t bandwidth);
 
     /**
      * Get the number of distinct RUs of the given type (number of tones)
@@ -105,7 +105,7 @@ class WifiRu
      * @param mc the modulation class of the PPDU
      * @return the number of distinct RUs available
      */
-    static std::size_t GetNRus(MHz_u bw, RuType ruType, WifiModulationClass mc);
+    static std::size_t GetNRus(MHz_t bw, RuType ruType, WifiModulationClass mc);
 
     /**
      * Get the subcarrier group of the RU having the given PHY index among all the
@@ -119,7 +119,7 @@ class WifiRu
      * @param mc the modulation class of the PPDU
      * @return the subcarrier range of the specified RU
      */
-    static SubcarrierGroup GetSubcarrierGroup(MHz_u bw,
+    static SubcarrierGroup GetSubcarrierGroup(MHz_t bw,
                                               RuType ruType,
                                               std::size_t phyIndex,
                                               WifiModulationClass mc);
@@ -157,7 +157,7 @@ class WifiRu
      * @param mc the modulation class of the PPDU
      * @return the set of distinct RUs available
      */
-    static std::vector<RuSpec> GetRusOfType(MHz_u bw, RuType ruType, WifiModulationClass mc);
+    static std::vector<RuSpec> GetRusOfType(MHz_t bw, RuType ruType, WifiModulationClass mc);
 
     /**
      * Get the set of 26-tone RUs that can be additionally allocated if the given
@@ -168,7 +168,7 @@ class WifiRu
      * @param mc the modulation class of the PPDU
      * @return the set of 26-tone RUs that can be additionally allocated
      */
-    static std::vector<RuSpec> GetCentral26TonesRus(MHz_u bw,
+    static std::vector<RuSpec> GetCentral26TonesRus(MHz_t bw,
                                                     RuType ruType,
                                                     WifiModulationClass mc);
 
@@ -180,7 +180,7 @@ class WifiRu
      * @param v the given set of RUs
      * @return true if the given RU overlaps with the given set of RUs.
      */
-    static bool DoesOverlap(MHz_u bw, RuSpec ru, const std::vector<RuSpec>& v);
+    static bool DoesOverlap(MHz_t bw, RuSpec ru, const std::vector<RuSpec>& v);
 
     /**
      * Given the channel bandwidth and the number of stations candidate for being
@@ -196,7 +196,7 @@ class WifiRu
      * @param mc the modulation class of the PPDU
      * @return the RU type
      */
-    static RuType GetEqualSizedRusForStations(MHz_u bandwidth,
+    static RuType GetEqualSizedRusForStations(MHz_t bandwidth,
                                               std::size_t& nStations,
                                               std::size_t& nCentral26TonesRus,
                                               WifiModulationClass mc);
@@ -210,7 +210,7 @@ class WifiRu
      * @param searchedRuType the searched RU type
      * @return the searched RU allocation.
      */
-    static RuSpec FindOverlappingRu(MHz_u bw, RuSpec referenceRu, RuType searchedRuType);
+    static RuSpec FindOverlappingRu(MHz_t bw, RuSpec referenceRu, RuType searchedRuType);
 
     /**
      * Get whether a given RU variant is a HE RU

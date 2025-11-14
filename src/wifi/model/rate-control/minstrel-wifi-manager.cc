@@ -375,9 +375,9 @@ MinstrelWifiManager::GetDataTxVector(MinstrelWifiRemoteStation* station)
 {
     NS_LOG_FUNCTION(this << station);
     auto channelWidth = GetChannelWidth(station);
-    if (channelWidth > MHz_u{20} && channelWidth != MHz_u{22})
+    if (channelWidth > MHz_t{20} && channelWidth != MHz_t{22})
     {
-        channelWidth = MHz_u{20};
+        channelWidth = MHz_t{20};
     }
     if (!station->m_initialized)
     {
@@ -408,9 +408,9 @@ MinstrelWifiManager::GetRtsTxVector(MinstrelWifiRemoteStation* station)
     NS_LOG_FUNCTION(this << station);
     NS_LOG_DEBUG("DoGetRtsMode m_txrate=" << station->m_txrate);
     auto channelWidth = GetChannelWidth(station);
-    if (channelWidth > MHz_u{20} && channelWidth != MHz_u{22})
+    if (channelWidth > MHz_t{20} && channelWidth != MHz_t{22})
     {
-        channelWidth = MHz_u{20};
+        channelWidth = MHz_t{20};
     }
     WifiMode mode;
     if (!GetUseNonErpProtection())
@@ -807,7 +807,7 @@ MinstrelWifiManager::DoReportDataOk(WifiRemoteStation* st,
                                     double ackSnr,
                                     WifiMode ackMode,
                                     double dataSnr,
-                                    MHz_u dataChannelWidth,
+                                    MHz_t dataChannelWidth,
                                     uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode << dataSnr << dataChannelWidth << +dataNss);
@@ -921,7 +921,7 @@ MinstrelWifiManager::UpdateRetry(MinstrelWifiRemoteStation* station)
 }
 
 WifiTxVector
-MinstrelWifiManager::DoGetDataTxVector(WifiRemoteStation* st, MHz_u allowedWidth)
+MinstrelWifiManager::DoGetDataTxVector(WifiRemoteStation* st, MHz_t allowedWidth)
 {
     NS_LOG_FUNCTION(this << st << allowedWidth);
     auto station = static_cast<MinstrelWifiRemoteStation*>(st);

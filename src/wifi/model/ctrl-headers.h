@@ -15,6 +15,7 @@
 
 #include "ns3/header.h"
 #include "ns3/mac48-address.h"
+#include "ns3/units.h"
 
 #include <list>
 #include <optional>
@@ -977,7 +978,7 @@ class CtrlTriggerSpecialUserInfoField
      *
      * @param bw bandwidth (allowed values: 20 MHz, 40 MHz, 80 MHz, 160 MHz, 320 MHz)
      */
-    void SetUlBwExt(MHz_u bw);
+    void SetUlBwExt(MHz_t bw);
 
     /**
      * Get the UL Bandwidth Extension subfield value of the solicited EHT TB PPDU.
@@ -1222,13 +1223,13 @@ class CtrlTriggerHeader : public Header
      *
      * @param bw bandwidth (allowed values: 20, 40, 80, 160, 320)
      */
-    void SetUlBandwidth(MHz_u bw);
+    void SetUlBandwidth(MHz_t bw);
     /**
      * Get the bandwidth of the solicited HE/EHT TB PPDU.
      *
      * @return the bandwidth (20, 40, 80, 160 or 320)
      */
-    MHz_u GetUlBandwidth() const;
+    MHz_t GetUlBandwidth() const;
     /**
      * Set the GI And LTF Type subfield of the Common Info field.
      * Allowed combinations are:

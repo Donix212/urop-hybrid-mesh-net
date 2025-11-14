@@ -45,7 +45,7 @@ class Time;
 /**
  * typedef for a pair of start and stop frequencies to represent a band
  */
-using WifiSpectrumBandFrequencies = std::pair<Hz_u, Hz_u>;
+using WifiSpectrumBandFrequencies = std::pair<Hz_t, Hz_t>;
 
 /// WifiSpectrumBandInfo structure containing info about a spectrum band
 struct WifiSpectrumBandInfo
@@ -693,7 +693,7 @@ WifiModulationClass GetModulationClassForStandard(WifiStandard standard);
  * @param band the PHY band
  * @return the supported channel width set that can be advertised for the given standard and band
  */
-std::set<MHz_u> GetSupportedChannelWidthSet(WifiStandard standard, WifiPhyBand band);
+std::set<MHz_t> GetSupportedChannelWidthSet(WifiStandard standard, WifiPhyBand band);
 
 /**
  * Get the maximum channel width allowed for the given modulation class.
@@ -701,7 +701,7 @@ std::set<MHz_u> GetSupportedChannelWidthSet(WifiStandard standard, WifiPhyBand b
  * @param modulation the modulation class
  * @return the maximum channel width allowed for the given modulation class
  */
-MHz_u GetMaximumChannelWidth(WifiModulationClass modulation);
+MHz_t GetMaximumChannelWidth(WifiModulationClass modulation);
 
 /**
  * Get the total channel width for the channel width type.
@@ -709,7 +709,7 @@ MHz_u GetMaximumChannelWidth(WifiModulationClass modulation);
  * @param width the channel width type
  * @return the total channel width for the channel width type
  */
-MHz_u GetChannelWidthInMhz(WifiChannelWidthType width);
+MHz_t GetChannelWidthInMhz(WifiChannelWidthType width);
 
 /**
  * Return true if a preamble corresponds to an EHT transmission.

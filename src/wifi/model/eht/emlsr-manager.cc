@@ -16,6 +16,7 @@
 #include "ns3/attribute-container.h"
 #include "ns3/log.h"
 #include "ns3/mgt-action-headers.h"
+#include "ns3/mhz.h"
 #include "ns3/wifi-mpdu.h"
 #include "ns3/wifi-net-device.h"
 #include "ns3/wifi-phy-state-helper.h"
@@ -58,12 +59,12 @@ EmlsrManager::GetTypeId()
                 MakeUintegerAccessor(&EmlsrManager::SetMainPhyId, &EmlsrManager::GetMainPhyId),
                 MakeUintegerChecker<uint8_t>())
             .AddAttribute("AuxPhyChannelWidth",
-                          "The maximum channel width (MHz) supported by Aux PHYs.",
+                          "The maximum channel width supported by Aux PHYs.",
                           TypeId::ATTR_GET |
                               TypeId::ATTR_CONSTRUCT, // prevent setting after construction
-                          UintegerValue(20),
-                          MakeUintegerAccessor(&EmlsrManager::m_auxPhyMaxWidth),
-                          MakeUintegerChecker<MHz_u>(20, 320))
+                          MhzValue(20_MHz),
+                          MakeMhzAccessor(&EmlsrManager::m_auxPhyMaxWidth),
+                          MakeMhzChecker(20_MHz, 320_MHz))
             .AddAttribute("AuxPhyMaxModClass",
                           "The maximum modulation class supported by Aux PHYs. Use "
                           "WIFI_MOD_CLASS_OFDM for non-HT.",
@@ -1364,7 +1365,7 @@ EmlsrManager::ComputeOperatingChannels()
                       "Primary" << m_auxPhyMaxWidth << " channel not found");
         m_auxPhyChannels.emplace(linkId, chIt);
         // find the P20 index for the channel used by the aux PHYs
-        auto p20Index = channel.GetPrimaryChannelIndex(MHz_u{20});
+        auto p20Index = channel.GetPrimaryChannelIndex(MHz_t{20});
         while (mainPhyChWidth > m_auxPhyMaxWidth)
         {
             mainPhyChWidth /= 2;

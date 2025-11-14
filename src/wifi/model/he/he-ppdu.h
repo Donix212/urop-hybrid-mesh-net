@@ -12,6 +12,7 @@
 #define HE_PPDU_H
 
 #include "ns3/ofdm-ppdu.h"
+#include "ns3/units.h"
 
 #include <variant>
 
@@ -149,7 +150,7 @@ class HePpdu : public OfdmPpdu
     Ptr<WifiPpdu> Copy() const override;
     WifiPpduType GetType() const override;
     uint16_t GetStaId() const override;
-    MHz_u GetTxChannelWidth() const override;
+    MHz_t GetTxChannelWidth() const override;
 
     /**
      * Get the payload of the PPDU.
@@ -197,7 +198,7 @@ class HePpdu : public OfdmPpdu
      * @return a pair containing the number of RUs in each HE-SIG-B content channel (resp. 1 and 2)
      */
     static std::pair<std::size_t, std::size_t> GetNumRusPerHeSigBContentChannel(
-        MHz_u channelWidth,
+        MHz_t channelWidth,
         WifiModulationClass mc,
         const RuAllocation& ruAllocation,
         std::optional<Center26ToneRuIndication> center26ToneRuIndication,
@@ -226,7 +227,7 @@ class HePpdu : public OfdmPpdu
      * @return field size in bytes
      */
     static uint32_t GetSigBFieldSize(
-        MHz_u channelWidth,
+        MHz_t channelWidth,
         WifiModulationClass mc,
         const RuAllocation& ruAllocation,
         std::optional<Center26ToneRuIndication> center26ToneRuIndication,
@@ -277,7 +278,7 @@ class HePpdu : public OfdmPpdu
      * @return the value used to encode the bandwidth field in HE-SIG-A
      */
     virtual WifiRu::RuSpec GetRuSpec(std::size_t ruAllocIndex,
-                                     MHz_u bw,
+                                     MHz_t bw,
                                      RuType ruType,
                                      std::size_t phyIndex) const;
 
@@ -287,7 +288,7 @@ class HePpdu : public OfdmPpdu
      * @param channelWidth the channel width in MHz
      * @return the value used to encode the bandwidth field in HE-SIG-A
      */
-    static uint8_t GetChannelWidthEncodingFromMhz(MHz_u channelWidth);
+    static uint8_t GetChannelWidthEncodingFromMhz(MHz_t channelWidth);
 
     /**
      * Convert number of spatial streams to NSTS field encoding in HE-SIG-A.
@@ -320,7 +321,7 @@ class HePpdu : public OfdmPpdu
      * @param bandwidth the value of the bandwidth field in HE-SIG-A
      * @return the channel width in MHz
      */
-    static MHz_u GetChannelWidthMhzFromEncoding(uint8_t bandwidth);
+    static MHz_t GetChannelWidthMhzFromEncoding(uint8_t bandwidth);
 
     /**
      * Convert guard interval from its encoding in HE-SIG-A.

@@ -38,10 +38,10 @@ YansErrorRateModel::YansErrorRateModel()
 }
 
 double
-YansErrorRateModel::GetBpskBer(scalar_t snr, MHz_u signalSpread, uint64_t phyRate) const
+YansErrorRateModel::GetBpskBer(scalar_t snr, MHz_t signalSpread, uint64_t phyRate) const
 {
     NS_LOG_FUNCTION(this << snr << signalSpread << phyRate);
-    double EbNo = snr.to<double>() * signalSpread * 1e6 / phyRate;
+    double EbNo = snr.to<double>() * Hz_t{signalSpread}.to<double>() / phyRate;
     double z = std::sqrt(EbNo);
     double ber = 0.5 * erfc(z);
     NS_LOG_INFO("bpsk snr=" << snr << " ber=" << ber);
@@ -51,11 +51,11 @@ YansErrorRateModel::GetBpskBer(scalar_t snr, MHz_u signalSpread, uint64_t phyRat
 double
 YansErrorRateModel::GetQamBer(scalar_t snr,
                               unsigned int m,
-                              MHz_u signalSpread,
+                              MHz_t signalSpread,
                               uint64_t phyRate) const
 {
     NS_LOG_FUNCTION(this << snr << m << signalSpread << phyRate);
-    double EbNo = snr.to<double>() * signalSpread * 1e6 / phyRate;
+    double EbNo = snr.to<double>() * Hz_t{signalSpread}.to<double>() / phyRate;
     double z = std::sqrt((1.5 * log2(m) * EbNo) / (m - 1.0));
     double z1 = ((1.0 - 1.0 / std::sqrt(m)) * erfc(z));
     double z2 = 1 - std::pow((1 - z1), 2);
@@ -136,7 +136,7 @@ YansErrorRateModel::CalculatePd(double ber, unsigned int d) const
 double
 YansErrorRateModel::GetFecBpskBer(scalar_t snr,
                                   uint64_t nbits,
-                                  MHz_u signalSpread,
+                                  MHz_t signalSpread,
                                   uint64_t phyRate,
                                   uint32_t dFree,
                                   uint32_t adFree) const
@@ -157,7 +157,7 @@ YansErrorRateModel::GetFecBpskBer(scalar_t snr,
 double
 YansErrorRateModel::GetFecQamBer(scalar_t snr,
                                  uint64_t nbits,
-                                 MHz_u signalSpread,
+                                 MHz_t signalSpread,
                                  uint64_t phyRate,
                                  uint32_t m,
                                  uint32_t dFree,
@@ -197,8 +197,8 @@ YansErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
         uint64_t phyRate;
         if ((txVector.IsMu() && (staId == SU_STA_ID)) || (mode != txVector.GetMode(staId)))
         {
-            phyRate = mode.GetPhyRate(txVector.GetChannelWidth() >= MHz_u{40}
-                                          ? MHz_u{20}
+            phyRate = mode.GetPhyRate(txVector.GetChannelWidth() >= MHz_t{40}
+                                          ? MHz_t{20}
                                           : txVector.GetChannelWidth()); // This is the PHY header
         }
         else

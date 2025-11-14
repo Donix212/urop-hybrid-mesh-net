@@ -11,6 +11,7 @@
 #include "ns3/abort.h"
 #include "ns3/assert.h"
 #include "ns3/wifi-ru.h"
+#include "ns3/wifi-utils.h"
 
 #include <algorithm>
 #include <optional>
@@ -23,7 +24,7 @@ namespace ns3
 const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
     // TODO: cleanup code duplication with HeRu
     // RUs in a 20 MHz HE PPDU (Table 27-7 IEEE802.11ax-2021)
-    {{MHz_u{20}, RuType::RU_26_TONE},
+    {{MHz_t{20}, RuType::RU_26_TONE},
      {/* 1 */ {{-121, -96}},
       /* 2 */ {{-95, -70}},
       /* 3 */ {{-68, -43}},
@@ -33,17 +34,17 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 7 */ {{43, 68}},
       /* 8 */ {{70, 95}},
       /* 9 */ {{96, 121}}}},
-    {{MHz_u{20}, RuType::RU_52_TONE},
+    {{MHz_t{20}, RuType::RU_52_TONE},
      {/* 1 */ {{-121, -70}},
       /* 2 */ {{-68, -17}},
       /* 3 */ {{17, 68}},
       /* 4 */ {{70, 121}}}},
-    {{MHz_u{20}, RuType::RU_106_TONE},
+    {{MHz_t{20}, RuType::RU_106_TONE},
      {/* 1 */ {{-122, -17}},
       /* 2 */ {{17, 122}}}},
-    {{MHz_u{20}, RuType::RU_242_TONE}, {/* 1 */ {{-122, -2}, {2, 122}}}},
+    {{MHz_t{20}, RuType::RU_242_TONE}, {/* 1 */ {{-122, -2}, {2, 122}}}},
     // RUs in a 40 MHz HE PPDU (Table 27-8 IEEE802.11ax-2021)
-    {{MHz_u{40}, RuType::RU_26_TONE},
+    {{MHz_t{40}, RuType::RU_26_TONE},
      {/* 1 */ {{-243, -218}},
       /* 2 */ {{-217, -192}},
       /* 3 */ {{-189, -164}},
@@ -62,7 +63,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 16 */ {{164, 189}},
       /* 17 */ {{192, 217}},
       /* 18 */ {{218, 243}}}},
-    {{MHz_u{40}, RuType::RU_52_TONE},
+    {{MHz_t{40}, RuType::RU_52_TONE},
      {/* 1 */ {{-243, -192}},
       /* 2 */ {{-189, -138}},
       /* 3 */ {{-109, -58}},
@@ -71,17 +72,17 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 6 */ {{58, 109}},
       /* 7 */ {{138, 189}},
       /* 8 */ {{192, 243}}}},
-    {{MHz_u{40}, RuType::RU_106_TONE},
+    {{MHz_t{40}, RuType::RU_106_TONE},
      {/* 1 */ {{-243, -138}},
       /* 2 */ {{-109, -4}},
       /* 3 */ {{4, 109}},
       /* 4 */ {{138, 243}}}},
-    {{MHz_u{40}, RuType::RU_242_TONE},
+    {{MHz_t{40}, RuType::RU_242_TONE},
      {/* 1 */ {{-244, -3}},
       /* 2 */ {{3, 244}}}},
-    {{MHz_u{40}, RuType::RU_484_TONE}, {/* 1 */ {{-244, -3}, {3, 244}}}},
+    {{MHz_t{40}, RuType::RU_484_TONE}, {/* 1 */ {{-244, -3}, {3, 244}}}},
     // RUs in an 80 MHz EHT PPDU (Table 36-5 IEEE802.11be-D7.0)
-    {{MHz_u{80}, RuType::RU_26_TONE},
+    {{MHz_t{80}, RuType::RU_26_TONE},
      {/* 1 */ {{-499, -474}},
       /* 2 */ {{-473, -448}},
       /* 3 */ {{-445, -420}},
@@ -119,7 +120,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 35 */ {{420, 445}},
       /* 36 */ {{448, 473}},
       /* 37 */ {{474, 499}}}},
-    {{MHz_u{80}, RuType::RU_52_TONE},
+    {{MHz_t{80}, RuType::RU_52_TONE},
      {/* 1 */ {{-499, -448}},
       /* 2 */ {{-445, -394}},
       /* 3 */ {{-365, -314}},
@@ -136,7 +137,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 14 */ {{314, 365}},
       /* 15 */ {{394, 445}},
       /* 16 */ {{448, 499}}}},
-    {{MHz_u{80}, RuType::RU_106_TONE},
+    {{MHz_t{80}, RuType::RU_106_TONE},
      {/* 1 */ {{-499, -394}},
       /* 2 */ {{-365, -260}},
       /* 3 */ {{-252, -147}},
@@ -145,17 +146,17 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 6 */ {{147, 252}},
       /* 7 */ {{260, 365}},
       /* 8 */ {{394, 499}}}},
-    {{MHz_u{80}, RuType::RU_242_TONE},
+    {{MHz_t{80}, RuType::RU_242_TONE},
      {/* 1 */ {{-500, -259}},
       /* 2 */ {{-253, -12}},
       /* 3 */ {{12, 253}},
       /* 4 */ {{259, 500}}}},
-    {{MHz_u{80}, RuType::RU_484_TONE},
+    {{MHz_t{80}, RuType::RU_484_TONE},
      {/* 1 */ {{-500, -259}, {-253, -12}},
       /* 2 */ {{12, 253}, {259, 500}}}},
-    {{MHz_u{80}, RuType::RU_996_TONE}, {/* 1 */ {{-500, -3}, {3, 500}}}},
+    {{MHz_t{80}, RuType::RU_996_TONE}, {/* 1 */ {{-500, -3}, {3, 500}}}},
     // RUs in an 160 MHz EHT PPDU (Table 36-6 IEEE802.11be-D7.0)
-    {{MHz_u{160}, RuType::RU_26_TONE},
+    {{MHz_t{160}, RuType::RU_26_TONE},
      {/* 1 */ {{-1011, -986}},
       /* 2 */ {{-985, -960}},
       /* 3 */ {{-957, -932}},
@@ -230,7 +231,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 72 */ {{932, 957}},
       /* 73 */ {{960, 985}},
       /* 74 */ {{986, 1011}}}},
-    {{MHz_u{160}, RuType::RU_52_TONE},
+    {{MHz_t{160}, RuType::RU_52_TONE},
      {/* 1 */ {{-1011, -960}},
       /* 2 */ {{-957, -906}},
       /* 3 */ {{-877, -826}},
@@ -263,7 +264,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 30 */ {{826, 877}},
       /* 31 */ {{906, 957}},
       /* 32 */ {{960, 1011}}}},
-    {{MHz_u{160}, RuType::RU_106_TONE},
+    {{MHz_t{160}, RuType::RU_106_TONE},
      {/* 1 */ {{-1011, -906}},
       /* 2 */ {{-877, -772}},
       /* 3 */ {{-764, -659}},
@@ -280,7 +281,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 14 */ {{659, 764}},
       /* 15 */ {{772, 877}},
       /* 16 */ {{906, 1011}}}},
-    {{MHz_u{160}, RuType::RU_242_TONE},
+    {{MHz_t{160}, RuType::RU_242_TONE},
      {/* 1 */ {{-1012, -771}},
       /* 2 */ {{-765, -524}},
       /* 3 */ {{-500, -259}},
@@ -289,18 +290,18 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 6 */ {{259, 500}},
       /* 7 */ {{524, 765}},
       /* 8 */ {{771, 1012}}}},
-    {{MHz_u{160}, RuType::RU_484_TONE},
+    {{MHz_t{160}, RuType::RU_484_TONE},
      {/* 1 */ {{-1012, -771}, {-765, -524}},
       /* 2 */ {{-500, -259}, {-253, -12}},
       /* 3 */ {{12, 253}, {259, 500}},
       /* 4 */ {{524, 765}, {771, 1012}}}},
-    {{MHz_u{160}, RuType::RU_996_TONE},
+    {{MHz_t{160}, RuType::RU_996_TONE},
      {/* 1 */ {{-1012, -515}, {-509, -12}},
       /* 2 */ {{12, 509}, {515, 1012}}}},
-    {{MHz_u{160}, RuType::RU_2x996_TONE},
+    {{MHz_t{160}, RuType::RU_2x996_TONE},
      {/* 1 */ {{-1012, -515}, {-509, -12}, {12, 509}, {515, 1012}}}},
     // RUs in an 320 MHz EHT PPDU (Table 36-7 IEEE802.11be-D7.0)
-    {{MHz_u{320}, RuType::RU_26_TONE},
+    {{MHz_t{320}, RuType::RU_26_TONE},
      {/* 1 */ {{-2035, -2010}},
       /* 2 */ {{-2009, -1984}},
       /* 3 */ {{-1981, -1956}},
@@ -449,7 +450,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 146 */ {{1956, 1981}},
       /* 147 */ {{1984, 2009}},
       /* 148 */ {{2010, 2035}}}},
-    {{MHz_u{320}, RuType::RU_52_TONE},
+    {{MHz_t{320}, RuType::RU_52_TONE},
      {/* 1 */ {{-2035, -1984}},
       /* 2 */ {{-1981, -1930}},
       /* 3 */ {{-1901, -1850}},
@@ -514,7 +515,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 62 */ {{1850, 1901}},
       /* 63 */ {{1930, 1981}},
       /* 64 */ {{1984, 2035}}}},
-    {{MHz_u{320}, RuType::RU_106_TONE},
+    {{MHz_t{320}, RuType::RU_106_TONE},
      {/* 1 */ {{-2035, -1930}},
       /* 2 */ {{-1901, -1796}},
       /* 3 */ {{-1788, -1683}},
@@ -547,7 +548,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 30 */ {{1683, 1788}},
       /* 31 */ {{1796, 1901}},
       /* 32 */ {{1930, 2035}}}},
-    {{MHz_u{320}, RuType::RU_242_TONE},
+    {{MHz_t{320}, RuType::RU_242_TONE},
      {/* 1 */ {{-2036, -1795}},
       /* 2 */ {{-1789, -1548}},
       /* 3 */ {{-1524, -1283}},
@@ -564,7 +565,7 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 14 */ {{1283, 1524}},
       /* 15 */ {{1548, 1789}},
       /* 16 */ {{1795, 2036}}}},
-    {{MHz_u{320}, RuType::RU_484_TONE},
+    {{MHz_t{320}, RuType::RU_484_TONE},
      {/* 1 */ {{-2036, -1795}, {-1789, -1548}},
       /* 2 */ {{-1524, -1283}, {-1277, -1036}},
       /* 3 */ {{-1012, -771}, {-765, -524}},
@@ -573,15 +574,15 @@ const SubcarrierGroups EhtRu::m_ruSubcarrierGroups{
       /* 6 */ {{524, 765}, {771, 1012}},
       /* 7 */ {{1036, 1277}, {1283, 1524}},
       /* 8 */ {{1548, 1789}, {1795, 2036}}}},
-    {{MHz_u{320}, RuType::RU_996_TONE},
+    {{MHz_t{320}, RuType::RU_996_TONE},
      {/* 1 */ {{-2036, -1539}, {-1533, -1036}},
       /* 2 */ {{-1012, -515}, {-509, -12}},
       /* 3 */ {{12, 509}, {515, 1012}},
       /* 4 */ {{1036, 1533}, {1539, 2036}}}},
-    {{MHz_u{320}, RuType::RU_2x996_TONE},
+    {{MHz_t{320}, RuType::RU_2x996_TONE},
      {/* 1 */ {{-2036, -1539}, {-1533, -1036}, {-1012, -515}, {-509, -12}},
       /* 2 */ {{12, 509}, {515, 1012}, {1036, 1533}, {1539, 2036}}}},
-    {{MHz_u{320}, RuType::RU_4x996_TONE},
+    {{MHz_t{320}, RuType::RU_4x996_TONE},
      {/* 1 */ {{-2036, -1539},
                {-1533, -1036},
                {-1012, -515},
@@ -880,25 +881,26 @@ EhtRu::RuSpec::GetPrimary80MHzOrLower80MHz() const
 }
 
 std::size_t
-EhtRu::RuSpec::GetPhyIndex(MHz_u bw, uint8_t p20Index) const
+EhtRu::RuSpec::GetPhyIndex(MHz_t bw, uint8_t p20Index) const
 {
     auto phyIndex{m_index};
-    const auto primary160IsLower160 = (p20Index < (MHz_u{320} / MHz_u{20}) / 2);
-    if ((bw > MHz_u{160}) && (m_ruType == RuType::RU_2x996_TONE) &&
+    const auto primary160IsLower160 = (p20Index < (MHz_t{320} / MHz_t{20}).to<double>() / 2);
+    if ((bw > MHz_t{160}) && (m_ruType == RuType::RU_2x996_TONE) &&
         ((primary160IsLower160 && !m_primary160MHz) || (!primary160IsLower160 && m_primary160MHz)))
     {
         phyIndex += 1;
     }
-    const auto indicesPer80MHz = GetNRus(MHz_u{80}, m_ruType, true);
-    if ((bw > MHz_u{160}) && (m_ruType < RuType::RU_2x996_TONE) &&
+    const auto indicesPer80MHz = GetNRus(MHz_t{80}, m_ruType, true);
+    if ((bw > MHz_t{160}) && (m_ruType < RuType::RU_2x996_TONE) &&
         ((primary160IsLower160 && !m_primary160MHz) || (!primary160IsLower160 && m_primary160MHz)))
     {
         phyIndex += 2 * indicesPer80MHz;
     }
-    const uint8_t num20MHzSubchannelsIn160 = MHz_u{160} / MHz_u{20};
+    const uint8_t num20MHzSubchannelsIn160 =
+        static_cast<uint8_t>(Count20MHzSubchannels(MHz_t{160}));
     const auto primary80IsLower80 =
         ((p20Index % num20MHzSubchannelsIn160) < (num20MHzSubchannelsIn160 / 2));
-    if ((bw > MHz_u{80}) && (m_ruType < RuType::RU_4x996_TONE) &&
+    if ((bw > MHz_t{80}) && (m_ruType < RuType::RU_4x996_TONE) &&
         ((m_primary160MHz && ((primary80IsLower80 && !m_primary80MHzOrLower80MHz) ||
                               (!primary80IsLower80 && m_primary80MHzOrLower80MHz))) ||
          (!m_primary160MHz && !m_primary80MHzOrLower80MHz)))
@@ -909,48 +911,49 @@ EhtRu::RuSpec::GetPhyIndex(MHz_u bw, uint8_t p20Index) const
 }
 
 std::pair<bool, bool>
-EhtRu::GetPrimaryFlags(MHz_u bw, RuType ruType, std::size_t phyIndex, uint8_t p20Index)
+EhtRu::GetPrimaryFlags(MHz_t bw, RuType ruType, std::size_t phyIndex, uint8_t p20Index)
 {
     const auto nRus = GetNRus(bw, ruType);
     const auto ruWidth = WifiRu::GetBandwidth(ruType);
-    const auto indicesPer80MHz = (ruWidth <= MHz_u{80}) ? GetNRus(MHz_u{80}, ruType, true) : 1;
+    const auto indicesPer80MHz = (ruWidth <= MHz_t{80}) ? GetNRus(MHz_t{80}, ruType, true) : 1;
     const auto undefinedRusPer80MHz =
-        (ruWidth <= MHz_u{80}) ? (indicesPer80MHz - GetNRus(MHz_u{80}, ruType)) : 0;
-    const auto primary160IsLower160 = (p20Index < (MHz_u{320} / MHz_u{20}) / 2);
+        (ruWidth <= MHz_t{80}) ? (indicesPer80MHz - GetNRus(MHz_t{80}, ruType)) : 0;
+    const auto primary160IsLower160 = (p20Index < (MHz_t{320} / MHz_t{20}).to<double>() / 2);
     const auto primary160 =
-        (bw < MHz_u{320} || ruType == RuType::RU_4x996_TONE ||
+        (bw < MHz_t{320} || ruType == RuType::RU_4x996_TONE ||
          (primary160IsLower160 && phyIndex <= (nRus / 2) + (2 * undefinedRusPer80MHz)) ||
          (!primary160IsLower160 && phyIndex > (nRus / 2) + (2 * undefinedRusPer80MHz)));
     bool primary80OrLow80;
     if (primary160)
     {
-        const uint8_t num20MHzSubchannelsIn160 = MHz_u{160} / MHz_u{20};
+        const uint8_t num20MHzSubchannelsIn160 =
+            static_cast<uint8_t>(Count20MHzSubchannels(MHz_t{160}));
         const auto primary80IsLower80 =
             ((p20Index % num20MHzSubchannelsIn160) < (num20MHzSubchannelsIn160 / 2));
         const auto threshold =
-            ((bw < MHz_u{320}) || primary160IsLower160) ? indicesPer80MHz : 3 * indicesPer80MHz;
-        primary80OrLow80 = (bw < MHz_u{160}) || (ruType >= RuType::RU_2x996_TONE) ||
+            ((bw < MHz_t{320}) || primary160IsLower160) ? indicesPer80MHz : 3 * indicesPer80MHz;
+        primary80OrLow80 = (bw < MHz_t{160}) || (ruType >= RuType::RU_2x996_TONE) ||
                            (primary80IsLower80 && phyIndex <= threshold) ||
                            (!primary80IsLower80 && phyIndex > threshold);
     }
     else
     {
-        primary80OrLow80 = (bw < MHz_u{160}) || (ruType >= RuType::RU_2x996_TONE) ||
+        primary80OrLow80 = (bw < MHz_t{160}) || (ruType >= RuType::RU_2x996_TONE) ||
                            ((((phyIndex - 1) / indicesPer80MHz) % 2) == 0);
     }
     return {primary160, primary80OrLow80};
 }
 
 std::size_t
-EhtRu::GetIndexIn80MHzSegment(MHz_u bw, RuType ruType, std::size_t phyIndex)
+EhtRu::GetIndexIn80MHzSegment(MHz_t bw, RuType ruType, std::size_t phyIndex)
 {
-    if (WifiRu::GetBandwidth(ruType) > MHz_u{80})
+    if (WifiRu::GetBandwidth(ruType) > MHz_t{80})
     {
         return 1;
     }
 
-    if (const auto indicesPer80MHz = GetNRus(MHz_u{80}, ruType, true);
-        bw > MHz_u{80} && phyIndex > indicesPer80MHz)
+    if (const auto indicesPer80MHz = GetNRus(MHz_t{80}, ruType, true);
+        bw > MHz_t{80} && phyIndex > indicesPer80MHz)
     {
         return (((phyIndex - 1) % indicesPer80MHz) + 1);
     }
@@ -959,9 +962,9 @@ EhtRu::GetIndexIn80MHzSegment(MHz_u bw, RuType ruType, std::size_t phyIndex)
 }
 
 std::size_t
-EhtRu::GetNRus(MHz_u bw, RuType ruType, bool includeUndefinedRus /* = false */)
+EhtRu::GetNRus(MHz_t bw, RuType ruType, bool includeUndefinedRus /* = false */)
 {
-    if (WifiRu::GetBandwidth(ruType) >= MHz_u{20})
+    if (WifiRu::GetBandwidth(ruType) >= MHz_t{20})
     {
         return bw / WifiRu::GetBandwidth(ruType);
     }
@@ -975,16 +978,16 @@ EhtRu::GetNRus(MHz_u bw, RuType ruType, bool includeUndefinedRus /* = false */)
     auto nRus = it->second.size();
     if (!includeUndefinedRus)
     {
-        const auto num80MHz = std::max<uint16_t>(bw / MHz_u{80}, 1);
+        const auto num80MHz = std::max<uint16_t>((bw / MHz_t{80}).to<double>(), 1);
         const auto undefinedRus =
-            ((ruType == RuType::RU_26_TONE) && (bw >= MHz_u{80})) ? num80MHz : 0;
+            ((ruType == RuType::RU_26_TONE) && (bw >= MHz_t{80})) ? num80MHz : 0;
         nRus -= undefinedRus;
     }
     return nRus;
 }
 
 std::vector<EhtRu::RuSpec>
-EhtRu::GetRusOfType(MHz_u bw, RuType ruType)
+EhtRu::GetRusOfType(MHz_t bw, RuType ruType)
 {
     if (GetNRus(bw, ruType) == 0)
     {
@@ -998,14 +1001,14 @@ EhtRu::GetRusOfType(MHz_u bw, RuType ruType)
 
     if (ruType == RuType::RU_2x996_TONE)
     {
-        NS_ASSERT(bw >= MHz_u{160});
+        NS_ASSERT(bw >= MHz_t{160});
         return {{ruType, 1, true, true}, {ruType, 1, false, true}};
     }
 
     std::vector<EhtRu::RuSpec> ret;
     const auto subcarrierGroup = EhtRu::m_ruSubcarrierGroups.at({bw, ruType});
-    const auto indices = GetNRus(std::min(bw, MHz_u{80}), ruType, true);
-    for (uint8_t idx80MHz = 0; idx80MHz < (bw / MHz_u{80}); ++idx80MHz)
+    const auto indices = GetNRus(std::min(bw, MHz_t{80}), ruType, true);
+    for (uint8_t idx80MHz = 0; idx80MHz < (bw / MHz_t{80}).to<double>(); ++idx80MHz)
     {
         const auto p160 = (idx80MHz < 2);
         const auto p80orLow80 = ((idx80MHz % 2) == 0);
@@ -1023,7 +1026,7 @@ EhtRu::GetRusOfType(MHz_u bw, RuType ruType)
 }
 
 std::vector<EhtRu::RuSpec>
-EhtRu::GetCentral26TonesRus(MHz_u bw, RuType ruType)
+EhtRu::GetCentral26TonesRus(MHz_t bw, RuType ruType)
 {
     if ((ruType == RuType::RU_26_TONE) || (ruType >= RuType::RU_242_TONE))
     {
@@ -1031,21 +1034,21 @@ EhtRu::GetCentral26TonesRus(MHz_u bw, RuType ruType)
     }
 
     std::vector<std::size_t> indices;
-    if (bw >= MHz_u{20})
+    if (bw >= MHz_t{20})
     {
         indices.push_back(5);
     }
-    if (bw >= MHz_u{40})
+    if (bw >= MHz_t{40})
     {
         indices.push_back(14);
     }
-    if (bw >= MHz_u{80})
+    if (bw >= MHz_t{80})
     {
         indices.insert(indices.end(), {24, 33});
     }
 
     std::vector<EhtRu::RuSpec> ret;
-    for (uint8_t idx80MHz = 0; idx80MHz < (bw / MHz_u{80}); ++idx80MHz)
+    for (uint8_t idx80MHz = 0; idx80MHz < (bw / MHz_t{80}).to<double>(); ++idx80MHz)
     {
         const auto p160 = (idx80MHz < 2);
         const auto p80orLow80 = ((idx80MHz % 2) == 0);
@@ -1060,7 +1063,7 @@ EhtRu::GetCentral26TonesRus(MHz_u bw, RuType ruType)
 }
 
 SubcarrierGroup
-EhtRu::GetSubcarrierGroup(MHz_u bw, RuType ruType, std::size_t phyIndex)
+EhtRu::GetSubcarrierGroup(MHz_t bw, RuType ruType, std::size_t phyIndex)
 {
     const auto it = m_ruSubcarrierGroups.find({bw, ruType});
     NS_ABORT_MSG_IF(it == m_ruSubcarrierGroups.cend(), "RU not found");
@@ -1071,10 +1074,10 @@ EhtRu::GetSubcarrierGroup(MHz_u bw, RuType ruType, std::size_t phyIndex)
 }
 
 bool
-EhtRu::DoesOverlap(MHz_u bw, EhtRu::RuSpec ru, const std::vector<EhtRu::RuSpec>& v)
+EhtRu::DoesOverlap(MHz_t bw, EhtRu::RuSpec ru, const std::vector<EhtRu::RuSpec>& v)
 {
     // A 4x996-tone RU spans 320 MHz, hence it overlaps with any other RU
-    if (bw == MHz_u{320} && ru.GetRuType() == RuType::RU_4x996_TONE && !v.empty())
+    if (bw == MHz_t{320} && ru.GetRuType() == RuType::RU_4x996_TONE && !v.empty())
     {
         return true;
     }
@@ -1088,7 +1091,7 @@ EhtRu::DoesOverlap(MHz_u bw, EhtRu::RuSpec ru, const std::vector<EhtRu::RuSpec>&
     for (auto& p : v)
     {
         // A 4x996-tone RU spans 160 MHz, hence it overlaps
-        if (bw == MHz_u{320} && p.GetRuType() == RuType::RU_4x996_TONE)
+        if (bw == MHz_t{320} && p.GetRuType() == RuType::RU_4x996_TONE)
         {
             return true;
         }
@@ -1098,7 +1101,7 @@ EhtRu::DoesOverlap(MHz_u bw, EhtRu::RuSpec ru, const std::vector<EhtRu::RuSpec>&
             continue;
         }
         if (const auto otherRuBw = WifiRu::GetBandwidth(p.GetRuType());
-            (ruBw <= MHz_u{80}) && (otherRuBw <= MHz_u{80}) &&
+            (ruBw <= MHz_t{80}) && (otherRuBw <= MHz_t{80}) &&
             (ru.GetPrimary80MHzOrLower80MHz() != p.GetPrimary80MHzOrLower80MHz()))
         {
             // the two RUs are located in distinct 80MHz bands
@@ -1120,10 +1123,10 @@ EhtRu::DoesOverlap(MHz_u bw, EhtRu::RuSpec ru, const std::vector<EhtRu::RuSpec>&
 }
 
 EhtRu::RuSpec
-EhtRu::FindOverlappingRu(MHz_u bw, EhtRu::RuSpec referenceRu, RuType searchedRuType)
+EhtRu::FindOverlappingRu(MHz_t bw, EhtRu::RuSpec referenceRu, RuType searchedRuType)
 {
     const auto numRus = EhtRu::GetNRus(bw, searchedRuType);
-    for (uint8_t idx80MHz = 0; idx80MHz < (bw / MHz_u{80}); ++idx80MHz)
+    for (uint8_t idx80MHz = 0; idx80MHz < (bw / MHz_t{80}).to<double>(); ++idx80MHz)
     {
         const auto p160 = (idx80MHz < 2);
         const auto p80orLow80 = ((idx80MHz % 2) == 0);
@@ -1142,7 +1145,7 @@ EhtRu::FindOverlappingRu(MHz_u bw, EhtRu::RuSpec referenceRu, RuType searchedRuT
 }
 
 RuType
-EhtRu::GetEqualSizedRusForStations(MHz_u bandwidth,
+EhtRu::GetEqualSizedRusForStations(MHz_t bandwidth,
                                    std::size_t& nStations,
                                    std::size_t& nCentral26TonesRus)
 {
@@ -1170,10 +1173,10 @@ EhtRu::GetEqualSizedRusForStations(MHz_u bandwidth,
 }
 
 uint8_t
-EhtRu::GetNumCentral26TonesRus(MHz_u bandwidth, RuType ruType)
+EhtRu::GetNumCentral26TonesRus(MHz_t bandwidth, RuType ruType)
 {
     return ((ruType == RuType::RU_52_TONE) || (ruType == RuType::RU_106_TONE))
-               ? (bandwidth / MHz_u{20})
+               ? static_cast<uint8_t>(Count20MHzSubchannels(bandwidth))
                : 0;
 }
 

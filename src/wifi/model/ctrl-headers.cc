@@ -1883,9 +1883,9 @@ CtrlTriggerSpecialUserInfoField::GetType() const
 }
 
 void
-CtrlTriggerSpecialUserInfoField::SetUlBwExt(MHz_u bw)
+CtrlTriggerSpecialUserInfoField::SetUlBwExt(MHz_t bw)
 {
-    switch (static_cast<uint16_t>(bw))
+    switch (static_cast<uint16_t>(bw.to<double>()))
     {
     case 20:
     case 40:
@@ -2354,9 +2354,9 @@ CtrlTriggerHeader::GetCsRequired() const
 }
 
 void
-CtrlTriggerHeader::SetUlBandwidth(MHz_u bw)
+CtrlTriggerHeader::SetUlBandwidth(MHz_t bw)
 {
-    switch (static_cast<uint16_t>(bw))
+    switch (static_cast<uint16_t>(bw.to<double>()))
     {
     case 20:
         m_ulBandwidth = 0;
@@ -2375,7 +2375,7 @@ CtrlTriggerHeader::SetUlBandwidth(MHz_u bw)
         NS_FATAL_ERROR("Bandwidth value not allowed.");
         break;
     }
-    if (bw > MHz_u{160})
+    if (bw > MHz_t{160})
     {
         NS_ASSERT(m_specialUserInfoField);
     }
@@ -2386,7 +2386,7 @@ CtrlTriggerHeader::SetUlBandwidth(MHz_u bw)
     }
 }
 
-MHz_u
+MHz_t
 CtrlTriggerHeader::GetUlBandwidth() const
 {
     if (m_specialUserInfoField)
@@ -2394,10 +2394,10 @@ CtrlTriggerHeader::GetUlBandwidth() const
         NS_ASSERT(m_variant == TriggerFrameVariant::EHT);
         if (m_specialUserInfoField->GetUlBwExt() > 1)
         {
-            return MHz_u{320};
+            return MHz_t{320};
         }
     }
-    return (1 << m_ulBandwidth) * MHz_u{20};
+    return (1 << m_ulBandwidth) * MHz_t{20};
 }
 
 void

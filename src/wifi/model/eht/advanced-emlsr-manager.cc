@@ -573,7 +573,7 @@ AdvancedEmlsrManager::CheckNavAndCcaLastPifs(Ptr<WifiPhy> phy, uint8_t linkId, P
         NS_LOG_DEBUG("Main PHY switched back (or scheduled to switch back) before PIFS check");
         txopNotStarted();
     }
-    else if (!isBusy && width > MHz_u{0})
+    else if (!isBusy && width > MHz_t{0})
     {
         // medium idle, start TXOP
         width = std::min(width, GetChannelForMainPhy(linkId).GetTotalWidth());

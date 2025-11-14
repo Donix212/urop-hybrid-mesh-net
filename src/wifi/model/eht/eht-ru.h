@@ -9,6 +9,7 @@
 #ifndef EHT_RU_H
 #define EHT_RU_H
 
+#include "ns3/units.h"
 #include "ns3/wifi-phy-common.h"
 
 #include <cstdint>
@@ -70,7 +71,7 @@ class EhtRu
          * @param p20Index the index of the primary20 channel
          * @return the RU PHY index
          */
-        std::size_t GetPhyIndex(MHz_u bw, uint8_t p20Index) const;
+        std::size_t GetPhyIndex(MHz_t bw, uint8_t p20Index) const;
 
         /**
          * Get whether the RU is allocated in the primary 160MHz channel
@@ -133,7 +134,7 @@ class EhtRu
      * @param p20Index the index of the primary20 channel
      * @return the primary flags
      */
-    static std::pair<bool, bool> GetPrimaryFlags(MHz_u bw,
+    static std::pair<bool, bool> GetPrimaryFlags(MHz_t bw,
                                                  RuType ruType,
                                                  std::size_t phyIndex,
                                                  uint8_t p20Index);
@@ -146,7 +147,7 @@ class EhtRu
      * @param phyIndex the PHY index (starting at 1) of the RU
      * @return the index within the 80 MHz segment
      */
-    static std::size_t GetIndexIn80MHzSegment(MHz_u bw, RuType ruType, std::size_t phyIndex);
+    static std::size_t GetIndexIn80MHzSegment(MHz_t bw, RuType ruType, std::size_t phyIndex);
 
     /**
      * Get the number of distinct RUs of the given type (number of tones)
@@ -157,7 +158,7 @@ class EhtRu
      * @param includeUndefinedRus whether undefined RUs should be taken account.
      * @return the number of distinct RUs available
      */
-    static std::size_t GetNRus(MHz_u bw, RuType ruType, bool includeUndefinedRus = false);
+    static std::size_t GetNRus(MHz_t bw, RuType ruType, bool includeUndefinedRus = false);
 
     /**
      * Get the set of distinct RUs of the given type (number of tones)
@@ -168,7 +169,7 @@ class EhtRu
      * @param ruType the RU type (number of tones)
      * @return the set of distinct RUs available
      */
-    static std::vector<RuSpec> GetRusOfType(MHz_u bw, RuType ruType);
+    static std::vector<RuSpec> GetRusOfType(MHz_t bw, RuType ruType);
 
     /**
      * Get the set of 26-tone RUs that can be additionally allocated if the given
@@ -178,7 +179,7 @@ class EhtRu
      * @param ruType the RU type (number of tones)
      * @return the set of 26-tone RUs that can be additionally allocated
      */
-    static std::vector<RuSpec> GetCentral26TonesRus(MHz_u bw, RuType ruType);
+    static std::vector<RuSpec> GetCentral26TonesRus(MHz_t bw, RuType ruType);
 
     /**
      * Get the subcarrier group of the RU having the given PHY index among all the RUs of the given
@@ -191,7 +192,7 @@ class EhtRu
      * @param phyIndex the PHY index (starting at 1) of the RU
      * @return the subcarrier range of the specified RU
      */
-    static SubcarrierGroup GetSubcarrierGroup(MHz_u bw, RuType ruType, std::size_t phyIndex);
+    static SubcarrierGroup GetSubcarrierGroup(MHz_t bw, RuType ruType, std::size_t phyIndex);
 
     /**
      * Check whether the given RU overlaps with the given set of RUs.
@@ -203,7 +204,7 @@ class EhtRu
      * @param v the given set of RUs
      * @return true if the given RU overlaps with the given set of RUs.
      */
-    static bool DoesOverlap(MHz_u bw, RuSpec ru, const std::vector<RuSpec>& v);
+    static bool DoesOverlap(MHz_t bw, RuSpec ru, const std::vector<RuSpec>& v);
 
     /**
      * Find the RU allocation of the given RU type overlapping the given
@@ -215,7 +216,7 @@ class EhtRu
      * @param searchedRuType the searched RU type
      * @return the searched RU allocation.
      */
-    static RuSpec FindOverlappingRu(MHz_u bw, RuSpec referenceRu, RuType searchedRuType);
+    static RuSpec FindOverlappingRu(MHz_t bw, RuSpec referenceRu, RuType searchedRuType);
 
     /**
      * Given the channel bandwidth and the number of stations candidate for being
@@ -230,7 +231,7 @@ class EhtRu
      *                                allocated if the returned RU size is greater than 26 tones
      * @return the RU type
      */
-    static RuType GetEqualSizedRusForStations(MHz_u bandwidth,
+    static RuType GetEqualSizedRusForStations(MHz_t bandwidth,
                                               std::size_t& nStations,
                                               std::size_t& nCentral26TonesRus);
 
@@ -256,7 +257,7 @@ class EhtRu
      * @param ruType the RU type (number of tones)
      * @return the number of 26-tone RUs that can be allocated
      */
-    static uint8_t GetNumCentral26TonesRus(MHz_u bw, RuType ruType);
+    static uint8_t GetNumCentral26TonesRus(MHz_t bw, RuType ruType);
 
     /// Subcarrier groups for all EHT RUs
     static const SubcarrierGroups m_ruSubcarrierGroups;

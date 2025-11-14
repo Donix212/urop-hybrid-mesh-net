@@ -13,6 +13,7 @@
 #include "wifi-units.h"
 
 #include "ns3/abort.h"
+#include "ns3/units.h"
 #include "ns3/wifi-export.h"
 
 #include <list>
@@ -118,24 +119,24 @@ GetFrequencyChannelType(WifiStandard standard)
  * @param band the given PHY band
  * @return the default channel width for the given standard
  */
-inline MHz_u
+inline MHz_t
 GetDefaultChannelWidth(WifiStandard standard, WifiPhyBand band)
 {
     switch (standard)
     {
     case WIFI_STANDARD_80211b:
-        return MHz_u{22};
+        return MHz_t{22};
     case WIFI_STANDARD_80211p:
-        return MHz_u{10};
+        return MHz_t{10};
     case WIFI_STANDARD_80211ac:
-        return MHz_u{80};
+        return MHz_t{80};
     case WIFI_STANDARD_80211ad:
-        return MHz_u{2160};
+        return MHz_t{2160};
     case WIFI_STANDARD_80211ax:
     case WIFI_STANDARD_80211be:
-        return (band == WIFI_PHY_BAND_2_4GHZ ? MHz_u{20} : MHz_u{80});
+        return (band == WIFI_PHY_BAND_2_4GHZ ? MHz_t{20} : MHz_t{80});
     default:
-        return MHz_u{20};
+        return MHz_t{20};
     }
 }
 

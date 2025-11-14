@@ -218,7 +218,7 @@ HePhy::GetSigBSize(const WifiTxVector& txVector) const
             txVector.GetChannelWidth(),
             txVector.GetModulationClass(),
             txVector.GetRuAllocation(
-                m_wifiPhy ? m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20}) : 0),
+                m_wifiPhy ? m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_t{20}) : 0),
             txVector.GetCenter26ToneRuIndication(),
             txVector.IsSigBCompression(),
             txVector.IsSigBCompression() ? txVector.GetHeMuUserInfoMap().size() : 0);
@@ -234,7 +234,7 @@ HePhy::GetSigBDuration(const WifiTxVector& txVector) const
         const auto symbolDuration = MicroSeconds(4);
         // Number of data bits per symbol
         const auto ndbps =
-            GetSigBMode(txVector).GetDataRate(MHz_u{20}) * symbolDuration.GetNanoSeconds() / 1e9;
+            GetSigBMode(txVector).GetDataRate(MHz_t{20}) * symbolDuration.GetNanoSeconds() / 1e9;
         const auto numSymbols = ceil((sigBSize) / ndbps);
 
         return FemtoSeconds(static_cast<uint64_t>(numSymbols * symbolDuration.GetFemtoSeconds()));
@@ -963,7 +963,7 @@ HePhy::StartReceiveMuPayload(Ptr<Event> event)
     NotifyPayloadBegin(ppdu->GetTxVector(), payloadDuration);
 }
 
-std::pair<MHz_u, WifiSpectrumBandInfo>
+std::pair<MHz_t, WifiSpectrumBandInfo>
 HePhy::GetChannelWidthAndBand(const WifiTxVector& txVector, uint16_t staId) const
 {
     if (txVector.IsMu())
@@ -990,7 +990,7 @@ HePhy::GetRuBandForTx(const WifiTxVector& txVector, uint16_t staId) const
         WifiRu::GetRuType(ru),
         WifiRu::GetPhyIndex(ru,
                             channelWidth,
-                            m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20})),
+                            m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_t{20})),
         mc);
     NS_ABORT_MSG_IF(group.empty(), "No subcarrier group found");
     // for a TX spectrum, the guard bandwidth is a function of the transmission channel width
@@ -1026,7 +1026,7 @@ HePhy::GetRuBandForRx(const WifiTxVector& txVector, uint16_t staId) const
         WifiRu::GetRuType(ru),
         WifiRu::GetPhyIndex(ru,
                             channelWidth,
-                            m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20})),
+                            m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_t{20})),
         mc);
     NS_ABORT_MSG_IF(group.empty(), "No subcarrier group found");
     // for an RX spectrum, the guard bandwidth is a function of the operating channel width
@@ -1050,7 +1050,7 @@ HePhy::GetRuBandForRx(const WifiTxVector& txVector, uint16_t staId) const
     return ruBandForRx;
 }
 
-MHz_u
+MHz_t
 HePhy::GetNonOfdmaWidth(WifiRu::RuSpec ru) const
 {
     const auto ruType = WifiRu::GetRuType(ru);
@@ -1058,9 +1058,9 @@ HePhy::GetNonOfdmaWidth(WifiRu::RuSpec ru) const
     {
         // the center 26-tone RU in an 80 MHz channel is not fully covered by
         // any 20 MHz channel, but only by an 80 MHz channel
-        return MHz_u{80};
+        return MHz_t{80};
     }
-    return std::max(WifiRu::GetBandwidth(ruType), MHz_u{20});
+    return std::max(WifiRu::GetBandwidth(ruType), MHz_t{20});
 }
 
 uint64_t
@@ -1069,7 +1069,7 @@ HePhy::GetCurrentHeTbPpduUid() const
     return m_currentMuPpduUid;
 }
 
-MHz_u
+MHz_t
 HePhy::GetMeasurementChannelWidth(const Ptr<const WifiPpdu> ppdu) const
 {
     auto channelWidth = OfdmPhy::GetMeasurementChannelWidth(ppdu);
@@ -1080,9 +1080,9 @@ HePhy::GetMeasurementChannelWidth(const Ptr<const WifiPpdu> ppdu) const
      * primitive for a PPDU received in the primary or at the secondary 20 MHz channel, the
      * secondary 40 MHz channel, or the secondary 80 MHz channel.
      */
-    if (channelWidth >= MHz_u{40} && ppdu->GetUid() != m_previouslyTxPpduUid)
+    if (channelWidth >= MHz_t{40} && ppdu->GetUid() != m_previouslyTxPpduUid)
     {
-        channelWidth = MHz_u{20};
+        channelWidth = MHz_t{20};
     }
     return channelWidth;
 }
@@ -1108,7 +1108,7 @@ HePhy::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu, WifiChannelListType chann
     const auto ppduBw = ppdu->GetTxVector().GetChannelWidth();
     auto obssPdLevel = m_obssPdAlgorithm->GetObssPdLevel();
     auto bw = ppduBw;
-    while (bw > MHz_u{20})
+    while (bw > MHz_t{20})
     {
         obssPdLevel += dB_t{3};
         bw /= 2;
@@ -1176,7 +1176,7 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
      * primitive, the PHY shall set the per20bitmap to indicate the busy/idle status of each 20 MHz
      * subchannel.
      */
-    if (m_wifiPhy->GetChannelWidth() < MHz_u{40})
+    if (m_wifiPhy->GetChannelWidth() < MHz_t{40})
     {
         return {};
     }
@@ -1186,7 +1186,7 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
         m_wifiPhy->GetChannelWidth());
     for (auto index : indices)
     {
-        auto band = m_wifiPhy->GetBand(MHz_u{20}, index);
+        auto band = m_wifiPhy->GetBand(MHz_t{20}, index);
         /**
          * A signal is present on the 20 MHz subchannel at or above a threshold of –62 dBm at the
          * receiver's antenna(s). The PHY shall indicate that the 20 MHz subchannel is busy a period
@@ -1199,8 +1199,8 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
         if (ppdu)
         {
             const auto subchannelMinFreq = m_wifiPhy->GetFrequency() -
-                                           (m_wifiPhy->GetChannelWidth() / 2) + (index * MHz_u{20});
-            const auto subchannelMaxFreq = subchannelMinFreq + MHz_u{20};
+                                           (m_wifiPhy->GetChannelWidth() / 2) + (index * MHz_t{20});
+            const auto subchannelMaxFreq = subchannelMinFreq + MHz_t{20};
             const auto ppduBw = ppdu->GetTxVector().GetChannelWidth();
 
             if (ppduBw <= m_wifiPhy->GetChannelWidth() &&
@@ -1224,7 +1224,7 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
                     ccaThreshold = obssPdLevel.has_value()
                                        ? std::max(dBm_t{-72.0}, obssPdLevel.value())
                                        : dBm_t{-72.0};
-                    band = m_wifiPhy->GetBand(MHz_u{20}, index);
+                    band = m_wifiPhy->GetBand(MHz_t{20}, index);
                     break;
                 case 40:
                     /**
@@ -1236,7 +1236,7 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
                     ccaThreshold = obssPdLevel.has_value()
                                        ? std::max(dBm_t{-72.0}, obssPdLevel.value() + dB_t{3})
                                        : dBm_t{-72.0};
-                    band = m_wifiPhy->GetBand(MHz_u{40}, std::floor(index / 2));
+                    band = m_wifiPhy->GetBand(MHz_t{40}, std::floor(index / 2));
                     break;
                 case 80:
                     /**
@@ -1248,7 +1248,7 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
                     ccaThreshold = obssPdLevel.has_value()
                                        ? std::max(dBm_t{-69.0}, obssPdLevel.value() + dB_t{6})
                                        : dBm_t{-69.0};
-                    band = m_wifiPhy->GetBand(MHz_u{80}, std::floor(index / 4));
+                    band = m_wifiPhy->GetBand(MHz_t{80}, std::floor(index / 4));
                     break;
                 case 160:
                     // Not defined in the standard: keep -62 dBm
@@ -1322,7 +1322,7 @@ HePhy::GetTxPowerSpectralDensity(Watt_t txPower,
     const auto& txVector = ppdu->GetTxVector();
     const auto& centerFrequencies = ppdu->GetTxCenterFreqs();
     auto channelWidth = txVector.GetChannelWidth();
-    auto printFrequencies = [](const std::vector<MHz_u>& v) {
+    auto printFrequencies = [](const std::vector<MHz_t>& v) {
         std::stringstream ss;
         for (const auto& centerFrequency : v)
         {
@@ -1335,7 +1335,7 @@ HePhy::GetTxPowerSpectralDensity(Watt_t txPower,
     const auto& puncturedSubchannels = txVector.GetInactiveSubchannels();
     if (!puncturedSubchannels.empty())
     {
-        const auto p20Index = m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20});
+        const auto p20Index = m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_t{20});
         const auto& indices =
             m_wifiPhy->GetOperatingChannel().GetAll20MHzChannelIndicesInPrimary(channelWidth);
         const auto p20IndexInBitmap = p20Index - *(indices.cbegin());
@@ -1351,7 +1351,7 @@ HePhy::GetTxPowerSpectralDensity(Watt_t txPower,
             // non-HE portion is sent only on the 20 MHz channels covering the RU
             const auto staId = GetStaId(ppdu);
             const auto ruWidth = WifiRu::GetBandwidth(WifiRu::GetRuType(txVector.GetRu(staId)));
-            channelWidth = (ruWidth < MHz_u{20}) ? MHz_u{20} : ruWidth;
+            channelWidth = (ruWidth < MHz_t{20}) ? MHz_t{20} : ruWidth;
             return WifiSpectrumValueHelper::CreateDuplicated20MhzTxPowerSpectralDensity(
                 GetCenterFrequenciesForNonHePart(ppdu, staId),
                 channelWidth,
@@ -1414,7 +1414,7 @@ HePhy::GetTxPowerSpectralDensity(Watt_t txPower,
     }
 }
 
-std::vector<MHz_u>
+std::vector<MHz_t>
 HePhy::GetCenterFrequenciesForNonHePart(Ptr<const WifiPpdu> ppdu, uint16_t staId) const
 {
     NS_LOG_FUNCTION(this << ppdu << staId);
@@ -1431,14 +1431,14 @@ HePhy::GetCenterFrequenciesForNonHePart(Ptr<const WifiPpdu> ppdu, uint16_t staId
         const auto nonOfdmaRu =
             WifiRu::FindOverlappingRu(currentWidth, ru, WifiRu::GetRuType(nonOfdmaWidth));
 
-        const MHz_u startingFrequency = centerFrequencies.front() - (currentWidth / 2);
+        const MHz_t startingFrequency = centerFrequencies.front() - (currentWidth / 2);
         centerFrequencies.front() =
             startingFrequency +
             nonOfdmaWidth *
                 (WifiRu::GetPhyIndex(
                      nonOfdmaRu,
                      currentWidth,
-                     m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20})) -
+                     m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_t{20})) -
                  1) +
             nonOfdmaWidth / 2;
     }
@@ -1646,7 +1646,7 @@ HePhy::GetConstellationSize(uint8_t mcsValue)
 }
 
 uint64_t
-HePhy::GetPhyRate(uint8_t mcsValue, MHz_u channelWidth, Time guardInterval, uint8_t nss)
+HePhy::GetPhyRate(uint8_t mcsValue, MHz_t channelWidth, Time guardInterval, uint8_t nss)
 {
     const auto codeRate = GetCodeRate(mcsValue);
     const auto dataRate = GetDataRate(mcsValue, channelWidth, guardInterval, nss);
@@ -1682,7 +1682,7 @@ HePhy::GetDataRateFromTxVector(const WifiTxVector& txVector, uint16_t staId /* =
 }
 
 uint64_t
-HePhy::GetDataRate(uint8_t mcsValue, MHz_u channelWidth, Time guardInterval, uint8_t nss)
+HePhy::GetDataRate(uint8_t mcsValue, MHz_t channelWidth, Time guardInterval, uint8_t nss)
 {
     [[maybe_unused]] const auto gi = guardInterval.GetNanoSeconds();
     NS_ASSERT((gi == 800) || (gi == 1600) || (gi == 3200));
@@ -1695,9 +1695,9 @@ HePhy::GetDataRate(uint8_t mcsValue, MHz_u channelWidth, Time guardInterval, uin
 }
 
 uint16_t
-HePhy::GetUsableSubcarriers(MHz_u channelWidth)
+HePhy::GetUsableSubcarriers(MHz_t channelWidth)
 {
-    switch (static_cast<uint16_t>(channelWidth))
+    switch (static_cast<uint16_t>(channelWidth.to<double>()))
     {
     case 2: // 26-tone RU
         return 24;
@@ -1837,7 +1837,7 @@ HePhy::ConvertRuSubcarriers(const RuSubcarriersInfo& info)
     std::vector<WifiSpectrumBandIndices> convertedSubcarriers{};
     const auto guardBandwidth{info.guardBandwidth / info.centerFrequencies.size()};
     const auto nGuardBands =
-        static_cast<uint32_t>(((2 * MHzToHz(guardBandwidth)) / info.subcarrierSpacing) + 0.5);
+        static_cast<uint32_t>(((2 * Hz_t(guardBandwidth)) / info.subcarrierSpacing) + 0.5);
     auto bw{info.bandWidth};
     if (bw > (info.totalWidth / info.centerFrequencies.size()))
     {
@@ -1846,11 +1846,11 @@ HePhy::ConvertRuSubcarriers(const RuSubcarriersInfo& info)
     }
     // Figures 27-5 to 27-7 of IEEE 802.11ax-2021: the number of guard subcarriers is 6 for 20 MHz
     // MHz HE PPDUs and 12 for 40/80/160 MHz HE PPDUs
-    const uint32_t guardSubcarriers = (bw < MHz_u{40}) ? 6 : 12;
+    const uint32_t guardSubcarriers = (bw < MHz_t{40}) ? 6 : 12;
     const auto refRu = WifiRu::GetRuType(bw);
     const auto offset = WifiRu::GetSubcarrierGroup(bw, refRu, 1, info.mc).back().second;
     uint32_t centerFrequencyIndex = (nGuardBands / 2) + guardSubcarriers + offset;
-    const auto numBandsInBand = static_cast<size_t>(MHzToHz(bw) / info.subcarrierSpacing);
+    const auto numBandsInBand = static_cast<size_t>(Hz_t(bw) / info.subcarrierSpacing);
     centerFrequencyIndex += numBandsInBand * info.bandIndex;
     // start and stop subcarriers might be in different frequency segments, hence define a low and a
     // high center frequency

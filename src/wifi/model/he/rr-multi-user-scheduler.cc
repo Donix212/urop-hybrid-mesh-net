@@ -996,8 +996,8 @@ RrMultiUserScheduler::UpdateCredits(std::list<MasterInfo>& staList,
     // (in microseconds) times the allocated bandwidth share.
     double debitsPerMhz =
         txDuration.ToDouble(Time::US) /
-        std::accumulate(ruMap.begin(), ruMap.end(), 0, [](uint16_t sum, auto pair) {
-            return sum + pair.second * WifiRu::GetBandwidth(pair.first);
+        std::accumulate(ruMap.begin(), ruMap.end(), 0.0, [](double sum, auto pair) {
+            return sum + pair.second * WifiRu::GetBandwidth(pair.first).template to<double>();
         });
 
     // assign credits to all stations
@@ -1014,7 +1014,8 @@ RrMultiUserScheduler::UpdateCredits(std::list<MasterInfo>& staList,
         NS_ASSERT(mapIt != txVector.GetHeMuUserInfoMap().end());
 
         candidate.first->credits -=
-            debitsPerMhz * WifiRu::GetBandwidth(WifiRu::GetRuType(mapIt->second.ru));
+            debitsPerMhz *
+            WifiRu::GetBandwidth(WifiRu::GetRuType(mapIt->second.ru)).template to<double>();
     }
 
     // sort the list in decreasing order of credits

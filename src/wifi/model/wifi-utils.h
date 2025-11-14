@@ -110,42 +110,17 @@ dBm_u WToDbm(Watt_u val);
 dB_u RatioToDb(double ratio);
 
 /**
- * Convert from MHz to Hz.
- *
- * @param val the value in MHz
- *
- * @return the value in Hz
- */
-inline Hz_u
-MHzToHz(MHz_u val)
-{
-    return val * 1e6;
-}
-
-/**
- * Convert from Hz to MHz.
- *
- * @param val the value in Hz
- *
- * @return the value in MHz
- */
-inline MHz_u
-HzToMHz(Hz_u val)
-{
-    return val * 1e-6;
-}
-
-/**
  * Return the number of 20 MHz subchannels covering the channel width.
  *
  * @param channelWidth the channel width
  * @return the number of 20 MHz subchannels
  */
 inline std::size_t
-Count20MHzSubchannels(MHz_u channelWidth)
+Count20MHzSubchannels(MHz_t channelWidth)
 {
-    NS_ASSERT(static_cast<uint16_t>(channelWidth) % 20 == 0);
-    return channelWidth / MHz_u{20};
+    NS_ASSERT(static_cast<uint16_t>(channelWidth.to<double>()) % 20 == 0);
+    auto result = channelWidth / MHz_t{20};
+    return static_cast<std::size_t>(result.to<double>());
 }
 
 /**
@@ -158,11 +133,11 @@ Count20MHzSubchannels(MHz_u channelWidth)
  * @return the number of 20 MHz subchannels
  */
 inline std::size_t
-Count20MHzSubchannels(MHz_u lower, MHz_u upper)
+Count20MHzSubchannels(MHz_t lower, MHz_t upper)
 {
     NS_ASSERT(upper >= lower);
     const auto width = upper - lower;
-    NS_ASSERT((static_cast<uint16_t>(width) % 20 == 0));
+    NS_ASSERT((static_cast<uint16_t>(width.to<double>()) % 20 == 0));
     return Count20MHzSubchannels(width);
 }
 
@@ -195,7 +170,7 @@ uint32_t GetBlockAckRequestSize(BlockAckReqType type);
  * @return the total MU-BAR size in bytes
  */
 uint32_t GetMuBarSize(TriggerFrameVariant variant,
-                      MHz_u bw,
+                      MHz_t bw,
                       const std::list<BlockAckReqType>& types);
 /**
  * Return the total RTS size (including FCS trailer).

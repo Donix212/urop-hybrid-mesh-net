@@ -422,7 +422,7 @@ WifiPhyRxTraceSink::MapNodeToLinkToChannel(NodeContainer nodes)
 }
 
 // channel number, frequency
-std::optional<std::pair<uint8_t, uint16_t>>
+std::optional<std::pair<uint8_t, MHz_t>>
 WifiPhyRxTraceSink::GetChannelInfo(uint32_t nodeId, uint32_t deviceId, int link) const
 {
     auto nodeIter = m_nodeToDeviceToLinkToChannelInfo.find(nodeId);
@@ -436,7 +436,7 @@ WifiPhyRxTraceSink::GetChannelInfo(uint32_t nodeId, uint32_t deviceId, int link)
             auto linkIter = linkMap.find(link);
             if (linkIter != linkMap.end())
             {
-                return std::optional<std::pair<uint8_t, uint16_t>>(linkIter->second);
+                return std::optional<std::pair<uint8_t, MHz_t>>(linkIter->second);
             }
         }
     }

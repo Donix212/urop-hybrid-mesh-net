@@ -26,7 +26,7 @@ namespace ns3
 WifiTxVector::WifiTxVector()
     : m_txPowerLevel(WIFI_MIN_TX_PWR_LEVEL),
       m_preamble(WIFI_PREAMBLE_LONG),
-      m_channelWidth(MHz_u{20}),
+      m_channelWidth(MHz_t{20}),
       m_guardInterval(NanoSeconds(800)),
       m_nTx(1),
       m_nss(1),
@@ -52,7 +52,7 @@ WifiTxVector::WifiTxVector(WifiMode mode,
                            uint8_t nTx,
                            uint8_t nss,
                            uint8_t ness,
-                           MHz_u channelWidth,
+                           MHz_t channelWidth,
                            bool aggregation,
                            bool stbc,
                            bool ldpc,
@@ -172,7 +172,7 @@ WifiTxVector::GetPreambleType() const
     return m_preamble;
 }
 
-MHz_u
+MHz_t
 WifiTxVector::GetChannelWidth() const
 {
     return m_channelWidth;
@@ -268,7 +268,7 @@ WifiTxVector::IsLdpc() const
 bool
 WifiTxVector::IsNonHtDuplicate() const
 {
-    return ((m_channelWidth >= MHz_u{40}) && !IsMu() && (GetModulationClass() < WIFI_MOD_CLASS_HT));
+    return ((m_channelWidth >= MHz_t{40}) && !IsMu() && (GetModulationClass() < WIFI_MOD_CLASS_HT));
 }
 
 void
@@ -304,7 +304,7 @@ WifiTxVector::SetPreambleType(WifiPreamble preamble)
 }
 
 void
-WifiTxVector::SetChannelWidth(MHz_u channelWidth)
+WifiTxVector::SetChannelWidth(MHz_t channelWidth)
 {
     m_channelWidth = channelWidth;
 }
@@ -448,7 +448,7 @@ WifiTxVector::IsValid(WifiPhyBand band) const
         return false;
     }
     const auto& modeName = m_mode.GetUniqueName();
-    if (m_channelWidth == MHz_u{20})
+    if (m_channelWidth == MHz_t{20})
     {
         if (m_nss != 3 && m_nss != 6)
         {
@@ -458,7 +458,7 @@ WifiTxVector::IsValid(WifiPhyBand band) const
             }
         }
     }
-    else if (m_channelWidth == MHz_u{80})
+    else if (m_channelWidth == MHz_t{80})
     {
         if (m_nss == 3 || m_nss == 7)
         {
@@ -475,7 +475,7 @@ WifiTxVector::IsValid(WifiPhyBand band) const
             }
         }
     }
-    else if (m_channelWidth == MHz_u{160})
+    else if (m_channelWidth == MHz_t{160})
     {
         if (m_nss == 3)
         {
@@ -485,7 +485,7 @@ WifiTxVector::IsValid(WifiPhyBand band) const
             }
         }
     }
-    else if (m_channelWidth > 160)
+    else if (m_channelWidth > MHz_t{160})
     {
         if ((GetModulationClass() < WIFI_MOD_CLASS_EHT) && !IsNonHtDuplicate())
         {
@@ -663,7 +663,7 @@ WifiTxVector::IsSigBCompression() const
     // HE-SIG-B content channels in IEEE802.11ax-2021) or if a single RU occupies the whole 160 MHz
     // bandwidth (27.3.11.8.3 Common field in IEEE802.11ax-2021)
     return (IsDlMuMimo() && !IsDlOfdma()) ||
-           ((m_muUserInfos.size() == 1) && (m_channelWidth >= MHz_u{160}) &&
+           ((m_muUserInfos.size() == 1) && (m_channelWidth >= MHz_t{160}) &&
             (WifiRu::GetRuType(m_muUserInfos.cbegin()->second.ru) ==
              WifiRu::GetRuType(m_channelWidth)));
 }
@@ -674,7 +674,7 @@ WifiTxVector::SetInactiveSubchannels(const std::vector<bool>& inactiveSubchannel
     NS_ABORT_MSG_IF(m_preamble < WIFI_PREAMBLE_HE_SU,
                     "Only HE (or later) authorized for preamble puncturing");
     NS_ABORT_MSG_IF(
-        m_channelWidth < MHz_u{80},
+        m_channelWidth < MHz_t{80},
         "Preamble puncturing only possible for transmission bandwidth of 80 MHz or larger");
     NS_ABORT_MSG_IF(!inactiveSubchannels.empty() &&
                         inactiveSubchannels.size() != Count20MHzSubchannels(m_channelWidth),
@@ -703,7 +703,7 @@ WifiTxVector::SetCenter26ToneRuIndication(Center26ToneRuIndication center26ToneR
 std::optional<Center26ToneRuIndication>
 WifiTxVector::GetCenter26ToneRuIndication() const
 {
-    if ((GetModulationClass() != WIFI_MOD_CLASS_HE) || !IsDlMu() || (m_channelWidth < MHz_u{80}))
+    if ((GetModulationClass() != WIFI_MOD_CLASS_HE) || !IsDlMu() || (m_channelWidth < MHz_t{80}))
     {
         return std::nullopt;
     }
@@ -823,8 +823,8 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
         }
         const auto ruBw = WifiRu::GetBandwidth(ruType);
         const auto rusPerSubchannel =
-            WifiRu::GetRusOfType(ruBw > MHz_u{20} ? ruBw : MHz_u{20}, ruType, mc);
-        if ((m_channelWidth >= MHz_u{80}) && (ruIndex > 19))
+            WifiRu::GetRusOfType(ruBw > MHz_t{20} ? ruBw : MHz_t{20}, ruType, mc);
+        if ((m_channelWidth >= MHz_t{80}) && (ruIndex > 19))
         {
             // "ignore" the center 26-tone RUs in 80 MHz channels
             ruIndex--;
@@ -833,8 +833,8 @@ WifiTxVector::DeriveRuAllocation(uint8_t p20Index) const
                 ruIndex -= (ruIndex - 19) / 37;
             }
         }
-        const auto numSubchannelsForRu = (ruBw < MHz_u{20}) ? 1 : Count20MHzSubchannels(ruBw);
-        const auto index = (ruBw < MHz_u{20}) ? ((ruIndex - 1) / rusPerSubchannel.size())
+        const auto numSubchannelsForRu = (ruBw < MHz_t{20}) ? 1 : Count20MHzSubchannels(ruBw);
+        const auto index = (ruBw < MHz_t{20}) ? ((ruIndex - 1) / rusPerSubchannel.size())
                                               : ((ruIndex - 1) * numSubchannelsForRu);
         NS_ABORT_IF(index >= Count20MHzSubchannels(m_channelWidth));
         auto ruAlloc = WifiRu::GetEqualizedRuAllocation(ruType, false, true, mc);

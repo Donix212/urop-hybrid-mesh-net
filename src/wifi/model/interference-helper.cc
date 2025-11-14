@@ -400,14 +400,14 @@ InterferenceHelper::UpdateEvent(Ptr<Event> event, const RxPowerWattPerChannelBan
 scalar_t
 InterferenceHelper::CalculateSnr(Watt_t signal,
                                  Watt_t noiseInterference,
-                                 MHz_u channelWidth,
+                                 MHz_t channelWidth,
                                  uint8_t nss) const
 {
     NS_LOG_FUNCTION(this << signal << noiseInterference << channelWidth << +nss);
     // thermal noise at 290K in J/s = W
     static const double BOLTZMANN = 1.3803e-23;
     // Nt is the power of thermal noise in W
-    const auto Nt = BOLTZMANN * 290 * MHzToHz(channelWidth);
+    const auto Nt = BOLTZMANN * 290 * Hz_t(channelWidth).to<double>();
     // receiver noise Floor which accounts for thermal noise and non-idealities of the receiver
     Watt_t noiseFloor{m_noiseFigure.to<double>() * Nt};
     Watt_t noise = noiseFloor + noiseInterference;
@@ -561,7 +561,7 @@ InterferenceHelper::CalculatePayloadChunkSuccessRate(scalar_t sinr,
 
 double
 InterferenceHelper::CalculatePayloadPer(Ptr<const Event> event,
-                                        MHz_u channelWidth,
+                                        MHz_t channelWidth,
                                         NiChangesPerBand* nis,
                                         const WifiSpectrumBandInfo& band,
                                         uint16_t staId,
@@ -643,7 +643,7 @@ InterferenceHelper::CalculatePayloadPer(Ptr<const Event> event,
 double
 InterferenceHelper::CalculatePhyHeaderSectionPsr(Ptr<const Event> event,
                                                  NiChangesPerBand* nis,
-                                                 MHz_u channelWidth,
+                                                 MHz_t channelWidth,
                                                  const WifiSpectrumBandInfo& band,
                                                  PhyHeaderSections phyHeaderSections) const
 {
@@ -706,7 +706,7 @@ InterferenceHelper::CalculatePhyHeaderSectionPsr(Ptr<const Event> event,
 double
 InterferenceHelper::CalculatePhyHeaderPer(Ptr<const Event> event,
                                           NiChangesPerBand* nis,
-                                          MHz_u channelWidth,
+                                          MHz_t channelWidth,
                                           const WifiSpectrumBandInfo& band,
                                           WifiPpduField header) const
 {
@@ -735,7 +735,7 @@ InterferenceHelper::CalculatePhyHeaderPer(Ptr<const Event> event,
 
 SnrPer
 InterferenceHelper::CalculatePayloadSnrPer(Ptr<Event> event,
-                                           MHz_u channelWidth,
+                                           MHz_t channelWidth,
                                            const WifiSpectrumBandInfo& band,
                                            uint16_t staId,
                                            std::pair<Time, Time> relativeMpduStartStop) const
@@ -760,7 +760,7 @@ InterferenceHelper::CalculatePayloadSnrPer(Ptr<Event> event,
 
 scalar_t
 InterferenceHelper::CalculateSnr(Ptr<Event> event,
-                                 MHz_u channelWidth,
+                                 MHz_t channelWidth,
                                  uint8_t nss,
                                  const WifiSpectrumBandInfo& band) const
 {
@@ -771,7 +771,7 @@ InterferenceHelper::CalculateSnr(Ptr<Event> event,
 
 SnrPer
 InterferenceHelper::CalculatePhyHeaderSnrPer(Ptr<Event> event,
-                                             MHz_u channelWidth,
+                                             MHz_t channelWidth,
                                              const WifiSpectrumBandInfo& band,
                                              WifiPpduField header) const
 {
@@ -839,8 +839,8 @@ InterferenceHelper::IsBandInFrequencyRange(const WifiSpectrumBandInfo& band,
     return std::all_of(band.frequencies.cbegin(),
                        band.frequencies.cend(),
                        [&freqRange](const auto& freqs) {
-                           return ((freqs.second > MHzToHz(freqRange.minFrequency)) &&
-                                   (freqs.first < MHzToHz(freqRange.maxFrequency)));
+                           return ((freqs.second > Hz_t(freqRange.minFrequency)) &&
+                                   (freqs.first < Hz_t(freqRange.maxFrequency)));
                        });
 }
 

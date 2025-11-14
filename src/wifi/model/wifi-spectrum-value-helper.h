@@ -54,10 +54,10 @@ class WifiSpectrumValueHelper
      * @return the static SpectrumModel instance corresponding to the
      * given carrier frequency and channel width configuration.
      */
-    static Ptr<SpectrumModel> GetSpectrumModel(const std::vector<MHz_u>& centerFrequencies,
-                                               MHz_u channelWidth,
-                                               Hz_u carrierSpacing,
-                                               MHz_u guardBandwidth);
+    static Ptr<SpectrumModel> GetSpectrumModel(const std::vector<MHz_t>& centerFrequencies,
+                                               MHz_t channelWidth,
+                                               Hz_t carrierSpacing,
+                                               MHz_t guardBandwidth);
 
     /**
      * Create a transmit power spectral density corresponding to DSSS
@@ -73,9 +73,9 @@ class WifiSpectrumValueHelper
      * @returns a pointer to a newly allocated SpectrumValue representing the DSSS Transmit Power
      * Spectral Density in W/Hz
      */
-    static Ptr<SpectrumValue> CreateDsssTxPowerSpectralDensity(MHz_u centerFrequency,
+    static Ptr<SpectrumValue> CreateDsssTxPowerSpectralDensity(MHz_t centerFrequency,
                                                                Watt_t txPower,
-                                                               MHz_u guardBandwidth);
+                                                               MHz_t guardBandwidth);
 
     /**
      * Create a transmit power spectral density corresponding to OFDM
@@ -92,10 +92,10 @@ class WifiSpectrumValueHelper
      * @return a pointer to a newly allocated SpectrumValue representing the OFDM Transmit Power
      * Spectral Density in W/Hz for each Band
      */
-    static Ptr<SpectrumValue> CreateOfdmTxPowerSpectralDensity(MHz_u centerFrequency,
-                                                               MHz_u channelWidth,
+    static Ptr<SpectrumValue> CreateOfdmTxPowerSpectralDensity(MHz_t centerFrequency,
+                                                               MHz_t channelWidth,
                                                                Watt_t txPower,
-                                                               MHz_u guardBandwidth,
+                                                               MHz_t guardBandwidth,
                                                                dBr_t minInnerBand = dBr_t{-20},
                                                                dBr_t minOuterband = dBr_t{-28},
                                                                dBr_t lowestPoint = dBr_t{-40});
@@ -116,10 +116,10 @@ class WifiSpectrumValueHelper
      * Transmit Power Spectral Density in W/Hz for each Band
      */
     static Ptr<SpectrumValue> CreateDuplicated20MhzTxPowerSpectralDensity(
-        const std::vector<MHz_u>& centerFrequencies,
-        MHz_u channelWidth,
+        const std::vector<MHz_t>& centerFrequencies,
+        MHz_t channelWidth,
         Watt_t txPower,
-        MHz_u guardBandwidth,
+        MHz_t guardBandwidth,
         dBr_t minInnerBand = dBr_t{-20},
         dBr_t minOuterband = dBr_t{-28},
         dBr_t lowestPoint = dBr_t{-40},
@@ -140,10 +140,10 @@ class WifiSpectrumValueHelper
      * Spectral Density in W/Hz for each Band
      */
     static Ptr<SpectrumValue> CreateHtOfdmTxPowerSpectralDensity(
-        const std::vector<MHz_u>& centerFrequencies,
-        MHz_u channelWidth,
+        const std::vector<MHz_t>& centerFrequencies,
+        MHz_t channelWidth,
         Watt_t txPower,
-        MHz_u guardBandwidth,
+        MHz_t guardBandwidth,
         dBr_t minInnerBand = dBr_t{-20},
         dBr_t minOuterband = dBr_t{-28},
         dBr_t lowestPoint = dBr_t{-40});
@@ -165,10 +165,10 @@ class WifiSpectrumValueHelper
      * Spectral Density in W/Hz for each Band
      */
     static Ptr<SpectrumValue> CreateHeOfdmTxPowerSpectralDensity(
-        MHz_u centerFrequency,
-        MHz_u channelWidth,
+        MHz_t centerFrequency,
+        MHz_t channelWidth,
         Watt_t txPower,
-        MHz_u guardBandwidth,
+        MHz_t guardBandwidth,
         dBr_t minInnerBand = dBr_t{-20},
         dBr_t minOuterband = dBr_t{-28},
         dBr_t lowestPoint = dBr_t{-40},
@@ -191,10 +191,10 @@ class WifiSpectrumValueHelper
      * Spectral Density in W/Hz for each Band
      */
     static Ptr<SpectrumValue> CreateHeOfdmTxPowerSpectralDensity(
-        const std::vector<MHz_u>& centerFrequencies,
-        MHz_u channelWidth,
+        const std::vector<MHz_t>& centerFrequencies,
+        MHz_t channelWidth,
         Watt_t txPower,
-        MHz_u guardBandwidth,
+        MHz_t guardBandwidth,
         dBr_t minInnerBand = dBr_t{-20},
         dBr_t minOuterband = dBr_t{-28},
         dBr_t lowestPoint = dBr_t{-40},
@@ -214,10 +214,10 @@ class WifiSpectrumValueHelper
      * Spectral Density on the RU used by the STA in W/Hz for each Band
      */
     static Ptr<SpectrumValue> CreateHeMuOfdmTxPowerSpectralDensity(
-        const std::vector<MHz_u>& centerFrequencies,
-        MHz_u channelWidth,
+        const std::vector<MHz_t>& centerFrequencies,
+        MHz_t channelWidth,
         Watt_t txPower,
-        MHz_u guardBandwidth,
+        MHz_t guardBandwidth,
         const std::vector<WifiSpectrumBandIndices>& ru);
 
     /**
@@ -307,8 +307,8 @@ class WifiSpectrumValueHelper
  */
 struct FrequencyRange
 {
-    MHz_u minFrequency{0}; ///< the minimum frequency
-    MHz_u maxFrequency{0}; ///< the maximum frequency
+    MHz_t minFrequency{0}; ///< the minimum frequency
+    MHz_t maxFrequency{0}; ///< the maximum frequency
 };
 
 /**
@@ -354,16 +354,16 @@ bool operator!=(const FrequencyRange& lhs, const FrequencyRange& rhs);
 std::ostream& operator<<(std::ostream& os, const FrequencyRange& freqRange);
 
 /// Identifier for the frequency range covering the whole wifi spectrum
-constexpr FrequencyRange WHOLE_WIFI_SPECTRUM = {MHz_u{2401}, MHz_u{7125}};
+constexpr FrequencyRange WHOLE_WIFI_SPECTRUM = {MHz_t{2401}, MHz_t{7125}};
 
 /// Identifier for the frequency range covering the wifi spectrum in the 2.4 GHz band
-constexpr FrequencyRange WIFI_SPECTRUM_2_4_GHZ = {MHz_u{2401}, MHz_u{2483}};
+constexpr FrequencyRange WIFI_SPECTRUM_2_4_GHZ = {MHz_t{2401}, MHz_t{2483}};
 
 /// Identifier for the frequency range covering the wifi spectrum in the 5 GHz band
-constexpr FrequencyRange WIFI_SPECTRUM_5_GHZ = {MHz_u{5170}, MHz_u{5915}};
+constexpr FrequencyRange WIFI_SPECTRUM_5_GHZ = {MHz_t{5170}, MHz_t{5915}};
 
 /// Identifier for the frequency range covering the wifi spectrum in the 6 GHz band
-constexpr FrequencyRange WIFI_SPECTRUM_6_GHZ = {MHz_u{5945}, MHz_u{7125}};
+constexpr FrequencyRange WIFI_SPECTRUM_6_GHZ = {MHz_t{5945}, MHz_t{7125}};
 
 } // namespace ns3
 

@@ -22,6 +22,7 @@
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
 #include "ns3/sta-wifi-mac.h"
+#include "ns3/units.h"
 #include "ns3/wifi-net-device.h"
 #include "ns3/wifi-remote-station-manager.h"
 #include "ns3/wifi-utils.h"
@@ -205,8 +206,8 @@ WifiStaticSetupHelper::GetLinkIdMap(Ptr<ApWifiMac> apMac, Ptr<StaWifiMac> client
             }
             NS_LOG_DEBUG("AP channel: " << apPhy->GetOperatingChannel());
             NS_LOG_DEBUG("Client channel: " << clientPhy->GetOperatingChannel());
-            const auto isMatch = (apPhy->GetOperatingChannel().GetPrimaryChannel(MHz_u{20}) ==
-                                  clientPhy->GetOperatingChannel().GetPrimaryChannel(MHz_u{20}));
+            const auto isMatch = (apPhy->GetOperatingChannel().GetPrimaryChannel(MHz_t{20}) ==
+                                  clientPhy->GetOperatingChannel().GetPrimaryChannel(MHz_t{20}));
             NS_LOG_DEBUG("Client Link ID = " << +clientLinkId << ", AP Link ID Candidate="
                                              << +apLinkId << ", isMatch=" << isMatch);
             if (isMatch)

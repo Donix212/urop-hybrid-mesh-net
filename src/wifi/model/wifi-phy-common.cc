@@ -232,35 +232,35 @@ GetModulationClassForStandard(WifiStandard standard)
     return modulationClass;
 }
 
-std::set<MHz_u>
+std::set<MHz_t>
 GetSupportedChannelWidthSet(WifiStandard standard, WifiPhyBand band)
 {
     switch (standard)
     {
     case WIFI_STANDARD_80211p:
-        return {MHz_u{5}};
+        return {MHz_t{5}};
     case WIFI_STANDARD_80211a:
     case WIFI_STANDARD_80211g:
-        return {MHz_u{20}};
+        return {MHz_t{20}};
     case WIFI_STANDARD_80211b:
-        return {MHz_u{22}};
+        return {MHz_t{22}};
     case WIFI_STANDARD_80211n:
-        return {MHz_u{20}, MHz_u{40}};
+        return {MHz_t{20}, MHz_t{40}};
     case WIFI_STANDARD_80211ac:
-        return {MHz_u{80}, MHz_u{160}};
+        return {MHz_t{80}, MHz_t{160}};
     case WIFI_STANDARD_80211ax:
         return (band == WifiPhyBand::WIFI_PHY_BAND_2_4GHZ)
-                   ? std::set<MHz_u>{MHz_u{20}, MHz_u{40}}
-                   : std::set<MHz_u>{MHz_u{20}, MHz_u{80}, MHz_u{160}};
+                   ? std::set<MHz_t>{MHz_t{20}, MHz_t{40}}
+                   : std::set<MHz_t>{MHz_t{20}, MHz_t{80}, MHz_t{160}};
     case WIFI_STANDARD_80211be:
         switch (band)
         {
         case WifiPhyBand::WIFI_PHY_BAND_2_4GHZ:
-            return {MHz_u{20}, MHz_u{40}};
+            return {MHz_t{20}, MHz_t{40}};
         case WifiPhyBand::WIFI_PHY_BAND_5GHZ:
-            return {MHz_u{20}, MHz_u{80}, MHz_u{160}};
+            return {MHz_t{20}, MHz_t{80}, MHz_t{160}};
         case WifiPhyBand::WIFI_PHY_BAND_6GHZ:
-            return {MHz_u{20}, MHz_u{80}, MHz_u{160}, MHz_u{320}};
+            return {MHz_t{20}, MHz_t{80}, MHz_t{160}, MHz_t{320}};
         default:
             NS_ABORT_MSG("Unknown band: " << band);
             return {};
@@ -271,59 +271,59 @@ GetSupportedChannelWidthSet(WifiStandard standard, WifiPhyBand band)
     }
 }
 
-MHz_u
+MHz_t
 GetMaximumChannelWidth(WifiModulationClass modulation)
 {
     switch (modulation)
     {
     case WIFI_MOD_CLASS_DSSS:
     case WIFI_MOD_CLASS_HR_DSSS:
-        return MHz_u{22};
+        return MHz_t{22};
     case WIFI_MOD_CLASS_OFDM:
     case WIFI_MOD_CLASS_ERP_OFDM:
-        return MHz_u{20};
+        return MHz_t{20};
     case WIFI_MOD_CLASS_HT:
-        return MHz_u{40};
+        return MHz_t{40};
     case WIFI_MOD_CLASS_VHT:
     case WIFI_MOD_CLASS_HE:
-        return MHz_u{160};
+        return MHz_t{160};
     case WIFI_MOD_CLASS_EHT:
-        return MHz_u{320};
+        return MHz_t{320};
     default:
         NS_ABORT_MSG("Unknown modulation class: " << modulation);
-        return MHz_u{0};
+        return MHz_t{0};
     }
 }
 
-MHz_u
+MHz_t
 GetChannelWidthInMhz(WifiChannelWidthType width)
 {
     switch (width)
     {
     case WifiChannelWidthType::UNKNOWN:
-        return MHz_u{0};
+        return MHz_t{0};
     case WifiChannelWidthType::CW_20MHZ:
-        return MHz_u{20};
+        return MHz_t{20};
     case WifiChannelWidthType::CW_22MHZ:
-        return MHz_u{22};
+        return MHz_t{22};
     case WifiChannelWidthType::CW_5MHZ:
-        return MHz_u{5};
+        return MHz_t{5};
     case WifiChannelWidthType::CW_10MHZ:
-        return MHz_u{10};
+        return MHz_t{10};
     case WifiChannelWidthType::CW_40MHZ:
-        return MHz_u{40};
+        return MHz_t{40};
     case WifiChannelWidthType::CW_80MHZ:
-        return MHz_u{80};
+        return MHz_t{80};
     case WifiChannelWidthType::CW_160MHZ:
     case WifiChannelWidthType::CW_80_PLUS_80MHZ:
-        return MHz_u{160};
+        return MHz_t{160};
     case WifiChannelWidthType::CW_320MHZ:
-        return MHz_u{320};
+        return MHz_t{320};
     case WifiChannelWidthType::CW_2160MHZ:
-        return MHz_u{2160};
+        return MHz_t{2160};
     default:
         NS_FATAL_ERROR("Unknown wifi channel width type " << width);
-        return MHz_u{0};
+        return MHz_t{0};
     }
 }
 

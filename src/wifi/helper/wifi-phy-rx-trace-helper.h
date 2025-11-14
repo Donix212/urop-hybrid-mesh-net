@@ -11,6 +11,7 @@
 #include "ns3/object.h"
 #include "ns3/phy-entity.h"
 #include "ns3/ptr.h"
+#include "ns3/units.h"
 #include "ns3/wifi-phy-common.h"
 #include "ns3/wifi-phy-state.h"
 #include "ns3/wifi-ppdu.h"
@@ -352,11 +353,11 @@ class WifiPhyRxTraceSink : public Object
      * @param node The node ID.
      * @param deviceId The device ID of the WifiNetDevice.
      * @param link The link ID.
-     * @return A pair containing the channel number (uint8_t) and frequency (uint16_t).
+     * @return A pair containing the channel number (uint8_t) and frequency (MHz_t).
      */
-    std::optional<std::pair<uint8_t, uint16_t>> GetChannelInfo(uint32_t node,
-                                                               uint32_t deviceId,
-                                                               int link) const;
+    std::optional<std::pair<uint8_t, MHz_t>> GetChannelInfo(uint32_t node,
+                                                            uint32_t deviceId,
+                                                            int link) const;
 
     /**
      * Starts the statistics collection period from a specified start time. Ongoing PPDUs when this
@@ -651,7 +652,7 @@ class WifiPhyRxTraceSink : public Object
      * of the channel number and frequency. This structure is vital for understanding the channel
      * and frequency utilization across different links.
      */
-    std::map<uint32_t, std::map<uint32_t, std::map<int, std::pair<uint8_t, uint16_t>>>>
+    std::map<uint32_t, std::map<uint32_t, std::map<int, std::pair<uint8_t, MHz_t>>>>
         m_nodeToDeviceToLinkToChannelInfo;
 
   private:

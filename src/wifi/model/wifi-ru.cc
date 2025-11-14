@@ -13,7 +13,7 @@
 namespace ns3
 {
 
-WifiRu::RuSpecCompare::RuSpecCompare(MHz_u channelWidth, uint8_t p20Index)
+WifiRu::RuSpecCompare::RuSpecCompare(MHz_t channelWidth, uint8_t p20Index)
     : m_channelWidth(channelWidth),
       m_p20Index(p20Index)
 {
@@ -54,7 +54,7 @@ WifiRu::GetIndex(RuSpec ruVariant)
 }
 
 std::size_t
-WifiRu::GetPhyIndex(RuSpec ruVariant, MHz_u bw, uint8_t p20Index)
+WifiRu::GetPhyIndex(RuSpec ruVariant, MHz_t bw, uint8_t p20Index)
 {
     return std::visit([&](auto&& ru) { return ru.GetPhyIndex(bw, p20Index); }, ruVariant);
 }
@@ -74,35 +74,35 @@ WifiRu::GetMaxRuType(WifiModulationClass mc)
     }
 }
 
-MHz_u
+MHz_t
 WifiRu::GetBandwidth(RuType ruType)
 {
     switch (ruType)
     {
     case RuType::RU_26_TONE:
-        return MHz_u{2};
+        return MHz_t{2};
     case RuType::RU_52_TONE:
-        return MHz_u{4};
+        return MHz_t{4};
     case RuType::RU_106_TONE:
-        return MHz_u{8};
+        return MHz_t{8};
     case RuType::RU_242_TONE:
-        return MHz_u{20};
+        return MHz_t{20};
     case RuType::RU_484_TONE:
-        return MHz_u{40};
+        return MHz_t{40};
     case RuType::RU_996_TONE:
-        return MHz_u{80};
+        return MHz_t{80};
     case RuType::RU_2x996_TONE:
-        return MHz_u{160};
+        return MHz_t{160};
     case RuType::RU_4x996_TONE:
-        return MHz_u{320};
+        return MHz_t{320};
     default:
         NS_ABORT_MSG("RU type " << ruType << " not found");
-        return MHz_u{0};
+        return MHz_t{0};
     }
 }
 
 RuType
-WifiRu::GetRuType(MHz_u bandwidth)
+WifiRu::GetRuType(MHz_t bandwidth)
 {
     switch (static_cast<uint16_t>(bandwidth))
     {
@@ -129,7 +129,7 @@ WifiRu::GetRuType(MHz_u bandwidth)
 }
 
 std::size_t
-WifiRu::GetNRus(MHz_u bw, RuType ruType, WifiModulationClass mc)
+WifiRu::GetNRus(MHz_t bw, RuType ruType, WifiModulationClass mc)
 {
     if (ruType > GetMaxRuType(mc))
     {
@@ -139,7 +139,7 @@ WifiRu::GetNRus(MHz_u bw, RuType ruType, WifiModulationClass mc)
 }
 
 SubcarrierGroup
-WifiRu::GetSubcarrierGroup(MHz_u bw, RuType ruType, std::size_t phyIndex, WifiModulationClass mc)
+WifiRu::GetSubcarrierGroup(MHz_t bw, RuType ruType, std::size_t phyIndex, WifiModulationClass mc)
 {
     return (mc == WIFI_MOD_CLASS_HE) ? HeRu::GetSubcarrierGroup(bw, ruType, phyIndex)
                                      : EhtRu::GetSubcarrierGroup(bw, ruType, phyIndex);
@@ -170,7 +170,7 @@ WifiRu::GetRuSpecs(uint16_t ruAllocation, WifiModulationClass mc)
 }
 
 std::vector<WifiRu::RuSpec>
-WifiRu::GetRusOfType(MHz_u bw, RuType ruType, WifiModulationClass mc)
+WifiRu::GetRusOfType(MHz_t bw, RuType ruType, WifiModulationClass mc)
 {
     std::vector<RuSpec> rus;
     if (mc == WIFI_MOD_CLASS_HE)
@@ -187,7 +187,7 @@ WifiRu::GetRusOfType(MHz_u bw, RuType ruType, WifiModulationClass mc)
 }
 
 std::vector<WifiRu::RuSpec>
-WifiRu::GetCentral26TonesRus(MHz_u bw, RuType ruType, WifiModulationClass mc)
+WifiRu::GetCentral26TonesRus(MHz_t bw, RuType ruType, WifiModulationClass mc)
 {
     std::vector<RuSpec> central26TonesRus;
     if (mc == WIFI_MOD_CLASS_HE)
@@ -204,7 +204,7 @@ WifiRu::GetCentral26TonesRus(MHz_u bw, RuType ruType, WifiModulationClass mc)
 }
 
 bool
-WifiRu::DoesOverlap(MHz_u bw, RuSpec ru, const std::vector<RuSpec>& v)
+WifiRu::DoesOverlap(MHz_t bw, RuSpec ru, const std::vector<RuSpec>& v)
 {
     if (IsHe(ru))
     {
@@ -223,7 +223,7 @@ WifiRu::DoesOverlap(MHz_u bw, RuSpec ru, const std::vector<RuSpec>& v)
 }
 
 WifiRu::RuSpec
-WifiRu::FindOverlappingRu(MHz_u bw, RuSpec referenceRu, RuType searchedRuType)
+WifiRu::FindOverlappingRu(MHz_t bw, RuSpec referenceRu, RuType searchedRuType)
 {
     return IsHe(referenceRu) ? RuSpec{HeRu::FindOverlappingRu(bw,
                                                               std::get<HeRu::RuSpec>(referenceRu),
@@ -234,7 +234,7 @@ WifiRu::FindOverlappingRu(MHz_u bw, RuSpec referenceRu, RuType searchedRuType)
 }
 
 RuType
-WifiRu::GetEqualSizedRusForStations(MHz_u bandwidth,
+WifiRu::GetEqualSizedRusForStations(MHz_t bandwidth,
                                     std::size_t& nStations,
                                     std::size_t& nCentral26TonesRus,
                                     WifiModulationClass mc)

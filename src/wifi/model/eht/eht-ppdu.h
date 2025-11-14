@@ -10,6 +10,7 @@
 #define EHT_PPDU_H
 
 #include "ns3/he-ppdu.h"
+#include "ns3/units.h"
 
 #include <optional>
 
@@ -105,7 +106,7 @@ class EhtPpdu : public HePpdu
      * @return a pair containing the number of RUs in each EHT-SIG-B content channel (resp. 1 and 2)
      */
     static std::pair<std::size_t, std::size_t> GetNumRusPerEhtSigBContentChannel(
-        MHz_u channelWidth,
+        MHz_t channelWidth,
         uint8_t ehtPpduType,
         const RuAllocation& ruAllocation,
         bool compression,
@@ -131,7 +132,7 @@ class EhtPpdu : public HePpdu
      * @param numMuMimoUsers the number of MU-MIMO users addressed by the PPDU
      * @return field size in bytes
      */
-    static uint32_t GetEhtSigFieldSize(MHz_u channelWidth,
+    static uint32_t GetEhtSigFieldSize(MHz_t channelWidth,
                                        const RuAllocation& ruAllocation,
                                        uint8_t ehtPpduType,
                                        bool compression,
@@ -153,7 +154,7 @@ class EhtPpdu : public HePpdu
 
   protected:
     WifiRu::RuSpec GetRuSpec(std::size_t ruAllocIndex,
-                             MHz_u bw,
+                             MHz_t bw,
                              RuType ruType,
                              std::size_t phyIndex) const override;
 
@@ -184,7 +185,7 @@ class EhtPpdu : public HePpdu
      * @param channel the operating channel of the PHY
      * @return the value used to encode the bandwidth field in U-SIG
      */
-    static uint8_t GetChannelWidthEncodingFromMhz(MHz_u channelWidth,
+    static uint8_t GetChannelWidthEncodingFromMhz(MHz_t channelWidth,
                                                   const WifiPhyOperatingChannel& channel);
 
     /**
@@ -193,7 +194,7 @@ class EhtPpdu : public HePpdu
      * @param bandwidth the value of the bandwidth field in U-SIG
      * @return the channel width in MHz
      */
-    static MHz_u GetChannelWidthMhzFromEncoding(uint8_t bandwidth);
+    static MHz_t GetChannelWidthMhzFromEncoding(uint8_t bandwidth);
 
     EhtPhyHeader m_ehtPhyHeader; //!< the EHT PHY header
 };

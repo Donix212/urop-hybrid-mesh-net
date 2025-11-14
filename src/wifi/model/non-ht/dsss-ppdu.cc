@@ -13,6 +13,7 @@
 #include "dsss-phy.h"
 
 #include "ns3/log.h"
+#include "ns3/units.h"
 #include "ns3/wifi-phy-operating-channel.h"
 #include "ns3/wifi-phy.h"
 #include "ns3/wifi-psdu.h"
@@ -45,7 +46,7 @@ DsssPpdu::SetDsssHeader(DsssSigHeader& dsssSig,
                         const WifiTxVector& txVector,
                         Time ppduDuration) const
 {
-    dsssSig.SetRate(txVector.GetMode().GetDataRate(MHz_u{22}));
+    dsssSig.SetRate(txVector.GetMode().GetDataRate(MHz_t{22}));
     Time psduDuration = ppduDuration - WifiPhy::CalculatePhyPreambleAndHeaderDuration(txVector);
     dsssSig.SetLength(psduDuration.GetMicroSeconds());
 }
@@ -55,7 +56,7 @@ DsssPpdu::DoGetTxVector() const
 {
     WifiTxVector txVector;
     txVector.SetPreambleType(m_preamble);
-    txVector.SetChannelWidth(MHz_u{22});
+    txVector.SetChannelWidth(MHz_t{22});
     SetTxVectorFromDsssHeader(txVector, m_dsssSig);
     return txVector;
 }

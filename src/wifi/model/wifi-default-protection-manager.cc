@@ -266,7 +266,7 @@ WifiDefaultProtectionManager::TryAddMpduToMuPpdu(Ptr<const WifiMpdu> mpdu,
         NS_ABORT_MSG_IF(m_mac->GetTypeOfStation() != AP, "HE APs only can send DL MU PPDUs");
         auto modClass = txParams.m_txVector.GetModulationClass();
         auto txWidth = modClass == WIFI_MOD_CLASS_DSSS || modClass == WIFI_MOD_CLASS_HR_DSSS
-                           ? MHz_u{20}
+                           ? MHz_t{20}
                            : txParams.m_txVector.GetChannelWidth();
 
         if (protection != nullptr)
@@ -305,7 +305,7 @@ WifiDefaultProtectionManager::TryAddMpduToMuPpdu(Ptr<const WifiMpdu> mpdu,
             const auto isPunctured =
                 std::find(inactiveSubchannels.cbegin(), inactiveSubchannels.cend(), true) !=
                 inactiveSubchannels.cend();
-            const auto muRtsVariant = ((txWidth == MHz_u{320}) || isPunctured)
+            const auto muRtsVariant = ((txWidth == MHz_t{320}) || isPunctured)
                                           ? TriggerFrameVariant::EHT
                                           : TriggerFrameVariant::HE;
             protection->muRts.SetVariant(muRtsVariant);

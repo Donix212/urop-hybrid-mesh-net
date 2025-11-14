@@ -16,6 +16,7 @@
 #include "ns3/nstime.h"
 #include "ns3/object.h"
 #include "ns3/traced-callback.h"
+#include "ns3/units.h"
 
 #include <algorithm>
 #include <map>
@@ -252,7 +253,7 @@ class ChannelAccessManager : public Object
      * @return the width of the largest primary channel that has been idle for the given time
      * interval before the given time, if any primary channel has been idle, or zero, otherwise
      */
-    MHz_u GetLargestIdlePrimaryChannel(Time interval, Time end);
+    MHz_t GetLargestIdlePrimaryChannel(Time interval, Time end);
 
     /**
      * @param indices a set of indices (starting at 0) specifying the 20 MHz channels to test
