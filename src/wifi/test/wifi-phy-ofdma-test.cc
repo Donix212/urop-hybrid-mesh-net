@@ -10,6 +10,7 @@
 #include "ns3/boolean.h"
 #include "ns3/constant-position-mobility-model.h"
 #include "ns3/ctrl-headers.h"
+#include "ns3/dbm-per-mhz.h"
 #include "ns3/dbm.h"
 #include "ns3/demangle.h"
 #include "ns3/double.h"
@@ -54,10 +55,10 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WifiPhyOfdmaTest");
 
 static const uint8_t DEFAULT_CHANNEL_NUMBER = 36;
-static const MHz_u DEFAULT_FREQUENCY{5180};
+static const MHz_t DEFAULT_FREQUENCY{5180};
 static const WifiPhyBand DEFAULT_WIFI_BAND = WIFI_PHY_BAND_5GHZ;
-static const MHz_u DEFAULT_CHANNEL_WIDTH{20};
-static const MHz_u DEFAULT_GUARD_WIDTH =
+static const MHz_t DEFAULT_CHANNEL_WIDTH{20};
+static const MHz_t DEFAULT_GUARD_WIDTH =
     DEFAULT_CHANNEL_WIDTH; // expanded to channel width to model spectrum mask
 
 /**
@@ -154,7 +155,7 @@ OfdmaTestPhy<PhyEntityType>::GetNonOfdmaBand(const WifiTxVector& txVector, uint1
         WifiRu::GetPhyIndex(
             nonOfdmaRu,
             channelWidth,
-            PhyEntityType::m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_u{20})),
+            PhyEntityType::m_wifiPhy->GetOperatingChannel().GetPrimaryChannelIndex(MHz_t{20})),
         mc);
     const auto indices = PhyEntityType::ConvertRuSubcarriers(
         {channelWidth,
@@ -511,8 +512,8 @@ class TestDlOfdmaPhyTransmission : public TestCase
     Ptr<OfdmaSpectrumWifiPhy<LatestPhyEntityType>> m_phySta3; ///< PHY of STA 3
     Ptr<WaveformGenerator> m_phyInterferer;                   ///< PHY of interferer
 
-    MHz_u m_frequency{DEFAULT_FREQUENCY};        ///< frequency
-    MHz_u m_channelWidth{DEFAULT_CHANNEL_WIDTH}; ///< channel width
+    MHz_t m_frequency{DEFAULT_FREQUENCY};        ///< frequency
+    MHz_t m_channelWidth{DEFAULT_CHANNEL_WIDTH}; ///< channel width
     Time m_expectedPpduDuration;                 ///< expected duration to send MU PPDU
 };
 
@@ -566,26 +567,26 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::SendMuPpdu(uint16_t rxStaId1, u
         txVector.SetEhtPpduType(0);
     }
     auto ruType{RuType::RU_TYPE_MAX};
-    if (m_channelWidth == MHz_u{20})
+    if (m_channelWidth == MHz_t{20})
     {
         ruType = RuType::RU_106_TONE;
         const uint16_t ruAllocPer20 = (m_modClass == WIFI_MOD_CLASS_HE) ? 96 : 48;
         txVector.SetRuAllocation({ruAllocPer20}, 0);
     }
-    else if (m_channelWidth == MHz_u{40})
+    else if (m_channelWidth == MHz_t{40})
     {
         ruType = RuType::RU_242_TONE;
         const uint16_t ruAllocPer20 = (m_modClass == WIFI_MOD_CLASS_HE) ? 192 : 64;
         txVector.SetRuAllocation({ruAllocPer20, ruAllocPer20}, 0);
     }
-    else if (m_channelWidth == MHz_u{80})
+    else if (m_channelWidth == MHz_t{80})
     {
         ruType = RuType::RU_484_TONE;
         const uint16_t ruAllocUser = (m_modClass == WIFI_MOD_CLASS_HE) ? 200 : 72;
         const uint16_t ruAllocNoUser = (m_modClass == WIFI_MOD_CLASS_HE) ? 114 : 29;
         txVector.SetRuAllocation({ruAllocUser, ruAllocNoUser, ruAllocNoUser, ruAllocUser}, 0);
     }
-    else if (m_channelWidth == MHz_u{160})
+    else if (m_channelWidth == MHz_t{160})
     {
         ruType = RuType::RU_996_TONE;
         const uint16_t ruAllocUser = (m_modClass == WIFI_MOD_CLASS_HE) ? 208 : 80;
@@ -600,7 +601,7 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::SendMuPpdu(uint16_t rxStaId1, u
                                   ruAllocUser},
                                  0);
     }
-    else if (m_channelWidth == MHz_u{320})
+    else if (m_channelWidth == MHz_t{320})
     {
         NS_ASSERT(m_modClass >= WIFI_MOD_CLASS_EHT);
         ruType = RuType::RU_2x996_TONE;
@@ -622,11 +623,11 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::SendMuPpdu(uint16_t rxStaId1, u
                      rxStaId1);
     txVector.SetNss(1, rxStaId1);
 
-    std::size_t ru2Index = (m_channelWidth > MHz_u{80}) ? 1 : 2;
+    std::size_t ru2Index = (m_channelWidth > MHz_t{80}) ? 1 : 2;
     const auto ru2 =
         (m_modClass == WIFI_MOD_CLASS_HE)
-            ? WifiRu::RuSpec(HeRu::RuSpec{ruType, ru2Index, m_channelWidth != MHz_u{160}})
-            : WifiRu::RuSpec(EhtRu::RuSpec{ruType, ru2Index, m_channelWidth != MHz_u{320}, true});
+            ? WifiRu::RuSpec(HeRu::RuSpec{ruType, ru2Index, m_channelWidth != MHz_t{160}})
+            : WifiRu::RuSpec(EhtRu::RuSpec{ruType, ru2Index, m_channelWidth != MHz_t{320}, true});
     txVector.SetRu(ru2, rxStaId2);
     txVector.SetMode((m_modClass == WIFI_MOD_CLASS_HE) ? HePhy::GetHeMcs9() : EhtPhy::GetEhtMcs9(),
                      rxStaId2);
@@ -829,7 +830,7 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::DoSetup()
 
     Ptr<MultiModelSpectrumChannel> spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     Ptr<FriisPropagationLossModel> lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(MHzToHz(m_frequency));
+    lossModel->SetFrequency(Hz_t{m_frequency}.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     Ptr<ConstantSpeedPropagationDelayModel> delayModel =
         CreateObject<ConstantSpeedPropagationDelayModel>();
@@ -977,7 +978,7 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                           ->number;
 
     const auto operatingChannel{
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_6GHZ, 0}};
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_6GHZ, 0}};
     m_phyAp->SetOperatingChannel(operatingChannel);
     m_phySta1->SetOperatingChannel(operatingChannel);
     m_phySta2->SetOperatingChannel(operatingChannel);
@@ -1134,16 +1135,17 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
 
     // A strong non-wifi interference is generated on RU 1 during PSDU reception
     BandInfo bandInfo;
-    bandInfo.fc = MHzToHz(m_frequency - (m_channelWidth / 4));
-    bandInfo.fl = bandInfo.fc - MHzToHz(m_channelWidth / 4);
-    bandInfo.fh = bandInfo.fc + MHzToHz(m_channelWidth / 4);
+    bandInfo.fc = Hz_t{m_frequency - (m_channelWidth / 4)}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{m_channelWidth / 4}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{m_channelWidth / 4}.to<double>();
     Bands bands;
     bands.push_back(bandInfo);
 
     auto SpectrumInterferenceRu1 = Create<SpectrumModel>(bands);
     auto interferencePsdRu1 = Create<SpectrumValue>(SpectrumInterferenceRu1);
     Watt_t interferencePower{0.1};
-    *interferencePsdRu1 = interferencePower.to<double>() / (MHzToHz(m_channelWidth / 2) * 20);
+    *interferencePsdRu1 =
+        interferencePower.to<double>() / Hz_t{(m_channelWidth / 2) * 20}.to<double>();
 
     Simulator::Schedule(Seconds(3) + MicroSeconds(40),
                         &TestDlOfdmaPhyTransmission<LatestPhyEntityType>::GenerateInterference,
@@ -1220,15 +1222,16 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         2);
 
     // A strong non-wifi interference is generated on RU 2 during PSDU reception
-    bandInfo.fc = MHzToHz(m_frequency + (m_channelWidth / 4));
-    bandInfo.fl = bandInfo.fc - MHzToHz(m_channelWidth / 4);
-    bandInfo.fh = bandInfo.fc + MHzToHz(m_channelWidth / 4);
+    bandInfo.fc = Hz_t{m_frequency + (m_channelWidth / 4)}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{m_channelWidth / 4}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{m_channelWidth / 4}.to<double>();
     bands.clear();
     bands.push_back(bandInfo);
 
     Ptr<SpectrumModel> SpectrumInterferenceRu2 = Create<SpectrumModel>(bands);
     Ptr<SpectrumValue> interferencePsdRu2 = Create<SpectrumValue>(SpectrumInterferenceRu2);
-    *interferencePsdRu2 = interferencePower.to<double>() / (MHzToHz(m_channelWidth / 2) * 20);
+    *interferencePsdRu2 =
+        interferencePower.to<double>() / Hz_t{(m_channelWidth / 2) * 20}.to<double>();
 
     Simulator::Schedule(Seconds(4) + MicroSeconds(40),
                         &TestDlOfdmaPhyTransmission<LatestPhyEntityType>::GenerateInterference,
@@ -1258,19 +1261,19 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         &TestDlOfdmaPhyTransmission<LatestPhyEntityType>::CheckPhyState,
                         this,
                         m_phySta1,
-                        (m_channelWidth >= MHz_u{40}) ? WifiPhyState::IDLE
+                        (m_channelWidth >= MHz_t{40}) ? WifiPhyState::IDLE
                                                       : WifiPhyState::CCA_BUSY);
     Simulator::Schedule(Seconds(4) + m_expectedPpduDuration,
                         &TestDlOfdmaPhyTransmission<LatestPhyEntityType>::CheckPhyState,
                         this,
                         m_phySta2,
-                        (m_channelWidth >= MHz_u{40}) ? WifiPhyState::IDLE
+                        (m_channelWidth >= MHz_t{40}) ? WifiPhyState::IDLE
                                                       : WifiPhyState::CCA_BUSY);
     Simulator::Schedule(Seconds(4) + m_expectedPpduDuration,
                         &TestDlOfdmaPhyTransmission<LatestPhyEntityType>::CheckPhyState,
                         this,
                         m_phySta3,
-                        (m_channelWidth >= MHz_u{40}) ? WifiPhyState::IDLE
+                        (m_channelWidth >= MHz_t{40}) ? WifiPhyState::IDLE
                                                       : WifiPhyState::CCA_BUSY);
 
     // One PSDU of 1000 bytes should have been successfully received by STA 1
@@ -1308,15 +1311,15 @@ TestDlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         2);
 
     // A strong non-wifi interference is generated on the full band during PSDU reception
-    bandInfo.fc = MHzToHz(m_frequency);
-    bandInfo.fl = bandInfo.fc - MHzToHz(m_channelWidth / 2);
-    bandInfo.fh = bandInfo.fc + MHzToHz(m_channelWidth / 2);
+    bandInfo.fc = Hz_t{m_frequency}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{m_channelWidth / 2}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{m_channelWidth / 2}.to<double>();
     bands.clear();
     bands.push_back(bandInfo);
 
     Ptr<SpectrumModel> SpectrumInterferenceAll = Create<SpectrumModel>(bands);
     Ptr<SpectrumValue> interferencePsdAll = Create<SpectrumValue>(SpectrumInterferenceAll);
-    *interferencePsdAll = interferencePower.to<double>() / (MHzToHz(m_channelWidth) * 20);
+    *interferencePsdAll = interferencePower.to<double>() / Hz_t{m_channelWidth * 20}.to<double>();
 
     Simulator::Schedule(Seconds(5) + MicroSeconds(40),
                         &TestDlOfdmaPhyTransmission<LatestPhyEntityType>::GenerateInterference,
@@ -1393,30 +1396,30 @@ template <typename LatestPhyEntityType>
 void
 TestDlOfdmaPhyTransmission<LatestPhyEntityType>::DoRun()
 {
-    m_frequency = MHz_u{5955};
-    m_channelWidth = MHz_u{20};
+    m_frequency = MHz_t{5955};
+    m_channelWidth = MHz_t{20};
     m_expectedPpduDuration = NanoSeconds(306400);
     RunOne();
 
-    m_frequency = MHz_u{5965};
-    m_channelWidth = MHz_u{40};
+    m_frequency = MHz_t{5965};
+    m_channelWidth = MHz_t{40};
     m_expectedPpduDuration = NanoSeconds(156800);
     RunOne();
 
-    m_frequency = MHz_u{5985};
-    m_channelWidth = MHz_u{80};
+    m_frequency = MHz_t{5985};
+    m_channelWidth = MHz_t{80};
     m_expectedPpduDuration = NanoSeconds(102400);
     RunOne();
 
-    m_frequency = MHz_u{6025};
-    m_channelWidth = MHz_u{160};
+    m_frequency = MHz_t{6025};
+    m_channelWidth = MHz_t{160};
     m_expectedPpduDuration = NanoSeconds(75200);
     RunOne();
 
     if (m_modClass >= WIFI_MOD_CLASS_EHT)
     {
-        m_frequency = MHz_u{6105};
-        m_channelWidth = MHz_u{320};
+        m_frequency = MHz_t{6105};
+        m_channelWidth = MHz_t{320};
         m_expectedPpduDuration = NanoSeconds(61600);
         RunOne();
     }
@@ -1555,8 +1558,8 @@ class TestDlOfdmaPhyPuncturing : public TestCase
     Ptr<OfdmaSpectrumWifiPhy<HePhy>> m_phySta2; ///< PHY of STA 2
     Ptr<WaveformGenerator> m_phyInterferer;     ///< PHY of interferer
 
-    MHz_u m_frequency;    ///< frequency
-    MHz_u m_channelWidth; ///< channel width
+    MHz_t m_frequency;    ///< frequency
+    MHz_t m_channelWidth; ///< channel width
 
     uint8_t m_indexSubchannel; ///< Index of the subchannel (starting from 0) that should contain an
                                ///< interference and be punctured during the test run
@@ -1573,8 +1576,8 @@ TestDlOfdmaPhyPuncturing::TestDlOfdmaPhyPuncturing()
       m_countRxFailureSta2(0),
       m_countRxBytesSta1(0),
       m_countRxBytesSta2(0),
-      m_frequency(MHz_u{5210}),
-      m_channelWidth(MHz_u{80}),
+      m_frequency(MHz_t{5210}),
+      m_channelWidth(MHz_t{80}),
       m_indexSubchannel(0),
       m_expectedPpduDuration20Mhz(NanoSeconds(156800)),
       m_expectedPpduDuration40Mhz(NanoSeconds(102400))
@@ -1790,7 +1793,7 @@ TestDlOfdmaPhyPuncturing::DoSetup()
 {
     Ptr<MultiModelSpectrumChannel> spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     Ptr<FriisPropagationLossModel> lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(MHzToHz(m_frequency));
+    lossModel->SetFrequency(Hz_t{m_frequency}.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     Ptr<ConstantSpeedPropagationDelayModel> delayModel =
         CreateObject<ConstantSpeedPropagationDelayModel>();
@@ -1893,20 +1896,22 @@ TestDlOfdmaPhyPuncturing::RunOne()
                           ->number;
 
     m_phyAp->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     m_phySta1->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     m_phySta2->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
 
     // A strong non-wifi interference is generated on selected 20 MHz subchannel for the whole
     // duration of the test run
     BandInfo bandInfo;
-    bandInfo.fc = MHzToHz(m_frequency - (m_channelWidth / 2) + 10 + (m_indexSubchannel * 20));
+    bandInfo.fc =
+        Hz_t{m_frequency - (m_channelWidth / 2) + MHz_t{10} + (m_indexSubchannel * MHz_t{20})}
+            .to<double>();
     // Occupy half of the RU to make sure we do not have some power allocated to the subcarriers on
     // the border of another RU
-    bandInfo.fl = bandInfo.fc - MHzToHz(5);
-    bandInfo.fh = bandInfo.fc + MHzToHz(5);
+    bandInfo.fl = bandInfo.fc - Hz_t{MHz_t{5}}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{MHz_t{5}}.to<double>();
     Bands bands;
     bands.push_back(bandInfo);
 
@@ -2153,7 +2158,7 @@ TestUlOfdmaPpduUid::DoSetup()
 {
     Ptr<MultiModelSpectrumChannel> spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     Ptr<FriisPropagationLossModel> lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(DEFAULT_FREQUENCY);
+    lossModel->SetFrequency(DEFAULT_FREQUENCY.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     Ptr<ConstantSpeedPropagationDelayModel> delayModel =
         CreateObject<ConstantSpeedPropagationDelayModel>();
@@ -2174,8 +2179,10 @@ TestUlOfdmaPpduUid::DoSetup()
                                                          WIFI_STANDARD_80211ax,
                                                          WIFI_PHY_BAND_5GHZ)
                           ->number;
-    m_phyAp->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, DEFAULT_CHANNEL_WIDTH, WIFI_PHY_BAND_5GHZ, 0});
+    m_phyAp->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                       DEFAULT_CHANNEL_WIDTH.to<double>(),
+                                                       WIFI_PHY_BAND_5GHZ,
+                                                       0});
     m_phyAp->SetDevice(apDev);
     m_phyAp->TraceConnectWithoutContext("TxPpduUid",
                                         MakeCallback(&TestUlOfdmaPpduUid::TxPpduAp, this));
@@ -2196,8 +2203,10 @@ TestUlOfdmaPpduUid::DoSetup()
     m_phySta1->SetErrorRateModel(sta1ErrorModel);
     m_phySta1->AddChannel(spectrumChannel);
     m_phySta1->ConfigureStandard(WIFI_STANDARD_80211ax);
-    m_phySta1->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, DEFAULT_CHANNEL_WIDTH, WIFI_PHY_BAND_5GHZ, 0});
+    m_phySta1->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                         DEFAULT_CHANNEL_WIDTH.to<double>(),
+                                                         WIFI_PHY_BAND_5GHZ,
+                                                         0});
     m_phySta1->SetDevice(sta1Dev);
     m_phySta1->TraceConnectWithoutContext("TxPpduUid",
                                           MakeCallback(&TestUlOfdmaPpduUid::TxPpduSta1, this));
@@ -2216,8 +2225,10 @@ TestUlOfdmaPpduUid::DoSetup()
     m_phySta2->SetErrorRateModel(sta2ErrorModel);
     m_phySta2->AddChannel(spectrumChannel);
     m_phySta2->ConfigureStandard(WIFI_STANDARD_80211ax);
-    m_phySta2->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, DEFAULT_CHANNEL_WIDTH, WIFI_PHY_BAND_5GHZ, 0});
+    m_phySta2->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                         DEFAULT_CHANNEL_WIDTH.to<double>(),
+                                                         WIFI_PHY_BAND_5GHZ,
+                                                         0});
     m_phySta2->SetDevice(sta2Dev);
     m_phySta2->TraceConnectWithoutContext("TxPpduUid",
                                           MakeCallback(&TestUlOfdmaPpduUid::TxPpduSta2, this));
@@ -2691,7 +2702,7 @@ TestMultipleHeTbPreambles::RxHeTbPpdu(uint64_t uid,
     const auto centerFrequency =
         m_phy->GetPhyEntity()->GetCenterFrequenciesForNonHePart(ppdu, staId).front();
     auto ruWidth = WifiRu::GetBandwidth(WifiRu::GetRuType(txVector.GetRu(staId)));
-    auto channelWidth = ruWidth < MHz_u{20} ? MHz_u{20} : ruWidth;
+    auto channelWidth = ruWidth < MHz_t{20} ? MHz_t{20} : ruWidth;
     Ptr<SpectrumValue> rxPsd = WifiSpectrumValueHelper::CreateHeOfdmTxPowerSpectralDensity(
         centerFrequency,
         channelWidth,
@@ -2769,7 +2780,7 @@ TestMultipleHeTbPreambles::DoSetup()
     m_phy->AddChannel(spectrumChannel);
     m_phy->ConfigureStandard(WIFI_STANDARD_80211ax);
     m_phy->SetOperatingChannel(WifiPhy::ChannelTuple{DEFAULT_CHANNEL_NUMBER,
-                                                     DEFAULT_CHANNEL_WIDTH,
+                                                     DEFAULT_CHANNEL_WIDTH.to<double>(),
                                                      WIFI_PHY_BAND_5GHZ,
                                                      0});
     m_phy->TraceConnectWithoutContext("PhyRxDrop",
@@ -3266,7 +3277,7 @@ class TestUlOfdmaPhyTransmission : public TestCase
      * @param phy the PHY
      * @param psdLimit the PSD limit
      */
-    void SetPsdLimit(Ptr<WifiPhy> phy, dBm_per_MHz_u psdLimit);
+    void SetPsdLimit(Ptr<WifiPhy> phy, dBm_per_MHz_t psdLimit);
 
     /**
      * Generate interference function
@@ -3454,8 +3465,8 @@ class TestUlOfdmaPhyTransmission : public TestCase
     uint32_t m_countRxBytesFromSta1{0};   ///< count RX bytes from STA 1
     uint32_t m_countRxBytesFromSta2{0};   ///< count RX bytes from STA 2
 
-    MHz_u m_frequency{DEFAULT_FREQUENCY};        ///< frequency
-    MHz_u m_channelWidth{DEFAULT_CHANNEL_WIDTH}; ///< channel width
+    MHz_t m_frequency{DEFAULT_FREQUENCY};        ///< frequency
+    MHz_t m_channelWidth{DEFAULT_CHANNEL_WIDTH}; ///< channel width
     Time m_expectedPpduDuration;                 ///< expected duration to send MU PPDU
 };
 
@@ -3553,23 +3564,23 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::GetTxVectorForTbPpdu(uint16_t t
         txVector.SetEhtPpduType(0);
     }
     auto ruType{RuType::RU_TYPE_MAX};
-    if (m_channelWidth == MHz_u{20})
+    if (m_channelWidth == MHz_t{20})
     {
         ruType = RuType::RU_106_TONE;
     }
-    else if (m_channelWidth == MHz_u{40})
+    else if (m_channelWidth == MHz_t{40})
     {
         ruType = RuType::RU_242_TONE;
     }
-    else if (m_channelWidth == MHz_u{80})
+    else if (m_channelWidth == MHz_t{80})
     {
         ruType = RuType::RU_484_TONE;
     }
-    else if (m_channelWidth == MHz_u{160})
+    else if (m_channelWidth == MHz_t{160})
     {
         ruType = RuType::RU_996_TONE;
     }
-    else if (m_channelWidth == MHz_u{320})
+    else if (m_channelWidth == MHz_t{320})
     {
         ruType = RuType::RU_2x996_TONE;
     }
@@ -3580,7 +3591,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::GetTxVectorForTbPpdu(uint16_t t
 
     auto primary80MHzOrLow80MHz{true};
     auto primary160MHz{true};
-    if (m_channelWidth > MHz_u{80})
+    if (m_channelWidth > MHz_t{80})
     {
         if (m_modClass == WIFI_MOD_CLASS_HE)
         {
@@ -3616,7 +3627,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetTrigVector(uint8_t bssColor,
     if (error == CHANNEL_WIDTH)
     {
         channelWidth =
-            (channelWidth >= GetMaximumChannelWidth(m_modClass) ? MHz_u{20} : channelWidth * 2);
+            (channelWidth >= GetMaximumChannelWidth(m_modClass) ? MHz_t{20} : channelWidth * 2);
     }
 
     WifiTxVector txVector(
@@ -3634,23 +3645,23 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetTrigVector(uint8_t bssColor,
         bssColor);
 
     RuType ruType = RuType::RU_106_TONE;
-    if (channelWidth == MHz_u{20})
+    if (channelWidth == MHz_t{20})
     {
         ruType = RuType::RU_106_TONE;
     }
-    else if (channelWidth == MHz_u{40})
+    else if (channelWidth == MHz_t{40})
     {
         ruType = RuType::RU_242_TONE;
     }
-    else if (channelWidth == MHz_u{80})
+    else if (channelWidth == MHz_t{80})
     {
         ruType = RuType::RU_484_TONE;
     }
-    else if (channelWidth == MHz_u{160})
+    else if (channelWidth == MHz_t{160})
     {
         ruType = RuType::RU_996_TONE;
     }
-    else if (channelWidth == MHz_u{320})
+    else if (channelWidth == MHz_t{320})
     {
         ruType = RuType::RU_2x996_TONE;
     }
@@ -3672,11 +3683,11 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetTrigVector(uint8_t bssColor,
 
     const auto ru2 = (m_modClass == WIFI_MOD_CLASS_HE)
                          ? WifiRu::RuSpec(HeRu::RuSpec{ruType,
-                                                       (channelWidth == MHz_u{160} ? 1ULL : 2ULL),
-                                                       (channelWidth != MHz_u{160})})
+                                                       (channelWidth == MHz_t{160} ? 1ULL : 2ULL),
+                                                       (channelWidth != MHz_t{160})})
                          : WifiRu::RuSpec(EhtRu::RuSpec{ruType,
-                                                        (channelWidth == MHz_u{320} ? 1ULL : 2ULL),
-                                                        (channelWidth != MHz_u{320}),
+                                                        (channelWidth == MHz_t{320} ? 1ULL : 2ULL),
+                                                        (channelWidth != MHz_t{320}),
                                                         true});
     txVector.SetRu(ru2, aid2);
     txVector.SetMode((m_modClass == WIFI_MOD_CLASS_HE) ? HePhy::GetHeMcs7() : EhtPhy::GetEhtMcs7(),
@@ -4025,10 +4036,10 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetBssColor(Ptr<WifiPhy> phy, u
 template <typename LatestPhyEntityType>
 void
 TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetPsdLimit(Ptr<WifiPhy> phy,
-                                                             dBm_per_MHz_u psdLimit)
+                                                             dBm_per_MHz_t psdLimit)
 {
     NS_LOG_FUNCTION(this << phy << psdLimit);
-    phy->SetAttribute("PowerDensityLimit", DoubleValue(psdLimit));
+    phy->SetAttribute("PowerDensityLimit", DbmPerMhzValue(psdLimit));
 }
 
 template <typename LatestPhyEntityType>
@@ -4040,7 +4051,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::DoSetup()
 
     Ptr<MultiModelSpectrumChannel> spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     Ptr<FriisPropagationLossModel> lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(m_frequency);
+    lossModel->SetFrequency(Hz_t{m_frequency}.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     Ptr<ConstantSpeedPropagationDelayModel> delayModel =
         CreateObject<ConstantSpeedPropagationDelayModel>();
@@ -4443,7 +4454,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SchedulePowerMeasurementChecks(
          * Cannot use CheckNonOfdmaRxPower method since current event not set.
          */
         const auto rxPowerNonOfdmaSta1Only =
-            (m_channelWidth >= MHz_u{40})
+            (m_channelWidth >= MHz_t{40})
                 ? rxPowerNonOfdma[0]
                 : rxPowerNonOfdma[0] / 2; // both STAs transmit over the same 20 MHz channel
         // Check received power on non-OFDMA portion
@@ -4503,7 +4514,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                           ->number;
 
     const auto operatingChannel{
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_6GHZ, 0}};
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_6GHZ, 0}};
     m_phyAp->SetOperatingChannel(operatingChannel);
     m_phySta1->SetOperatingChannel(operatingChannel);
     m_phySta2->SetOperatingChannel(operatingChannel);
@@ -4652,16 +4663,17 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
         "Reception of solicited HE TB PPDUs with interference on RU 1 during PSDU reception");
     // A strong non-wifi interference is generated on RU 1 during PSDU reception
     BandInfo bandInfo;
-    bandInfo.fc = MHzToHz(m_frequency - (m_channelWidth / 4));
-    bandInfo.fl = bandInfo.fc - MHzToHz(m_channelWidth / 4);
-    bandInfo.fh = bandInfo.fc + MHzToHz(m_channelWidth / 4);
+    bandInfo.fc = Hz_t{m_frequency - (m_channelWidth / 4)}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{m_channelWidth / 4}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{m_channelWidth / 4}.to<double>();
     Bands bands;
     bands.push_back(bandInfo);
 
     Ptr<SpectrumModel> SpectrumInterferenceRu1 = Create<SpectrumModel>(bands);
     Ptr<SpectrumValue> interferencePsdRu1 = Create<SpectrumValue>(SpectrumInterferenceRu1);
     Watt_t interferencePower{0.1};
-    *interferencePsdRu1 = interferencePower.to<double>() / (MHzToHz(m_channelWidth / 2) * 20);
+    *interferencePsdRu1 =
+        interferencePower.to<double>() / Hz_t{(m_channelWidth / 2) * 20}.to<double>();
 
     Simulator::Schedule(delay + MicroSeconds(40),
                         &TestUlOfdmaPhyTransmission<LatestPhyEntityType>::GenerateInterference,
@@ -4690,15 +4702,16 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
         this,
         "Reception of solicited HE TB PPDUs with interference on RU 2 during PSDU reception");
     // A strong non-wifi interference is generated on RU 2 during PSDU reception
-    bandInfo.fc = MHzToHz(m_frequency + (m_channelWidth / 4));
-    bandInfo.fl = bandInfo.fc - MHzToHz(m_channelWidth / 4);
-    bandInfo.fh = bandInfo.fc + MHzToHz(m_channelWidth / 4);
+    bandInfo.fc = Hz_t{m_frequency + (m_channelWidth / 4)}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{m_channelWidth / 4}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{m_channelWidth / 4}.to<double>();
     bands.clear();
     bands.push_back(bandInfo);
 
     Ptr<SpectrumModel> SpectrumInterferenceRu2 = Create<SpectrumModel>(bands);
     Ptr<SpectrumValue> interferencePsdRu2 = Create<SpectrumValue>(SpectrumInterferenceRu2);
-    *interferencePsdRu2 = interferencePower.to<double>() / (MHzToHz(m_channelWidth / 2) * 20);
+    *interferencePsdRu2 =
+        interferencePower.to<double>() / Hz_t{(m_channelWidth / 2) * 20}.to<double>();
 
     Simulator::Schedule(delay + MicroSeconds(40),
                         &TestUlOfdmaPhyTransmission<LatestPhyEntityType>::GenerateInterference,
@@ -4707,7 +4720,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         MilliSeconds(100));
     ScheduleTest(delay,
                  true,
-                 (m_channelWidth >= MHz_u{40})
+                 (m_channelWidth >= MHz_t{40})
                      ? WifiPhyState::IDLE
                      : WifiPhyState::CCA_BUSY, // PHY should move to CCA_BUSY if interference is
                                                // generated in its primary channel
@@ -4729,15 +4742,15 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         "Reception of solicited HE TB PPDUs with interference on the full band "
                         "during PSDU reception");
     // A strong non-wifi interference is generated on the full band during PSDU reception
-    bandInfo.fc = MHzToHz(m_frequency);
-    bandInfo.fl = bandInfo.fc - MHzToHz(m_channelWidth / 2);
-    bandInfo.fh = bandInfo.fc + MHzToHz(m_channelWidth / 2);
+    bandInfo.fc = Hz_t{m_frequency}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{m_channelWidth / 2}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{m_channelWidth / 2}.to<double>();
     bands.clear();
     bands.push_back(bandInfo);
 
     Ptr<SpectrumModel> SpectrumInterferenceAll = Create<SpectrumModel>(bands);
     Ptr<SpectrumValue> interferencePsdAll = Create<SpectrumValue>(SpectrumInterferenceAll);
-    *interferencePsdAll = interferencePower.to<double>() / (MHzToHz(m_channelWidth) * 20);
+    *interferencePsdAll = interferencePower.to<double>() / Hz_t{m_channelWidth * 20}.to<double>();
 
     Simulator::Schedule(delay + MicroSeconds(40),
                         &TestUlOfdmaPhyTransmission<LatestPhyEntityType>::GenerateInterference,
@@ -4781,7 +4794,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
     uint32_t succ;
     uint32_t fail;
     uint32_t bytes;
-    if (m_channelWidth > MHz_u{20})
+    if (m_channelWidth > MHz_t{20})
     {
         // One PSDU of 1001 bytes should have been successfully received from STA 2 (since
         // interference from STA 3 on distinct 20 MHz channel)
@@ -4830,7 +4843,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         0,
                         false);
     // Expected figures from STA 1
-    if (m_channelWidth > MHz_u{20})
+    if (m_channelWidth > MHz_t{20})
     {
         // One PSDU of 1000 bytes should have been successfully received from STA 1 (since
         // interference from STA 3 on distinct 20 MHz channel)
@@ -4848,7 +4861,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
     }
     ScheduleTest(delay,
                  true,
-                 (m_channelWidth >= MHz_u{40})
+                 (m_channelWidth >= MHz_t{40})
                      ? WifiPhyState::IDLE
                      : WifiPhyState::CCA_BUSY, // PHY should move to CCA_BUSY instead of IDLE if HE
                                                // TB PPDU on primary channel
@@ -4902,7 +4915,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         &TestUlOfdmaPhyTransmission<LatestPhyEntityType>::CheckPhyState,
                         this,
                         m_phySta3,
-                        (m_channelWidth >= MHz_u{40})
+                        (m_channelWidth >= MHz_t{40})
                             ? WifiPhyState::IDLE
                             : WifiPhyState::CCA_BUSY); // PHY should move to CCA_BUSY instead of
                                                        // IDLE if HE TB PPDU on primary channel
@@ -4929,7 +4942,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
     Watt_t rxPower{
         dBm_t{19}}; // 16+1 dBm at STAs and +2 at AP (no loss since all devices are colocated)
     SchedulePowerMeasurementChecks(delay,
-                                   (m_channelWidth >= MHz_u{40}) ? Watt_t{0.0} : rxPower,
+                                   (m_channelWidth >= MHz_t{40}) ? Watt_t{0.0} : rxPower,
                                    rxPower, // power detected on RU1 only if same 20 MHz as RU 2
                                    Watt_t{0.0},
                                    rxPower);
@@ -4961,22 +4974,22 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         &TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetPsdLimit,
                         this,
                         m_phySta2,
-                        dBm_per_MHz_u{3});
+                        dBm_per_MHz_t{3});
 
-    rxPower = (m_channelWidth > MHz_u{40})
+    rxPower = (m_channelWidth > MHz_t{40})
                   ? Watt_t{dBm_t{19}}
                   : Watt_t{dBm_t{18.0103}}; // 15.0103+1 dBm at STA 2 and +2 at AP for non-OFDMA
                                             // transmitted only on one 20 MHz channel
     auto rxPowerOfdma = rxPower;
-    if (m_channelWidth <= MHz_u{40})
+    if (m_channelWidth <= MHz_t{40})
     {
         rxPowerOfdma =
-            (m_channelWidth == MHz_u{20})
+            (m_channelWidth == MHz_t{20})
                 ? Watt_t{dBm_t{14.0309}}  // 11.0309+1 dBm at STA and +2 at AP if 106-tone RU
                 : Watt_t{dBm_t{18.0103}}; // 15.0103+1 dBm at STA 2 and +2 at AP if 242-tone RU
     }
     SchedulePowerMeasurementChecks(delay,
-                                   (m_channelWidth >= MHz_u{40}) ? Watt_t{0.0} : rxPower,
+                                   (m_channelWidth >= MHz_t{40}) ? Watt_t{0.0} : rxPower,
                                    rxPower, // power detected on RU1 only if same 20 MHz as RU 2
                                    Watt_t{0.0},
                                    rxPowerOfdma);
@@ -4986,7 +4999,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
                         &TestUlOfdmaPhyTransmission<LatestPhyEntityType>::SetPsdLimit,
                         this,
                         m_phySta2,
-                        dBm_per_MHz_u{100});
+                        dBm_per_MHz_t{100});
     ScheduleTest(delay,
                  true,
                  WifiPhyState::IDLE,
@@ -5010,7 +5023,7 @@ TestUlOfdmaPhyTransmission<LatestPhyEntityType>::RunOne()
     rxPower = Watt_t{
         dBm_t{19}}; // 16+1 dBm at STAs and +2 at AP (no loss since all devices are colocated)
     const auto rxPowerNonOfdma =
-        (m_channelWidth >= MHz_u{40})
+        (m_channelWidth >= MHz_t{40})
             ? rxPower
             : rxPower * 2; // both STAs transmit over the same 20 MHz channel
     SchedulePowerMeasurementChecks(delay, rxPowerNonOfdma, rxPowerNonOfdma, rxPower, rxPower);
@@ -5101,30 +5114,30 @@ template <typename LatestPhyEntityType>
 void
 TestUlOfdmaPhyTransmission<LatestPhyEntityType>::DoRun()
 {
-    m_frequency = MHz_u{5955};
-    m_channelWidth = MHz_u{20};
+    m_frequency = MHz_t{5955};
+    m_channelWidth = MHz_t{20};
     m_expectedPpduDuration = NanoSeconds(292800);
     RunOne();
 
-    m_frequency = MHz_u{5965};
-    m_channelWidth = MHz_u{40};
+    m_frequency = MHz_t{5965};
+    m_channelWidth = MHz_t{40};
     m_expectedPpduDuration = NanoSeconds(163200);
     RunOne();
 
-    m_frequency = MHz_u{5985};
-    m_channelWidth = MHz_u{80};
+    m_frequency = MHz_t{5985};
+    m_channelWidth = MHz_t{80};
     m_expectedPpduDuration = NanoSeconds(105600);
     RunOne();
 
-    m_frequency = MHz_u{6025};
-    m_channelWidth = MHz_u{160};
+    m_frequency = MHz_t{6025};
+    m_channelWidth = MHz_t{160};
     m_expectedPpduDuration = NanoSeconds(76800);
     RunOne();
 
     if (m_modClass >= WIFI_MOD_CLASS_EHT)
     {
-        m_frequency = MHz_u{6105};
-        m_channelWidth = MHz_u{320};
+        m_frequency = MHz_t{6105};
+        m_channelWidth = MHz_t{320};
         m_expectedPpduDuration = NanoSeconds(62400);
         RunOne();
     }
@@ -5460,7 +5473,7 @@ TestPhyPaddingExclusion::DoSetup()
 
     Ptr<MultiModelSpectrumChannel> spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     Ptr<FriisPropagationLossModel> lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(MHzToHz(DEFAULT_FREQUENCY));
+    lossModel->SetFrequency(Hz_t{DEFAULT_FREQUENCY}.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     Ptr<ConstantSpeedPropagationDelayModel> delayModel =
         CreateObject<ConstantSpeedPropagationDelayModel>();
@@ -5491,8 +5504,10 @@ TestPhyPaddingExclusion::DoSetup()
                                                          WIFI_PHY_BAND_5GHZ)
                           ->number;
 
-    m_phyAp->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, DEFAULT_CHANNEL_WIDTH, WIFI_PHY_BAND_5GHZ, 0});
+    m_phyAp->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                       DEFAULT_CHANNEL_WIDTH.to<double>(),
+                                                       WIFI_PHY_BAND_5GHZ,
+                                                       0});
     m_phyAp->SetReceiveOkCallback(MakeCallback(&TestPhyPaddingExclusion::RxSuccess, this));
     m_phyAp->SetReceiveErrorCallback(MakeCallback(&TestPhyPaddingExclusion::RxFailure, this));
     Ptr<ConstantPositionMobilityModel> apMobility = CreateObject<ConstantPositionMobilityModel>();
@@ -5515,8 +5530,10 @@ TestPhyPaddingExclusion::DoSetup()
     m_phySta1->AddChannel(spectrumChannel);
     m_phySta1->ConfigureStandard(WIFI_STANDARD_80211ax);
     m_phySta1->AssignStreams(streamNumber);
-    m_phySta1->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, DEFAULT_CHANNEL_WIDTH, WIFI_PHY_BAND_5GHZ, 0});
+    m_phySta1->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                         DEFAULT_CHANNEL_WIDTH.to<double>(),
+                                                         WIFI_PHY_BAND_5GHZ,
+                                                         0});
     Ptr<ConstantPositionMobilityModel> sta1Mobility = CreateObject<ConstantPositionMobilityModel>();
     m_phySta1->SetMobility(sta1Mobility);
     sta1Dev->SetPhy(m_phySta1);
@@ -5536,8 +5553,10 @@ TestPhyPaddingExclusion::DoSetup()
     m_phySta2->AddChannel(spectrumChannel);
     m_phySta2->ConfigureStandard(WIFI_STANDARD_80211ax);
     m_phySta2->AssignStreams(streamNumber);
-    m_phySta2->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, DEFAULT_CHANNEL_WIDTH, WIFI_PHY_BAND_5GHZ, 0});
+    m_phySta2->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                         DEFAULT_CHANNEL_WIDTH.to<double>(),
+                                                         WIFI_PHY_BAND_5GHZ,
+                                                         0});
     Ptr<ConstantPositionMobilityModel> sta2Mobility = CreateObject<ConstantPositionMobilityModel>();
     m_phySta2->SetMobility(sta2Mobility);
     sta2Dev->SetPhy(m_phySta2);
@@ -5672,9 +5691,9 @@ TestPhyPaddingExclusion::DoRun()
 
     // A strong non-wifi interference is generated on RU 1 during padding reception
     BandInfo bandInfo;
-    bandInfo.fc = MHzToHz(DEFAULT_FREQUENCY - (DEFAULT_CHANNEL_WIDTH / 4));
-    bandInfo.fl = bandInfo.fc - MHzToHz(DEFAULT_CHANNEL_WIDTH / 4);
-    bandInfo.fh = bandInfo.fc + MHzToHz(DEFAULT_CHANNEL_WIDTH / 4);
+    bandInfo.fc = Hz_t{DEFAULT_FREQUENCY - (DEFAULT_CHANNEL_WIDTH / 4)}.to<double>();
+    bandInfo.fl = bandInfo.fc - Hz_t{DEFAULT_CHANNEL_WIDTH / 4}.to<double>();
+    bandInfo.fh = bandInfo.fc + Hz_t{DEFAULT_CHANNEL_WIDTH / 4}.to<double>();
     Bands bands;
     bands.push_back(bandInfo);
 
@@ -5682,7 +5701,7 @@ TestPhyPaddingExclusion::DoRun()
     Ptr<SpectrumValue> interferencePsdRu1 = Create<SpectrumValue>(SpectrumInterferenceRu1);
     Watt_t interferencePower{0.1};
     *interferencePsdRu1 =
-        interferencePower.to<double>() / (MHzToHz(DEFAULT_CHANNEL_WIDTH / 2) * 20);
+        interferencePower.to<double>() / (Hz_t{DEFAULT_CHANNEL_WIDTH / 2} * 20).to<double>();
 
     Simulator::Schedule(Seconds(2) + MicroSeconds(50) + expectedPpduDuration,
                         &TestPhyPaddingExclusion::GenerateInterference,

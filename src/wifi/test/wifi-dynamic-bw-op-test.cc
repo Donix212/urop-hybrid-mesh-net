@@ -45,7 +45,7 @@ class WifiUseAvailBwTest : public TestCase
      * @param channelStr channel setting strings for BSS 0 and BSS 1
      * @param bss0Width width of the transmission in BSS 0 started when BSS 1 is transmitting
      */
-    WifiUseAvailBwTest(std::initializer_list<std::string> channelStr, MHz_u bss0Width);
+    WifiUseAvailBwTest(std::initializer_list<std::string> channelStr, MHz_t bss0Width);
     ~WifiUseAvailBwTest() override;
 
     /**
@@ -83,7 +83,7 @@ class WifiUseAvailBwTest : public TestCase
     };
 
     std::vector<std::string> m_channelStr;        ///< channel setting strings
-    MHz_u m_bss0Width;                            ///< width of the transmission in BSS 0
+    MHz_t m_bss0Width;                            ///< width of the transmission in BSS 0
                                                   ///< started when BSS 1 is transmitting
     NetDeviceContainer m_staDevices;              ///< container for stations' NetDevices
     NetDeviceContainer m_apDevices;               ///< container for AP's NetDevice
@@ -95,7 +95,7 @@ class WifiUseAvailBwTest : public TestCase
 };
 
 WifiUseAvailBwTest::WifiUseAvailBwTest(std::initializer_list<std::string> channelStr,
-                                       MHz_u bss0Width)
+                                       MHz_t bss0Width)
     : TestCase("Check transmission on available bandwidth"),
       m_channelStr(channelStr),
       m_bss0Width(bss0Width),
@@ -438,7 +438,7 @@ WifiDynamicBwOpTestSuite::WifiDynamicBwOpTestSuite()
      *          └────────┘
      */
     AddTestCase(
-        new WifiUseAvailBwTest({"{54, 40, BAND_5GHZ, 1}", "{52, 20, BAND_5GHZ, 0}"}, MHz_u{20}),
+        new WifiUseAvailBwTest({"{54, 40, BAND_5GHZ, 1}", "{52, 20, BAND_5GHZ, 0}"}, MHz_t{20}),
         TestCase::Duration::QUICK);
     /**
      *           ─── primary 40 ───
@@ -453,7 +453,7 @@ WifiDynamicBwOpTestSuite::WifiDynamicBwOpTestSuite()
      *                                      primary20
      */
     AddTestCase(
-        new WifiUseAvailBwTest({"{58, 80, BAND_5GHZ, 0}", "{62, 40, BAND_5GHZ, 1}"}, MHz_u{40}),
+        new WifiUseAvailBwTest({"{58, 80, BAND_5GHZ, 0}", "{62, 40, BAND_5GHZ, 1}"}, MHz_t{40}),
         TestCase::Duration::QUICK);
     /**
      *                                               ─────────── primary 80 ───────────
@@ -468,7 +468,7 @@ WifiDynamicBwOpTestSuite::WifiDynamicBwOpTestSuite()
      *                             primary20
      */
     AddTestCase(
-        new WifiUseAvailBwTest({"{50, 160, BAND_5GHZ, 5}", "{42, 80, BAND_5GHZ, 2}"}, MHz_u{80}),
+        new WifiUseAvailBwTest({"{50, 160, BAND_5GHZ, 5}", "{42, 80, BAND_5GHZ, 2}"}, MHz_t{80}),
         TestCase::Duration::QUICK);
     /**
      *                                                  ────────────── primary 160 ──────────────
@@ -483,7 +483,7 @@ WifiDynamicBwOpTestSuite::WifiDynamicBwOpTestSuite()
      *                                            primary20
      */
     AddTestCase(
-        new WifiUseAvailBwTest({"{31, 320, BAND_6GHZ, 10}", "{15, 160, BAND_6GHZ, 7}"}, 160),
+        new WifiUseAvailBwTest({"{31, 320, BAND_6GHZ, 10}", "{15, 160, BAND_6GHZ, 7}"}, MHz_t{160}),
         TestCase::Duration::QUICK);
 }
 

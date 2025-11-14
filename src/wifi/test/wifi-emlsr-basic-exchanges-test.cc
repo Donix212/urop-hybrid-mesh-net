@@ -15,6 +15,7 @@
 #include "ns3/eht-frame-exchange-manager.h"
 #include "ns3/log.h"
 #include "ns3/mgt-action-headers.h"
+#include "ns3/mhz.h"
 #include "ns3/qos-txop.h"
 #include "ns3/rr-multi-user-scheduler.h"
 #include "ns3/simulator.h"
@@ -1803,8 +1804,7 @@ EmlsrUlTxopTest::EmlsrUlTxopTest(const Params& params)
 void
 EmlsrUlTxopTest::DoSetup()
 {
-    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth",
-                       UintegerValue(m_auxPhyChannelWidth));
+    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", MhzValue(m_auxPhyChannelWidth));
     Config::SetDefault("ns3::DefaultEmlsrManager::SwitchAuxPhy", BooleanValue(false));
     // switch main PHY back delay should be at least a PIFS for the switch to occur
     Config::SetDefault("ns3::EhtConfiguration::MediumSyncDuration",
@@ -1827,11 +1827,11 @@ EmlsrUlTxopTest::DoSetup()
     // configure channels of the given width
     for (auto band : {WIFI_PHY_BAND_2_4GHZ, WIFI_PHY_BAND_5GHZ, WIFI_PHY_BAND_6GHZ})
     {
-        MHz_u bw{20};
+        MHz_t bw{20};
         uint8_t number = band == WIFI_PHY_BAND_5GHZ ? 36 : 1;
 
         auto width =
-            std::min(m_channelWidth, band == WIFI_PHY_BAND_2_4GHZ ? MHz_u{40} : MHz_u{160});
+            std::min(m_channelWidth, band == WIFI_PHY_BAND_2_4GHZ ? MHz_t{40} : MHz_t{160});
         while (bw < width)
         {
             bw *= 2;
@@ -1841,7 +1841,7 @@ EmlsrUlTxopTest::DoSetup()
         for (auto mac : std::initializer_list<Ptr<WifiMac>>{m_apMac, m_staMacs[0]})
         {
             mac->GetWifiPhy(linkId)->SetOperatingChannel(
-                WifiPhy::ChannelTuple{number, width, band, 0});
+                WifiPhy::ChannelTuple{number, width.to<double>(), band, 0});
         }
         linkId++;
     }
@@ -3111,8 +3111,8 @@ WifiEmlsrBasicExchangesTestSuite::WifiEmlsrBasicExchangesTestSuite()
     for (auto genBackoffIfTxopWithoutTx : {true, false})
     {
         AddTestCase(new EmlsrUlTxopTest({{0, 1, 2},
-                                         MHz_u{40},
-                                         MHz_u{20},
+                                         MHz_t{40},
+                                         MHz_t{20},
                                          MicroSeconds(5504),
                                          3,
                                          genBackoffIfTxopWithoutTx,
@@ -3120,8 +3120,8 @@ WifiEmlsrBasicExchangesTestSuite::WifiEmlsrBasicExchangesTestSuite()
                                          false /* switchMainPhyBackDelayTimeout */}),
                     TestCase::Duration::QUICK);
         AddTestCase(new EmlsrUlTxopTest({{0, 1},
-                                         MHz_u{40},
-                                         MHz_u{20},
+                                         MHz_t{40},
+                                         MHz_t{20},
                                          MicroSeconds(5504),
                                          1,
                                          genBackoffIfTxopWithoutTx,

@@ -16,6 +16,7 @@
 #include "ns3/interference-helper.h"
 #include "ns3/log.h"
 #include "ns3/mgt-action-headers.h"
+#include "ns3/mhz.h"
 #include "ns3/multi-model-spectrum-channel.h"
 #include "ns3/pointer.h"
 #include "ns3/qos-txop.h"
@@ -38,7 +39,7 @@ EmlsrLinkSwitchTest::EmlsrLinkSwitchTest(const Params& params)
           std::string("Check EMLSR link switching (switchAuxPhy=") +
           std::to_string(params.switchAuxPhy) + ", resetCamStateAndInterruptSwitch=" +
           std::to_string(params.resetCamStateAndInterruptSwitch) +
-          ", auxPhyMaxChWidth=" + std::to_string(params.auxPhyMaxChWidth) + "MHz )"),
+          ", auxPhyMaxChWidth=" + std::to_string(params.auxPhyMaxChWidth.to<double>()) + "MHz )"),
       m_switchAuxPhy(params.switchAuxPhy),
       m_resetCamStateAndInterruptSwitch(params.resetCamStateAndInterruptSwitch),
       m_auxPhyMaxChWidth(params.auxPhyMaxChWidth),
@@ -132,7 +133,7 @@ EmlsrLinkSwitchTest::DoSetup()
                        BooleanValue(m_resetCamStateAndInterruptSwitch));
     Config::SetDefault("ns3::AdvancedEmlsrManager::InterruptSwitch",
                        BooleanValue(m_resetCamStateAndInterruptSwitch));
-    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", UintegerValue(m_auxPhyMaxChWidth));
+    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", MhzValue(m_auxPhyMaxChWidth));
     Config::SetDefault("ns3::WifiPhy::ChannelSwitchDelay", TimeValue(MicroSeconds(45)));
 
     EmlsrOperationsTestBase::DoSetup();
@@ -651,9 +652,9 @@ EmlsrLinkSwitchTest::CheckResults()
     }
 }
 
-EmlsrCcaBusyTest::EmlsrCcaBusyTest(MHz_u auxPhyMaxChWidth)
+EmlsrCcaBusyTest::EmlsrCcaBusyTest(MHz_t auxPhyMaxChWidth)
     : EmlsrOperationsTestBase(std::string("Check EMLSR link switching (auxPhyMaxChWidth=") +
-                              std::to_string(auxPhyMaxChWidth) + "MHz )"),
+                              std::to_string(auxPhyMaxChWidth.to<double>()) + "MHz )"),
       m_auxPhyMaxChWidth(auxPhyMaxChWidth),
       m_channelSwitchDelay(MicroSeconds(75)),
       m_currMainPhyLinkId(0),
@@ -681,7 +682,7 @@ void
 EmlsrCcaBusyTest::DoSetup()
 {
     Config::SetDefault("ns3::DefaultEmlsrManager::SwitchAuxPhy", BooleanValue(true));
-    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", UintegerValue(m_auxPhyMaxChWidth));
+    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", MhzValue(m_auxPhyMaxChWidth));
     Config::SetDefault("ns3::EmlsrManager::AuxPhyMaxModClass", StringValue("EHT"));
     Config::SetDefault("ns3::WifiPhy::ChannelSwitchDelay", TimeValue(m_channelSwitchDelay));
 
@@ -1101,7 +1102,7 @@ EmlsrIcfSentDuringMainPhySwitchTest::DoSetup()
 
     for (uint8_t i = 0; i < m_staMacs[0]->GetDevice()->GetNPhys(); ++i)
     {
-        m_bands.at(i) = m_staMacs[0]->GetDevice()->GetPhy(i)->GetBand(MHz_u{20}, 0);
+        m_bands.at(i) = m_staMacs[0]->GetDevice()->GetPhy(i)->GetBand(MHz_t{20}, 0);
     }
 }
 
@@ -2249,7 +2250,7 @@ EmlsrCheckNavAndCcaLastPifsTest::DoSetup()
     Config::SetDefault("ns3::EhtConfiguration::TidToLinkMappingDl", StringValue(mapping));
     Config::SetDefault("ns3::EhtConfiguration::TidToLinkMappingUl", StringValue(mapping));
     Config::SetDefault("ns3::AdvancedEmlsrManager::UseAuxPhyCca", BooleanValue(true));
-    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", UintegerValue(20));
+    Config::SetDefault("ns3::EmlsrManager::AuxPhyChannelWidth", MhzValue(MHz_t{20}));
 
     // use 40 MHz channels
     m_channelsStr = {"{3, 40, BAND_2_4GHZ, 0}"s,
@@ -2472,7 +2473,7 @@ WifiEmlsrLinkSwitchTestSuite::WifiEmlsrLinkSwitchTestSuite()
     {
         for (bool resetCamStateAndInterruptSwitch : {true, false})
         {
-            for (auto auxPhyMaxChWidth : {MHz_u{20}, MHz_u{40}, MHz_u{80}, MHz_u{160}})
+            for (auto auxPhyMaxChWidth : {MHz_t{20}, MHz_t{40}, MHz_t{80}, MHz_t{160}})
             {
                 AddTestCase(new EmlsrLinkSwitchTest(
                                 {switchAuxPhy, resetCamStateAndInterruptSwitch, auxPhyMaxChWidth}),
@@ -2485,8 +2486,8 @@ WifiEmlsrLinkSwitchTestSuite::WifiEmlsrLinkSwitchTestSuite()
     AddTestCase(new EmlsrIcfSentDuringMainPhySwitchTest(), TestCase::Duration::QUICK);
     AddTestCase(new EmlsrSwitchMainPhyBackTest(), TestCase::Duration::QUICK);
 
-    AddTestCase(new EmlsrCcaBusyTest(MHz_u{20}), TestCase::Duration::QUICK);
-    AddTestCase(new EmlsrCcaBusyTest(MHz_u{80}), TestCase::Duration::QUICK);
+    AddTestCase(new EmlsrCcaBusyTest(MHz_t{20}), TestCase::Duration::QUICK);
+    AddTestCase(new EmlsrCcaBusyTest(MHz_t{80}), TestCase::Duration::QUICK);
 
     for (const auto switchAuxPhy : {true, false})
     {

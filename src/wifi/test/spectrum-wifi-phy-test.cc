@@ -41,8 +41,8 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("SpectrumWifiPhyTest");
 
 static const uint8_t CHANNEL_NUMBER = 36;
-static const MHz_u CHANNEL_WIDTH{20};
-static const MHz_u GUARD_WIDTH = CHANNEL_WIDTH; // expanded to channel width to model spectrum mask
+static const MHz_t CHANNEL_WIDTH{20};
+static const MHz_t GUARD_WIDTH = CHANNEL_WIDTH; // expanded to channel width to model spectrum mask
 
 /**
  * Extended SpectrumWifiPhy class for the purpose of the tests.
@@ -491,14 +491,14 @@ class SpectrumWifiPhyFilterTest : public TestCase
     Ptr<ExtSpectrumWifiPhy> m_txPhy; ///< TX PHY
     Ptr<ExtSpectrumWifiPhy> m_rxPhy; ///< RX PHY
 
-    MHz_u m_txChannelWidth; ///< TX channel width
-    MHz_u m_rxChannelWidth; ///< RX channel width
+    MHz_t m_txChannelWidth; ///< TX channel width
+    MHz_t m_rxChannelWidth; ///< RX channel width
 };
 
 SpectrumWifiPhyFilterTest::SpectrumWifiPhyFilterTest()
     : TestCase("SpectrumWifiPhy test RX filters"),
-      m_txChannelWidth(MHz_u{20}),
-      m_rxChannelWidth(MHz_u{20})
+      m_txChannelWidth(MHz_t{20}),
+      m_rxChannelWidth(MHz_t{20})
 {
 }
 
@@ -548,11 +548,13 @@ SpectrumWifiPhyFilterTest::RxCallback(Ptr<const Packet> p, RxPowerWattPerChannel
     }
 
     size_t numBands = rxPowersW.size();
-    auto expectedNumBands = std::max<std::size_t>(1, m_rxChannelWidth / MHz_u{20});
-    expectedNumBands += (m_rxChannelWidth / MHz_u{40});
-    expectedNumBands += (m_rxChannelWidth / MHz_u{80});
-    expectedNumBands += (m_rxChannelWidth / MHz_u{160});
-    expectedNumBands += (m_rxChannelWidth / MHz_u{320});
+    auto expectedNumBands = std::max<std::size_t>(
+        1,
+        static_cast<std::size_t>((m_rxChannelWidth / MHz_t{20}).to<double>()));
+    expectedNumBands += static_cast<std::size_t>((m_rxChannelWidth / MHz_t{40}).to<double>());
+    expectedNumBands += static_cast<std::size_t>((m_rxChannelWidth / MHz_t{80}).to<double>());
+    expectedNumBands += static_cast<std::size_t>((m_rxChannelWidth / MHz_t{160}).to<double>());
+    expectedNumBands += static_cast<std::size_t>((m_rxChannelWidth / MHz_t{320}).to<double>());
     expectedNumBands += m_rxPhy
                             ->GetRuBands(m_rxPhy->GetCurrentInterface(),
                                          m_rxPhy->GetGuardBandwidth(
@@ -563,7 +565,7 @@ SpectrumWifiPhyFilterTest::RxCallback(Ptr<const Packet> p, RxPowerWattPerChannel
                           expectedNumBands,
                           "Total number of bands handled by the receiver is incorrect");
 
-    MHz_u channelWidth = std::min(m_txChannelWidth, m_rxChannelWidth);
+    MHz_t channelWidth = std::min(m_txChannelWidth, m_rxChannelWidth);
     auto band = m_rxPhy->GetBand(channelWidth, 0);
     auto it = rxPowersW.find(band);
     NS_ASSERT_MSG(it != rxPowersW.end(), "Band " << band << " not found");
@@ -581,16 +583,16 @@ SpectrumWifiPhyFilterTest::RxCallback(Ptr<const Packet> p, RxPowerWattPerChannel
     else
     {
         // Only a part of the transmitted power is received
-        expectedTotalRxPower =
-            16 - static_cast<int>(RatioToDb(m_txChannelWidth / m_rxChannelWidth));
+        expectedTotalRxPower = 16 - static_cast<int>(RatioToDb(m_txChannelWidth.to<double>() /
+                                                               m_rxChannelWidth.to<double>()));
     }
     NS_TEST_ASSERT_MSG_EQ(totalRxPower,
                           expectedTotalRxPower,
                           "Total received power is not correct");
 
-    if ((m_txChannelWidth <= m_rxChannelWidth) && (channelWidth >= MHz_u{20}))
+    if ((m_txChannelWidth <= m_rxChannelWidth) && (channelWidth >= MHz_t{20}))
     {
-        band = m_rxPhy->GetBand(MHz_u{20}, 0); // primary 20 MHz
+        band = m_rxPhy->GetBand(MHz_t{20}, 0); // primary 20 MHz
         it = rxPowersW.find(band);
         NS_ASSERT_MSG(it != rxPowersW.end(), "Band " << band << " not found");
         const auto& [_, primaryRxPowerW] = *it;
@@ -673,24 +675,24 @@ SpectrumWifiPhyFilterTest::DoTeardown()
 void
 SpectrumWifiPhyFilterTest::RunOne()
 {
-    MHz_u txFrequency;
+    MHz_t txFrequency;
     switch (static_cast<uint16_t>(m_txChannelWidth))
     {
     case 20:
     default:
-        txFrequency = MHz_u{5955};
+        txFrequency = MHz_t{5955};
         break;
     case 40:
-        txFrequency = MHz_u{5965};
+        txFrequency = MHz_t{5965};
         break;
     case 80:
-        txFrequency = MHz_u{5985};
+        txFrequency = MHz_t{5985};
         break;
     case 160:
-        txFrequency = MHz_u{6025};
+        txFrequency = MHz_t{6025};
         break;
     case 320:
-        txFrequency = MHz_u{6105};
+        txFrequency = MHz_t{6105};
         break;
     }
     auto txChannelNum = WifiPhyOperatingChannel::FindFirst(0,
@@ -700,26 +702,26 @@ SpectrumWifiPhyFilterTest::RunOne()
                                                            WIFI_PHY_BAND_6GHZ)
                             ->number;
     m_txPhy->SetOperatingChannel(
-        WifiPhy::ChannelTuple{txChannelNum, m_txChannelWidth, WIFI_PHY_BAND_6GHZ, 0});
+        WifiPhy::ChannelTuple{txChannelNum, m_txChannelWidth.to<double>(), WIFI_PHY_BAND_6GHZ, 0});
 
-    MHz_u rxFrequency;
+    MHz_t rxFrequency;
     switch (static_cast<uint16_t>(m_rxChannelWidth))
     {
     case 20:
     default:
-        rxFrequency = MHz_u{5955};
+        rxFrequency = MHz_t{5955};
         break;
     case 40:
-        rxFrequency = MHz_u{5965};
+        rxFrequency = MHz_t{5965};
         break;
     case 80:
-        rxFrequency = MHz_u{5985};
+        rxFrequency = MHz_t{5985};
         break;
     case 160:
-        rxFrequency = MHz_u{6025};
+        rxFrequency = MHz_t{6025};
         break;
     case 320:
-        rxFrequency = MHz_u{6105};
+        rxFrequency = MHz_t{6105};
         break;
     }
     auto rxChannelNum = WifiPhyOperatingChannel::FindFirst(0,
@@ -729,7 +731,7 @@ SpectrumWifiPhyFilterTest::RunOne()
                                                            WIFI_PHY_BAND_6GHZ)
                             ->number;
     m_rxPhy->SetOperatingChannel(
-        WifiPhy::ChannelTuple{rxChannelNum, m_rxChannelWidth, WIFI_PHY_BAND_6GHZ, 0});
+        WifiPhy::ChannelTuple{rxChannelNum, m_rxChannelWidth.to<double>(), WIFI_PHY_BAND_6GHZ, 0});
 
     Simulator::Schedule(Seconds(1), &SpectrumWifiPhyFilterTest::SendPpdu, this);
 
@@ -739,9 +741,9 @@ SpectrumWifiPhyFilterTest::RunOne()
 void
 SpectrumWifiPhyFilterTest::DoRun()
 {
-    for (const auto txBw : {MHz_u{20}, MHz_u{40}, MHz_u{80}, MHz_u{160}, MHz_u{320}})
+    for (const auto txBw : {MHz_t{20}, MHz_t{40}, MHz_t{80}, MHz_t{160}, MHz_t{320}})
     {
-        for (const auto rxBw : {MHz_u{20}, MHz_u{40}, MHz_u{80}, MHz_u{160}, MHz_u{320}})
+        for (const auto rxBw : {MHz_t{20}, MHz_t{40}, MHz_t{80}, MHz_t{160}, MHz_t{320}})
         {
             m_txChannelWidth = txBw;
             m_rxChannelWidth = rxBw;
@@ -781,7 +783,7 @@ class SpectrumWifiPhyGetBandTest : public TestCase
      * returned by SpectrumWifiPhy::GetBand
      */
     void RunOne(const std::vector<uint8_t>& channelNumberPerSegment,
-                MHz_u bandWidth,
+                MHz_t bandWidth,
                 uint8_t bandIndex,
                 const std::vector<WifiSpectrumBandIndices>& expectedIndices,
                 const std::vector<WifiSpectrumBandFrequencies>& expectedFrequencies);
@@ -831,7 +833,7 @@ SpectrumWifiPhyGetBandTest::DoTeardown()
 void
 SpectrumWifiPhyGetBandTest::RunOne(
     const std::vector<uint8_t>& channelNumberPerSegment,
-    MHz_u bandWidth,
+    MHz_t bandWidth,
     uint8_t bandIndex,
     const std::vector<WifiSpectrumBandIndices>& expectedIndices,
     const std::vector<WifiSpectrumBandFrequencies>& expectedFrequencies)
@@ -840,8 +842,8 @@ SpectrumWifiPhyGetBandTest::RunOne(
     for (auto channelNumber : channelNumberPerSegment)
     {
         const auto& channelInfo = WifiPhyOperatingChannel::FindFirst(channelNumber,
-                                                                     MHz_u{0},
-                                                                     MHz_u{0},
+                                                                     MHz_t{0},
+                                                                     MHz_t{0},
                                                                      WIFI_STANDARD_80211ax,
                                                                      WIFI_PHY_BAND_5GHZ);
         channelSegments.emplace_back(channelInfo->number, channelInfo->width, channelInfo->band, 0);
@@ -874,28 +876,28 @@ void
 SpectrumWifiPhyGetBandTest::DoRun()
 {
     const uint32_t indicesPer20MhzBand = 256; // based on 802.11ax carrier spacing
-    const MHz_u channelWidth{160};            // we consider the largest channel width
+    const MHz_t channelWidth{160};            // we consider the largest channel width
     const uint8_t channelNumberContiguous160Mhz =
         50; // channel number of the first 160 MHz band in 5 GHz band
     const std::vector<uint8_t> channelNumberPerSegment = {42,
                                                           106}; // channel numbers used for 80+80MHz
     // separation between segment at channel number 42 and segment at channel number 106
-    const MHz_u separationWidth{240};
+    const MHz_t separationWidth{240};
     for (bool contiguous160Mhz : {true /* 160 MHz */, false /* 80+80MHz */})
     {
         const auto guardWidth = contiguous160Mhz ? channelWidth : (channelWidth / 2);
         uint32_t guardStopIndice = (indicesPer20MhzBand * Count20MHzSubchannels(guardWidth)) - 1;
         std::vector<WifiSpectrumBandIndices> previousExpectedIndices{};
         std::vector<WifiSpectrumBandFrequencies> previousExpectedFrequencies{};
-        for (auto bandWidth : {MHz_u{20}, MHz_u{40}, MHz_u{80}, MHz_u{160}})
+        for (auto bandWidth : {MHz_t{20}, MHz_t{40}, MHz_t{80}, MHz_t{160}})
         {
             const uint32_t expectedStartIndice = guardStopIndice + 1;
             const uint32_t expectedStopIndice =
                 expectedStartIndice + (indicesPer20MhzBand * Count20MHzSubchannels(bandWidth)) - 1;
             std::vector<WifiSpectrumBandIndices> expectedIndices{
                 {expectedStartIndice, expectedStopIndice}};
-            const Hz_u expectedStartFrequency = MHzToHz(5170);
-            const Hz_u expectedStopFrequency = MHzToHz(5170 + bandWidth);
+            const Hz_t expectedStartFrequency = Hz_t{5170_MHz};
+            const Hz_t expectedStopFrequency = Hz_t(5170_MHz + bandWidth);
             std::vector<WifiSpectrumBandFrequencies> expectedFrequencies{
                 {expectedStartFrequency, expectedStopFrequency}};
             const std::size_t numBands = (channelWidth / bandWidth);
@@ -919,8 +921,8 @@ SpectrumWifiPhyGetBandTest::DoRun()
                         (indicesPer20MhzBand * Count20MHzSubchannels(separationWidth));
                     expectedIndices.at(0).second +=
                         (indicesPer20MhzBand * Count20MHzSubchannels(separationWidth));
-                    expectedFrequencies.at(0).first += MHzToHz(separationWidth);
-                    expectedFrequencies.at(0).second += MHzToHz(separationWidth);
+                    expectedFrequencies.at(0).first += Hz_t(separationWidth);
+                    expectedFrequencies.at(0).second += Hz_t(separationWidth);
                 }
                 RunOne(contiguous160Mhz ? std::vector<uint8_t>{channelNumberContiguous160Mhz}
                                         : channelNumberPerSegment,
@@ -937,8 +939,8 @@ SpectrumWifiPhyGetBandTest::DoRun()
                 expectedIndices.at(0).second =
                     expectedIndices.at(0).first +
                     (indicesPer20MhzBand * Count20MHzSubchannels(bandWidth)) - 1;
-                expectedFrequencies.at(0).first += MHzToHz(bandWidth);
-                expectedFrequencies.at(0).second += MHzToHz(bandWidth);
+                expectedFrequencies.at(0).first += Hz_t(bandWidth);
+                expectedFrequencies.at(0).second += Hz_t(bandWidth);
             }
         }
     }
@@ -1049,8 +1051,8 @@ SpectrumWifiPhyTrackedBandsTest::SwitchChannel(const std::vector<uint8_t>& chann
     for (auto channelNumber : channelNumberPerSegment)
     {
         const auto& channelInfo = WifiPhyOperatingChannel::FindFirst(channelNumber,
-                                                                     MHz_u{0},
-                                                                     MHz_u{0},
+                                                                     MHz_t{0},
+                                                                     MHz_t{0},
                                                                      WIFI_STANDARD_80211ax,
                                                                      WIFI_PHY_BAND_5GHZ);
         channelSegments.emplace_back(channelInfo->number, channelInfo->width, channelInfo->band, 0);
@@ -1127,63 +1129,65 @@ SpectrumWifiPhyTrackedBandsTest::DoRun()
     // switch from 160 MHz to 80+80 MHz
     RunOne({50},
            {42, 106},
-           {{{MHzToHz(5170), MHzToHz(5250)}} /* first 80 MHz segment */,
-            {{MHzToHz(5490), MHzToHz(5570)}} /* second 80 MHz segment */,
-            {{MHzToHz(5170), MHzToHz(5250)},
-             {MHzToHz(5490),
-              MHzToHz(5570)}} /* non-contiguous 160 MHz band made of the two segments */},
-           {{{MHzToHz(5170), MHzToHz(5330)}} /* full 160 MHz band should have been removed */});
+           {{{Hz_t{5170_MHz}, Hz_t{5250_MHz}}} /* first 80 MHz segment */,
+            {{Hz_t{5490_MHz}, Hz_t{5570_MHz}}} /* second 80 MHz segment */,
+            {{Hz_t{5170_MHz}, Hz_t{5250_MHz}},
+             {Hz_t{5490_MHz},
+              Hz_t{5570_MHz}}} /* non-contiguous 160 MHz band made of the two segments */},
+           {{{Hz_t{5170_MHz}, Hz_t{5330_MHz}}} /* full 160 MHz band should have been removed */});
 
     // switch from 80+80 MHz to 160 MHz
-    RunOne(
-        {42, 106},
-        {50},
-        {{{MHzToHz(5170), MHzToHz(5330)}} /* full 160 MHz band */,
-         {{MHzToHz(5170), MHzToHz(5250)}} /* first 80 MHz segment is part of the 160 MHz channel*/},
-        {{{MHzToHz(5490), MHzToHz(5570)}} /* second 80 MHz segment should have been removed */,
-         {{MHzToHz(5170), MHzToHz(5250)},
-          {MHzToHz(5490),
-           MHzToHz(5570)}} /* non-contiguous 160 MHz band should have been removed */});
+    RunOne({42, 106},
+           {50},
+           {{{Hz_t{5170_MHz}, Hz_t{5330_MHz}}} /* full 160 MHz band */,
+            {{Hz_t{5170_MHz},
+              Hz_t{5250_MHz}}} /* first 80 MHz segment is part of the 160 MHz channel*/},
+           {{{Hz_t{5490_MHz}, Hz_t{5570_MHz}}} /* second 80 MHz segment should have been removed */,
+            {{Hz_t{5170_MHz}, Hz_t{5250_MHz}},
+             {Hz_t{5490_MHz},
+              Hz_t{5570_MHz}}} /* non-contiguous 160 MHz band should have been removed */});
 
     // switch from 80+80 MHz to 80+80 MHz with segment swap
     RunOne({42, 106},
            {106, 42},
-           {{{MHzToHz(5490), MHzToHz(5570)}} /* first 80 MHz segment */,
-            {{MHzToHz(5490), MHzToHz(5570)}} /* second 80 MHz segment */,
-            {{MHzToHz(5170), MHzToHz(5250)},
-             {MHzToHz(5490),
-              MHzToHz(5570)}} /* non-contiguous 160 MHz band made of the two segments */},
+           {{{Hz_t{5490_MHz}, Hz_t{5570_MHz}}} /* first 80 MHz segment */,
+            {{Hz_t{5490_MHz}, Hz_t{5570_MHz}}} /* second 80 MHz segment */,
+            {{Hz_t{5170_MHz}, Hz_t{5250_MHz}},
+             {Hz_t{5490_MHz},
+              Hz_t{5570_MHz}}} /* non-contiguous 160 MHz band made of the two segments */},
            {});
 
     // switch from 80+80 MHz to another 80+80 MHz with one common segment
-    RunOne({42, 106},
-           {106, 138},
-           {{{MHzToHz(5490), MHzToHz(5570)}} /* first 80 MHz segment */,
-            {{MHzToHz(5650), MHzToHz(5730)}} /* second 80 MHz segment */,
-            {{MHzToHz(5490), MHzToHz(5570)},
-             {MHzToHz(5650),
-              MHzToHz(5730)}} /* non-contiguous 160 MHz band made of the two segments */},
-           {{{MHzToHz(5170),
-              MHzToHz(5250)}} /* 80 MHz segment at channel 42 should have been removed */,
-            {{MHzToHz(5170), MHzToHz(5250)},
-             {MHzToHz(5490),
-              MHzToHz(5570)}} /* previous non-contiguous 160 MHz band should have been removed */});
+    RunOne(
+        {42, 106},
+        {106, 138},
+        {{{Hz_t{5490_MHz}, Hz_t{5570_MHz}}} /* first 80 MHz segment */,
+         {{Hz_t{5650_MHz}, Hz_t{5730_MHz}}} /* second 80 MHz segment */,
+         {{Hz_t{5490_MHz}, Hz_t{5570_MHz}},
+          {Hz_t{5650_MHz},
+           Hz_t{5730_MHz}}} /* non-contiguous 160 MHz band made of the two segments */},
+        {{{Hz_t{5170_MHz},
+           Hz_t{5250_MHz}}} /* 80 MHz segment at channel 42 should have been removed */,
+         {{Hz_t{5170_MHz}, Hz_t{5250_MHz}},
+          {Hz_t{5490_MHz},
+           Hz_t{5570_MHz}}} /* previous non-contiguous 160 MHz band should have been removed */});
 
     // switch from 80+80 MHz to another 80+80 MHz with no common segment
-    RunOne({42, 106},
-           {122, 155},
-           {{{MHzToHz(5570), MHzToHz(5650)}} /* first 80 MHz segment */,
-            {{MHzToHz(5735), MHzToHz(5815)}} /* second 80 MHz segment */,
-            {{MHzToHz(5570), MHzToHz(5650)},
-             {MHzToHz(5735),
-              MHzToHz(5815)}} /* non-contiguous 160 MHz band made of the two segments */},
-           {{{MHzToHz(5170),
-              MHzToHz(5250)}} /* previous first 80 MHz segment should have been removed */,
-            {{MHzToHz(5490),
-              MHzToHz(5570)}} /* previous second 80 MHz segment should have been removed */,
-            {{MHzToHz(5170), MHzToHz(5250)},
-             {MHzToHz(5490),
-              MHzToHz(5570)}} /* previous non-contiguous 160 MHz band should have been removed */});
+    RunOne(
+        {42, 106},
+        {122, 155},
+        {{{Hz_t{5570_MHz}, Hz_t{5650_MHz}}} /* first 80 MHz segment */,
+         {{Hz_t{5735_MHz}, Hz_t{5815_MHz}}} /* second 80 MHz segment */,
+         {{Hz_t{5570_MHz}, Hz_t{5650_MHz}},
+          {Hz_t{5735_MHz},
+           Hz_t{5815_MHz}}} /* non-contiguous 160 MHz band made of the two segments */},
+        {{{Hz_t{5170_MHz},
+           Hz_t{5250_MHz}}} /* previous first 80 MHz segment should have been removed */,
+         {{Hz_t{5490_MHz},
+           Hz_t{5570_MHz}}} /* previous second 80 MHz segment should have been removed */,
+         {{Hz_t{5170_MHz}, Hz_t{5250_MHz}},
+          {Hz_t{5490_MHz},
+           Hz_t{5570_MHz}}} /* previous non-contiguous 160 MHz band should have been removed */});
 
     Simulator::Destroy();
 }
@@ -1226,8 +1230,8 @@ class SpectrumWifiPhy80Plus80Test : public TestCase
      * @param expectSuccess flag to indicate whether reception is expected to be successful
      */
     void RunOne(const std::vector<uint8_t>& channelNumbers,
-                MHz_u interferenceCenterFrequency,
-                MHz_u interferenceBandWidth,
+                MHz_t interferenceCenterFrequency,
+                MHz_t interferenceBandWidth,
                 bool expectSuccess);
 
     /**
@@ -1303,8 +1307,8 @@ SpectrumWifiPhy80Plus80Test::SwitchChannel(const std::vector<uint8_t>& channelNu
     for (auto channelNumber : channelNumbers)
     {
         const auto& channelInfo = WifiPhyOperatingChannel::FindFirst(channelNumber,
-                                                                     MHz_u{0},
-                                                                     MHz_u{0},
+                                                                     MHz_t{0},
+                                                                     MHz_t{0},
                                                                      WIFI_STANDARD_80211ax,
                                                                      WIFI_PHY_BAND_5GHZ);
         channelSegments.emplace_back(channelInfo->number, channelInfo->width, channelInfo->band, 0);
@@ -1325,7 +1329,7 @@ SpectrumWifiPhy80Plus80Test::Send160MhzPpdu()
                           1,
                           1,
                           0,
-                          MHz_u{160},
+                          MHz_t{160},
                           false,
                           false,
                           false};
@@ -1449,8 +1453,8 @@ SpectrumWifiPhy80Plus80Test::DoTeardown()
 
 void
 SpectrumWifiPhy80Plus80Test::RunOne(const std::vector<uint8_t>& channelNumbers,
-                                    MHz_u interferenceCenterFrequency,
-                                    MHz_u interferenceBandWidth,
+                                    MHz_t interferenceCenterFrequency,
+                                    MHz_t interferenceBandWidth,
                                     bool expectSuccess)
 {
     // reset counters
@@ -1463,13 +1467,14 @@ SpectrumWifiPhy80Plus80Test::RunOne(const std::vector<uint8_t>& channelNumbers,
                         channelNumbers);
 
     // create info about interference to generate
-    BandInfo bandInfo{.fl = MHzToHz(interferenceCenterFrequency - (interferenceBandWidth / 2)),
-                      .fc = MHzToHz(interferenceCenterFrequency),
-                      .fh = MHzToHz(interferenceCenterFrequency + (interferenceBandWidth / 2))};
+    BandInfo bandInfo{
+        .fl = static_cast<double>(Hz_t(interferenceCenterFrequency - (interferenceBandWidth / 2))),
+        .fc = static_cast<double>(Hz_t(interferenceCenterFrequency)),
+        .fh = static_cast<double>(Hz_t(interferenceCenterFrequency + (interferenceBandWidth / 2)))};
     auto spectrumInterference = Create<SpectrumModel>(Bands{bandInfo});
     auto interferencePsd = Create<SpectrumValue>(spectrumInterference);
     Watt_t interferencePower{0.1};
-    *interferencePsd = interferencePower.to<double>() / (interferenceBandWidth * 20e6);
+    *interferencePsd = interferencePower.to<double>() / (interferenceBandWidth.to<double>() * 20e6);
 
     Simulator::Schedule(Seconds(1),
                         &SpectrumWifiPhy80Plus80Test::GenerateInterference,
@@ -1504,7 +1509,7 @@ SpectrumWifiPhy80Plus80Test::DoRun()
     //                   │          5250 MHz, 160 MHz           │
     //                   └──────────────────────────────────────┘
     //
-    RunOne({50}, MHz_u{5290}, MHz_u{80}, false);
+    RunOne({50}, MHz_t{5290}, MHz_t{80}, false);
 
     // Test transmission over non-contiguous 160 MHz (i.e. 80+80MHz) and same interference as in
     // previous run. The reception should succeed because the interference is located between the
@@ -1519,7 +1524,7 @@ SpectrumWifiPhy80Plus80Test::DoRun()
     //                   │80+80MHz segment 0│                             │80+80MHz segment 1│
     //                   └──────────────────┘                             └──────────────────┘
     //
-    RunOne({42, 106}, MHz_u{5290}, MHz_u{80}, true);
+    RunOne({42, 106}, MHz_t{5290}, MHz_t{80}, true);
 
     // Test transmission over non-contiguous 160 MHz (i.e. 80+80MHz) and interference generated on
     // the first segment of the channel width (channel 42, i.e. center frequency 5210 and bandwidth
@@ -1535,7 +1540,7 @@ SpectrumWifiPhy80Plus80Test::DoRun()
     //                   │80+80MHz segment 0│                             │80+80MHz segment 1│
     //                   └──────────────────┘                             └──────────────────┘
     //
-    RunOne({42, 106}, MHz_u{5210}, MHz_u{80}, false);
+    RunOne({42, 106}, MHz_t{5210}, MHz_t{80}, false);
 
     // Test transmission over non-contiguous 160 MHz (i.e. 80+80MHz) and interference generated on
     // the second segment of the channel width (channel 42, i.e. center frequency 5210 and bandwidth
@@ -1551,7 +1556,7 @@ SpectrumWifiPhy80Plus80Test::DoRun()
     //                   │80+80MHz segment 0│                             │80+80MHz segment 1│
     //                   └──────────────────┘                             └──────────────────┘
     //
-    RunOne({42, 106}, MHz_u{5530}, MHz_u{80}, false);
+    RunOne({42, 106}, MHz_t{5530}, MHz_t{80}, false);
 
     Simulator::Destroy();
 }
@@ -1615,7 +1620,7 @@ class SpectrumWifiPhyMultipleInterfacesTest : public TestCase
     void SwitchChannel(Ptr<SpectrumWifiPhy> phy,
                        WifiPhyBand band,
                        uint8_t channelNumber,
-                       MHz_u channelWidth,
+                       MHz_t channelWidth,
                        std::optional<std::size_t> listenerIndex);
 
     /**
@@ -1761,7 +1766,7 @@ void
 SpectrumWifiPhyMultipleInterfacesTest::SwitchChannel(Ptr<SpectrumWifiPhy> phy,
                                                      WifiPhyBand band,
                                                      uint8_t channelNumber,
-                                                     MHz_u channelWidth,
+                                                     MHz_t channelWidth,
                                                      std::optional<std::size_t> listenerIndex)
 {
     NS_LOG_FUNCTION(this << phy << band << +channelNumber << channelWidth);
@@ -1772,7 +1777,8 @@ SpectrumWifiPhyMultipleInterfacesTest::SwitchChannel(Ptr<SpectrumWifiPhy> phy,
         listener->m_ccaBusyStart = Seconds(0);
         listener->m_ccaBusyEnd = Seconds(0);
     }
-    phy->SetOperatingChannel(WifiPhy::ChannelTuple{channelNumber, channelWidth, band, 0});
+    phy->SetOperatingChannel(
+        WifiPhy::ChannelTuple{channelNumber, channelWidth.to<double>(), band, 0});
     // verify rxing state of interference helper is reset after channel switch
     Simulator::ScheduleNow(&SpectrumWifiPhyMultipleInterfacesTest::CheckRxingState,
                            this,
@@ -1795,7 +1801,7 @@ SpectrumWifiPhyMultipleInterfacesTest::SendPpdu(Ptr<SpectrumWifiPhy> phy,
                           1,
                           1,
                           0,
-                          MHz_u{20},
+                          MHz_t{20},
                           false,
                           false};
     Ptr<Packet> pkt = Create<Packet>(payloadSize);
@@ -2301,12 +2307,12 @@ SpectrumWifiPhyMultipleInterfacesTest::DoRun()
             {
                 auto txPpduPhy = m_txPhys.at(i);
                 const auto startChannel = WifiPhyOperatingChannel::FindFirst(
-                    txPpduPhy->GetPrimaryChannelNumber(MHz_u{20}),
-                    MHz_u{0},
-                    MHz_u{20},
+                    txPpduPhy->GetPrimaryChannelNumber(MHz_t{20}),
+                    MHz_t{0},
+                    MHz_t{20},
                     WIFI_STANDARD_80211ax,
                     txPpduPhy->GetPhyBand());
-                for (auto bw = txPpduPhy->GetChannelWidth(); bw >= MHz_u{20}; bw /= 2)
+                for (auto bw = txPpduPhy->GetChannelWidth(); bw >= MHz_t{20}; bw /= 2)
                 {
                     if ((j == i) && (bw == m_rxPhys.at(j)->GetChannelWidth()))
                     {
@@ -2316,7 +2322,7 @@ SpectrumWifiPhyMultipleInterfacesTest::DoRun()
                     }
                     const auto& channelInfo =
                         (*WifiPhyOperatingChannel::FindFirst(0,
-                                                             MHz_u{0},
+                                                             MHz_t{0},
                                                              bw,
                                                              WIFI_STANDARD_80211ax,
                                                              txPpduPhy->GetPhyBand(),

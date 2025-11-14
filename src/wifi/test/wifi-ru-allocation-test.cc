@@ -72,7 +72,7 @@ class Wifi20MHzIndicesCoveringRuTest : public TestCase
      */
     void RunOne(uint8_t primary20,
                 WifiRu::RuSpec ru,
-                MHz_u width,
+                MHz_t width,
                 const std::set<uint8_t>& indices);
 
   private:
@@ -92,7 +92,7 @@ Wifi20MHzIndicesCoveringRuTest::Wifi20MHzIndicesCoveringRuTest(WifiStandard stan
 void
 Wifi20MHzIndicesCoveringRuTest::RunOne(uint8_t primary20,
                                        WifiRu::RuSpec ru,
-                                       MHz_u width,
+                                       MHz_t width,
                                        const std::set<uint8_t>& indices)
 {
     auto printToStr = [](const std::set<uint8_t>& s) {
@@ -125,11 +125,11 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /******************
      * 20 MHz channel *
      ******************/
-    m_channel.SetDefault(MHz_u{20}, m_standard, WIFI_PHY_BAND_6GHZ);
+    m_channel.SetDefault(MHz_t{20}, m_standard, WIFI_PHY_BAND_6GHZ);
 
     /* 20 MHz PPDU */
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
         const uint8_t p20Index = 0;
 
         // All the 9 26-tone RUs are covered by the unique 20 MHz channel
@@ -154,12 +154,12 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /******************
      * 40 MHz channel *
      ******************/
-    m_channel.SetDefault(MHz_u{40}, m_standard, WIFI_PHY_BAND_6GHZ);
+    m_channel.SetDefault(MHz_t{40}, m_standard, WIFI_PHY_BAND_6GHZ);
 
     /* 20 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 2; p20Index++)
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // All the 9 26-tone RUs are covered by the primary 20 MHz channel
         for (std::size_t idx = 1; idx <= 9; idx++)
@@ -183,7 +183,7 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /* 40 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 2; p20Index++)
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
 
         // The first 9 26-tone RUs are covered by the first 20 MHz channel
         for (std::size_t idx = 1; idx <= 9; idx++)
@@ -226,12 +226,12 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /******************
      * 80 MHz channel *
      ******************/
-    m_channel.SetDefault(MHz_u{80}, m_standard, WIFI_PHY_BAND_6GHZ);
+    m_channel.SetDefault(MHz_t{80}, m_standard, WIFI_PHY_BAND_6GHZ);
 
     /* 20 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 4; p20Index++)
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // All the 9 26-tone RUs are covered by the primary 20 MHz channel
         for (std::size_t idx = 1; idx <= 9; idx++)
@@ -255,7 +255,7 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /* 40 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 4; p20Index++)
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
         // PPDU is transmitted on P40, which may be in the lower or higher 40 MHz
         const uint8_t p40Index = p20Index / 2;
         // RUs can be allocated in one (or both) of the two 20 MHz channels in P40
@@ -306,7 +306,7 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /* 80 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 4; p20Index++)
     {
-        const MHz_u width{80};
+        const MHz_t width{80};
 
         // The first 9 26-tone RUs are in the first 20 MHz channel
         for (std::size_t idx = 1; idx <= 9; idx++)
@@ -392,12 +392,12 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /******************
      * 160 MHz channel *
      ******************/
-    m_channel.SetDefault(MHz_u{160}, m_standard, WIFI_PHY_BAND_6GHZ);
+    m_channel.SetDefault(MHz_t{160}, m_standard, WIFI_PHY_BAND_6GHZ);
 
     /* 20 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 8; p20Index++)
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // All the 9 26-tone RUs are covered by the primary 20 MHz channel
         for (std::size_t idx = 1; idx <= 9; idx++)
@@ -421,7 +421,7 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /* 40 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 8; p20Index++)
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
         // PPDU is transmitted on P40, which is one of the four 40 MHz channels
         const uint8_t p40Index = p20Index / 2;
         // RUs can be allocated in one (or both) of the two 20 MHz channels in P40
@@ -472,7 +472,7 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /* 80 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 8; p20Index++)
     {
-        const MHz_u width{80};
+        const MHz_t width{80};
         // PPDU is transmitted on P80, which is one of the two 80 MHz channels
         const uint8_t p80Index = p20Index / 4;
         // RUs can be allocated in one (or more) of the four 20 MHz channels in P80
@@ -577,7 +577,7 @@ Wifi20MHzIndicesCoveringRuTest::DoRun()
     /* 160 MHz PPDU */
     for (uint8_t p20Index = 0; p20Index < 8; p20Index++)
     {
-        const MHz_u width{160};
+        const MHz_t width{160};
 
         for (auto primary80 : {true, false})
         {
@@ -790,7 +790,7 @@ class WifiNumRusInChannelTest : public TestCase
      * @param width the width of the channel to check
      * @param size the expected size
      */
-    void RunOne(RuType rutype, MHz_u width, std::size_t size);
+    void RunOne(RuType rutype, MHz_t width, std::size_t size);
 
     WifiModulationClass m_modClass; ///< the modulation class to consider for the test
 };
@@ -803,7 +803,7 @@ WifiNumRusInChannelTest::WifiNumRusInChannelTest(WifiModulationClass modClass)
 }
 
 void
-WifiNumRusInChannelTest::RunOne(RuType rutype, MHz_u width, std::size_t size)
+WifiNumRusInChannelTest::RunOne(RuType rutype, MHz_t width, std::size_t size)
 {
     const auto numRus = WifiRu::GetNRus(width, rutype, m_modClass);
     NS_TEST_EXPECT_MSG_EQ(numRus,
@@ -819,7 +819,7 @@ WifiNumRusInChannelTest::DoRun()
      * 20 MHz channel *
      ******************/
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // 9x 26-tone RUs are in 20 MHz channels
         RunOne(RuType::RU_26_TONE, width, 9);
@@ -850,7 +850,7 @@ WifiNumRusInChannelTest::DoRun()
      * 40 MHz channel *
      ******************/
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
 
         // 18x 26-tone RUs are in 40 MHz channels
         RunOne(RuType::RU_26_TONE, width, 18);
@@ -881,7 +881,7 @@ WifiNumRusInChannelTest::DoRun()
      * 80 MHz channel *
      ******************/
     {
-        const MHz_u width{80};
+        const MHz_t width{80};
 
         // 37x (defined) 26-tone RUs are in 80 MHz channels (1 less for EHT)
         RunOne(RuType::RU_26_TONE, width, (m_modClass == WIFI_MOD_CLASS_HE) ? 37 : 36);
@@ -912,7 +912,7 @@ WifiNumRusInChannelTest::DoRun()
      * 160 MHz channel *
      ******************/
     {
-        const MHz_u width{160};
+        const MHz_t width{160};
 
         // 74x (defined) 26-tone RUs are in 160 MHz channels (2 less for EHT)
         RunOne(RuType::RU_26_TONE, width, (m_modClass == WIFI_MOD_CLASS_HE) ? 74 : 72);
@@ -965,7 +965,7 @@ class WifiRusOfTypeInChannelTest : public TestCase
      * @param width the width of the channel to check
      * @param expectedRus the expected set of RUs
      */
-    void RunOne(RuType rutype, MHz_u width, const std::vector<WifiRu::RuSpec>& expectedRus);
+    void RunOne(RuType rutype, MHz_t width, const std::vector<WifiRu::RuSpec>& expectedRus);
 
     WifiModulationClass m_modClass; ///< the modulation class to consider for the test
 };
@@ -979,7 +979,7 @@ WifiRusOfTypeInChannelTest::WifiRusOfTypeInChannelTest(WifiModulationClass modCl
 
 void
 WifiRusOfTypeInChannelTest::RunOne(RuType rutype,
-                                   MHz_u width,
+                                   MHz_t width,
                                    const std::vector<WifiRu::RuSpec>& expectedRus)
 {
     auto printToStr = [](const std::vector<WifiRu::RuSpec>& v) {
@@ -1012,7 +1012,7 @@ WifiRusOfTypeInChannelTest::DoRun()
      * 20 MHz channel *
      ******************/
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // 9x 26-tone RUs are in 20 MHz channels
         RunOne(RuType::RU_26_TONE,
@@ -1061,7 +1061,7 @@ WifiRusOfTypeInChannelTest::DoRun()
      * 40 MHz channel *
      ******************/
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
 
         // 18x 26-tone RUs are in 40 MHz channels
         RunOne(RuType::RU_26_TONE,
@@ -1128,7 +1128,7 @@ WifiRusOfTypeInChannelTest::DoRun()
      * 80 MHz channel *
      ******************/
     {
-        const MHz_u width{80};
+        const MHz_t width{80};
 
         // 37x 26-tone RUs are in 80 MHz channels (1 less for EHT)
         std::vector<WifiRu::RuSpec> expectedRus{MakeRuSpec(RuType::RU_26_TONE, 1, p80, p160),
@@ -1235,7 +1235,7 @@ WifiRusOfTypeInChannelTest::DoRun()
      * 160 MHz channel *
      ******************/
     {
-        const MHz_u width{160};
+        const MHz_t width{160};
 
         // 74x 26-tone RUs are in 160 MHz channels (2 less for EHT)
         std::vector<WifiRu::RuSpec> expectedRus{MakeRuSpec(RuType::RU_26_TONE, 1, p80, p160),
@@ -1434,7 +1434,7 @@ class WifiCentral26TonesRusInChannelTest : public TestCase
      * @param expectedCentral26TonesRus the expected set of 26-tone RUs
      */
     void RunOne(RuType rutype,
-                MHz_u width,
+                MHz_t width,
                 const std::vector<WifiRu::RuSpec>& expectedCentral26TonesRus);
 
     WifiModulationClass m_modClass; ///< the modulation class to consider for the test
@@ -1450,7 +1450,7 @@ WifiCentral26TonesRusInChannelTest::WifiCentral26TonesRusInChannelTest(WifiModul
 
 void
 WifiCentral26TonesRusInChannelTest::RunOne(RuType rutype,
-                                           MHz_u width,
+                                           MHz_t width,
                                            const std::vector<WifiRu::RuSpec>& expectedRus)
 {
     auto printToStr = [](const std::vector<WifiRu::RuSpec>& v) {
@@ -1484,7 +1484,7 @@ WifiCentral26TonesRusInChannelTest::DoRun()
      * 20 MHz channel *
      ******************/
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // returned set should be empty for 26-tones RUs
         RunOne(RuType::RU_26_TONE, width, {});
@@ -1503,7 +1503,7 @@ WifiCentral26TonesRusInChannelTest::DoRun()
      * 40 MHz channel *
      ******************/
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
 
         // returned set should be empty for 26-tones RUs
         RunOne(RuType::RU_26_TONE, width, {});
@@ -1531,7 +1531,7 @@ WifiCentral26TonesRusInChannelTest::DoRun()
      * 80 MHz channel *
      ******************/
     {
-        const MHz_u width{80};
+        const MHz_t width{80};
 
         // returned set should be empty for 26-tones RUs
         RunOne(RuType::RU_26_TONE, width, {});
@@ -1566,7 +1566,7 @@ WifiCentral26TonesRusInChannelTest::DoRun()
      * 160 MHz channel *
      ******************/
     {
-        const MHz_u width{160};
+        const MHz_t width{160};
 
         // returned set should be empty for 26-tones RUs
         RunOne(RuType::RU_26_TONE, width, {});
@@ -1639,7 +1639,7 @@ class WifiEqualSizedRusTest : public TestCase
      * @param expectedNumCentral26TonesRus the expected number of additional 26-tone RUs that can be
      * allocated @param expectedRuType the expected RU type
      */
-    void RunOne(MHz_u width,
+    void RunOne(MHz_t width,
                 std::size_t numStas,
                 std::size_t expectedNumStas,
                 std::size_t expectedNumCentral26TonesRus,
@@ -1659,7 +1659,7 @@ WifiEqualSizedRusTest::WifiEqualSizedRusTest(WifiModulationClass modClass)
 }
 
 void
-WifiEqualSizedRusTest::RunOne(MHz_u width,
+WifiEqualSizedRusTest::RunOne(MHz_t width,
                               std::size_t numStas,
                               std::size_t expectedNumStas,
                               std::size_t expectedNumCentral26TonesRus,
@@ -1697,7 +1697,7 @@ WifiEqualSizedRusTest::DoRun()
      * 20 MHz channel *
      ******************/
     {
-        const MHz_u width{20};
+        const MHz_t width{20};
 
         // 1 STA using 242-tone RU and no center 26-tone RU available over a 20 MHz channel can be
         // allocated for 1 candidate station
@@ -1743,7 +1743,7 @@ WifiEqualSizedRusTest::DoRun()
      * 40 MHz channel *
      ******************/
     {
-        const MHz_u width{40};
+        const MHz_t width{40};
 
         // 1 STA using 484-tone RU and no center 26-tone RU available over a 40 MHz channel can be
         // allocated for 1 candidate station
@@ -1826,7 +1826,7 @@ WifiEqualSizedRusTest::DoRun()
      * 80 MHz channel *
      ******************/
     {
-        const MHz_u width{80};
+        const MHz_t width{80};
 
         // 1 STA using 996-tone RU and no center 26-tone RU available over a 80 MHz channel can be
         // allocated for 11 candidate stations for 1 candidate station
@@ -1994,7 +1994,7 @@ WifiEqualSizedRusTest::DoRun()
      * 160 MHz channel *
      ******************/
     {
-        const MHz_u width{160};
+        const MHz_t width{160};
 
         // 1 STA using 2x996-tone RU and no center 26-tone RU available over a 160 MHz channel can
         // be allocated for 1 candidate station
@@ -2331,7 +2331,7 @@ class WifiSubcarrierGroupsTest : public TestCase
      * @param phyIndex the PHY index to check
      * @param expectedSubcarrierGroup the expected subcarrier range
      */
-    void RunOne(MHz_u width,
+    void RunOne(MHz_t width,
                 RuType ruType,
                 std::size_t phyIndex,
                 const SubcarrierGroup& expectedSubcarrierGroup);
@@ -2350,7 +2350,7 @@ WifiSubcarrierGroupsTest::WifiSubcarrierGroupsTest(WifiModulationClass modClass)
 }
 
 void
-WifiSubcarrierGroupsTest::RunOne(MHz_u width,
+WifiSubcarrierGroupsTest::RunOne(MHz_t width,
                                  RuType ruType,
                                  std::size_t phyIndex,
                                  const SubcarrierGroup& expectedSubcarrierGroup)
@@ -2381,7 +2381,7 @@ void
 WifiSubcarrierGroupsTest::DoRun()
 {
     const std::map<BwTonesPair, std::vector<SubcarrierGroup>> expectedHeRuSubcarrierGroups = {
-        {{MHz_u{20}, RuType::RU_26_TONE},
+        {{MHz_t{20}, RuType::RU_26_TONE},
          {/* 1 */ {{-121, -96}},
           /* 2 */ {{-95, -70}},
           /* 3 */ {{-68, -43}},
@@ -2391,16 +2391,16 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 7 */ {{43, 68}},
           /* 8 */ {{70, 95}},
           /* 9 */ {{96, 121}}}},
-        {{MHz_u{20}, RuType::RU_52_TONE},
+        {{MHz_t{20}, RuType::RU_52_TONE},
          {/* 1 */ {{-121, -70}},
           /* 2 */ {{-68, -17}},
           /* 3 */ {{17, 68}},
           /* 4 */ {{70, 121}}}},
-        {{MHz_u{20}, RuType::RU_106_TONE},
+        {{MHz_t{20}, RuType::RU_106_TONE},
          {/* 1 */ {{-122, -17}},
           /* 2 */ {{17, 122}}}},
-        {{MHz_u{20}, RuType::RU_242_TONE}, {/* 1 */ {{-122, -2}, {2, 122}}}},
-        {{MHz_u{40}, RuType::RU_26_TONE},
+        {{MHz_t{20}, RuType::RU_242_TONE}, {/* 1 */ {{-122, -2}, {2, 122}}}},
+        {{MHz_t{40}, RuType::RU_26_TONE},
          {/* 1 */ {{-243, -218}},
           /* 2 */ {{-217, -192}},
           /* 3 */ {{-189, -164}},
@@ -2419,7 +2419,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 16 */ {{164, 189}},
           /* 17 */ {{192, 217}},
           /* 18 */ {{218, 243}}}},
-        {{MHz_u{40}, RuType::RU_52_TONE},
+        {{MHz_t{40}, RuType::RU_52_TONE},
          {/* 1 */ {{-243, -192}},
           /* 2 */ {{-189, -138}},
           /* 3 */ {{-109, -58}},
@@ -2428,16 +2428,16 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{58, 109}},
           /* 7 */ {{138, 189}},
           /* 8 */ {{192, 243}}}},
-        {{MHz_u{40}, RuType::RU_106_TONE},
+        {{MHz_t{40}, RuType::RU_106_TONE},
          {/* 1 */ {{-243, -138}},
           /* 2 */ {{-109, -4}},
           /* 3 */ {{4, 109}},
           /* 4 */ {{138, 243}}}},
-        {{MHz_u{40}, RuType::RU_242_TONE},
+        {{MHz_t{40}, RuType::RU_242_TONE},
          {/* 1 */ {{-244, -3}},
           /* 2 */ {{3, 244}}}},
-        {{MHz_u{40}, RuType::RU_484_TONE}, {/* 1 */ {{-244, -3}, {3, 244}}}},
-        {{MHz_u{80}, RuType::RU_26_TONE},
+        {{MHz_t{40}, RuType::RU_484_TONE}, {/* 1 */ {{-244, -3}, {3, 244}}}},
+        {{MHz_t{80}, RuType::RU_26_TONE},
          {/* 1 */ {{-499, -474}},
           /* 2 */ {{-473, -448}},
           /* 3 */ {{-445, -420}},
@@ -2475,7 +2475,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 35 */ {{420, 445}},
           /* 36 */ {{448, 473}},
           /* 37 */ {{474, 499}}}},
-        {{MHz_u{80}, RuType::RU_52_TONE},
+        {{MHz_t{80}, RuType::RU_52_TONE},
          {/* 1 */ {{-499, -448}},
           /* 2 */ {{-445, -394}},
           /* 3 */ {{-365, -314}},
@@ -2492,7 +2492,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 14 */ {{314, 365}},
           /* 15 */ {{394, 445}},
           /* 16 */ {{448, 499}}}},
-        {{MHz_u{80}, RuType::RU_106_TONE},
+        {{MHz_t{80}, RuType::RU_106_TONE},
          {/* 1 */ {{-499, -394}},
           /* 2 */ {{-365, -260}},
           /* 3 */ {{-257, -152}},
@@ -2501,16 +2501,16 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{152, 257}},
           /* 7 */ {{260, 365}},
           /* 8 */ {{394, 499}}}},
-        {{MHz_u{80}, RuType::RU_242_TONE},
+        {{MHz_t{80}, RuType::RU_242_TONE},
          {/* 1 */ {{-500, -259}},
           /* 2 */ {{-258, -17}},
           /* 3 */ {{17, 258}},
           /* 4 */ {{259, 500}}}},
-        {{MHz_u{80}, RuType::RU_484_TONE},
+        {{MHz_t{80}, RuType::RU_484_TONE},
          {/* 1 */ {{-500, -17}},
           /* 2 */ {{17, 500}}}},
-        {{MHz_u{80}, RuType::RU_996_TONE}, {/* 1 */ {{-500, -3}, {3, 500}}}},
-        {{MHz_u{160}, RuType::RU_26_TONE},
+        {{MHz_t{80}, RuType::RU_996_TONE}, {/* 1 */ {{-500, -3}, {3, 500}}}},
+        {{MHz_t{160}, RuType::RU_26_TONE},
          {/* 1 */ {{-1011, -986}},
           /* 2 */ {{-985, -960}},
           /* 3 */ {{-957, -932}},
@@ -2585,7 +2585,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 72 */ {{932, 957}},
           /* 73 */ {{960, 985}},
           /* 74 */ {{986, 1011}}}},
-        {{MHz_u{160}, RuType::RU_52_TONE},
+        {{MHz_t{160}, RuType::RU_52_TONE},
          {/* 1 */ {{-1011, -960}},
           /* 2 */ {{-957, -906}},
           /* 3 */ {{-877, -826}},
@@ -2618,7 +2618,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 30 */ {{826, 877}},
           /* 31 */ {{906, 957}},
           /* 32 */ {{960, 1011}}}},
-        {{MHz_u{160}, RuType::RU_106_TONE},
+        {{MHz_t{160}, RuType::RU_106_TONE},
          {/* 1 */ {{-1011, -906}},
           /* 2 */ {{-877, -772}},
           /* 3 */ {{-769, -664}},
@@ -2635,7 +2635,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 14 */ {{664, 769}},
           /* 15 */ {{772, 877}},
           /* 16 */ {{906, 1011}}}},
-        {{MHz_u{160}, RuType::RU_242_TONE},
+        {{MHz_t{160}, RuType::RU_242_TONE},
          {/* 1 */ {{-1012, -771}},
           /* 2 */ {{-770, -529}},
           /* 3 */ {{-495, -254}},
@@ -2644,20 +2644,20 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{254, 495}},
           /* 7 */ {{529, 770}},
           /* 8 */ {{771, 1012}}}},
-        {{MHz_u{160}, RuType::RU_484_TONE},
+        {{MHz_t{160}, RuType::RU_484_TONE},
          {/* 1 */ {{-1012, -529}},
           /* 2 */ {{-495, -12}},
           /* 3 */ {{12, 495}},
           /* 4 */ {{529, 1012}}}},
-        {{MHz_u{160}, RuType::RU_996_TONE},
+        {{MHz_t{160}, RuType::RU_996_TONE},
          {/* 1 */ {{-1012, -515}, {-509, -12}},
           /* 2 */ {{12, 509}, {515, 1012}}}},
-        {{MHz_u{160}, RuType::RU_2x996_TONE},
+        {{MHz_t{160}, RuType::RU_2x996_TONE},
          {/* 1 */ {{-1012, -515}, {-509, -12}, {12, 509}, {515, 1012}}}},
     };
 
     const std::map<BwTonesPair, std::vector<SubcarrierGroup>> expectedEhtRuSubcarrierGroups = {
-        {{MHz_u{20}, RuType::RU_26_TONE},
+        {{MHz_t{20}, RuType::RU_26_TONE},
          {/* 1 */ {{-121, -96}},
           /* 2 */ {{-95, -70}},
           /* 3 */ {{-68, -43}},
@@ -2667,16 +2667,16 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 7 */ {{43, 68}},
           /* 8 */ {{70, 95}},
           /* 9 */ {{96, 121}}}},
-        {{MHz_u{20}, RuType::RU_52_TONE},
+        {{MHz_t{20}, RuType::RU_52_TONE},
          {/* 1 */ {{-121, -70}},
           /* 2 */ {{-68, -17}},
           /* 3 */ {{17, 68}},
           /* 4 */ {{70, 121}}}},
-        {{MHz_u{20}, RuType::RU_106_TONE},
+        {{MHz_t{20}, RuType::RU_106_TONE},
          {/* 1 */ {{-122, -17}},
           /* 2 */ {{17, 122}}}},
-        {{MHz_u{20}, RuType::RU_242_TONE}, {/* 1 */ {{-122, -2}, {2, 122}}}},
-        {{MHz_u{40}, RuType::RU_26_TONE},
+        {{MHz_t{20}, RuType::RU_242_TONE}, {/* 1 */ {{-122, -2}, {2, 122}}}},
+        {{MHz_t{40}, RuType::RU_26_TONE},
          {/* 1 */ {{-243, -218}},
           /* 2 */ {{-217, -192}},
           /* 3 */ {{-189, -164}},
@@ -2695,7 +2695,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 16 */ {{164, 189}},
           /* 17 */ {{192, 217}},
           /* 18 */ {{218, 243}}}},
-        {{MHz_u{40}, RuType::RU_52_TONE},
+        {{MHz_t{40}, RuType::RU_52_TONE},
          {/* 1 */ {{-243, -192}},
           /* 2 */ {{-189, -138}},
           /* 3 */ {{-109, -58}},
@@ -2704,16 +2704,16 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{58, 109}},
           /* 7 */ {{138, 189}},
           /* 8 */ {{192, 243}}}},
-        {{MHz_u{40}, RuType::RU_106_TONE},
+        {{MHz_t{40}, RuType::RU_106_TONE},
          {/* 1 */ {{-243, -138}},
           /* 2 */ {{-109, -4}},
           /* 3 */ {{4, 109}},
           /* 4 */ {{138, 243}}}},
-        {{MHz_u{40}, RuType::RU_242_TONE},
+        {{MHz_t{40}, RuType::RU_242_TONE},
          {/* 1 */ {{-244, -3}},
           /* 2 */ {{3, 244}}}},
-        {{MHz_u{40}, RuType::RU_484_TONE}, {/* 1 */ {{-244, -3}, {3, 244}}}},
-        {{MHz_u{80}, RuType::RU_26_TONE},
+        {{MHz_t{40}, RuType::RU_484_TONE}, {/* 1 */ {{-244, -3}, {3, 244}}}},
+        {{MHz_t{80}, RuType::RU_26_TONE},
          {/* 1 */ {{-499, -474}},
           /* 2 */ {{-473, -448}},
           /* 3 */ {{-445, -420}},
@@ -2751,7 +2751,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 35 */ {{420, 445}},
           /* 36 */ {{448, 473}},
           /* 37 */ {{474, 499}}}},
-        {{MHz_u{80}, RuType::RU_52_TONE},
+        {{MHz_t{80}, RuType::RU_52_TONE},
          {/* 1 */ {{-499, -448}},
           /* 2 */ {{-445, -394}},
           /* 3 */ {{-365, -314}},
@@ -2768,7 +2768,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 14 */ {{314, 365}},
           /* 15 */ {{394, 445}},
           /* 16 */ {{448, 499}}}},
-        {{MHz_u{80}, RuType::RU_106_TONE},
+        {{MHz_t{80}, RuType::RU_106_TONE},
          {/* 1 */ {{-499, -394}},
           /* 2 */ {{-365, -260}},
           /* 3 */ {{-252, -147}},
@@ -2777,16 +2777,16 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{147, 252}},
           /* 7 */ {{260, 365}},
           /* 8 */ {{394, 499}}}},
-        {{MHz_u{80}, RuType::RU_242_TONE},
+        {{MHz_t{80}, RuType::RU_242_TONE},
          {/* 1 */ {{-500, -259}},
           /* 2 */ {{-253, -12}},
           /* 3 */ {{12, 253}},
           /* 4 */ {{259, 500}}}},
-        {{MHz_u{80}, RuType::RU_484_TONE},
+        {{MHz_t{80}, RuType::RU_484_TONE},
          {/* 1 */ {{-500, -259}, {-253, -12}},
           /* 2 */ {{12, 253}, {259, 500}}}},
-        {{MHz_u{80}, RuType::RU_996_TONE}, {/* 1 */ {{-500, -3}, {3, 500}}}},
-        {{MHz_u{160}, RuType::RU_26_TONE},
+        {{MHz_t{80}, RuType::RU_996_TONE}, {/* 1 */ {{-500, -3}, {3, 500}}}},
+        {{MHz_t{160}, RuType::RU_26_TONE},
          {/* 1 */ {{-1011, -986}},
           /* 2 */ {{-985, -960}},
           /* 3 */ {{-957, -932}},
@@ -2861,7 +2861,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 72 */ {{932, 957}},
           /* 73 */ {{960, 985}},
           /* 74 */ {{986, 1011}}}},
-        {{MHz_u{160}, RuType::RU_52_TONE},
+        {{MHz_t{160}, RuType::RU_52_TONE},
          {/* 1 */ {{-1011, -960}},
           /* 2 */ {{-957, -906}},
           /* 3 */ {{-877, -826}},
@@ -2894,7 +2894,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 30 */ {{826, 877}},
           /* 31 */ {{906, 957}},
           /* 32 */ {{960, 1011}}}},
-        {{MHz_u{160}, RuType::RU_106_TONE},
+        {{MHz_t{160}, RuType::RU_106_TONE},
          {/* 1 */ {{-1011, -906}},
           /* 2 */ {{-877, -772}},
           /* 3 */ {{-764, -659}},
@@ -2911,7 +2911,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 14 */ {{659, 764}},
           /* 15 */ {{772, 877}},
           /* 16 */ {{906, 1011}}}},
-        {{MHz_u{160}, RuType::RU_242_TONE},
+        {{MHz_t{160}, RuType::RU_242_TONE},
          {/* 1 */ {{-1012, -771}},
           /* 2 */ {{-765, -524}},
           /* 3 */ {{-500, -259}},
@@ -2920,17 +2920,17 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{259, 500}},
           /* 7 */ {{524, 765}},
           /* 8 */ {{771, 1012}}}},
-        {{MHz_u{160}, RuType::RU_484_TONE},
+        {{MHz_t{160}, RuType::RU_484_TONE},
          {/* 1 */ {{-1012, -771}, {-765, -524}},
           /* 2 */ {{-500, -259}, {-253, -12}},
           /* 3 */ {{12, 253}, {259, 500}},
           /* 4 */ {{524, 765}, {771, 1012}}}},
-        {{MHz_u{160}, RuType::RU_996_TONE},
+        {{MHz_t{160}, RuType::RU_996_TONE},
          {/* 1 */ {{-1012, -515}, {-509, -12}},
           /* 2 */ {{12, 509}, {515, 1012}}}},
-        {{MHz_u{160}, RuType::RU_2x996_TONE},
+        {{MHz_t{160}, RuType::RU_2x996_TONE},
          {/* 1 */ {{-1012, -515}, {-509, -12}, {12, 509}, {515, 1012}}}},
-        {{MHz_u{320}, RuType::RU_26_TONE},
+        {{MHz_t{320}, RuType::RU_26_TONE},
          {/* 1 */ {{-2035, -2010}},
           /* 2 */ {{-2009, -1984}},
           /* 3 */ {{-1981, -1956}},
@@ -3079,7 +3079,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 146 */ {{1956, 1981}},
           /* 147 */ {{1984, 2009}},
           /* 148 */ {{2010, 2035}}}},
-        {{MHz_u{320}, RuType::RU_52_TONE},
+        {{MHz_t{320}, RuType::RU_52_TONE},
          {/* 1 */ {{-2035, -1984}},
           /* 2 */ {{-1981, -1930}},
           /* 3 */ {{-1901, -1850}},
@@ -3144,7 +3144,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 62 */ {{1850, 1901}},
           /* 63 */ {{1930, 1981}},
           /* 64 */ {{1984, 2035}}}},
-        {{MHz_u{320}, RuType::RU_106_TONE},
+        {{MHz_t{320}, RuType::RU_106_TONE},
          {/* 1 */ {{-2035, -1930}},
           /* 2 */ {{-1901, -1796}},
           /* 3 */ {{-1788, -1683}},
@@ -3177,7 +3177,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 30 */ {{1683, 1788}},
           /* 31 */ {{1796, 1901}},
           /* 32 */ {{1930, 2035}}}},
-        {{MHz_u{320}, RuType::RU_242_TONE},
+        {{MHz_t{320}, RuType::RU_242_TONE},
          {/* 1 */ {{-2036, -1795}},
           /* 2 */ {{-1789, -1548}},
           /* 3 */ {{-1524, -1283}},
@@ -3194,7 +3194,7 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 14 */ {{1283, 1524}},
           /* 15 */ {{1548, 1789}},
           /* 16 */ {{1795, 2036}}}},
-        {{MHz_u{320}, RuType::RU_484_TONE},
+        {{MHz_t{320}, RuType::RU_484_TONE},
          {/* 1 */ {{-2036, -1795}, {-1789, -1548}},
           /* 2 */ {{-1524, -1283}, {-1277, -1036}},
           /* 3 */ {{-1012, -771}, {-765, -524}},
@@ -3203,15 +3203,15 @@ WifiSubcarrierGroupsTest::DoRun()
           /* 6 */ {{524, 765}, {771, 1012}},
           /* 7 */ {{1036, 1277}, {1283, 1524}},
           /* 8 */ {{1548, 1789}, {1795, 2036}}}},
-        {{MHz_u{320}, RuType::RU_996_TONE},
+        {{MHz_t{320}, RuType::RU_996_TONE},
          {/* 1 */ {{-2036, -1539}, {-1533, -1036}},
           /* 2 */ {{-1012, -515}, {-509, -12}},
           /* 3 */ {{12, 509}, {515, 1012}},
           /* 4 */ {{1036, 1533}, {1539, 2036}}}},
-        {{MHz_u{320}, RuType::RU_2x996_TONE},
+        {{MHz_t{320}, RuType::RU_2x996_TONE},
          {/* 1 */ {{-2036, -1539}, {-1533, -1036}, {-1012, -515}, {-509, -12}},
           /* 2 */ {{12, 509}, {515, 1012}, {1036, 1533}, {1539, 2036}}}},
-        {{MHz_u{320}, RuType::RU_4x996_TONE},
+        {{MHz_t{320}, RuType::RU_4x996_TONE},
          {/* 1 */ {{-2036, -1539},
                    {-1533, -1036},
                    {-1012, -515},
@@ -3262,7 +3262,7 @@ class WifiRuPhyIdxTo80MHzIdxAndFlagsTest : public TestCase
      * @param expected80MHzIdx the expected index within the 80 MHz segment
      */
     void RunOne(uint8_t primary20,
-                MHz_u bw,
+                MHz_t bw,
                 RuType ruType,
                 std::size_t phyIndex,
                 bool expectedP160,
@@ -3284,7 +3284,7 @@ WifiRuPhyIdxTo80MHzIdxAndFlagsTest::WifiRuPhyIdxTo80MHzIdxAndFlagsTest(WifiModul
 
 void
 WifiRuPhyIdxTo80MHzIdxAndFlagsTest::RunOne(uint8_t primary20,
-                                           MHz_u bw,
+                                           MHz_t bw,
                                            RuType ruType,
                                            std::size_t phyIndex,
                                            bool expectedP160,
@@ -3337,7 +3337,7 @@ WifiRuPhyIdxTo80MHzIdxAndFlagsTest::DoRun()
 
     /* 20 MHz */
     {
-        const MHz_u bw{20};
+        const MHz_t bw{20};
 
         for (uint8_t p20Index = 0; p20Index < p20IdxMax; p20Index++)
         {
@@ -3381,7 +3381,7 @@ WifiRuPhyIdxTo80MHzIdxAndFlagsTest::DoRun()
 
     /* 40 MHz */
     {
-        const MHz_u bw{40};
+        const MHz_t bw{40};
 
         for (uint8_t p20Index = 0; p20Index < p20IdxMax; p20Index++)
         {
@@ -3434,7 +3434,7 @@ WifiRuPhyIdxTo80MHzIdxAndFlagsTest::DoRun()
 
     /* 80 MHz */
     {
-        const MHz_u bw{80};
+        const MHz_t bw{80};
 
         for (uint8_t p20Index = 0; p20Index < p20IdxMax; p20Index++)
         {
@@ -3501,7 +3501,7 @@ WifiRuPhyIdxTo80MHzIdxAndFlagsTest::DoRun()
 
     /* 160 MHz */
     {
-        const MHz_u bw{160};
+        const MHz_t bw{160};
 
         for (uint8_t p20Index = 0; p20Index < p20IdxMax; p20Index++)
         {
@@ -3658,7 +3658,7 @@ WifiRuPhyIdxTo80MHzIdxAndFlagsTest::DoRun()
     /* 320 MHz */
     if (m_modClass == WIFI_MOD_CLASS_EHT)
     {
-        const MHz_u bw{320};
+        const MHz_t bw{320};
 
         for (uint8_t p20Index = 0; p20Index < p20IdxMax; p20Index++)
         {
@@ -4004,7 +4004,7 @@ class WifiRuOverlappingTest : public TestCase
      * @param rus the given set of RUs
      * @param overlapExpected whether it is expected the given RU overlaps with the given set of RUs
      */
-    void RunOne(MHz_u bw,
+    void RunOne(MHz_t bw,
                 WifiRu::RuSpec ru,
                 const std::vector<WifiRu::RuSpec>& rus,
                 bool overlapExpected);
@@ -4023,7 +4023,7 @@ WifiRuOverlappingTest::WifiRuOverlappingTest(WifiModulationClass modClass)
 }
 
 void
-WifiRuOverlappingTest::RunOne(MHz_u bw,
+WifiRuOverlappingTest::RunOne(MHz_t bw,
                               WifiRu::RuSpec ru,
                               const std::vector<WifiRu::RuSpec>& rus,
                               bool overlapExpected)
@@ -4057,7 +4057,7 @@ WifiRuOverlappingTest::DoRun()
 
     /* 20 MHz PPDU */
     {
-        const MHz_u bw{20};
+        const MHz_t bw{20};
 
         auto ru = MakeRuSpec(RuType::RU_242_TONE, 1, p80, p160);
 
@@ -4110,7 +4110,7 @@ WifiRuOverlappingTest::DoRun()
 
     /* 80 MHz PPDU */
     {
-        const MHz_u bw{80};
+        const MHz_t bw{80};
 
         auto ru = MakeRuSpec(RuType::RU_106_TONE, 1, p80, p160);
 
@@ -4142,7 +4142,7 @@ WifiRuOverlappingTest::DoRun()
 
     /* 160 MHz PPDU */
     {
-        const MHz_u bw{160};
+        const MHz_t bw{160};
 
         auto ru = MakeRuSpec(RuType::RU_996_TONE, 1, s80, p160);
 

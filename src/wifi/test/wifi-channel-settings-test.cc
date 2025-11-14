@@ -10,6 +10,7 @@
 #include "ns3/boolean.h"
 #include "ns3/config.h"
 #include "ns3/double.h"
+#include "ns3/mhz.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/multi-model-spectrum-channel.h"
 #include "ns3/packet-socket-client.h"
@@ -55,7 +56,7 @@ class WifiChannelSettingsTest : public TestCase
         WifiStandard staStandard;         ///< wifi standard for non-AP STA
         std::string apChannelSettings;    ///< channel setting string for AP STA
         std::string staChannelSettings;   ///< channel setting string for non-AP STA
-        MHz_u staLargestSupportedChWidth; ///< largest supported channel width by the non-AP STA
+        MHz_t staLargestSupportedChWidth; ///< largest supported channel width by the non-AP STA
         bool skipAssocIncompatibleChannelWidth{
             false}; ///< flag to skip association when STA channel width is incompatible with AP
 
@@ -161,7 +162,7 @@ WifiChannelSettingsTest::DoRun()
     auto apDevice = wifi.Install(phy, mac, wifiApNode);
 
     wifi.SetStandard(m_params.staStandard);
-    phy.Set("MaxRadioBw", DoubleValue(m_params.staLargestSupportedChWidth));
+    phy.Set("MaxRadioBw", MhzValue(m_params.staLargestSupportedChWidth));
     phy.Set("ChannelSettings", StringValue(m_params.staChannelSettings));
 
     NetDeviceContainer staDevice;
@@ -180,7 +181,7 @@ WifiChannelSettingsTest::DoRun()
     {
         tmp.emplace_back(val);
     }
-    const auto staBw = std::stold(tmp.at(1));
+    const auto staBw = MHz_t{std::stof(tmp.at(1))};
     const auto expectInvalidConfig = m_params.staLargestSupportedChWidth < staBw;
     auto invalidConfig{false};
     try
@@ -318,18 +319,18 @@ class WifiChannelSettingsTestSuite : public TestSuite
 WifiChannelSettingsTestSuite::WifiChannelSettingsTestSuite()
     : TestSuite("wifi-channel-settings", Type::UNIT)
 {
-    const std::map<std::pair<MHz_u, WifiPhyBand>, std::string> channelSettingsMap{
-        {{MHz_u{20}, WIFI_PHY_BAND_2_4GHZ}, "{1, 20, BAND_2_4GHZ, 0}"},
-        {{MHz_u{40}, WIFI_PHY_BAND_2_4GHZ}, "{3, 40, BAND_2_4GHZ, 0}"},
-        {{MHz_u{20}, WIFI_PHY_BAND_5GHZ}, "{36, 20, BAND_5GHZ, 0}"},
-        {{MHz_u{40}, WIFI_PHY_BAND_5GHZ}, "{38, 40, BAND_5GHZ, 0}"},
-        {{MHz_u{80}, WIFI_PHY_BAND_5GHZ}, "{42, 80, BAND_5GHZ, 0}"},
-        {{MHz_u{160}, WIFI_PHY_BAND_5GHZ}, "{50, 160, BAND_5GHZ, 0}"},
-        {{MHz_u{20}, WIFI_PHY_BAND_6GHZ}, "{1, 20, BAND_6GHZ, 0}"},
-        {{MHz_u{40}, WIFI_PHY_BAND_6GHZ}, "{3, 40, BAND_6GHZ, 0}"},
-        {{MHz_u{80}, WIFI_PHY_BAND_6GHZ}, "{7, 80, BAND_6GHZ, 0}"},
-        {{MHz_u{160}, WIFI_PHY_BAND_6GHZ}, "{15, 160, BAND_6GHZ, 0}"},
-        {{MHz_u{320}, WIFI_PHY_BAND_6GHZ}, "{31, 320, BAND_6GHZ, 0}"},
+    const std::map<std::pair<MHz_t, WifiPhyBand>, std::string> channelSettingsMap{
+        {{MHz_t{20}, WIFI_PHY_BAND_2_4GHZ}, "{1, 20, BAND_2_4GHZ, 0}"},
+        {{MHz_t{40}, WIFI_PHY_BAND_2_4GHZ}, "{3, 40, BAND_2_4GHZ, 0}"},
+        {{MHz_t{20}, WIFI_PHY_BAND_5GHZ}, "{36, 20, BAND_5GHZ, 0}"},
+        {{MHz_t{40}, WIFI_PHY_BAND_5GHZ}, "{38, 40, BAND_5GHZ, 0}"},
+        {{MHz_t{80}, WIFI_PHY_BAND_5GHZ}, "{42, 80, BAND_5GHZ, 0}"},
+        {{MHz_t{160}, WIFI_PHY_BAND_5GHZ}, "{50, 160, BAND_5GHZ, 0}"},
+        {{MHz_t{20}, WIFI_PHY_BAND_6GHZ}, "{1, 20, BAND_6GHZ, 0}"},
+        {{MHz_t{40}, WIFI_PHY_BAND_6GHZ}, "{3, 40, BAND_6GHZ, 0}"},
+        {{MHz_t{80}, WIFI_PHY_BAND_6GHZ}, "{7, 80, BAND_6GHZ, 0}"},
+        {{MHz_t{160}, WIFI_PHY_BAND_6GHZ}, "{15, 160, BAND_6GHZ, 0}"},
+        {{MHz_t{320}, WIFI_PHY_BAND_6GHZ}, "{31, 320, BAND_6GHZ, 0}"},
     };
 
     for (const auto standard : {WIFI_STANDARD_80211n,
@@ -337,7 +338,7 @@ WifiChannelSettingsTestSuite::WifiChannelSettingsTestSuite()
                                 WIFI_STANDARD_80211ax,
                                 WIFI_STANDARD_80211be})
     {
-        for (const auto maxSupportedBw : {MHz_u{20}, MHz_u{40}, MHz_u{80}, MHz_u{160}, MHz_u{320}})
+        for (const auto maxSupportedBw : {MHz_t{20}, MHz_t{40}, MHz_t{80}, MHz_t{160}, MHz_t{320}})
         {
             for (const auto& [apWidthBandPair, apChannel] : channelSettingsMap)
             {

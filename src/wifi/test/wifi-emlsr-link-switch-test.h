@@ -57,7 +57,7 @@ class EmlsrLinkSwitchTest : public EmlsrOperationsTestBase
                                               //!< with the link on which the main PHY has just
                                               //!< switched to, the second value controls whether
                                               //!< a main PHY channel switch can be interrupted
-        MHz_u auxPhyMaxChWidth;               //!< max channel width supported by aux PHYs
+        MHz_t auxPhyMaxChWidth;               //!< max channel width supported by aux PHYs
     };
 
     /**
@@ -126,7 +126,7 @@ class EmlsrLinkSwitchTest : public EmlsrOperationsTestBase
         m_resetCamStateAndInterruptSwitch; /**< whether to reset the state of the
                               ChannelAccessManager associated with the link on which the main PHY
                               has just switched to and whether main PHY switch can be interrupted */
-    MHz_u m_auxPhyMaxChWidth;              //!< max channel width supported by aux PHYs
+    MHz_t m_auxPhyMaxChWidth;              //!< max channel width supported by aux PHYs
     std::size_t m_countQoSframes;          //!< counter for QoS data frames
     std::size_t m_countIcfFrames;          //!< counter for ICF frames
     std::size_t m_countRtsFrames;          //!< counter for RTS frames
@@ -161,7 +161,7 @@ class EmlsrCcaBusyTest : public EmlsrOperationsTestBase
      *
      * @param auxPhyMaxChWidth max channel width supported by aux PHYs
      */
-    EmlsrCcaBusyTest(MHz_u auxPhyMaxChWidth);
+    EmlsrCcaBusyTest(MHz_t auxPhyMaxChWidth);
 
     ~EmlsrCcaBusyTest() override = default;
 
@@ -194,7 +194,7 @@ class EmlsrCcaBusyTest : public EmlsrOperationsTestBase
      */
     void CheckPoint3();
 
-    MHz_u m_auxPhyMaxChWidth;    //!< max channel width supported by aux PHYs
+    MHz_t m_auxPhyMaxChWidth;    //!< max channel width supported by aux PHYs
     Time m_channelSwitchDelay;   //!< the PHY channel switch delay
     uint8_t m_currMainPhyLinkId; //!< the ID of the link the main PHY switches from
     uint8_t m_nextMainPhyLinkId; //!< the ID of the link the main PHY switches to
@@ -670,10 +670,10 @@ class EmlsrCheckNavAndCcaLastPifsTest : public EmlsrOperationsTestBase
     std::size_t m_processedEvents{0}; //!< number of processed events
     const uint8_t m_linkIdForTid0{2}; //!< ID of the link on which TID 0 is mapped
     const uint8_t m_nSlotsLeft{4};    //!< value for the CAM NSlotsLeft attribute
-    const MHz_u m_mainPhyWidth{40};   //!< main PHY channel width
-    const MHz_u m_auxPhyWidth{20};    //!< aux PHY channel width
+    const MHz_t m_mainPhyWidth{40};   //!< main PHY channel width
+    const MHz_t m_auxPhyWidth{20};    //!< aux PHY channel width
     Time m_expectedTxStart;           //!< expected start time for frame transmission
-    MHz_u m_expectedWidth;            //!< expected channel width for frame transmission
+    MHz_t m_expectedWidth;            //!< expected channel width for frame transmission
 };
 
 /**

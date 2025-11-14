@@ -42,7 +42,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("WifiNonHtDuplicateTest");
 
-constexpr MHz_u DEFAULT_FREQUENCY{5180};
+constexpr MHz_t DEFAULT_FREQUENCY{5180};
 
 /**
  * HE PHY used for testing MU-RTS/CTS.
@@ -200,7 +200,7 @@ class TestNonHtDuplicatePhyReception : public TestCase
 {
   public:
     /// A vector containing parameters per STA: the standard, the center frequency and the P20 index
-    using StasParams = std::vector<std::tuple<WifiStandard, MHz_u, uint8_t>>;
+    using StasParams = std::vector<std::tuple<WifiStandard, MHz_t, uint8_t>>;
 
     /**
      * Constructor
@@ -213,7 +213,7 @@ class TestNonHtDuplicatePhyReception : public TestCase
      * interference.
      */
     TestNonHtDuplicatePhyReception(WifiStandard apStandard,
-                                   MHz_u apFrequency,
+                                   MHz_t apFrequency,
                                    uint8_t apP20Index,
                                    StasParams stasParams,
                                    std::vector<bool> per20MhzInterference = {});
@@ -261,7 +261,7 @@ class TestNonHtDuplicatePhyReception : public TestCase
      * Send non-HT duplicate PPDU function
      * @param channelWidth the channel width to use to transmit the non-HT PPDU
      */
-    void SendNonHtDuplicatePpdu(MHz_u channelWidth);
+    void SendNonHtDuplicatePpdu(MHz_t channelWidth);
 
     /**
      * Generate interference function
@@ -279,7 +279,7 @@ class TestNonHtDuplicatePhyReception : public TestCase
     void StopInterference(Ptr<WaveformGenerator> interferer);
 
     WifiStandard m_apStandard; ///< the standard to use for the AP
-    MHz_u m_apFrequency;       ///< the center frequency of the AP
+    MHz_t m_apFrequency;       ///< the center frequency of the AP
     uint8_t m_apP20Index;      ///< the index of the primary 20 MHz channel of the AP
     StasParams m_stasParams;   ///< the parameters of the STAs
     std::vector<bool>
@@ -298,7 +298,7 @@ class TestNonHtDuplicatePhyReception : public TestCase
 
 TestNonHtDuplicatePhyReception::TestNonHtDuplicatePhyReception(
     WifiStandard apStandard,
-    MHz_u apFrequency,
+    MHz_t apFrequency,
     uint8_t apP20Index,
     StasParams stasParams,
     std::vector<bool> per20MhzInterference)
@@ -328,7 +328,7 @@ TestNonHtDuplicatePhyReception::ResetResults()
 }
 
 void
-TestNonHtDuplicatePhyReception::SendNonHtDuplicatePpdu(MHz_u channelWidth)
+TestNonHtDuplicatePhyReception::SendNonHtDuplicatePpdu(MHz_t channelWidth)
 {
     NS_LOG_FUNCTION(this << channelWidth);
     WifiTxVector txVector = WifiTxVector(OfdmPhy::GetOfdmRate24Mbps(),
@@ -413,7 +413,7 @@ TestNonHtDuplicatePhyReception::DoSetup()
 {
     auto spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     auto lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(MHzToHz(m_apFrequency));
+    lossModel->SetFrequency(Hz_t{m_apFrequency}.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     auto delayModel = CreateObject<ConstantSpeedPropagationDelayModel>();
     spectrumChannel->SetPropagationDelayModel(delayModel);
@@ -464,7 +464,7 @@ TestNonHtDuplicatePhyReception::DoSetup()
     {
         const auto& channelInfo = (*WifiPhyOperatingChannel::FindFirst(0,
                                                                        m_apFrequency,
-                                                                       MHz_u{0},
+                                                                       MHz_t{0},
                                                                        m_apStandard,
                                                                        WIFI_PHY_BAND_5GHZ));
         NS_ASSERT(m_per20MhzInterference.size() == Count20MHzSubchannels(channelInfo.width));
@@ -513,11 +513,11 @@ TestNonHtDuplicatePhyReception::DoRun()
 
     const auto& apchannelInfo = (*WifiPhyOperatingChannel::FindFirst(0,
                                                                      m_apFrequency,
-                                                                     MHz_u{0},
+                                                                     MHz_t{0},
                                                                      m_apStandard,
                                                                      WIFI_PHY_BAND_5GHZ));
     m_phyAp->SetOperatingChannel(WifiPhy::ChannelTuple{apchannelInfo.number,
-                                                       apchannelInfo.width,
+                                                       apchannelInfo.width.to<double>(),
                                                        WIFI_PHY_BAND_5GHZ,
                                                        m_apP20Index});
 
@@ -526,19 +526,20 @@ TestNonHtDuplicatePhyReception::DoRun()
     {
         const auto& stachannelInfo = (*WifiPhyOperatingChannel::FindFirst(0,
                                                                           staFrequency,
-                                                                          MHz_u{0},
+                                                                          MHz_t{0},
                                                                           staStandard,
                                                                           WIFI_PHY_BAND_5GHZ));
-        m_phyStas.at(index++)->SetOperatingChannel(WifiPhy::ChannelTuple{stachannelInfo.number,
-                                                                         stachannelInfo.width,
-                                                                         WIFI_PHY_BAND_5GHZ,
-                                                                         staP20Index});
+        m_phyStas.at(index++)->SetOperatingChannel(
+            WifiPhy::ChannelTuple{stachannelInfo.number,
+                                  stachannelInfo.width.to<double>(),
+                                  WIFI_PHY_BAND_5GHZ,
+                                  staP20Index});
     }
 
     index = 0;
     const auto minApCenterFrequency =
-        m_phyAp->GetFrequency() - (m_phyAp->GetChannelWidth() / 2) + (MHz_u{20} / 2);
-    for (MHz_u channelWidth{20}; channelWidth <= apchannelInfo.width; channelWidth *= 2, ++index)
+        m_phyAp->GetFrequency() - (m_phyAp->GetChannelWidth() / 2) + (MHz_t{20} / 2);
+    for (MHz_t channelWidth{20}; channelWidth <= apchannelInfo.width; channelWidth *= 2, ++index)
     {
         if (!m_phyInterferers.empty())
         {
@@ -549,9 +550,9 @@ TestNonHtDuplicatePhyReception::DoRun()
                     continue;
                 }
                 BandInfo bandInfo;
-                bandInfo.fc = MHzToHz(minApCenterFrequency + (i * MHz_u{20}));
-                bandInfo.fl = bandInfo.fc - MHzToHz(5);
-                bandInfo.fh = bandInfo.fc + MHzToHz(5);
+                bandInfo.fc = Hz_t{minApCenterFrequency + (i * MHz_t{20})}.to<double>();
+                bandInfo.fl = bandInfo.fc - Hz_t{MHz_t{5}}.to<double>();
+                bandInfo.fh = bandInfo.fc + Hz_t{MHz_t{5}}.to<double>();
                 Bands bands;
                 bands.push_back(bandInfo);
                 auto spectrumInterference = Create<SpectrumModel>(bands);
@@ -577,7 +578,7 @@ TestNonHtDuplicatePhyReception::DoRun()
                             channelWidth);
         for (std::size_t i = 0; i < m_stasParams.size(); ++i)
         {
-            const MHz_u p20Width{20};
+            const MHz_t p20Width{20};
             const auto staP20Freq =
                 m_phyStas.at(i)->GetOperatingChannel().GetPrimaryChannelCenterFrequency(p20Width);
             const auto staP20MinFreq = staP20Freq - (p20Width / 2);
@@ -625,7 +626,7 @@ class TestMultipleCtsResponsesFromMuRts : public TestCase
     /// Information about CTS responses to expect in the test
     struct CtsTxInfos
     {
-        MHz_u bw{20};        ///< the width of the CTS response
+        MHz_t bw{20};        ///< the width of the CTS response
         bool discard{false}; ///< flag whether the CTS response shall be discarded
     };
 
@@ -858,7 +859,7 @@ TestMultipleCtsResponsesFromMuRts::DoSetup()
 
     auto spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
     auto lossModel = CreateObject<FriisPropagationLossModel>();
-    lossModel->SetFrequency(MHzToHz(DEFAULT_FREQUENCY));
+    lossModel->SetFrequency(Hz_t{DEFAULT_FREQUENCY}.to<double>());
     spectrumChannel->AddPropagationLossModel(lossModel);
     auto delayModel = CreateObject<ConstantSpeedPropagationDelayModel>();
     spectrumChannel->SetPropagationDelayModel(delayModel);
@@ -892,13 +893,14 @@ TestMultipleCtsResponsesFromMuRts::DoSetup()
                          [](const auto& lhs, const auto& rhs) { return lhs.bw < rhs.bw; })
             ->bw;
     auto apChannelNum = WifiPhyOperatingChannel::FindFirst(0,
-                                                           MHz_u{0},
+                                                           MHz_t{0},
                                                            apBw,
                                                            WIFI_STANDARD_80211ac,
                                                            WIFI_PHY_BAND_5GHZ)
                             ->number;
 
-    m_phyAp->SetOperatingChannel(WifiPhy::ChannelTuple{apChannelNum, apBw, WIFI_PHY_BAND_5GHZ, 0});
+    m_phyAp->SetOperatingChannel(
+        WifiPhy::ChannelTuple{apChannelNum, apBw.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
 
     auto apMobility = CreateObject<ConstantPositionMobilityModel>();
     m_phyAp->SetMobility(apMobility);
@@ -926,14 +928,16 @@ TestMultipleCtsResponsesFromMuRts::DoSetup()
         phySta->SetTxPowerEnd(m_stasTxPower);
 
         auto channelNum = WifiPhyOperatingChannel::FindFirst(0,
-                                                             MHz_u{0},
+                                                             MHz_t{0},
                                                              m_ctsTxInfosPerSta.at(i).bw,
                                                              WIFI_STANDARD_80211ac,
                                                              WIFI_PHY_BAND_5GHZ)
                               ->number;
 
-        phySta->SetOperatingChannel(
-            WifiPhy::ChannelTuple{channelNum, m_ctsTxInfosPerSta.at(i).bw, WIFI_PHY_BAND_5GHZ, 0});
+        phySta->SetOperatingChannel(WifiPhy::ChannelTuple{channelNum,
+                                                          m_ctsTxInfosPerSta.at(i).bw.to<double>(),
+                                                          WIFI_PHY_BAND_5GHZ,
+                                                          0});
 
         auto staMobility = CreateObject<ConstantPositionMobilityModel>();
         phySta->SetMobility(staMobility);
@@ -957,7 +961,10 @@ TestMultipleCtsResponsesFromMuRts::DoSetup()
         nonParticipatingHePhySta->ConfigureStandard(WIFI_STANDARD_80211ax);
 
         nonParticipatingHePhySta->SetOperatingChannel(
-            WifiPhy::ChannelTuple{channelNum, m_ctsTxInfosPerSta.at(i).bw, WIFI_PHY_BAND_5GHZ, 0});
+            WifiPhy::ChannelTuple{channelNum,
+                                  m_ctsTxInfosPerSta.at(i).bw.to<double>(),
+                                  WIFI_PHY_BAND_5GHZ,
+                                  0});
 
         auto nonParticipatingHeStaMobility = CreateObject<ConstantPositionMobilityModel>();
         nonParticipatingHePhySta->SetMobility(nonParticipatingHeStaMobility);
@@ -986,7 +993,7 @@ TestMultipleCtsResponsesFromMuRts::DoSetup()
     nonHePhySta->AddChannel(spectrumChannel);
     nonHePhySta->ConfigureStandard(WIFI_STANDARD_80211ac);
     nonHePhySta->SetOperatingChannel(
-        WifiPhy::ChannelTuple{apChannelNum, apBw, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{apChannelNum, apBw.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     auto nonHeStaMobility = CreateObject<ConstantPositionMobilityModel>();
     nonHePhySta->SetMobility(nonHeStaMobility);
     nonHeStaDev->SetPhy(nonHePhySta);
@@ -1084,63 +1091,63 @@ WifiNonHtDuplicateTestSuite::WifiNonHtDuplicateTestSuite()
      *                └────────┘       └──────────────────────┘
      */
     AddTestCase(new TestNonHtDuplicatePhyReception(WIFI_STANDARD_80211ax,
-                                                   MHz_u{5210},
+                                                   MHz_t{5210},
                                                    0,
-                                                   {{WIFI_STANDARD_80211a, MHz_u{5180}, 0},
-                                                    {WIFI_STANDARD_80211n, MHz_u{5200}, 0},
-                                                    {WIFI_STANDARD_80211ac, MHz_u{5230}, 0}}),
+                                                   {{WIFI_STANDARD_80211a, MHz_t{5180}, 0},
+                                                    {WIFI_STANDARD_80211n, MHz_t{5200}, 0},
+                                                    {WIFI_STANDARD_80211ac, MHz_t{5230}, 0}}),
                 TestCase::Duration::QUICK);
     /* same channel map and test scenario as previously but inject interference on channel 40 */
     AddTestCase(new TestNonHtDuplicatePhyReception(WIFI_STANDARD_80211ax,
-                                                   MHz_u{5210},
+                                                   MHz_t{5210},
                                                    0,
-                                                   {{WIFI_STANDARD_80211a, MHz_u{5180}, 0},
-                                                    {WIFI_STANDARD_80211n, MHz_u{5200}, 0},
-                                                    {WIFI_STANDARD_80211ac, MHz_u{5230}, 0}},
+                                                   {{WIFI_STANDARD_80211a, MHz_t{5180}, 0},
+                                                    {WIFI_STANDARD_80211n, MHz_t{5200}, 0},
+                                                    {WIFI_STANDARD_80211ac, MHz_t{5230}, 0}},
                                                    {false, true, false, false}),
                 TestCase::Duration::QUICK);
     /* test PHY reception of multiple CTS responses following a MU-RTS */
     /* 4 STAs operating on 20 MHz */
     AddTestCase(
-        new TestMultipleCtsResponsesFromMuRts({{MHz_u{20}}, {MHz_u{20}}, {MHz_u{20}}, {MHz_u{20}}}),
+        new TestMultipleCtsResponsesFromMuRts({{MHz_t{20}}, {MHz_t{20}}, {MHz_t{20}}, {MHz_t{20}}}),
         TestCase::Duration::QUICK);
     /* 4 STAs operating on 40 MHz */
     AddTestCase(
-        new TestMultipleCtsResponsesFromMuRts({{MHz_u{40}}, {MHz_u{40}}, {MHz_u{40}}, {MHz_u{40}}}),
+        new TestMultipleCtsResponsesFromMuRts({{MHz_t{40}}, {MHz_t{40}}, {MHz_t{40}}, {MHz_t{40}}}),
         TestCase::Duration::QUICK);
     /* 4 STAs operating on 80 MHz */
     AddTestCase(
-        new TestMultipleCtsResponsesFromMuRts({{MHz_u{80}}, {MHz_u{80}}, {MHz_u{80}}, {MHz_u{80}}}),
+        new TestMultipleCtsResponsesFromMuRts({{MHz_t{80}}, {MHz_t{80}}, {MHz_t{80}}, {MHz_t{80}}}),
         TestCase::Duration::QUICK);
     /* 4 STAs operating on 160 MHz */
     AddTestCase(new TestMultipleCtsResponsesFromMuRts(
-                    {{MHz_u{160}}, {MHz_u{160}}, {MHz_u{160}}, {MHz_u{160}}}),
+                    {{MHz_t{160}}, {MHz_t{160}}, {MHz_t{160}}, {MHz_t{160}}}),
                 TestCase::Duration::QUICK);
     /* 4 STAs operating on different bandwidths with PPDUs sent with decreasing BW: 160, 80, 40 and
      * 20 MHz */
     AddTestCase(new TestMultipleCtsResponsesFromMuRts(
-                    {{MHz_u{160}}, {MHz_u{80}}, {MHz_u{40}}, {MHz_u{20}}}),
+                    {{MHz_t{160}}, {MHz_t{80}}, {MHz_t{40}}, {MHz_t{20}}}),
                 TestCase::Duration::QUICK);
     /* 4 STAs operating on different bandwidths with PPDUs sent with increasing BW: 20, 40, 80 and
      * 160 MHz */
     AddTestCase(new TestMultipleCtsResponsesFromMuRts(
-                    {{MHz_u{20}}, {MHz_u{40}}, {MHz_u{80}}, {MHz_u{160}}}),
+                    {{MHz_t{20}}, {MHz_t{40}}, {MHz_t{80}}, {MHz_t{160}}}),
                 TestCase::Duration::QUICK);
     /* 2 STAs operating on different bandwidths with PPDUs sent with decreasing BW but the first STA
      * does not respond */
-    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_u{80}, true}, {MHz_u{40}, false}}),
+    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_t{80}, true}, {MHz_t{40}, false}}),
                 TestCase::Duration::QUICK);
     /* 2 STAs operating on different bandwidths with PPDUs sent with decreasing BW but the second
      * STA does not respond */
-    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_u{80}, false}, {MHz_u{40}, true}}),
+    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_t{80}, false}, {MHz_t{40}, true}}),
                 TestCase::Duration::QUICK);
     /* 2 STAs operating on different bandwidths with PPDUs sent with increasing BW but the first STA
      * does not respond */
-    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_u{40}, true}, {MHz_u{80}, false}}),
+    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_t{40}, true}, {MHz_t{80}, false}}),
                 TestCase::Duration::QUICK);
     /* 2 STAs operating on different bandwidths with PPDUs sent with increasing BW but the second
      * STA does not respond */
-    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_u{40}, false}, {MHz_u{80}, true}}),
+    AddTestCase(new TestMultipleCtsResponsesFromMuRts({{MHz_t{40}, false}, {MHz_t{80}, true}}),
                 TestCase::Duration::QUICK);
 }
 

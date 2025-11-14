@@ -355,7 +355,7 @@ TestMultiUserScheduler::ComputeWifiTxVector()
     for (auto& sta : staList)
     {
         auto index{ruIndex};
-        if (bw > MHz_u{80})
+        if (bw > MHz_t{80})
         {
             if (!IsEht(m_txVector.GetPreambleType()))
             {
@@ -440,7 +440,7 @@ class OfdmaAckSequenceTest : public TestCase
      */
     struct Params
     {
-        MHz_u channelWidth;                     ///< PHY channel bandwidth
+        MHz_t channelWidth;                     ///< PHY channel bandwidth
         WifiAcknowledgment::Method dlMuAckType; ///< DL MU ack sequence type
         uint32_t maxAmpduSize;                  ///< maximum A-MPDU size in bytes
         uint16_t txopLimit;                     ///< TXOP limit in microseconds
@@ -510,7 +510,7 @@ class OfdmaAckSequenceTest : public TestCase
     NetDeviceContainer m_staDevices;            ///< stations' devices
     Ptr<WifiNetDevice> m_apDevice;              ///< AP's device
     std::vector<PacketSocketAddress> m_sockets; ///< packet socket addresses for STAs
-    MHz_u m_channelWidth;                       ///< PHY channel bandwidth
+    MHz_t m_channelWidth;                       ///< PHY channel bandwidth
     uint8_t m_muRtsRuAllocation;                ///< B7-B1 of RU Allocation subfield of MU-RTS
     std::vector<FrameInfo> m_txPsdus;           ///< transmitted PSDUs
     WifiAcknowledgment::Method m_dlMuAckType;   ///< DL MU ack sequence type
@@ -628,7 +628,7 @@ OfdmaAckSequenceTest::Transmit(std::string context,
         Time txDuration = WifiPhy::CalculateTxDuration(
             psduMap,
             txVector,
-            (m_channelWidth < MHz_u{320}) ? WIFI_PHY_BAND_5GHZ : WIFI_PHY_BAND_6GHZ);
+            (m_channelWidth < MHz_t{320}) ? WIFI_PHY_BAND_5GHZ : WIFI_PHY_BAND_6GHZ);
         m_txPsdus.push_back({Simulator::Now(), Simulator::Now() + txDuration, psduMap, txVector});
 
         for (const auto& [staId, psdu] : psduMap)
@@ -734,7 +734,7 @@ OfdmaAckSequenceTest::Transmit(std::string context,
             Time txDuration = WifiPhy::CalculateTxDuration(
                 psduMap,
                 txVector,
-                (m_channelWidth < MHz_u{320}) ? WIFI_PHY_BAND_5GHZ : WIFI_PHY_BAND_6GHZ);
+                (m_channelWidth < MHz_t{320}) ? WIFI_PHY_BAND_5GHZ : WIFI_PHY_BAND_6GHZ);
             for (uint16_t i = 0; i < m_nStations; i++)
             {
                 Ptr<PacketSocketClient> client = CreateObject<PacketSocketClient>();
@@ -2227,7 +2227,7 @@ OfdmaAckSequenceTest::DoRun()
                                                          : WIFI_STANDARD_80211be);
     m_staDevices = NetDeviceContainer(m_staDevices, wifi.Install(phy, mac, wifiNewStaNodes));
 
-    if (m_channelWidth < MHz_u{320})
+    if (m_channelWidth < MHz_t{320})
     {
         // create a listening VHT station
         wifi.SetStandard(WIFI_STANDARD_80211ac);
@@ -2406,7 +2406,7 @@ WifiMacOfdmaTestSuite::WifiMacOfdmaTestSuite()
     : TestSuite("wifi-mac-ofdma", Type::UNIT)
 {
     using MuEdcaParams = std::initializer_list<OfdmaAckSequenceTest::MuEdcaParameterSet>;
-    using ChannelWidths = std::initializer_list<std::pair<MHz_u, MHz_u>>;
+    using ChannelWidths = std::initializer_list<std::pair<MHz_t, MHz_t>>;
 
     for (auto& muEdcaParameterSet : MuEdcaParams{{0, 0, 0, 0},        /* no MU EDCA */
                                                  {0, 127, 2047, 100}, /* EDCA disabled */
@@ -2416,11 +2416,11 @@ WifiMacOfdmaTestSuite::WifiMacOfdmaTestSuite()
              {WifiOfdmaScenario::HE, WifiOfdmaScenario::HE_EHT, WifiOfdmaScenario::EHT})
         {
             // limit test to 2 channel widths per TXOP limit combination
-            for (const auto& [chWidth1, chWidth2] : ChannelWidths{{MHz_u{20}, MHz_u{40}},
-                                                                  {MHz_u{80}, MHz_u{160}},
-                                                                  {MHz_u{320}, MHz_u{320}}})
+            for (const auto& [chWidth1, chWidth2] : ChannelWidths{{MHz_t{20}, MHz_t{40}},
+                                                                  {MHz_t{80}, MHz_t{160}},
+                                                                  {MHz_t{320}, MHz_t{320}}})
             {
-                if ((chWidth1 > MHz_u{160}) && (scenario < WifiOfdmaScenario::EHT))
+                if ((chWidth1 > MHz_t{160}) && (scenario < WifiOfdmaScenario::EHT))
                 {
                     continue;
                 }

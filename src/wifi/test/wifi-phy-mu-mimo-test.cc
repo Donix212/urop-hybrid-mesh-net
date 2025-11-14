@@ -8,6 +8,9 @@
 
 #include "ns3/ap-wifi-mac.h"
 #include "ns3/boolean.h"
+#include "ns3/db.h"
+#include "ns3/dbm-per-mhz.h"
+#include "ns3/dbm.h"
 #include "ns3/double.h"
 #include "ns3/he-configuration.h"
 #include "ns3/he-phy.h"
@@ -38,8 +41,8 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("WifiPhyMuMimoTest");
 
-constexpr MHz_u DEFAULT_FREQUENCY = 5180;
-constexpr MHz_u DEFAULT_CHANNEL_WIDTH = 20;
+constexpr MHz_t DEFAULT_FREQUENCY{5180};
+constexpr MHz_t DEFAULT_CHANNEL_WIDTH{20};
 
 /**
  * @ingroup wifi-test
@@ -63,7 +66,7 @@ class TestDlMuTxVector : public TestCase
      *
      * @return the configured MU TXVECTOR
      */
-    static WifiTxVector BuildTxVector(MHz_u bw, const std::list<HeMuUserInfo>& userInfos);
+    static WifiTxVector BuildTxVector(MHz_t bw, const std::list<HeMuUserInfo>& userInfos);
 };
 
 TestDlMuTxVector::TestDlMuTxVector()
@@ -72,7 +75,7 @@ TestDlMuTxVector::TestDlMuTxVector()
 }
 
 WifiTxVector
-TestDlMuTxVector::BuildTxVector(MHz_u bw, const std::list<HeMuUserInfo>& userInfos)
+TestDlMuTxVector::BuildTxVector(MHz_t bw, const std::list<HeMuUserInfo>& userInfos)
 {
     WifiTxVector txVector;
     txVector.SetPreambleType(WIFI_PREAMBLE_HE_MU);
@@ -94,7 +97,7 @@ TestDlMuTxVector::DoRun()
     std::list<HeMuUserInfo> userInfos;
     userInfos.push_back({HeRu::RuSpec{RuType::RU_106_TONE, 1, true}, 11, 1});
     userInfos.push_back({HeRu::RuSpec{RuType::RU_106_TONE, 2, true}, 10, 2});
-    WifiTxVector txVector = BuildTxVector(MHz_u{20}, userInfos);
+    WifiTxVector txVector = BuildTxVector(MHz_t{20}, userInfos);
     NS_TEST_EXPECT_MSG_EQ(txVector.IsDlOfdma(),
                           true,
                           "TX-VECTOR should indicate an OFDMA transmission");
@@ -113,7 +116,7 @@ TestDlMuTxVector::DoRun()
     auto ru = HeRu::RuSpec{RuType::RU_242_TONE, 1, true};
     userInfos.push_back({ru, 11, 1});
     userInfos.push_back({ru, 10, 2});
-    txVector = BuildTxVector(MHz_u{20}, userInfos);
+    txVector = BuildTxVector(MHz_t{20}, userInfos);
     NS_TEST_EXPECT_MSG_EQ(txVector.IsDlOfdma(),
                           false,
                           "TX-VECTOR should indicate a MU-MIMO transmission");
@@ -139,7 +142,7 @@ TestDlMuTxVector::DoRun()
     userInfos.push_back({ru, 5, 1});
     userInfos.push_back({ru, 4, 1});
     userInfos.push_back({ru, 3, 1});
-    txVector = BuildTxVector(MHz_u{20}, userInfos);
+    txVector = BuildTxVector(MHz_t{20}, userInfos);
     NS_TEST_EXPECT_MSG_EQ(txVector.IsDlOfdma(),
                           false,
                           "TX-VECTOR should indicate a MU-MIMO transmission");
@@ -158,7 +161,7 @@ TestDlMuTxVector::DoRun()
     userInfos.push_back({ru, 10, 2});
     userInfos.push_back({ru, 9, 3});
     userInfos.push_back({ru, 8, 3});
-    txVector = BuildTxVector(MHz_u{20}, userInfos);
+    txVector = BuildTxVector(MHz_t{20}, userInfos);
     NS_TEST_EXPECT_MSG_EQ(txVector.IsDlOfdma(),
                           false,
                           "TX-VECTOR should indicate a MU-MIMO transmission");
@@ -491,8 +494,8 @@ class TestDlMuMimoPhyTransmission : public TestCase
     Ptr<MuMimoSpectrumWifiPhy> m_phySta3; ///< PHY of STA 3
 
     uint8_t m_nss;               ///< number of spatial streams per STA
-    MHz_u m_frequency;           ///< frequency
-    MHz_u m_channelWidth;        ///< channel width
+    MHz_t m_frequency;           ///< frequency
+    MHz_t m_channelWidth;        ///< channel width
     Time m_expectedPpduDuration; ///< expected duration to send MU PPDU
 };
 
@@ -804,13 +807,13 @@ TestDlMuMimoPhyTransmission::RunOne()
                           ->number;
 
     m_phyAp->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     m_phySta1->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     m_phySta2->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     m_phySta3->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
 
     m_phyAp->SetNumberOfAntennas(8);
     m_phyAp->SetMaxSupportedTxSpatialStreams(8);
@@ -1091,23 +1094,23 @@ TestDlMuMimoPhyTransmission::DoRun()
     for (auto nss : nssToTest)
     {
         m_nss = nss;
-        m_frequency = MHz_u{5180};
-        m_channelWidth = MHz_u{20};
+        m_frequency = MHz_t{5180};
+        m_channelWidth = MHz_t{20};
         m_expectedPpduDuration = (nss > 1) ? NanoSeconds(110400) : NanoSeconds(156800);
         RunOne();
 
-        m_frequency = MHz_u{5190};
-        m_channelWidth = MHz_u{40};
+        m_frequency = MHz_t{5190};
+        m_channelWidth = MHz_t{40};
         m_expectedPpduDuration = (nss > 1) ? NanoSeconds(83200) : NanoSeconds(102400);
         RunOne();
 
-        m_frequency = MHz_u{5210};
-        m_channelWidth = MHz_u{80};
+        m_frequency = MHz_t{5210};
+        m_channelWidth = MHz_t{80};
         m_expectedPpduDuration = (nss > 1) ? NanoSeconds(69600) : NanoSeconds(75200);
         RunOne();
 
-        m_frequency = MHz_u{5250};
-        m_channelWidth = MHz_u{160};
+        m_frequency = MHz_t{5250};
+        m_channelWidth = MHz_t{160};
         m_expectedPpduDuration = (nss > 1) ? NanoSeconds(69600) : NanoSeconds(61600);
         RunOne();
     }
@@ -1262,8 +1265,8 @@ class TestUlMuMimoPhyTransmission : public TestCase
     std::vector<uint32_t> m_countRxBytesFromStas;   ///< count RX bytes from STAs
 
     Time m_delayStart;           ///< delay between the start of each HE TB PPDUs
-    MHz_u m_frequency;           ///< frequency
-    MHz_u m_channelWidth;        ///< channel width
+    MHz_t m_frequency;           ///< frequency
+    MHz_t m_channelWidth;        ///< channel width
     Time m_expectedPpduDuration; ///< expected duration to send MU PPDU
 };
 
@@ -1593,11 +1596,12 @@ TestUlMuMimoPhyTransmission::DoSetup()
         phy->SetDevice(staDev);
         phy->AddChannel(spectrumChannel);
         phy->ConfigureStandard(WIFI_STANDARD_80211ax);
-        phy->SetAttribute("TxGain", DoubleValue(1.0));
-        phy->SetAttribute("TxPowerStart", DoubleValue(16.0));
-        phy->SetAttribute("TxPowerEnd", DoubleValue(16.0));
-        phy->SetAttribute("PowerDensityLimit", DoubleValue(100.0)); // no impact by default
-        phy->SetAttribute("RxGain", DoubleValue(2.0));
+        phy->SetAttribute("TxGain", DbValue(dB_t{1.0}));
+        phy->SetAttribute("TxPowerStart", DbmValue(dBm_t{16.0}));
+        phy->SetAttribute("TxPowerEnd", DbmValue(dBm_t{16.0}));
+        phy->SetAttribute("PowerDensityLimit",
+                          DbmPerMhzValue(dBm_per_MHz_t{100.0})); // no impact by default
+        phy->SetAttribute("RxGain", DbValue(dB_t{2.0}));
         staDev->SetPhy(phy);
         staNode->AddDevice(staDev);
         m_phyStas.push_back(phy);
@@ -1718,11 +1722,11 @@ TestUlMuMimoPhyTransmission::RunOne()
                           ->number;
 
     m_phyAp->SetOperatingChannel(
-        WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+        WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     for (auto& phy : m_phyStas)
     {
         phy->SetOperatingChannel(
-            WifiPhy::ChannelTuple{channelNum, m_channelWidth, WIFI_PHY_BAND_5GHZ, 0});
+            WifiPhy::ChannelTuple{channelNum, m_channelWidth.to<double>(), WIFI_PHY_BAND_5GHZ, 0});
     }
 
     Time delay;
@@ -1818,32 +1822,32 @@ TestUlMuMimoPhyTransmission::DoRun()
     {
         m_delayStart = delayStart;
 
-        m_frequency = MHz_u{5180};
-        m_channelWidth = MHz_u{20};
+        m_frequency = MHz_t{5180};
+        m_channelWidth = MHz_t{20};
         m_expectedPpduDuration = NanoSeconds(163200);
         NS_LOG_DEBUG("Run UL MU-MIMO PHY transmission test for "
                      << m_channelWidth << " MHz with delay between each HE TB PPDUs of "
                      << m_delayStart);
         RunOne();
 
-        m_frequency = MHz_u{5190};
-        m_channelWidth = MHz_u{40};
+        m_frequency = MHz_t{5190};
+        m_channelWidth = MHz_t{40};
         m_expectedPpduDuration = NanoSeconds(105600);
         NS_LOG_DEBUG("Run UL MU-MIMO PHY transmission test for "
                      << m_channelWidth << " MHz with delay between each HE TB PPDUs of "
                      << m_delayStart);
         RunOne();
 
-        m_frequency = MHz_u{5210};
-        m_channelWidth = MHz_u{80};
+        m_frequency = MHz_t{5210};
+        m_channelWidth = MHz_t{80};
         m_expectedPpduDuration = NanoSeconds(76800);
         NS_LOG_DEBUG("Run UL MU-MIMO PHY transmission test for "
                      << m_channelWidth << " MHz with delay between each HE TB PPDUs of "
                      << m_delayStart);
         RunOne();
 
-        m_frequency = MHz_u{5250};
-        m_channelWidth = MHz_u{160};
+        m_frequency = MHz_t{5250};
+        m_channelWidth = MHz_t{160};
         m_expectedPpduDuration = NanoSeconds(62400);
         NS_LOG_DEBUG("Run UL MU-MIMO PHY transmission test for "
                      << m_channelWidth << " MHz with delay between each HE TB PPDUs of "

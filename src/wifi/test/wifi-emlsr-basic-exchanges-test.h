@@ -256,8 +256,8 @@ class EmlsrUlTxopTest : public EmlsrOperationsTestBase
     {
         std::set<uint8_t>
             linksToEnableEmlsrOn;       //!< IDs of links on which EMLSR mode should be enabled
-        MHz_u channelWidth;             //!< width of the channels used by MLDs
-        MHz_u auxPhyChannelWidth;       //!< max width supported by aux PHYs
+        MHz_t channelWidth;             //!< width of the channels used by MLDs
+        MHz_t auxPhyChannelWidth;       //!< max width supported by aux PHYs
         Time mediumSyncDuration;        //!< duration of the MediumSyncDelay timer
         uint8_t msdMaxNTxops;           //!< Max number of TXOPs that an EMLSR client is allowed
                                         //!< to attempt to initiate while the MediumSyncDelay
@@ -347,8 +347,8 @@ class EmlsrUlTxopTest : public EmlsrOperationsTestBase
     void BackoffGenerated(uint32_t backoff, uint8_t linkId);
 
     std::set<uint8_t> m_emlsrLinks; /**< IDs of the links on which EMLSR mode has to be enabled */
-    MHz_u m_channelWidth;           //!< width of the channels used by MLDs
-    MHz_u m_auxPhyChannelWidth;     //!< max width supported by aux PHYs
+    MHz_t m_channelWidth;           //!< width of the channels used by MLDs
+    MHz_t m_auxPhyChannelWidth;     //!< max width supported by aux PHYs
     Time m_mediumSyncDuration;      //!< duration of the MediumSyncDelay timer
     uint8_t m_msdMaxNTxops;         //!< Max number of TXOPs that an EMLSR client is allowed
                                     //!< to attempt to initiate while the MediumSyncDelay

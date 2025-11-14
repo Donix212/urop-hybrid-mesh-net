@@ -14,6 +14,7 @@
 #include "ns3/frame-exchange-manager.h"
 #include "ns3/log.h"
 #include "ns3/mac48-address.h"
+#include "ns3/mhz.h"
 #include "ns3/multi-model-spectrum-channel.h"
 #include "ns3/node-container.h"
 #include "ns3/rng-seed-manager.h"
@@ -55,7 +56,7 @@ const auto DEFAULT_BEACON_GEN = false;
 const auto DEFAULT_DATA_MODE = "HeMcs3";
 const auto DEFAULT_CONTROL_MODE = "OfdmRate24Mbps";
 const auto DEFAULT_SWITCH_DELAY = MicroSeconds(64);
-const auto DEFAULT_AUX_PHY_CH_WIDTH = MHz_u{20};
+const auto DEFAULT_AUX_PHY_CH_WIDTH = MHz_t{20};
 const auto DEFAULT_SWITCH_AUX_PHY = false;
 const auto DEFAULT_WIFI_STANDARD = WifiStandard::WIFI_STANDARD_80211be;
 const auto DEFAULT_SSID = Ssid("static-assoc-test");
@@ -73,7 +74,7 @@ struct WifiStaticEmlsrTestVector
     std::vector<std::string> clientChs{}; ///< Channel settings for client device
     std::set<uint8_t> emlsrLinks{};       ///< EMLSR mode links
     Time switchDelay{WifiStaticEmlsrTestConstants::DEFAULT_SWITCH_DELAY}; ///< Radio Switch Delay
-    MHz_u auxPhyWidth{
+    MHz_t auxPhyWidth{
         WifiStaticEmlsrTestConstants::DEFAULT_AUX_PHY_CH_WIDTH}; ///< Aux PHY channel width
     bool switchAuxPhy{WifiStaticEmlsrTestConstants::DEFAULT_SWITCH_AUX_PHY}; ///< Switch Aux PHY
 };
@@ -194,7 +195,7 @@ WifiStaticEmlsrTest::GetClientMacHelper() const
                               "EmlsrLinkSet",
                               AttributeContainerValue<UintegerValue>(m_testVec.emlsrLinks),
                               "AuxPhyChannelWidth",
-                              UintegerValue(m_testVec.auxPhyWidth),
+                              MhzValue(m_testVec.auxPhyWidth),
                               "SwitchAuxPhy",
                               BooleanValue(m_testVec.switchAuxPhy));
     return macHelper;
@@ -351,7 +352,7 @@ WifiStaticEmlsrTestSuite::WifiStaticEmlsrTestSuite()
               CHANNELS_2_LINKS,
               {0, 1},
               MicroSeconds(32),
-              MHz_u{80},
+              MHz_t{80},
               WifiStaticEmlsrTestConstants::DEFAULT_SWITCH_AUX_PHY},
              {"EMLSR-2-link-Switch-Aux-PHY",
               CHANNELS_2_LINKS,
@@ -363,7 +364,7 @@ WifiStaticEmlsrTestSuite::WifiStaticEmlsrTestSuite()
               CHANNELS_2_LINKS,
               {0, 1},
               WifiStaticEmlsrTestConstants::DEFAULT_SWITCH_DELAY,
-              MHz_u{80},
+              MHz_t{80},
               true}};
          const auto& input : inputs)
     {
