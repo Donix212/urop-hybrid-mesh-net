@@ -37,6 +37,7 @@ set(source_files
     model/ipv4-interface.cc
     model/ipv4-l3-protocol.cc
     model/ipv4-list-routing.cc
+    model/ipv4-network-address.cc
     model/ipv4-packet-filter.cc
     model/ipv4-packet-info-tag.cc
     model/ipv4-packet-probe.cc
@@ -61,6 +62,7 @@ set(source_files
     model/ipv6-interface.cc
     model/ipv6-l3-protocol.cc
     model/ipv6-list-routing.cc
+    model/ipv6-network-address.cc
     model/ipv6-option-demux.cc
     model/ipv6-option-header.cc
     model/ipv6-option.cc
@@ -167,6 +169,7 @@ set(header_files
     model/ipv4-interface.h
     model/ipv4-l3-protocol.h
     model/ipv4-list-routing.h
+    model/ipv4-network-address.h
     model/ipv4-packet-filter.h
     model/ipv4-packet-info-tag.h
     model/ipv4-packet-probe.h
@@ -189,6 +192,7 @@ set(header_files
     model/ipv6-interface.h
     model/ipv6-l3-protocol.h
     model/ipv6-list-routing.h
+    model/ipv6-network-address.h
     model/ipv6-option-header.h
     model/ipv6-option.h
     model/ipv6-packet-filter.h
@@ -287,6 +291,7 @@ set(test_sources
     test/ipv6-raw-test.cc
     test/ipv6-ripng-test.cc
     test/ipv6-test.cc
+    test/ipvx-network-address-test.cc
     test/neighbor-cache-test.cc
     test/rtt-test.cc
     test/tcp-abe-test.cc
