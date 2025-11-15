@@ -605,7 +605,7 @@ HePhy::ProcessSigA(Ptr<Event> event, PhyFieldRxStatus status)
     // Notify end of SIG-A (in all cases)
     const auto& txVector = event->GetPpdu()->GetTxVector();
     HeSigAParameters params{
-        .rssi = WToDbm(GetRxPowerForPpdu(event)),
+        .rssi = dBm_t{GetRxPowerForPpdu(event)},
         .bssColor = txVector.GetBssColor(),
     };
     NotifyEndOfHeSigA(params); // if OBSS_PD CCA_RESET, set power restriction first and wait till
@@ -1087,7 +1087,7 @@ HePhy::GetMeasurementChannelWidth(const Ptr<const WifiPpdu> ppdu) const
     return channelWidth;
 }
 
-dBm_u
+dBm_t
 HePhy::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu, WifiChannelListType channelType) const
 {
     if (!ppdu)
@@ -1110,7 +1110,7 @@ HePhy::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu, WifiChannelListType chann
     auto bw = ppduBw;
     while (bw > MHz_u{20})
     {
-        obssPdLevel += dB_u{3};
+        obssPdLevel = obssPdLevel + dB_t{3};
         bw /= 2;
     }
 
@@ -1206,7 +1206,7 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
             if (ppduBw <= m_wifiPhy->GetChannelWidth() &&
                 ppdu->DoesOverlapChannel(subchannelMinFreq, subchannelMaxFreq))
             {
-                std::optional<dBm_u> obssPdLevel{std::nullopt};
+                std::optional<dBm_t> obssPdLevel{std::nullopt};
                 if (m_obssPdAlgorithm)
                 {
                     obssPdLevel = m_obssPdAlgorithm->GetObssPdLevel();
@@ -1222,8 +1222,8 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
                      * probability within a period aCCAMidTime.
                      */
                     ccaThreshold = obssPdLevel.has_value()
-                                       ? std::max(dBm_u{-72.0}, obssPdLevel.value())
-                                       : dBm_u{-72.0};
+                                       ? std::max(dBm_t{-72.0}, obssPdLevel.value())
+                                       : dBm_t{-72.0};
                     band = m_wifiPhy->GetBand(MHz_u{20}, index);
                     break;
                 case 40:
@@ -1234,8 +1234,8 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
                      * subchannel is busy with > 90% probability within a period aCCAMidTime.
                      */
                     ccaThreshold = obssPdLevel.has_value()
-                                       ? std::max(dBm_u{-72.0}, obssPdLevel.value() + dB_u{3})
-                                       : dBm_u{-72.0};
+                                       ? std::max(dBm_t{-72.0}, obssPdLevel.value() + dB_t{3})
+                                       : dBm_t{-72.0};
                     band = m_wifiPhy->GetBand(MHz_u{40}, std::floor(index / 2));
                     break;
                 case 80:
@@ -1246,8 +1246,8 @@ HePhy::GetPer20MHzDurations(const Ptr<const WifiPpdu> ppdu)
                      * subchannel is busy with > 90% probability within a period aCCAMidTime.
                      */
                     ccaThreshold = obssPdLevel.has_value()
-                                       ? std::max(dBm_u{-69.0}, obssPdLevel.value() + dB_u{6})
-                                       : dBm_u{-69.0};
+                                       ? std::max(dBm_t{-69.0}, obssPdLevel.value() + dB_t{6})
+                                       : dBm_t{-69.0};
                     band = m_wifiPhy->GetBand(MHz_u{80}, std::floor(index / 4));
                     break;
                 case 160:
@@ -1306,7 +1306,7 @@ HePhy::GetMaxDelayPpduSameUid(const WifiTxVector& txVector)
 }
 
 Ptr<SpectrumValue>
-HePhy::GetTxPowerSpectralDensity(Watt_u txPower, Ptr<const WifiPpdu> ppdu) const
+HePhy::GetTxPowerSpectralDensity(Watt_t txPower, Ptr<const WifiPpdu> ppdu) const
 {
     auto hePpdu = DynamicCast<const HePpdu>(ppdu);
     NS_ASSERT(hePpdu);
@@ -1315,7 +1315,7 @@ HePhy::GetTxPowerSpectralDensity(Watt_u txPower, Ptr<const WifiPpdu> ppdu) const
 }
 
 Ptr<SpectrumValue>
-HePhy::GetTxPowerSpectralDensity(Watt_u txPower,
+HePhy::GetTxPowerSpectralDensity(Watt_t txPower,
                                  Ptr<const WifiPpdu> ppdu,
                                  HePpdu::TxPsdFlag flag) const
 {
@@ -1472,7 +1472,7 @@ HePhy::StartTx(Ptr<const WifiPpdu> ppdu)
                                         ? CalculateNonHeDurationForHeTb(txVector)
                                         : CalculateNonHeDurationForHeMu(txVector);
         auto nonHeTxPowerSpectrum =
-            GetTxPowerSpectralDensity(DbmToW(nonHeTxPower), ppdu, HePpdu::PSD_NON_HE_PORTION);
+            GetTxPowerSpectralDensity(Watt_t{nonHeTxPower}, ppdu, HePpdu::PSD_NON_HE_PORTION);
         Transmit(nonHePortionDuration,
                  ppdu,
                  nonHeTxPower,
@@ -1482,7 +1482,7 @@ HePhy::StartTx(Ptr<const WifiPpdu> ppdu)
         // HE portion
         auto hePortionDuration = ppdu->GetTxDuration() - nonHePortionDuration;
         auto heTxPowerSpectrum =
-            GetTxPowerSpectralDensity(DbmToW(heTxPower), ppdu, HePpdu::PSD_HE_PORTION);
+            GetTxPowerSpectralDensity(Watt_t{heTxPower}, ppdu, HePpdu::PSD_HE_PORTION);
         Simulator::Schedule(nonHePortionDuration,
                             &HePhy::StartTxHePortion,
                             this,
@@ -1499,7 +1499,7 @@ HePhy::StartTx(Ptr<const WifiPpdu> ppdu)
 
 void
 HePhy::StartTxHePortion(Ptr<const WifiPpdu> ppdu,
-                        dBm_u txPower,
+                        dBm_t txPower,
                         Ptr<SpectrumValue> txPowerSpectrum,
                         Time hePortionDuration)
 {

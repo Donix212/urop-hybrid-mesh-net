@@ -16,6 +16,7 @@
 #include "ns3/eht-frame-exchange-manager.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
+#include "ns3/units.h"
 
 #include <cmath>
 #include <sstream>
@@ -99,7 +100,7 @@ class PhyListener : public ns3::WifiPhyListener
         }
     }
 
-    void NotifyTxStart(Time duration, dBm_u txPower) override
+    void NotifyTxStart(Time duration, dBm_t txPower) override
     {
         if (m_active)
         {

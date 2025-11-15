@@ -519,10 +519,10 @@ SpectrumWifiPhy::StartRx(Ptr<SpectrumSignalParameters> rxParams,
     const auto channelWidth = interface ? interface->GetChannelWidth() : GetChannelWidth();
     const auto& bands =
         interface ? interface->GetBands() : m_currentSpectrumPhyInterface->GetBands();
-    Watt_u totalRxPower{0.0};
+    Watt_t totalRxPower{0.0};
     RxPowerWattPerChannelBand rxPowers;
 
-    const auto rxGainRatio = DbToRatio(GetRxGain());
+    const auto rxGainRatio = scalar_t{GetRxGain()};
 
     std::size_t index = 0;
     MHz_u prevBw{0};
@@ -544,10 +544,8 @@ SpectrumWifiPhy::StartRx(Ptr<SpectrumSignalParameters> rxParams,
         rxPowerPerBand *= rxGainRatio;
         rxPowers.insert({band, rxPowerPerBand});
         NS_LOG_DEBUG("Signal power received after antenna gain for "
-                     << bw << " MHz channel band " << index << ": " << rxPowerPerBand << " W"
-                     << (rxPowerPerBand > Watt_u{0.0}
-                             ? " (" + std::to_string(WToDbm(rxPowerPerBand)) + " dBm)"
-                             : ""));
+                     << bw << " MHz channel band " << index << ": " << rxPowerPerBand
+                     << " dBm: " << dBm_t{rxPowerPerBand});
         if (bw <= MHz_u{20})
         {
             totalRxPower += rxPowerPerBand;
@@ -569,20 +567,17 @@ SpectrumWifiPhy::StartRx(Ptr<SpectrumSignalParameters> rxParams,
         }
     }
 
-    NS_ASSERT_MSG(totalRxPower >= Watt_u{0.0}, "Negative RX power");
-    NS_LOG_DEBUG("Total signal power received after antenna gain: "
-                 << totalRxPower << " W"
-                 << (totalRxPower > Watt_u{0.0}
-                         ? " (" + std::to_string(WToDbm(totalRxPower)) + " dBm)"
-                         : ""));
+    NS_ASSERT_MSG(totalRxPower >= Watt_t{0.0}, "Negative RX power");
+    NS_LOG_DEBUG("Total signal power received after antenna gain: " << totalRxPower << " dBm: "
+                                                                    << dBm_t{totalRxPower});
 
     Ptr<WifiSpectrumSignalParameters> wifiRxParams =
         DynamicCast<WifiSpectrumSignalParameters>(rxParams);
 
     // Log the signal arrival to the trace source
-    if (totalRxPower > Watt_u{0.0})
+    if (totalRxPower > Watt_t{0.0})
     {
-        m_signalCb(rxParams, senderNodeId, WToDbm(totalRxPower), rxDuration);
+        m_signalCb(rxParams, senderNodeId, WToDbm(totalRxPower.to<double>()), rxDuration);
     }
 
     if (m_trackSignalsInactiveInterfaces && interface &&
@@ -618,13 +613,10 @@ SpectrumWifiPhy::StartRx(Ptr<SpectrumSignalParameters> rxParams,
     // Current implementation assumes constant RX power over the PPDU duration
     // Compare received TX power per MHz to normalized RX sensitivity
     const auto ppdu = GetRxPpduFromTxPpdu(wifiRxParams->ppdu);
-    if (totalRxPower < DbmToW(GetRxSensitivity()) * (ppdu->GetTxChannelWidth() / MHz_u{20}))
+    if (totalRxPower < Watt_t{GetRxSensitivity()} * (ppdu->GetTxChannelWidth() / MHz_u{20}))
     {
-        NS_LOG_INFO("Received signal too weak to process: "
-                    << totalRxPower << " W"
-                    << (totalRxPower > Watt_u{0.0}
-                            ? " (" + std::to_string(WToDbm(totalRxPower)) + " dBm)"
-                            : ""));
+        NS_LOG_INFO("Received signal too weak to process: " << totalRxPower
+                                                            << " dBm: " << dBm_t{totalRxPower});
         m_interference->Add(ppdu, rxDuration, rxPowers, GetCurrentFrequencyRange());
         SwitchMaybeToCcaBusy(nullptr);
         return;

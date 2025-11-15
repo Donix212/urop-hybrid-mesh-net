@@ -76,6 +76,7 @@
 
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/db.h"
 #include "ns3/double.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
@@ -177,7 +178,7 @@ main(int argc, char* argv[])
 
     YansWifiPhyHelper wifiPhy;
     // set it to zero; otherwise, gain will be added
-    wifiPhy.Set("RxGain", DoubleValue(-10));
+    wifiPhy.Set("RxGain", DbValue(dB_t{-10}));
     // ns-3 supports RadioTap and Prism tracing extensions for 802.11b
     wifiPhy.SetPcapDataLinkType(WifiPhyHelper::DLT_IEEE802_11_RADIO);
 

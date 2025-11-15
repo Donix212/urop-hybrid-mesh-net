@@ -17,6 +17,7 @@
 #include "ns3/nstime.h"
 #include "ns3/object.h"
 #include "ns3/traced-callback.h"
+#include "ns3/units.h"
 #include "ns3/wifi-export.h"
 
 #include <algorithm>
@@ -180,7 +181,7 @@ class WIFI_EXPORT WifiPhyStateHelper : public Object
      */
     void SwitchToTx(Time txDuration,
                     const WifiConstPsduMap& psdus,
-                    dBm_u txPower,
+                    dBm_t txPower,
                     const WifiTxVector& txVector);
     /**
      * Switch state to RX for the given duration.

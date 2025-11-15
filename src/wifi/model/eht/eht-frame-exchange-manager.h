@@ -11,6 +11,7 @@
 
 #include "ns3/he-frame-exchange-manager.h"
 #include "ns3/mgt-headers.h"
+#include "ns3/units.h"
 
 #include <unordered_map>
 
@@ -97,7 +98,7 @@ class EhtFrameExchangeManager : public HeFrameExchangeManager
      * @param address of the remote station
      * @return the RSSI of the most recent packet received from the remote station
      */
-    std::optional<dBm_u> GetMostRecentRssi(const Mac48Address& address) const override;
+    std::optional<dBm_t> GetMostRecentRssi(const Mac48Address& address) const override;
 
     /**
      * @param psdu the given PSDU
@@ -271,7 +272,7 @@ class EhtFrameExchangeManager : public HeFrameExchangeManager
      * @param duration the duration of the in-device interference
      * @param txPower the TX power
      */
-    void GenerateInDeviceInterference(Ptr<WifiPhy> phy, Time duration, Watt_u txPower);
+    void GenerateInDeviceInterference(Ptr<WifiPhy> phy, Time duration, Watt_t txPower);
 
     /**
      * Generate in-device interference caused by a transmission on this link for all the other PHYs

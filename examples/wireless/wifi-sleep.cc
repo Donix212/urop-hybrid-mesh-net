@@ -36,6 +36,8 @@
 #include "ns3/basic-energy-source-helper.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/dbm.h"
+#include "ns3/double.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/log.h"
@@ -104,8 +106,8 @@ main(int argc, char* argv[])
     Time duration{"10s"};
     joule_u initialEnergy{7.5};
     volt_u voltage{3.0};
-    dBm_u txPowerStart{0.0};
-    dBm_u txPowerEnd{15.0};
+    dBm_t txPowerStart{0.0};
+    dBm_t txPowerEnd{15.0};
     uint32_t nTxPowerLevels{16};
     uint32_t txPowerLevel{WIFI_MIN_TX_PWR_LEVEL};
     ampere_u idleCurrent{0.273};
@@ -142,8 +144,8 @@ main(int argc, char* argv[])
     wifi.SetStandard(WIFI_STANDARD_80211b);
 
     YansWifiPhyHelper wifiPhy;
-    wifiPhy.Set("TxPowerStart", DoubleValue(txPowerStart));
-    wifiPhy.Set("TxPowerEnd", DoubleValue(txPowerEnd));
+    wifiPhy.Set("TxPowerStart", DbmValue(txPowerStart));
+    wifiPhy.Set("TxPowerEnd", DbmValue(txPowerEnd));
     wifiPhy.Set("TxPowerLevels", UintegerValue(nTxPowerLevels));
 
     YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default();
@@ -207,7 +209,7 @@ main(int argc, char* argv[])
 
     // compute the efficiency of the power amplifier (eta) assuming that the provided value for tx
     // current corresponds to the minimum tx power level
-    double eta = DbmToW(txPowerStart) / ((txCurrent - idleCurrent) * voltage);
+    double eta = Watt_t{txPowerStart}.to<double>() / ((txCurrent - idleCurrent) * voltage);
 
     radioEnergyHelper.SetTxCurrentModel("ns3::LinearWifiTxCurrentModel",
                                         "Voltage",

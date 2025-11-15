@@ -35,6 +35,7 @@
 #include "ns3/random-variable-stream.h"
 #include "ns3/simulator.h"
 #include "ns3/string.h"
+#include "ns3/units.h"
 
 namespace ns3
 {
@@ -2525,8 +2526,8 @@ ApWifiMac::RespondToEmlOmn(MgtEmlOmn frame, const Mac48Address& sender, uint8_t 
     // when the transmission of the Ack following the received EML Notification frame is
     // completed. For this purpose, we connect a callback to the PHY TX begin trace to catch
     // the Ack transmitted after the EML Notification frame.
-    CallbackBase cb = Callback<void, WifiConstPsduMap, WifiTxVector, Watt_u>(
-        [=, this](WifiConstPsduMap psduMap, WifiTxVector txVector, Watt_u /* txPower */) {
+    CallbackBase cb = Callback<void, WifiConstPsduMap, WifiTxVector, double>(
+        [=, this](WifiConstPsduMap psduMap, WifiTxVector txVector, double /* txPower */) {
             NS_ASSERT_MSG(psduMap.size() == 1 && psduMap.begin()->second->GetNMpdus() == 1 &&
                               psduMap.begin()->second->GetHeader(0).IsAck(),
                           "Expected a Normal Ack after EML Notification frame");

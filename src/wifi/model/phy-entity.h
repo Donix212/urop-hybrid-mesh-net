@@ -22,6 +22,7 @@
 #include "ns3/event-id.h"
 #include "ns3/nstime.h"
 #include "ns3/simple-ref-count.h"
+#include "ns3/units.h"
 #include "ns3/wifi-export.h"
 
 #include <list>
@@ -45,7 +46,7 @@ namespace ns3
 /**
  * A map of the received power for each band
  */
-using RxPowerWattPerChannelBand = std::map<WifiSpectrumBandInfo, Watt_u>;
+using RxPowerWattPerChannelBand = std::map<WifiSpectrumBandInfo, Watt_t>;
 
 class WifiMpdu;
 class WifiPhy;
@@ -434,7 +435,7 @@ class WIFI_EXPORT PhyEntity
      */
     void Transmit(Time txDuration,
                   Ptr<const WifiPpdu> ppdu,
-                  dBm_u txPower,
+                  dBm_t txPower,
                   Ptr<SpectrumValue> txPowerSpectrum,
                   const std::string& type);
 
@@ -456,7 +457,7 @@ class WIFI_EXPORT PhyEntity
      * @param channelType the channel type
      * @return the CCA threshold
      */
-    virtual dBm_u GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
+    virtual dBm_t GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
                                   WifiChannelListType channelType) const;
 
     /**
@@ -740,7 +741,7 @@ class WIFI_EXPORT PhyEntity
      * @param event the event holding incoming PPDU's information
      * @return the received power for the event over a given band
      */
-    Watt_u GetRxPowerForPpdu(Ptr<Event> event) const;
+    Watt_t GetRxPowerForPpdu(Ptr<Event> event) const;
     /**
      * Get the pointer to the current event (stored in WifiPhy).
      * Wrapper used by child classes.
@@ -811,7 +812,7 @@ class WIFI_EXPORT PhyEntity
      * This is a helper function to create the right TX PSD corresponding
      * to the amendment of this PHY.
      */
-    virtual Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_u txPower,
+    virtual Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_t txPower,
                                                          Ptr<const WifiPpdu> ppdu) const = 0;
 
     /**
@@ -868,7 +869,7 @@ class WIFI_EXPORT PhyEntity
      * @param band identify the requested band
      * @return the delay until CCA busy is ended
      */
-    Time GetDelayUntilCcaEnd(dBm_u threshold, const WifiSpectrumBandInfo& band);
+    Time GetDelayUntilCcaEnd(dBm_t threshold, const WifiSpectrumBandInfo& band);
 
     /**
      * @param currentChannelWidth channel width of the current transmission

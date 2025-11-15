@@ -14,6 +14,7 @@
 #include "wifi-tx-vector.h"
 
 #include "ns3/object.h"
+#include "ns3/units.h"
 
 #include <map>
 
@@ -27,7 +28,7 @@ class ErrorRateModel;
 /**
  * A map of the received power for each band
  */
-using RxPowerWattPerChannelBand = std::map<WifiSpectrumBandInfo, Watt_u>;
+using RxPowerWattPerChannelBand = std::map<WifiSpectrumBandInfo, Watt_t>;
 
 /**
  * @ingroup wifi
@@ -76,14 +77,14 @@ class Event : public SimpleRefCount<Event>
      *
      * @return the total received power
      */
-    Watt_u GetRxPower() const;
+    Watt_t GetRxPower() const;
     /**
      * Return the received power for a given band.
      *
      * @param band the band for which the power should be returned
      * @return the received power for a given band
      */
-    Watt_u GetRxPower(const WifiSpectrumBandInfo& band) const;
+    Watt_t GetRxPower(const WifiSpectrumBandInfo& band) const;
     /**
      * Return the received power (W) for all bands.
      *
@@ -175,7 +176,7 @@ class InterferenceHelper : public Object
      *
      * @param value noise figure in linear scale
      */
-    void SetNoiseFigure(double value);
+    void SetNoiseFigure(scalar_t value);
     /**
      * Set the error rate model for this interference helper.
      *
@@ -205,7 +206,7 @@ class InterferenceHelper : public Object
      *          energy on the medium for a given band will
      *          be higher than the requested threshold.
      */
-    Time GetEnergyDuration(Watt_u energy, const WifiSpectrumBandInfo& band);
+    Time GetEnergyDuration(Watt_t energy, const WifiSpectrumBandInfo& band);
 
     /**
      * Add the PPDU-related signal to interference helper.
@@ -265,10 +266,10 @@ class InterferenceHelper : public Object
      *
      * @return the SNR for the PPDU in linear scale
      */
-    double CalculateSnr(Ptr<Event> event,
-                        MHz_u channelWidth,
-                        uint8_t nss,
-                        const WifiSpectrumBandInfo& band) const;
+    scalar_t CalculateSnr(Ptr<Event> event,
+                          MHz_u channelWidth,
+                          uint8_t nss,
+                          const WifiSpectrumBandInfo& band) const;
     /**
      * Calculate the SNIR at the start of the PHY header and accumulate
      * all SNIR changes in the SNIR vector.
@@ -319,15 +320,15 @@ class InterferenceHelper : public Object
      *
      * @return SNR in linear scale
      */
-    double CalculateSnr(Watt_u signal,
-                        Watt_u noiseInterference,
-                        MHz_u channelWidth,
-                        uint8_t nss) const;
+    scalar_t CalculateSnr(Watt_t signal,
+                          Watt_t noiseInterference,
+                          MHz_u channelWidth,
+                          uint8_t nss) const;
     /**
      * Calculate the success rate of the chunk given the SINR, duration, and TXVECTOR.
      * The duration and TXVECTOR are used to calculate how many bits are present in the chunk.
      *
-     * @param snir the SINR
+     * @param sinr the SINR
      * @param duration the duration of the chunk
      * @param mode the WifiMode
      * @param txVector the TXVECTOR
@@ -335,7 +336,7 @@ class InterferenceHelper : public Object
      *
      * @return the success rate
      */
-    double CalculateChunkSuccessRate(double snir,
+    double CalculateChunkSuccessRate(scalar_t sinr,
                                      Time duration,
                                      WifiMode mode,
                                      const WifiTxVector& txVector,
@@ -345,14 +346,14 @@ class InterferenceHelper : public Object
      * The duration and TXVECTOR are used to calculate how many bits are present in the payload
      * chunk.
      *
-     * @param snir the SINR
+     * @param sinr the SINR
      * @param duration the duration of the chunk
      * @param txVector the TXVECTOR
      * @param staId the station ID of the PSDU (only used for MU)
      *
      * @return the success rate
      */
-    double CalculatePayloadChunkSuccessRate(double snir,
+    double CalculatePayloadChunkSuccessRate(scalar_t sinr,
                                             Time duration,
                                             const WifiTxVector& txVector,
                                             uint16_t staId = SU_STA_ID) const;
@@ -373,20 +374,20 @@ class InterferenceHelper : public Object
          * @param power the power
          * @param event causes this NI change
          */
-        NiChange(Watt_u power, Ptr<Event> event);
+        NiChange(Watt_t power, Ptr<Event> event);
 
         /**
          * Return the power
          *
          * @return the power
          */
-        Watt_u GetPower() const;
+        Watt_t GetPower() const;
         /**
          * Add a given amount of power.
          *
          * @param power the power to be added to the existing value
          */
-        void AddPower(Watt_u power);
+        void AddPower(Watt_t power);
         /**
          * Return the event causes the corresponding NI change
          *
@@ -395,7 +396,7 @@ class InterferenceHelper : public Object
         Ptr<Event> GetEvent() const;
 
       private:
-        Watt_u m_power;     ///< power
+        Watt_t m_power;     ///< power
         Ptr<Event> m_event; ///< event
     };
 
@@ -412,7 +413,7 @@ class InterferenceHelper : public Object
     /**
      * Map of first power per band
      */
-    using FirstPowerPerBand = std::map<WifiSpectrumBandInfo, Watt_u>;
+    using FirstPowerPerBand = std::map<WifiSpectrumBandInfo, Watt_t>;
 
     NiChangesPerBand m_niChanges; //!< NI Changes for each band
 
@@ -454,7 +455,7 @@ class InterferenceHelper : public Object
      *
      * @return noise and interference power
      */
-    Watt_u CalculateNoiseInterferenceW(Ptr<Event> event,
+    Watt_t CalculateNoiseInterferenceW(Ptr<Event> event,
                                        NiChangesPerBand& nis,
                                        const WifiSpectrumBandInfo& band) const;
 
@@ -468,7 +469,7 @@ class InterferenceHelper : public Object
      * @return the power of all other events preceding the event that belong to the same MU-MIMO
      * transmission
      */
-    Watt_u CalculateMuMimoPowerW(Ptr<const Event> event, const WifiSpectrumBandInfo& band) const;
+    Watt_t CalculateMuMimoPowerW(Ptr<const Event> event, const WifiSpectrumBandInfo& band) const;
 
     /**
      * Calculate the error rate of the given PHY payload only in the provided time
@@ -524,7 +525,7 @@ class InterferenceHelper : public Object
                                         const WifiSpectrumBandInfo& band,
                                         PhyHeaderSections phyHeaderSections) const;
 
-    double m_noiseFigure;                 //!< noise figure (linear)
+    scalar_t m_noiseFigure;               //!< noise figure (linear)
     Ptr<ErrorRateModel> m_errorRateModel; //!< error rate model
     uint8_t m_numRxAntennas;         //!< the number of RX antennas in the corresponding receiver
     FirstPowerPerBand m_firstPowers; //!< first power of each band

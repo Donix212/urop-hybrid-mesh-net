@@ -25,8 +25,8 @@
 namespace ns3
 {
 
-static const double SNR_PRECISION = 2;                         //!< precision for SNR
-static const double TABLED_BASED_ERROR_MODEL_PRECISION = 1e-5; //!< precision for PER
+static const double SNR_PRECISION = 2;                        //!< precision for SNR
+static const double TABLE_BASED_ERROR_MODEL_PRECISION = 1e-5; //!< precision for PER
 
 NS_OBJECT_ENSURE_REGISTERED(TableBasedErrorRateModel);
 
@@ -65,12 +65,12 @@ TableBasedErrorRateModel::~TableBasedErrorRateModel()
     m_fallbackErrorModel = nullptr;
 }
 
-dB_u
-TableBasedErrorRateModel::RoundSnr(dB_u snr, double precision) const
+dB_t
+TableBasedErrorRateModel::RoundSnr(dB_t snr, double precision) const
 {
     NS_LOG_FUNCTION(this << snr);
     const auto multiplier = std::round(std::pow(10.0, precision));
-    return dB_u{std::floor(snr * multiplier + 0.5) / multiplier};
+    return dB_t{std::floor(snr.to<double>() * multiplier + 0.5) / multiplier};
 }
 
 std::optional<uint8_t>
@@ -138,7 +138,7 @@ TableBasedErrorRateModel::GetMcsForMode(WifiMode mode)
 double
 TableBasedErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
                                                 const WifiTxVector& txVector,
-                                                double snr,
+                                                scalar_t snr,
                                                 uint64_t nbits,
                                                 uint8_t numRxAntennas,
                                                 WifiPpduField field,
@@ -146,7 +146,7 @@ TableBasedErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
 {
     NS_LOG_FUNCTION(this << mode << txVector << snr << nbits << +numRxAntennas << field << staId);
     const auto size = std::max<uint64_t>(1, (nbits / 8)); // in bytes
-    const auto roundedSnr = RoundSnr(RatioToDb(snr), SNR_PRECISION);
+    const auto roundedSnr = RoundSnr(dB_t{snr}, SNR_PRECISION);
     uint8_t mcs;
     if (auto ret = GetMcsForMode(mode); ret.has_value())
     {
@@ -199,8 +199,8 @@ TableBasedErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
         {
             double a = 0.0;
             double b = 0.0;
-            dB_u previousSnr{0.0};
-            dB_u nextSnr{0.0};
+            dB_t previousSnr{0.0};
+            dB_t nextSnr{0.0};
             for (auto i = itVector.cbegin(); i != itVector.cend(); ++i)
             {
                 if (i->first < roundedSnr)
@@ -215,7 +215,8 @@ TableBasedErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
                     break;
                 }
             }
-            per = a + (roundedSnr - previousSnr) * (b - a) / (nextSnr - previousSnr);
+            per = a + (roundedSnr - previousSnr).to<double>() * (b - a) /
+                          (nextSnr - previousSnr).to<double>();
         }
     }
     else
@@ -232,7 +233,7 @@ TableBasedErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
         per = (1.0 - std::pow((1 - per), (static_cast<double>(size) / tableSize)));
     }
 
-    if (per < TABLED_BASED_ERROR_MODEL_PRECISION)
+    if (per < TABLE_BASED_ERROR_MODEL_PRECISION)
     {
         per = 0.0;
     }

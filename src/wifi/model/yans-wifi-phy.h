@@ -70,7 +70,7 @@ class YansWifiPhy : public WifiPhy
      * @param [in] rxPowerDbm The received power of the PPDU in dBm.
      * @param [in] duration The duration of the PPDU signal.
      */
-    void TraceSignalArrival(Ptr<const WifiPpdu> ppdu, double rxPowerDbm, Time duration);
+    void TraceSignalArrival(Ptr<const WifiPpdu> ppdu, dBm_t rxPowerDbm, Time duration);
 
     /**
      * Callback invoked when the PHY model starts to process a signal

@@ -27,6 +27,7 @@
 #include "ns3/string.h"
 #include "ns3/test.h"
 #include "ns3/txop.h"
+#include "ns3/units.h"
 #include "ns3/waveform-generator.h"
 #include "ns3/wifi-mac-header.h"
 #include "ns3/wifi-net-device.h"
@@ -555,9 +556,9 @@ TestNonHtDuplicatePhyReception::DoRun()
                 bands.push_back(bandInfo);
                 auto spectrumInterference = Create<SpectrumModel>(bands);
                 auto interferencePsd = Create<SpectrumValue>(spectrumInterference);
-                Watt_u interferencePower{0.005}; // designed to make PHY headers reception
+                Watt_t interferencePower{0.005}; // designed to make PHY headers reception
                                                  // successful but payload reception fail
-                *interferencePsd = interferencePower / 10e6;
+                *interferencePsd = interferencePower.to<double>() / 10e6;
                 Simulator::Schedule(Seconds(index),
                                     &TestNonHtDuplicatePhyReception::GenerateInterference,
                                     this,
@@ -691,7 +692,7 @@ class TestMultipleCtsResponsesFromMuRts : public TestCase
     std::size_t m_countStaRxCtsFailure; ///< count the number of unsuccessfully received CTS frames
                                         ///< by the non-participating STA
 
-    dBm_u m_stasTxPower; ///< TX power configured for the STAs
+    dBm_t m_stasTxPower; ///< TX power configured for the STAs
 };
 
 TestMultipleCtsResponsesFromMuRts::TestMultipleCtsResponsesFromMuRts(
@@ -702,7 +703,7 @@ TestMultipleCtsResponsesFromMuRts::TestMultipleCtsResponsesFromMuRts(
       m_countApRxCtsFailure{0},
       m_countStaRxCtsSuccess{0},
       m_countStaRxCtsFailure{0},
-      m_stasTxPower(dBm_u{10})
+      m_stasTxPower(dBm_t{10})
 {
 }
 
@@ -785,9 +786,11 @@ TestMultipleCtsResponsesFromMuRts::RxCtsSuccess(std::size_t phyIndex,
     const auto isAp = (phyIndex == 0);
     if (isAp)
     {
-        NS_TEST_EXPECT_MSG_EQ_TOL(rxSignalInfo.rssi,
-                                  WToDbm(DbmToW(m_stasTxPower) * successfulCtsInfos.size()),
-                                  0.1,
+        // Convert m_stasTxPower to linear (watts) to perform the multiplication, and then
+        // convert the result back to logarithmic (dBm) units for the comparison
+        NS_TEST_EXPECT_MSG_EQ_TOL(dBm_t{rxSignalInfo.rssi},
+                                  dBm_t{Watt_t{m_stasTxPower} * successfulCtsInfos.size()},
+                                  dB_t{0.1},
                                   "RX power is not correct!");
     }
     auto expectedWidth =

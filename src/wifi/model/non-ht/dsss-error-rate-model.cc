@@ -25,8 +25,8 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("DsssErrorRateModel");
 
 #ifndef HAVE_GSL
-const double DsssErrorRateModel::WLAN_SIR_PERFECT = 10.0;
-const double DsssErrorRateModel::WLAN_SIR_IMPOSSIBLE = 0.1;
+constexpr scalar_t WLAN_SIR_PERFECT = 10.0;
+constexpr scalar_t WLAN_SIR_IMPOSSIBLE = 0.1;
 #endif
 
 double
@@ -38,30 +38,30 @@ DsssErrorRateModel::DqpskFunction(double x)
 }
 
 double
-DsssErrorRateModel::GetDsssDbpskSuccessRate(double sinr, uint64_t nbits)
+DsssErrorRateModel::GetDsssDbpskSuccessRate(scalar_t sinr, uint64_t nbits)
 {
     NS_LOG_FUNCTION_NOARGS();
-    double EbN0 = sinr * 22000000.0 / 1000000.0; // 1 bit per symbol with 1 MSPS
+    double EbN0 = sinr.to<double>() * 22000000.0 / 1000000.0; // 1 bit per symbol with 1 MSPS
     double ber = 0.5 * std::exp(-EbN0);
     return std::pow((1.0 - ber), static_cast<double>(nbits));
 }
 
 double
-DsssErrorRateModel::GetDsssDqpskSuccessRate(double sinr, uint64_t nbits)
+DsssErrorRateModel::GetDsssDqpskSuccessRate(scalar_t sinr, uint64_t nbits)
 {
     NS_LOG_FUNCTION_NOARGS();
-    double EbN0 = sinr * 22000000.0 / 1000000.0 / 2.0; // 2 bits per symbol, 1 MSPS
+    double EbN0 = sinr.to<double>() * 22000000.0 / 1000000.0 / 2.0; // 2 bits per symbol, 1 MSPS
     double ber = DqpskFunction(EbN0);
     return std::pow((1.0 - ber), static_cast<double>(nbits));
 }
 
 double
-DsssErrorRateModel::GetDsssDqpskCck5_5SuccessRate(double sinr, uint64_t nbits)
+DsssErrorRateModel::GetDsssDqpskCck5_5SuccessRate(scalar_t sinr, uint64_t nbits)
 {
     NS_LOG_FUNCTION_NOARGS();
 #ifdef HAVE_GSL
     // symbol error probability
-    double EbN0 = sinr * 22000000.0 / 1375000.0 / 4.0;
+    double EbN0 = sinr.to<double>() * 22000000.0 / 1375000.0 / 4.0;
     double sep = SymbolErrorProb16Cck(4.0 * EbN0 / 2.0);
     return std::min(1.0, std::pow(1.0 - sep, nbits / 4.0));
 #else
@@ -83,20 +83,20 @@ DsssErrorRateModel::GetDsssDqpskCck5_5SuccessRate(double sinr, uint64_t nbits)
         double a2 = 3.3092430025608586e-003;
         double a3 = 4.1654372361004000e-001;
         double a4 = 1.0288981434358866e+000;
-        ber = a1 * std::exp(-std::pow((sinr - a2) / a3, a4));
+        ber = a1 * std::exp(-std::pow((sinr.to<double>() - a2) / a3, a4));
     }
     return std::min(1.0, std::pow((1.0 - ber), static_cast<double>(nbits)));
 #endif
 }
 
 double
-DsssErrorRateModel::GetDsssDqpskCck11SuccessRate(double sinr, uint64_t nbits)
+DsssErrorRateModel::GetDsssDqpskCck11SuccessRate(scalar_t sinr, uint64_t nbits)
 {
     NS_LOG_FUNCTION_NOARGS();
 #ifdef HAVE_GSL
     NS_LOG_DEBUG("GSL enabled ");
     // symbol error probability
-    double EbN0 = sinr * 22000000.0 / 1375000.0 / 8.0;
+    double EbN0 = sinr.to<double>() * 22000000.0 / 1375000.0 / 8.0;
     double sep = SymbolErrorProb256Cck(8.0 * EbN0 / 2.0);
     return std::min(1.0, std::pow(1.0 - sep, nbits / 8.0));
 #else
@@ -120,8 +120,10 @@ DsssErrorRateModel::GetDsssDqpskCck11SuccessRate(double sinr, uint64_t nbits)
         double a4 = 1.0523316904502553e+000;
         double a5 = 3.0552298746496687e-001;
         double a6 = 2.2032715128698435e+000;
-        ber = (a1 * sinr * sinr + a2 * sinr + a3) /
-              (sinr * sinr * sinr + a4 * sinr * sinr + a5 * sinr + a6);
+        auto sinrValue = sinr.to<double>();
+        ber =
+            (a1 * sinrValue * sinrValue + a2 * sinrValue + a3) /
+            (sinrValue * sinrValue * sinrValue + a4 * sinrValue * sinrValue + a5 * sinrValue + a6);
     }
     return std::min(1.0, std::pow((1.0 - ber), static_cast<double>(nbits)));
 #endif

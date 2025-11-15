@@ -12,6 +12,7 @@
 #define DSSS_PHY_H
 
 #include "ns3/phy-entity.h"
+#include "ns3/units.h"
 
 #include <vector>
 
@@ -149,7 +150,7 @@ class DsssPhy : public PhyEntity
 
   private:
     PhyFieldRxStatus DoEndReceiveField(WifiPpduField field, Ptr<Event> event) override;
-    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_u txPower,
+    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_t txPower,
                                                  Ptr<const WifiPpdu> ppdu) const override;
     MHz_u GetRxChannelWidth(const WifiTxVector& txVector) const override;
     MHz_u GetMeasurementChannelWidth(const Ptr<const WifiPpdu> ppdu) const override;

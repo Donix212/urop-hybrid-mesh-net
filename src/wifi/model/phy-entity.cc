@@ -821,7 +821,7 @@ PhyEntity::GetReceptionStatus(Ptr<WifiMpdu> mpdu,
 
     WifiMode mode = event->GetPpdu()->GetTxVector().GetMode(staId);
     NS_LOG_DEBUG("rate=" << (mode.GetDataRate(event->GetPpdu()->GetTxVector(), staId))
-                         << ", SNR(dB)=" << RatioToDb(snrPer.snr) << ", PER=" << snrPer.per
+                         << ", SNR(dB)=" << dB_t{snrPer.snr} << ", PER=" << snrPer.per
                          << ", size=" << mpdu->GetSize()
                          << ", relativeStart = " << relativeMpduStart.As(Time::NS)
                          << ", duration = " << mpduDuration.As(Time::NS));
@@ -831,8 +831,10 @@ PhyEntity::GetReceptionStatus(Ptr<WifiMpdu> mpdu,
     // Receive error model is optional, if we have an error model and
     // it indicates that the packet is corrupt, drop the packet.
     SignalNoiseDbm signalNoise;
-    signalNoise.signal = WToDbm(event->GetRxPower(channelWidthAndBand.second));
-    signalNoise.noise = WToDbm(event->GetRxPower(channelWidthAndBand.second) / snrPer.snr);
+    signalNoise.signal = dBm_t{event->GetRxPower(channelWidthAndBand.second)}.to<double>();
+    signalNoise.noise =
+        dBm_t{event->GetRxPower(channelWidthAndBand.second).to<double>() / snrPer.snr.to<double>()}
+            .to<double>();
     if (GetRandomValue() > snrPer.per &&
         !(m_wifiPhy->m_postReceptionErrorModel &&
           m_wifiPhy->m_postReceptionErrorModel->IsCorrupt(mpdu->GetPacket()->Copy())))
@@ -1016,9 +1018,7 @@ PhyEntity::StartPreambleDetectionPeriod(Ptr<Event> event)
 {
     NS_LOG_FUNCTION(this << *event);
     const auto rxPower = GetRxPowerForPpdu(event);
-    NS_LOG_DEBUG("Sync to signal (power=" << (rxPower > Watt_u{0.0}
-                                                  ? std::to_string(WToDbm(rxPower)) + "dBm)"
-                                                  : std::to_string(rxPower) + "W)"));
+    NS_LOG_DEBUG("Sync to signal (power=" << dBm_t{rxPower} << ")");
     m_wifiPhy->m_interference->NotifyRxStart(
         m_wifiPhy->GetCurrentFrequencyRange()); // We need to notify it now so that it starts
                                                 // recording events
@@ -1040,7 +1040,7 @@ PhyEntity::EndPreambleDetectionPeriod(Ptr<Event> event)
     // calculate PER on the measurement channel for PHY headers
     const auto measurementChannelWidth = GetMeasurementChannelWidth(event->GetPpdu());
     auto measurementBand = GetPrimaryBand(measurementChannelWidth);
-    std::optional<Watt_u>
+    std::optional<Watt_t>
         maxRxPower; // in case current event may not be sent on measurement channel
     Ptr<Event> maxEvent;
     NS_ASSERT(!m_wifiPhy->m_currentPreambleEvents.empty());
@@ -1084,9 +1084,9 @@ PhyEntity::EndPreambleDetectionPeriod(Ptr<Event> event)
     NS_LOG_DEBUG("SNR(dB)=" << RatioToDb(snr) << " at end of preamble detection period");
 
     if (const auto power = m_wifiPhy->m_currentEvent->GetRxPower(measurementBand);
-        (!m_wifiPhy->m_preambleDetectionModel && maxRxPower && (*maxRxPower > Watt_u{0.0})) ||
-        (m_wifiPhy->m_preambleDetectionModel && power > Watt_u{0.0} &&
-         m_wifiPhy->m_preambleDetectionModel->IsPreambleDetected(WToDbm(power),
+        (!m_wifiPhy->m_preambleDetectionModel && maxRxPower && (*maxRxPower > Watt_t{0.0})) ||
+        (m_wifiPhy->m_preambleDetectionModel && power > Watt_t{0.0} &&
+         m_wifiPhy->m_preambleDetectionModel->IsPreambleDetected(dBm_t{power},
                                                                  snr,
                                                                  measurementChannelWidth)))
     {
@@ -1273,7 +1273,7 @@ PhyEntity::GetRandomValue() const
     return m_wifiPhy->m_random->GetValue();
 }
 
-Watt_u
+Watt_t
 PhyEntity::GetRxPowerForPpdu(Ptr<Event> event) const
 {
     return event->GetRxPower(GetPrimaryBand(GetMeasurementChannelWidth(event->GetPpdu())));
@@ -1310,7 +1310,7 @@ PhyEntity::GetRxChannelWidth(const WifiTxVector& txVector) const
     return std::min(m_wifiPhy->GetChannelWidth(), txVector.GetChannelWidth());
 }
 
-dBm_u
+dBm_t
 PhyEntity::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
                            WifiChannelListType /*channelType*/) const
 {
@@ -1318,9 +1318,9 @@ PhyEntity::GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
 }
 
 Time
-PhyEntity::GetDelayUntilCcaEnd(dBm_u threshold, const WifiSpectrumBandInfo& band)
+PhyEntity::GetDelayUntilCcaEnd(dBm_t threshold, const WifiSpectrumBandInfo& band)
 {
-    return m_wifiPhy->m_interference->GetEnergyDuration(DbmToW(threshold), band);
+    return m_wifiPhy->m_interference->GetEnergyDuration(Watt_t{threshold}, band);
 }
 
 void
@@ -1395,24 +1395,24 @@ PhyEntity::StartTx(Ptr<const WifiPpdu> ppdu)
     NS_LOG_FUNCTION(this << ppdu);
     auto txPower = m_wifiPhy->GetTxPowerForTransmission(ppdu) + m_wifiPhy->GetTxGain();
     auto txVector = ppdu->GetTxVector();
-    auto txPowerSpectrum = GetTxPowerSpectralDensity(DbmToW(txPower), ppdu);
+    auto txPowerSpectrum = GetTxPowerSpectralDensity(Watt_t{txPower}, ppdu);
     Transmit(ppdu->GetTxDuration(), ppdu, txPower, txPowerSpectrum, "transmission");
 }
 
 void
 PhyEntity::Transmit(Time txDuration,
                     Ptr<const WifiPpdu> ppdu,
-                    dBm_u txPower,
+                    dBm_t txPower,
                     Ptr<SpectrumValue> txPowerSpectrum,
                     const std::string& type)
 {
     NS_LOG_FUNCTION(this << txDuration << ppdu << txPower << type);
-    NS_LOG_DEBUG("Start " << type << ": signal power before antenna gain=" << txPower << "dBm");
+    NS_LOG_DEBUG("Start " << type << ": signal power before antenna gain=" << txPower);
     auto txParams = Create<WifiSpectrumSignalParameters>();
     txParams->duration = txDuration;
     txParams->psd = txPowerSpectrum;
     txParams->ppdu = ppdu;
-    NS_LOG_DEBUG("Starting " << type << " with power " << txPower << " dBm on channel "
+    NS_LOG_DEBUG("Starting " << type << " with power " << txPower << " on channel "
                              << +m_wifiPhy->GetChannelNumber() << " for "
                              << txParams->duration.As(Time::MS));
     NS_LOG_DEBUG("Starting " << type << " with integrated spectrum power "

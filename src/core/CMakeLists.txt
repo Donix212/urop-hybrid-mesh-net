@@ -173,6 +173,8 @@ set(source_files
     model/global-value.cc
     model/trace-source-accessor.cc
     model/config.cc
+    model/db.cc
+    model/dbm.cc
     model/callback.cc
     model/names.cc
     model/vector.cc
@@ -222,6 +224,8 @@ set(header_files
     model/callback.h
     model/command-line.h
     model/config.h
+    model/db.h
+    model/dbm.h
     model/default-deleter.h
     model/default-simulator-impl.h
     model/demangle.h
@@ -295,6 +299,8 @@ set(header_files
     model/type-traits.h
     model/uinteger.h
     model/uniform-random-bit-generator.h
+    model/units.h
+    model/units-nholthaus.h
     model/valgrind.h
     model/vector.h
     model/warnings.h
@@ -337,6 +343,7 @@ set(test_sources
     test/tuple-value-test-suite.cc
     test/type-id-test-suite.cc
     test/type-traits-test-suite.cc
+    test/units-test-suite.cc
     test/watchdog-test-suite.cc
     test/val-array-test-suite.cc
     test/matrix-array-test-suite.cc

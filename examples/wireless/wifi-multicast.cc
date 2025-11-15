@@ -10,7 +10,6 @@
 #include "ns3/command-line.h"
 #include "ns3/config.h"
 #include "ns3/data-rate.h"
-#include "ns3/double.h"
 #include "ns3/enum.h"
 #include "ns3/error-model.h"
 #include "ns3/inet-socket-address.h"

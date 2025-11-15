@@ -12,6 +12,7 @@
 #define OFDM_PHY_H
 
 #include "ns3/phy-entity.h"
+#include "ns3/units.h"
 
 /**
  * @file
@@ -76,7 +77,7 @@ class OfdmPhy : public PhyEntity
     Ptr<WifiPpdu> BuildPpdu(const WifiConstPsduMap& psdus,
                             const WifiTxVector& txVector,
                             Time ppduDuration) override;
-    dBm_u GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
+    dBm_t GetCcaThreshold(const Ptr<const WifiPpdu> ppdu,
                           WifiChannelListType channelType) const override;
     Ptr<const WifiPpdu> GetRxPpduFromTxPpdu(Ptr<const WifiPpdu> ppdu) override;
 
@@ -313,7 +314,7 @@ class OfdmPhy : public PhyEntity
 
   protected:
     PhyFieldRxStatus DoEndReceiveField(WifiPpduField field, Ptr<Event> event) override;
-    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_u txPower,
+    Ptr<SpectrumValue> GetTxPowerSpectralDensity(Watt_t txPower,
                                                  Ptr<const WifiPpdu> ppdu) const override;
     uint32_t GetMaxPsduSize() const override;
     MHz_u GetMeasurementChannelWidth(const Ptr<const WifiPpdu> ppdu) const override;

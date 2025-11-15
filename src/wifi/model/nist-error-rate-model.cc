@@ -38,32 +38,32 @@ NistErrorRateModel::NistErrorRateModel()
 }
 
 double
-NistErrorRateModel::GetBpskBer(double snr) const
+NistErrorRateModel::GetBpskBer(scalar_t snr) const
 {
     NS_LOG_FUNCTION(this << snr);
-    double z = std::sqrt(snr);
+    double z = std::sqrt(snr.to<double>());
     double ber = 0.5 * erfc(z);
     NS_LOG_INFO("bpsk snr=" << snr << " ber=" << ber);
     return ber;
 }
 
 double
-NistErrorRateModel::GetQpskBer(double snr) const
+NistErrorRateModel::GetQpskBer(scalar_t snr) const
 {
     NS_LOG_FUNCTION(this << snr);
-    double z = std::sqrt(snr / 2.0);
+    double z = std::sqrt(snr.to<double>() / 2.0);
     double ber = 0.5 * erfc(z);
     NS_LOG_INFO("qpsk snr=" << snr << " ber=" << ber);
     return ber;
 }
 
 double
-NistErrorRateModel::GetQamBer(uint16_t constellationSize, double snr) const
+NistErrorRateModel::GetQamBer(uint16_t constellationSize, scalar_t snr) const
 {
     NS_LOG_FUNCTION(this << constellationSize << snr);
     NS_ASSERT(std::bitset<16>(constellationSize).count() ==
               1); // constellationSize has to be a power of 2
-    double z = std::sqrt(snr / ((2 * (constellationSize - 1)) / 3));
+    double z = std::sqrt(snr.to<double>() / ((2 * (constellationSize - 1)) / 3));
     uint8_t bitsPerSymbol = std::sqrt(constellationSize);
     double ber = ((bitsPerSymbol - 1) / (bitsPerSymbol * std::log2(bitsPerSymbol))) * erfc(z);
     NS_LOG_INFO(constellationSize << "-QAM: snr=" << snr << " ber=" << ber);
@@ -71,7 +71,7 @@ NistErrorRateModel::GetQamBer(uint16_t constellationSize, double snr) const
 }
 
 double
-NistErrorRateModel::GetFecBpskBer(double snr, uint64_t nbits, uint8_t bValue) const
+NistErrorRateModel::GetFecBpskBer(scalar_t snr, uint64_t nbits, uint8_t bValue) const
 {
     NS_LOG_FUNCTION(this << snr << nbits << +bValue);
     double ber = GetBpskBer(snr);
@@ -86,7 +86,7 @@ NistErrorRateModel::GetFecBpskBer(double snr, uint64_t nbits, uint8_t bValue) co
 }
 
 double
-NistErrorRateModel::GetFecQpskBer(double snr, uint64_t nbits, uint8_t bValue) const
+NistErrorRateModel::GetFecQpskBer(scalar_t snr, uint64_t nbits, uint8_t bValue) const
 {
     NS_LOG_FUNCTION(this << snr << nbits << +bValue);
     double ber = GetQpskBer(snr);
@@ -153,7 +153,7 @@ NistErrorRateModel::CalculatePe(double p, uint8_t bValue) const
 
 double
 NistErrorRateModel::GetFecQamBer(uint16_t constellationSize,
-                                 double snr,
+                                 scalar_t snr,
                                  uint64_t nbits,
                                  uint8_t bValue) const
 {
@@ -193,7 +193,7 @@ NistErrorRateModel::GetBValue(WifiCodeRate codeRate) const
 double
 NistErrorRateModel::DoGetChunkSuccessRate(WifiMode mode,
                                           const WifiTxVector& txVector,
-                                          double snr,
+                                          scalar_t snr,
                                           uint64_t nbits,
                                           uint8_t numRxAntennas,
                                           WifiPpduField field,

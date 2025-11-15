@@ -12,6 +12,7 @@
 
 #include "ns3/nstime.h"
 #include "ns3/object.h"
+#include "ns3/units.h"
 #include "ns3/wifi-utils.h"
 
 #include <list>
@@ -92,8 +93,8 @@ class EhtConfiguration : public Object
     std::map<std::list<uint64_t>, std::list<uint64_t>>
         m_linkMappingDl; //!< TIDs-indexed Link Mapping for downlink
     std::map<std::list<uint64_t>, std::list<uint64_t>>
-        m_linkMappingUl;                 //!< TIDs-indexed Link Mapping for uplink
-    dB_u m_per20CcaSensitivityThreshold; //!< CCA threshold for Per 20MHz check
+        m_linkMappingUl;                  //!< TIDs-indexed Link Mapping for uplink
+    dBm_t m_per20CcaSensitivityThreshold; //!< CCA threshold for Per 20MHz check
 };
 
 } // namespace ns3

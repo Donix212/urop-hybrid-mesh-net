@@ -1115,7 +1115,7 @@ EmlsrIcfSentDuringMainPhySwitchTest::GenerateNoiseOnAllLinks(Ptr<WifiMac> mac, T
         const auto txPower = phy->GetPower(1) + phy->GetTxGain();
 
         auto psd = Create<SpectrumValue>(phy->GetCurrentInterface()->GetRxSpectrumModel());
-        *psd = txPower;
+        *psd = txPower.to<double>();
 
         auto spectrumSignalParams = Create<SpectrumSignalParameters>();
         spectrumSignalParams->duration = duration;
@@ -1149,7 +1149,7 @@ EmlsrIcfSentDuringMainPhySwitchTest::CheckInDeviceInterference(const std::string
         for (uint8_t i = 0; i < m_staMacs[0]->GetNLinks(); ++i)
         {
             auto energyDuration =
-                interferenceHelper->GetEnergyDuration(DbmToW(phy->GetCcaEdThreshold()),
+                interferenceHelper->GetEnergyDuration(Watt_t{phy->GetCcaEdThreshold()},
                                                       m_bands.at(i));
 
             NS_TEST_EXPECT_MSG_EQ(
