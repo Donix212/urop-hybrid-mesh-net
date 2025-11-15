@@ -530,7 +530,7 @@ class PacketTest : public TestCase
 };
 
 PacketTest::PacketTest()
-    : TestCase("Packet")
+    : TestCase("Packet: ")
 {
 }
 
@@ -548,6 +548,9 @@ PacketTest::DoCheck(Ptr<const Packet> p, uint32_t n, ...)
         expected.emplace_back(N, start, end);
     }
     va_end(ap);
+    static int testcount{0};
+    ++testcount;
+
 
     ByteTagIterator i = p->GetByteTagIterator();
     uint32_t j = 0;
@@ -567,8 +570,8 @@ PacketTest::DoCheck(Ptr<const Packet> p, uint32_t n, ...)
         delete tag;
         j++;
     }
-    NS_TEST_EXPECT_MSG_EQ(i.HasNext(), false, "Nothing left");
-    NS_TEST_EXPECT_MSG_EQ(j, expected.size(), "Size match");
+    NS_TEST_EXPECT_MSG_EQ(i.HasNext(), false, testcount << " Nothing left");
+    NS_TEST_EXPECT_MSG_EQ(j, expected.size(), testcount << " Size match");
 }
 
 void
@@ -586,6 +589,9 @@ PacketTest::DoCheckData(Ptr<const Packet> p, uint32_t n, ...)
         expected.emplace_back(N, start, end, data);
     }
     va_end(ap);
+    static int testcount{0};
+    ++testcount;
+
 
     ByteTagIterator i = p->GetByteTagIterator();
     uint32_t j = 0;
@@ -606,8 +612,8 @@ PacketTest::DoCheckData(Ptr<const Packet> p, uint32_t n, ...)
         delete tag;
         j++;
     }
-    NS_TEST_EXPECT_MSG_EQ(i.HasNext(), false, "Nothing left");
-    NS_TEST_EXPECT_MSG_EQ(j, expected.size(), "Size match");
+    NS_TEST_EXPECT_MSG_EQ(i.HasNext(), false, testcount << " Nothing left");
+    NS_TEST_EXPECT_MSG_EQ(j, expected.size(), testcount << " Size match");
 }
 
 void
@@ -616,31 +622,40 @@ PacketTest::DoRun()
     Ptr<Packet> pkt1 = Create<Packet>(reinterpret_cast<const uint8_t*>("hello"), 5);
     Ptr<Packet> pkt2 = Create<Packet>(reinterpret_cast<const uint8_t*>(" world"), 6);
     Ptr<Packet> packet = Create<Packet>();
+
+    std::cout << GetName() << "adding packets at end" << std::endl;
     packet->AddAtEnd(pkt1);
     packet->AddAtEnd(pkt2);
 
     NS_TEST_EXPECT_MSG_EQ(packet->GetSize(), 11, "trivial");
 
+    std::cout << GetName() << "copying packet data" << std::endl;
     auto buf = new uint8_t[packet->GetSize()];
     packet->CopyData(buf, packet->GetSize());
 
     std::string msg = std::string(reinterpret_cast<const char*>(buf), packet->GetSize());
     delete[] buf;
 
+    std::cout << GetName() << "expecting 'hello world' from adding packets at end" << std::endl;
     NS_TEST_EXPECT_MSG_EQ(msg, "hello world", "trivial");
 
     Ptr<const Packet> p = Create<Packet>(1000);
 
+    std::cout << GetName() << "byte tags: add" << std::endl;
     p->AddByteTag(ATestTag<1>());
     CHECK(p, 1, E(1, 0, 1000));
+    std::cout << GetName() << "byte tags: copy" << std::endl;
     Ptr<const Packet> copy = p->Copy();
     CHECK(copy, 1, E(1, 0, 1000));
 
+    std::cout << GetName() << "byte tags: add 2nd" << std::endl;
     p->AddByteTag(ATestTag<2>());
     CHECK(p, 2, E(1, 0, 1000), E(2, 0, 1000));
     CHECK(copy, 1, E(1, 0, 1000));
+    std::cout << GetName() << "byte tags: unmodified original" << std::endl;
 
     {
+        std::cout << GetName() << "assignment" << std::endl;
         Packet c0 = *copy;
         Packet c1 = *copy; // NOLINT(performance-unnecessary-copy-initialization)
         c0 = c1;
@@ -653,6 +668,7 @@ PacketTest::DoRun()
         CHECK(copy, 1, E(1, 0, 1000));
     }
 
+    std::cout << GetName() << "bytetags: fragmentation" << std::endl;
     Ptr<Packet> frag0 = p->CreateFragment(0, 10);
     Ptr<Packet> frag1 = p->CreateFragment(10, 90);
     Ptr<const Packet> frag2 = p->CreateFragment(100, 900);
@@ -688,6 +704,7 @@ PacketTest::DoRun()
           E(5, 100, 1000));
 
     // force caching a buffer of the right size.
+    std::cout << GetName() << "right-sized buffer" << std::endl;
     frag0 = Create<Packet>(1000);
     frag0->AddHeader(ATestHeader<10>());
     frag0 = nullptr;
@@ -703,6 +720,7 @@ PacketTest::DoRun()
     CHECK(frag0, 1, E(20, 10, 100));
 
     {
+        std::cout << GetName() << "add/remove header" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<20>());
         CHECK(tmp, 1, E(20, 0, 100));
@@ -714,6 +732,7 @@ PacketTest::DoRun()
         tmp->AddHeader(ATestHeader<10>());
         CHECK(tmp, 1, E(20, 10, 110));
 
+        std::cout << GetName() << "add/remove trailer" << std::endl;
         tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<20>());
         CHECK(tmp, 1, E(20, 0, 100));
@@ -727,6 +746,7 @@ PacketTest::DoRun()
     }
 
     {
+        std::cout << GetName() << "empty packet, remove at start/add at end" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<156>());
         tmp->AddByteTag(ATestTag<20>());
@@ -739,11 +759,13 @@ PacketTest::DoRun()
     }
 
     {
+        std::cout << GetName() << "empty packet" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddByteTag(ATestTag<20>());
         CHECK(tmp, 0, E(20, 0, 0));
     }
     {
+        std::cout << GetName() << "sized packet, remove at start/add at end" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(1000);
         tmp->AddByteTag(ATestTag<20>());
         CHECK(tmp, 1, E(20, 0, 1000));
@@ -757,6 +779,7 @@ PacketTest::DoRun()
     }
 
     {
+        std::cout << GetName() << "peek packet tags" << std::endl;
         Packet p;
         ATestTag<10> a;
         p.AddPacketTag(a);
@@ -789,6 +812,7 @@ PacketTest::DoRun()
 
     /* Test Serialization and Deserialization of Packet with PacketTag data */
     {
+        std::cout << GetName() << "serialization/deserialization with PacketTag data" << std::endl;
         Ptr<Packet> p1 = Create<Packet>(1000);
         ;
         ATestTag<10> a1(65);
@@ -821,6 +845,7 @@ PacketTest::DoRun()
 
     /* Test Serialization and Deserialization of Packet with ByteTag data */
     {
+        std::cout << GetName() << "serialization/deserialization with ByteTag data" << std::endl;
         Ptr<Packet> p1 = Create<Packet>(1000);
         ;
 
@@ -850,6 +875,7 @@ PacketTest::DoRun()
     }
 
     {
+        std::cout << GetName() << "bug 572" << std::endl;
         /// @internal
         /// See \bugid{572}
         Ptr<Packet> tmp = Create<Packet>(1000);
@@ -879,6 +905,7 @@ PacketTest::DoRun()
 
     /* Similar test case, but using trailer instead of header. */
     {
+        std::cout << GetName() << "reduce/increase size using trailer" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
@@ -903,6 +930,8 @@ PacketTest::DoRun()
 
     /* Similar test case, but using trailer instead of header. */
     {
+        std::cout << GetName() << "reduce/increase trailer size in presence of byte tag"
+                  << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
@@ -915,6 +944,7 @@ PacketTest::DoRun()
 
     /* Test AddPaddingAtEnd. */
     {
+        std::cout << GetName() << "add/remove trailer then padding" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
@@ -930,6 +960,7 @@ PacketTest::DoRun()
      * in virtual buffer
      */
     {
+        std::cout << GetName() << "remove/add padding at end" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<25>());
         CHECK(tmp, 1, E(25, 0, 100));
@@ -941,6 +972,7 @@ PacketTest::DoRun()
 
     /* Test ALargeTestTag */
     {
+        std::cout << GetName() << "large packet tag" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         ALargeTestTag a;
         tmp->AddPacketTag(a);
