@@ -335,9 +335,9 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
                         m_raEntries.find(sixDevice) == m_raEntries.end(),
                     "6LBR not configured on the interface");
 
-    Ptr<SixLowPanNdiscCache> sixCache =
-        DynamicCast<SixLowPanNdiscCache>(FindCache(interface->GetDevice()));
-    NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
+    Ptr<NdiscCache> sixCache =
+        DynamicCast<NdiscCache>(FindCache(interface->GetDevice()));
+    NS_ASSERT_MSG(sixCache, "Can not find a NdiscCache");
 
     // if the node is a 6LBR, send out the RA entry for the interface
     auto it = m_raEntries.find(sixDevice);
@@ -468,19 +468,18 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     // Update NDISC table with information of src
     Ptr<NdiscCache> cache = FindCache(sixDevice);
 
-    SixLowPanNdiscCache::SixLowPanEntry* entry = nullptr;
-    entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Lookup(target));
+    NdiscCache::Entry* sixEntry = nullptr;
+    sixEntry = static_cast<NdiscCache::Entry*>(cache->Lookup(target));
 
     // De-registration is not supported for now
-    if (!entry)
+    if (!sixEntry)
     {
-        entry = static_cast<SixLowPanNdiscCache::SixLowPanEntry*>(cache->Add(target));
+        sixEntry = static_cast<NdiscCache::Entry*>(cache->Add(target));
     }
-    entry->SetRouter(false);
-    entry->SetMacAddress(sllaoHdr.GetAddress());
-    entry->MarkReachable();
-    entry->StartReachableTimer();
-    entry->MarkRegistered(earoHdr.GetRegTime());
+    sixEntry->SetRouter(false);
+    sixEntry->SetMacAddress(sllaoHdr.GetAddress());
+    sixEntry->MarkReachable();
+    sixEntry->StartReachableTimer();
     if (!target.IsLinkLocal())
     {
         Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
@@ -598,16 +597,15 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     }
 
     // Update Neighbor Cache
-    Ptr<SixLowPanNdiscCache> sixCache = DynamicCast<SixLowPanNdiscCache>(FindCache(sixDevice));
-    NS_ASSERT_MSG(sixCache, "Can not find a SixLowPanNdiscCache");
-    SixLowPanNdiscCache::SixLowPanEntry* sixEntry = nullptr;
-    sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Lookup(src));
+    Ptr<NdiscCache> sixCache = DynamicCast<NdiscCache>(FindCache(sixDevice));
+    NS_ASSERT_MSG(sixCache, "Can not find a NdiscCache");
+    NdiscCache::Entry* sixEntry = nullptr;
+    sixEntry = dynamic_cast<NdiscCache::Entry*>(sixCache->Lookup(src));
     if (!sixEntry)
     {
-        sixEntry = dynamic_cast<SixLowPanNdiscCache::SixLowPanEntry*>(sixCache->Add(src));
+        sixEntry = dynamic_cast<NdiscCache::Entry*>(sixCache->Add(src));
         sixEntry->SetRouter(false);
         sixEntry->MarkStale(slla.GetAddress());
-        sixEntry->MarkTentative();
         NS_LOG_LOGIC("Tentative entry created from RS");
     }
     else if (sixEntry->GetMacAddress() != slla.GetAddress())
@@ -711,7 +709,7 @@ SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> inter
 {
     NS_LOG_FUNCTION(this << device << interface);
 
-    Ptr<SixLowPanNdiscCache> cache = CreateObject<SixLowPanNdiscCache>();
+    Ptr<NdiscCache> cache = CreateObject<NdiscCache>();
 
     cache->SetDevice(device, interface, this);
     device->AddLinkChangeCallback(MakeCallback(&NdiscCache::Flush, cache));
@@ -746,8 +744,8 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
         return false;
     }
 
-    NdiscCache::Entry* entry = cache->Lookup(dst);
-    if (!entry)
+    NdiscCache::Entry* sixEntry = cache->Lookup(dst);
+    if (!sixEntry)
     {
         // do not try to perform a multicast neighbor discovery.
         return false;

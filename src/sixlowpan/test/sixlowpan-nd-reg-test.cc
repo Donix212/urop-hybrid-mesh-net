@@ -237,31 +237,30 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream lladdrStream;
-                lladdrStream << "00-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
+                lladdrStream << "03-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
                              << std::hex << (i + 1);
 
                 // Global address entry (2001::200:ff:fe00:X)
                 oss << "2001::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
-                    << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
+                    << lladdrStream.str() << " REACHABLE" << std::endl;
             }
 
             // Then, output all link-local address entries
             for (uint32_t i = 1; i < numNodes; ++i)
             {
                 std::ostringstream lladdrStream;
-                lladdrStream << "00-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
+                lladdrStream << "03-06-00:00:00:00:00:" << std::setfill('0') << std::setw(2)
                              << std::hex << (i + 1);
 
                 // Link-local address entry (fe80::200:ff:fe00:X)
                 oss << "fe80::200:ff:fe00:" << std::hex << (i + 1) << " dev 2 lladdr "
-                    << lladdrStream.str() << " REACHABLE REGISTERED" << std::endl;
+                    << lladdrStream.str() << " REACHABLE" << std::endl;
             }
         }
         else // 6LN (Node 1+)
         {
             // 6LNs have entry to 6LBR (link-local only)
-            oss << "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
-                   "GARBAGE-COLLECTIBLE"
+            oss << "fe80::200:ff:fe00:1 dev 2 lladdr 03-06-00:00:00:00:00:01 REACHABLE"
                 << std::endl;
         }
     }
@@ -340,11 +339,10 @@ class SixLowPanNdOneLNRegTest : public TestCase
 
         constexpr auto expectedNdiscStream =
             "NDISC Cache of node 0 at time +5s\n"
-            "2001::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
-            "fe80::200:ff:fe00:2 dev 2 lladdr 00-06-00:00:00:00:00:02 REACHABLE REGISTERED\n"
+            "2001::200:ff:fe00:2 dev 2 lladdr 03-06-00:00:00:00:00:02 REACHABLE\n"
+            "fe80::200:ff:fe00:2 dev 2 lladdr 03-06-00:00:00:00:00:02 REACHABLE\n"
             "NDISC Cache of node 1 at time +5s\n"
-            "fe80::200:ff:fe00:1 dev 2 lladdr 00-06-00:00:00:00:00:01 REACHABLE "
-            "GARBAGE-COLLECTIBLE\n";
+            "fe80::200:ff:fe00:1 dev 2 lladdr 03-06-00:00:00:00:00:01 REACHABLE\n";
         NS_TEST_EXPECT_MSG_EQ(ndiscStream.str(), expectedNdiscStream, "NdiscCache is incorrect.");
 
         constexpr auto expectedRoutingTableStream =

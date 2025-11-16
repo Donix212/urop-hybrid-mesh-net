@@ -47,7 +47,7 @@ class SixLowPanNdNsEaroPacketTest : public TestCase
         Ipv6Address dst("fe80::2");
 
         Icmpv6NS nsHdr(src);
-        Mac64Address mac("00:11:22:33:44:55:66:77");
+        Mac48Address mac("00:11:22:33:44:55");
         Icmpv6OptionLinkLayerAddress slla(true, mac);
         Icmpv6OptionLinkLayerAddress tlla(false, mac);
         std::vector<uint8_t> rovr(16, 0xAB);
@@ -207,7 +207,7 @@ class SixLowPanNdRaPacketTest : public TestCase
                                                                      Time("10min"));
         raEntry->AddPrefix(newPrefix);
 
-        Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
+        Icmpv6OptionLinkLayerAddress slla(true, Mac48Address("00:11:22:33:44:55"));
 
         Icmpv6OptionSixLowPanCapabilityIndication cio;
         cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
@@ -262,7 +262,7 @@ class SixLowPanNdRsPacketTest : public TestCase
         Ipv6Address src("fe80::1");
         Ipv6Address dst("ff02::2");
         Icmpv6RS rs;
-        Icmpv6OptionLinkLayerAddress slla(true, Mac64Address("00:11:22:33:44:55:66:77"));
+        Icmpv6OptionLinkLayerAddress slla(true, Mac48Address("00:11:22:33:44:55"));
         Icmpv6OptionSixLowPanCapabilityIndication cio;
         cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::E);
         cio.SetOption(Icmpv6OptionSixLowPanCapabilityIndication::B);
