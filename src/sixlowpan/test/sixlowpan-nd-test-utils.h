@@ -5,13 +5,13 @@
 #ifndef SIXLOWPAN_ND_TEST_UTILS_H
 #define SIXLOWPAN_ND_TEST_UTILS_H
 
-#include <string>
-#include <vector>
-#include <list>
-#include <utility>
-
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
+
+#include <list>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ns3
 {

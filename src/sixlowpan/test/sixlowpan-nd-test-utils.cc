@@ -31,12 +31,12 @@ GenerateRoutingTableOutput(uint32_t numNodes, Time time)
 
         if (nodeId == 0)
         {
-            oss << std::setw(31) << std::left << "::1/128" << std::setw(27) << std::left << "::"
-                << std::setw(5) << std::left << "UH" << std::setw(4) << std::left << "0"
+            oss << std::setw(31) << std::left << "::1/128" << std::setw(27) << std::left
+                << "::" << std::setw(5) << std::left << "UH" << std::setw(4) << std::left << "0"
                 << "-   -   0" << std::endl;
 
-            oss << std::setw(31) << std::left << "fe80::/64" << std::setw(27) << std::left << "::"
-                << std::setw(5) << std::left << "U" << std::setw(4) << std::left << "0"
+            oss << std::setw(31) << std::left << "fe80::/64" << std::setw(27) << std::left
+                << "::" << std::setw(5) << std::left << "U" << std::setw(4) << std::left << "0"
                 << "-   -   1" << std::endl;
 
             for (uint32_t i = 1; i < numNodes; ++i)
@@ -47,19 +47,19 @@ GenerateRoutingTableOutput(uint32_t numNodes, Time time)
                 std::ostringstream gwStream;
                 gwStream << "fe80::200:ff:fe00:" << std::hex << (i + 1);
 
-                oss << std::setw(31) << std::left << destStream.str() << std::setw(27)
-                    << std::left << gwStream.str() << std::setw(5) << std::left << "UH"
-                    << std::setw(4) << std::left << "0" << "-   -   1" << std::endl;
+                oss << std::setw(31) << std::left << destStream.str() << std::setw(27) << std::left
+                    << gwStream.str() << std::setw(5) << std::left << "UH" << std::setw(4)
+                    << std::left << "0" << "-   -   1" << std::endl;
             }
         }
         else
         {
-            oss << std::setw(31) << std::left << "::1/128" << std::setw(27) << std::left << "::"
-                << std::setw(5) << std::left << "UH" << std::setw(4) << std::left << "0"
+            oss << std::setw(31) << std::left << "::1/128" << std::setw(27) << std::left
+                << "::" << std::setw(5) << std::left << "UH" << std::setw(4) << std::left << "0"
                 << "-   -   0" << std::endl;
 
-            oss << std::setw(31) << std::left << "fe80::/64" << std::setw(27) << std::left << "::"
-                << std::setw(5) << std::left << "U" << std::setw(4) << std::left << "0"
+            oss << std::setw(31) << std::left << "fe80::/64" << std::setw(27) << std::left
+                << "::" << std::setw(5) << std::left << "U" << std::setw(4) << std::left << "0"
                 << "-   -   1" << std::endl;
 
             oss << std::setw(31) << std::left << "::/0" << std::setw(27) << std::left
@@ -116,7 +116,8 @@ SortRoutingTableString(std::string routingTable)
                 oss << route << std::endl;
             }
 
-            std::sort(hostRoutes.begin(), hostRoutes.end(),
+            std::sort(hostRoutes.begin(),
+                      hostRoutes.end(),
                       [](const std::pair<int, std::string>& a,
                          const std::pair<int, std::string>& b) { return a.first < b.first; });
 
@@ -232,9 +233,11 @@ GenerateBindingTableOutput(uint32_t numNodes, Time time)
                 entries.push_back({linkLocalIpv6Addr, llEntry.str()});
             }
 
-            std::sort(entries.begin(), entries.end(),
-                      [](const std::pair<Ipv6Address, std::string>& a,
-                         const std::pair<Ipv6Address, std::string>& b) { return a.first < b.first; });
+            std::sort(
+                entries.begin(),
+                entries.end(),
+                [](const std::pair<Ipv6Address, std::string>& a,
+                   const std::pair<Ipv6Address, std::string>& b) { return a.first < b.first; });
 
             for (const auto& entry : entries)
             {
