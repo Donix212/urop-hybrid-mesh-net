@@ -200,7 +200,8 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
                                              uint8_t tid,
                                              Ptr<NetDevice> sixLowPanNetDevice)
 {
-    NS_LOG_FUNCTION(this << addrToRegister << dst << dstMac << time << rovr << tid << sixLowPanNetDevice);
+    NS_LOG_FUNCTION(this << addrToRegister << dst << dstMac << time << rovr << tid
+                         << sixLowPanNetDevice);
 
     NS_ASSERT_MSG(!dst.IsMulticast(),
                   "Destination address must not be a multicast address in EARO messages.");
@@ -215,7 +216,8 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
     Icmpv6OptionLinkLayerAddress slla(true, sixLowPanNetDevice->GetAddress());
 
     Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
-    Ipv6Address src = ipv6->GetAddress(ipv6->GetInterfaceForDevice(sixLowPanNetDevice), 0).GetAddress();
+    Ipv6Address src =
+        ipv6->GetAddress(ipv6->GetInterfaceForDevice(sixLowPanNetDevice), 0).GetAddress();
 
     // Build NS EARO Packet
     Ptr<Packet> p = MakeNsEaroPacket(src, dst, nsHdr, slla, tlla, earo);
@@ -244,7 +246,8 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
                                              Ptr<NetDevice> sixLowPanNetDevice,
                                              uint8_t status)
 {
-    NS_LOG_FUNCTION(this << src << dst << target << time << rovr << tid << sixLowPanNetDevice << status);
+    NS_LOG_FUNCTION(this << src << dst << target << time << rovr << tid << sixLowPanNetDevice
+                         << status);
 
     // Build the NA Header
     Icmpv6NA naHdr;
@@ -330,13 +333,13 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
 {
     NS_LOG_FUNCTION(this << src << dst << interface);
 
-    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
+        DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ABORT_MSG_IF(m_nodeRole == SixLowPanBorderRouter &&
                         m_raEntries.find(sixLowPanNetDevice) == m_raEntries.end(),
                     "6LBR not configured on the interface");
 
-    Ptr<NdiscCache> neighbourCache =
-        DynamicCast<NdiscCache>(FindCache(interface->GetDevice()));
+    Ptr<NdiscCache> neighbourCache = DynamicCast<NdiscCache>(FindCache(interface->GetDevice()));
     NS_ASSERT_MSG(neighbourCache, "Can not find a NdiscCache");
 
     // if the node is a 6LBR, send out the RA entry for the interface
@@ -423,7 +426,8 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanNS");
 
-    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
+        DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
         sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
@@ -499,7 +503,7 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
             Ipv6Prefix(128),
             src,
             ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-    } 
+    }
 
     SendSixLowPanNaWithEaro(dst,
                             src,
@@ -583,7 +587,8 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
         return;
     }
 
-    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
+        DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
         sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
@@ -639,7 +644,8 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         m_rsRetransmissionCount = 0;
     }
 
-    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice =
+        DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
         sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
@@ -680,7 +686,8 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         for (const auto& iter : pios)
         {
             Ipv6Address gaddr =
-                Ipv6Address::MakeAutoconfiguredAddress(sixLowPanNetDevice->GetAddress(), iter.GetPrefix());
+                Ipv6Address::MakeAutoconfiguredAddress(sixLowPanNetDevice->GetAddress(),
+                                                       iter.GetPrefix());
             pending.addressesToBeregistered.push_back(gaddr);
             pending.prefixForAddress[gaddr] = iter;
         }

@@ -428,10 +428,10 @@ class SixLowPanNdOneLNRegTest : public TestCase
                               Ipv6Address("2001::200:ff:fe00:2"),
                               "Registered address does not match expected value.");
 
-    // Validate binding table output for Node 0 and Node 1
-    NS_TEST_ASSERT_MSG_EQ((bindingTableStream.str()),
-                  GenerateBindingTableOutput(2, Seconds(5)),
-                  "BindingTable does not match expected output.");
+        // Validate binding table output for Node 0 and Node 1
+        NS_TEST_ASSERT_MSG_EQ((bindingTableStream.str()),
+                              GenerateBindingTableOutput(2, Seconds(5)),
+                              "BindingTable does not match expected output.");
     }
 
   private:
