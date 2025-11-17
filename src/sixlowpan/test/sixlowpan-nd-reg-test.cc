@@ -6,6 +6,8 @@
  * Author: Boh Jie Qi <jieqiboh5836@gmail.com>
  */
 
+#include "sixlowpan-nd-test-utils.h"
+
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/internet-stack-helper.h"
@@ -19,7 +21,6 @@
 #include <limits>
 #include <regex>
 #include <string>
-#include "sixlowpan-nd-test-utils.h"
 
 namespace ns3
 {
