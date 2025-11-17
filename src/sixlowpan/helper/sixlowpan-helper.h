@@ -9,9 +9,9 @@
 #ifndef SIXLOWPAN_HELPER_H
 #define SIXLOWPAN_HELPER_H
 
+#include "ns3/core-module.h"
 #include "ns3/net-device-container.h"
 #include "ns3/object-factory.h"
-#include "ns3/core-module.h"
 #include "ns3/output-stream-wrapper.h"
 
 #include <string>
@@ -205,7 +205,6 @@ class SixLowPanHelper
     static void PrintBindingTable(Ptr<Node> node,
                                   Ptr<OutputStreamWrapper> stream,
                                   Time::Unit unit = Time::S);
-
 
   private:
     /**
