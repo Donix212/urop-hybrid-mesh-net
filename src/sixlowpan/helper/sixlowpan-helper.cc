@@ -18,6 +18,7 @@
 #include "ns3/names.h"
 #include "ns3/net-device.h"
 #include "ns3/node.h"
+#include "ns3/node-list.h"
 #include "ns3/sixlowpan-nd-protocol.h"
 #include "ns3/sixlowpan-net-device.h"
 #include "ns3/uinteger.h"
@@ -342,6 +343,63 @@ SixLowPanHelper::InitializeRovr(Ptr<Node> node)
 
     NS_LOG_INFO("ROVR for node " << node->GetId() << " initialized to all zeros");
     sixLowPanNdProtocol->SetRovr(rovr);
+}
+
+void
+SixLowPanHelper::PrintBindingTableAllAt(Time printTime,
+                                        Ptr<OutputStreamWrapper> stream,
+                                        Time::Unit unit /* = Time::S */)
+{
+    for (uint32_t i = 0; i < NodeList::GetNNodes(); i++)
+    {
+        Ptr<Node> node = NodeList::GetNode(i);
+        Simulator::Schedule(printTime, &SixLowPanHelper::PrintBindingTable, node, stream, unit);
+    }
+}
+
+void
+SixLowPanHelper::PrintBindingTable(Ptr<Node> node,
+                                   Ptr<OutputStreamWrapper> stream,
+                                   Time::Unit unit /* = Time::S */)
+{
+    Ptr<SixLowPanNdProtocol> protocol = node->GetObject<SixLowPanNdProtocol>();
+    if (protocol)
+    {
+        std::ostream* os = stream->GetStream();
+
+        *os << "6LoWPAN-ND Binding Table of node ";
+        std::string found = Names::FindName(node);
+        if (!Names::FindName(node).empty())
+        {
+            *os << found;
+        }
+        else
+        {
+            *os << static_cast<int>(node->GetId());
+        }
+        *os << " at time " << Simulator::Now().As(unit) << "\n";
+
+        // Get all binding tables for this node
+        Ptr<Ipv6L3Protocol> ipv6 = node->GetObject<Ipv6L3Protocol>();
+        if (ipv6)
+        {
+            for (uint32_t i = 0; i < ipv6->GetNInterfaces(); i++)
+            {
+                Ptr<Ipv6Interface> interface = ipv6->GetInterface(i);
+                Ptr<SixLowPanNdBindingTable> bindingTable = protocol->FindBindingTable(interface);
+                if (bindingTable)
+                {
+                    *os << "Interface " << i << ":\n";
+                    bindingTable->PrintBindingTable(stream);
+                }
+            }
+        }
+    }
+    else
+    {
+        std::ostream* os = stream->GetStream();
+        *os << "Node " << node->GetId() << " does not have 6LoWPAN-ND protocol installed\n";
+    }
 }
 
 } // namespace ns3

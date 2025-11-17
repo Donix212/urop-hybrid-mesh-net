@@ -11,6 +11,8 @@
 
 #include "ns3/net-device-container.h"
 #include "ns3/object-factory.h"
+#include "ns3/core-module.h"
+#include "ns3/output-stream-wrapper.h"
 
 #include <string>
 
@@ -183,6 +185,27 @@ class SixLowPanHelper
      */
     void SetCapabilityIndication(const Ptr<NetDevice> nd,
                                  Icmpv6OptionSixLowPanCapabilityIndication capability);
+
+    /**
+     * @brief Print the binding table of all nodes at a specific time.
+     * @param printTime the time at which the binding table is printed.
+     * @param stream the output stream wrapper used for printing.
+     * @param unit the time unit to be used in the report.
+     */
+    static void PrintBindingTableAllAt(Time printTime,
+                                       Ptr<OutputStreamWrapper> stream,
+                                       Time::Unit unit = Time::S);
+
+    /**
+     * @brief Print the binding table of a node.
+     * @param node the node for which the binding table is printed.
+     * @param stream the output stream wrapper used for printing.
+     * @param unit the time unit to be used in the report.
+     */
+    static void PrintBindingTable(Ptr<Node> node,
+                                  Ptr<OutputStreamWrapper> stream,
+                                  Time::Unit unit = Time::S);
+
 
   private:
     /**

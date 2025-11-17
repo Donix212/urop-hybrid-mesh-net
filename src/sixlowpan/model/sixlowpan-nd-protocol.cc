@@ -198,9 +198,9 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
                                              uint16_t time,
                                              const std::vector<uint8_t>& rovr,
                                              uint8_t tid,
-                                             Ptr<NetDevice> sixDevice)
+                                             Ptr<NetDevice> sixLowPanNetDevice)
 {
-    NS_LOG_FUNCTION(this << addrToRegister << dst << dstMac << time << rovr << tid << sixDevice);
+    NS_LOG_FUNCTION(this << addrToRegister << dst << dstMac << time << rovr << tid << sixLowPanNetDevice);
 
     NS_ASSERT_MSG(!dst.IsMulticast(),
                   "Destination address must not be a multicast address in EARO messages.");
@@ -211,11 +211,11 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
     // Build EARO option
     // EARO (request) + SLLAO + TLLAO (SLLAO and TLLAO must be identical, RFC 8505, section 5.6)
     Icmpv6OptionSixLowPanExtendedAddressRegistration earo(time, rovr, tid);
-    Icmpv6OptionLinkLayerAddress tlla(false, sixDevice->GetAddress());
-    Icmpv6OptionLinkLayerAddress slla(true, sixDevice->GetAddress());
+    Icmpv6OptionLinkLayerAddress tlla(false, sixLowPanNetDevice->GetAddress());
+    Icmpv6OptionLinkLayerAddress slla(true, sixLowPanNetDevice->GetAddress());
 
     Ptr<Ipv6L3Protocol> ipv6 = m_node->GetObject<Ipv6L3Protocol>();
-    Ipv6Address src = ipv6->GetAddress(ipv6->GetInterfaceForDevice(sixDevice), 0).GetAddress();
+    Ipv6Address src = ipv6->GetAddress(ipv6->GetInterfaceForDevice(sixLowPanNetDevice), 0).GetAddress();
 
     // Build NS EARO Packet
     Ptr<Packet> p = MakeNsEaroPacket(src, dst, nsHdr, slla, tlla, earo);
@@ -231,7 +231,7 @@ SixLowPanNdProtocol::SendSixLowPanNsWithEaro(Ipv6Address addrToRegister,
     Ptr<Packet> pkt = p->Copy();
     pkt->AddHeader(hdr);
 
-    sixDevice->Send(pkt, dstMac, Ipv6L3Protocol::PROT_NUMBER);
+    sixLowPanNetDevice->Send(pkt, dstMac, Ipv6L3Protocol::PROT_NUMBER);
 }
 
 void
@@ -241,10 +241,10 @@ SixLowPanNdProtocol::SendSixLowPanNaWithEaro(Ipv6Address src,
                                              uint16_t time,
                                              const std::vector<uint8_t>& rovr,
                                              uint8_t tid,
-                                             Ptr<NetDevice> sixDevice,
+                                             Ptr<NetDevice> sixLowPanNetDevice,
                                              uint8_t status)
 {
-    NS_LOG_FUNCTION(this << src << dst << target << time << rovr << tid << sixDevice << status);
+    NS_LOG_FUNCTION(this << src << dst << target << time << rovr << tid << sixLowPanNetDevice << status);
 
     // Build the NA Header
     Icmpv6NA naHdr;
@@ -330,18 +330,18 @@ SixLowPanNdProtocol::SendSixLowPanRA(Ipv6Address src, Ipv6Address dst, Ptr<Ipv6I
 {
     NS_LOG_FUNCTION(this << src << dst << interface);
 
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ABORT_MSG_IF(m_nodeRole == SixLowPanBorderRouter &&
-                        m_raEntries.find(sixDevice) == m_raEntries.end(),
+                        m_raEntries.find(sixLowPanNetDevice) == m_raEntries.end(),
                     "6LBR not configured on the interface");
 
-    Ptr<NdiscCache> sixCache =
+    Ptr<NdiscCache> neighbourCache =
         DynamicCast<NdiscCache>(FindCache(interface->GetDevice()));
-    NS_ASSERT_MSG(sixCache, "Can not find a NdiscCache");
+    NS_ASSERT_MSG(neighbourCache, "Can not find a NdiscCache");
 
     // if the node is a 6LBR, send out the RA entry for the interface
-    auto it = m_raEntries.find(sixDevice);
-    if (m_raEntries.find(sixDevice) != m_raEntries.end())
+    auto it = m_raEntries.find(sixLowPanNetDevice);
+    if (m_raEntries.find(sixLowPanNetDevice) != m_raEntries.end())
     {
         Ptr<SixLowPanRaEntry> raEntry = it->second;
 
@@ -423,9 +423,9 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
     NS_LOG_FUNCTION(this << pkt << src << dst << interface);
     NS_LOG_INFO("HandleSixLowPanNS");
 
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
-        sixDevice,
+        sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
     if (src == Ipv6Address::GetAny())
@@ -466,20 +466,31 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
 
     // NS (EARO)
     // Update NDISC table with information of src
-    Ptr<NdiscCache> cache = FindCache(sixDevice);
+    Ptr<SixLowPanNdBindingTable> bindingTable = FindBindingTable(interface);
+    NS_ASSERT_MSG(bindingTable, "Can not find a SixLowPanNdBindingTable");
+    auto btEntry = bindingTable->Lookup(target);
 
-    NdiscCache::Entry* sixEntry = nullptr;
-    sixEntry = static_cast<NdiscCache::Entry*>(cache->Lookup(target));
+    Ptr<NdiscCache> cache = FindCache(sixLowPanNetDevice);
+    NdiscCache::Entry* ncEntry = nullptr;
+    ncEntry = static_cast<NdiscCache::Entry*>(cache->Lookup(target));
 
-    // De-registration is not supported for now
-    if (!sixEntry)
+    // Update / Create BT entry
+    if (!btEntry)
     {
-        sixEntry = static_cast<NdiscCache::Entry*>(cache->Add(target));
+        btEntry = bindingTable->Add(target);
     }
-    sixEntry->SetRouter(false);
-    sixEntry->SetMacAddress(sllaoHdr.GetAddress());
-    sixEntry->MarkReachable();
-    sixEntry->StartReachableTimer();
+    btEntry->MarkReachable(earoHdr.GetRegTime());
+
+    // Update / Create NC entry
+    if (!ncEntry)
+    {
+        ncEntry = static_cast<NdiscCache::Entry*>(cache->Add(target));
+    }
+    ncEntry->SetRouter(false);
+    ncEntry->SetMacAddress(sllaoHdr.GetAddress());
+    ncEntry->MarkReachable();
+    ncEntry->StartReachableTimer();
+
     if (!target.IsLinkLocal())
     {
         Ptr<Ipv6L3Protocol> ipv6l3Protocol = m_node->GetObject<Ipv6L3Protocol>();
@@ -488,18 +499,16 @@ SixLowPanNdProtocol::HandleSixLowPanNS(Ptr<Packet> pkt,
             Ipv6Prefix(128),
             src,
             ipv6l3Protocol->GetInterfaceForDevice(interface->GetDevice()));
-        // Forward the registration to the 6LBR.
-        // Unless we're the 6LBR, of course.
-    }
+    } 
 
     SendSixLowPanNaWithEaro(dst,
                             src,
                             target,
                             earoHdr.GetRegTime(),
                             earoHdr.GetRovr(),
-                            earoHdr.GetTransactionId(),
-                            sixDevice,
-                            earoHdr.GetStatus());
+                            0,
+                            sixLowPanNetDevice,
+                            0);
 }
 
 void
@@ -574,9 +583,9 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
         return;
     }
 
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
-        sixDevice,
+        sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
     if (src == Ipv6Address::GetAny())
@@ -597,20 +606,19 @@ SixLowPanNdProtocol::HandleSixLowPanRS(Ptr<Packet> packet,
     }
 
     // Update Neighbor Cache
-    Ptr<NdiscCache> sixCache = DynamicCast<NdiscCache>(FindCache(sixDevice));
-    NS_ASSERT_MSG(sixCache, "Can not find a NdiscCache");
-    NdiscCache::Entry* sixEntry = nullptr;
-    sixEntry = dynamic_cast<NdiscCache::Entry*>(sixCache->Lookup(src));
-    if (!sixEntry)
+    Ptr<NdiscCache> neighbourCache = DynamicCast<NdiscCache>(FindCache(sixLowPanNetDevice));
+    NS_ASSERT_MSG(neighbourCache, "Can not find a NdiscCache");
+    NdiscCache::Entry* ncEntry = nullptr;
+    ncEntry = dynamic_cast<NdiscCache::Entry*>(neighbourCache->Lookup(src));
+    if (!ncEntry)
     {
-        sixEntry = dynamic_cast<NdiscCache::Entry*>(sixCache->Add(src));
-        sixEntry->SetRouter(false);
-        sixEntry->MarkStale(slla.GetAddress());
-        NS_LOG_LOGIC("Tentative entry created from RS");
+        ncEntry = dynamic_cast<NdiscCache::Entry*>(neighbourCache->Add(src));
+        ncEntry->SetRouter(false);
+        ncEntry->MarkStale(slla.GetAddress());
     }
-    else if (sixEntry->GetMacAddress() != slla.GetAddress())
+    else if (ncEntry->GetMacAddress() != slla.GetAddress())
     {
-        sixEntry->MarkStale(slla.GetAddress());
+        ncEntry->MarkStale(slla.GetAddress());
     }
 
     SendSixLowPanRA(interface->GetLinkLocalAddress().GetAddress(), src, interface);
@@ -631,9 +639,9 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         m_rsRetransmissionCount = 0;
     }
 
-    Ptr<SixLowPanNetDevice> sixDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
+    Ptr<SixLowPanNetDevice> sixLowPanNetDevice = DynamicCast<SixLowPanNetDevice>(interface->GetDevice());
     NS_ASSERT_MSG(
-        sixDevice,
+        sixLowPanNetDevice,
         "SixLowPanNdProtocol cannot be installed on device different from SixLowPanNetDevice");
 
     // Decode the RA
@@ -672,7 +680,7 @@ SixLowPanNdProtocol::HandleSixLowPanRA(Ptr<Packet> packet,
         for (const auto& iter : pios)
         {
             Ipv6Address gaddr =
-                Ipv6Address::MakeAutoconfiguredAddress(sixDevice->GetAddress(), iter.GetPrefix());
+                Ipv6Address::MakeAutoconfiguredAddress(sixLowPanNetDevice->GetAddress(), iter.GetPrefix());
             pending.addressesToBeregistered.push_back(gaddr);
             pending.prefixForAddress[gaddr] = iter;
         }
@@ -744,8 +752,8 @@ SixLowPanNdProtocol::Lookup(Ptr<Packet> p,
         return false;
     }
 
-    NdiscCache::Entry* sixEntry = cache->Lookup(dst);
-    if (!sixEntry)
+    NdiscCache::Entry* ncEntry = cache->Lookup(dst);
+    if (!ncEntry)
     {
         // do not try to perform a multicast neighbor discovery.
         return false;
