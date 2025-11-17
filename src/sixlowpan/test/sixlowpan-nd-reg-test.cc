@@ -268,6 +268,66 @@ GenerateNdiscCacheOutput(uint32_t numNodes, Time time)
     return oss.str();
 }
 
+std::string
+GenerateBindingTableOutput(uint32_t numNodes, Time time)
+{
+    std::ostringstream oss;
+
+    // Generate binding table for each node
+    for (uint32_t nodeId = 0; nodeId < numNodes; ++nodeId)
+    {
+        // Node header - match the exact format from PrintBindingTable
+        oss << "6LoWPAN-ND Binding Table of node " << std::dec << nodeId << " at time "
+            << "+" << time.GetSeconds() << "s" << std::endl;
+
+        if (nodeId == 0) // 6LBR (Node 0)
+        {
+            oss << "Interface 1:" << std::endl;
+            // 6LBR has binding entries for each registered 6LN (nodes 1 through numNodes-1)
+            std::vector<std::pair<Ipv6Address, std::string>> entries;
+
+            for (uint32_t i = 1; i < numNodes; ++i)
+            {
+                std::ostringstream globalAddr, linkLocalAddr;
+                globalAddr << "2001::200:ff:fe00:" << std::hex
+                           << (i + 1); // Node 1 -> :2, Node 2 -> :3, etc.
+                linkLocalAddr << "fe80::200:ff:fe00:" << std::hex << (i + 1);
+
+                Ipv6Address globalIpv6Addr(globalAddr.str().c_str());
+                Ipv6Address linkLocalIpv6Addr(linkLocalAddr.str().c_str());
+
+                // Global address entry
+                std::ostringstream globalEntry;
+                globalEntry << globalAddr.str() << " addr=:: routeraddr=:: REACHABLE";
+
+                // Link-local address entry
+                std::ostringstream llEntry;
+                llEntry << linkLocalAddr.str() << " addr=:: routeraddr=:: REACHABLE";
+
+                entries.push_back({globalIpv6Addr, globalEntry.str()});
+                entries.push_back({linkLocalIpv6Addr, llEntry.str()});
+            }
+
+            // Sort entries by IPv6 address (global addresses come before link-local due to lexical
+            // ordering)
+            std::sort(
+                entries.begin(),
+                entries.end(),
+                [](const std::pair<Ipv6Address, std::string>& a,
+                   const std::pair<Ipv6Address, std::string>& b) { return a.first < b.first; });
+
+            // Output sorted entries
+            for (const auto& entry : entries)
+            {
+                oss << entry.second << std::endl;
+            }
+        }
+        // else: 6LNs (Node 1+) have empty binding tables - no entries to add
+    }
+
+    return oss.str();
+}
+
 /**
  * @ingroup sixlowpan-nd-reg-tests
  *
@@ -324,9 +384,13 @@ class SixLowPanNdOneLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(Seconds(5), outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(Seconds(5), outputRoutingTableStream);
+        SixLowPanHelper::PrintBindingTableAllAt(Seconds(5), outputBindingTableStream);
 
         Ptr<SixLowPanNdProtocol> nd = lnNode->GetObject<SixLowPanNdProtocol>();
         nd->TraceConnectWithoutContext(
@@ -363,6 +427,11 @@ class SixLowPanNdOneLNRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(registeredAddress,
                               Ipv6Address("2001::200:ff:fe00:2"),
                               "Registered address does not match expected value.");
+
+    // Validate binding table output for Node 0 and Node 1
+    NS_TEST_ASSERT_MSG_EQ((bindingTableStream.str()),
+                  GenerateBindingTableOutput(2, Seconds(5)),
+                  "BindingTable does not match expected output.");
     }
 
   private:
@@ -430,9 +499,13 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
 
         Simulator::Stop(duration);
         Simulator::Run();
@@ -445,6 +518,10 @@ class SixLowPanNdFiveLNRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ((bindingTableStream.str()),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "BindingTable does not match expected output.");
     }
 };
 
@@ -494,9 +571,13 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
 
         Simulator::Stop(duration);
         Simulator::Run();
@@ -509,6 +590,10 @@ class SixLowPanNdFifteenLNRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ((bindingTableStream.str()),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "BindingTable does not match expected output.");
     }
 };
 
@@ -558,9 +643,13 @@ class SixLowPanNdTwentyLNRegTest : public TestCase
         std::ostringstream routingTableStream;
         Ptr<OutputStreamWrapper> outputRoutingTableStream =
             Create<OutputStreamWrapper>(&routingTableStream);
+        std::ostringstream bindingTableStream;
+        Ptr<OutputStreamWrapper> outputBindingTableStream =
+            Create<OutputStreamWrapper>(&bindingTableStream);
 
         Ipv6RoutingHelper::PrintNeighborCacheAllAt(duration, outputNdiscStream);
         Ipv6RoutingHelper::PrintRoutingTableAllAt(duration, outputRoutingTableStream);
+        SixLowPanHelper::PrintBindingTableAllAt(duration, outputBindingTableStream);
 
         Simulator::Stop(duration);
         Simulator::Run();
@@ -573,6 +662,10 @@ class SixLowPanNdTwentyLNRegTest : public TestCase
         NS_TEST_ASSERT_MSG_EQ(SortRoutingTableString(routingTableStream.str()),
                               GenerateRoutingTableOutput(numLns + 1, duration),
                               "RoutingTable does not match expected output.");
+
+        NS_TEST_ASSERT_MSG_EQ((bindingTableStream.str()),
+                              GenerateBindingTableOutput(numLns + 1, duration),
+                              "BindingTable does not match expected output.");
     }
 };
 
