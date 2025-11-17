@@ -41,6 +41,7 @@
 #include "ns3/uinteger.h"
 
 #include <cmath>
+#include <iomanip>
 
 namespace ns3
 {
@@ -380,7 +381,6 @@ SixLowPanNdProtocol::Receive(Ptr<Packet> packet,
                              Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << *packet << header << interface);
-    // Note: no local ipv6 variable needed here
 
     uint8_t type;
     packet->CopyData(&type, sizeof(type));

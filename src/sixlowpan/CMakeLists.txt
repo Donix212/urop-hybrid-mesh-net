@@ -38,4 +38,5 @@ build_lib(
     test/sixlowpan-nd-packet-test.cc
     test/sixlowpan-nd-reg-test.cc
     test/sixlowpan-nd-binding-table-test.cc
+    test/sixlowpan-nd-test-utils.cc
 )
