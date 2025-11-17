@@ -22,13 +22,6 @@
 #include "des-metrics.h"
 #endif
 
-#include <cmath>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <list>
-#include <vector>
-
 /**
  * @file
  * @ingroup simulator

@@ -17,7 +17,6 @@
 #include "synchronizer.h"
 #include "wall-clock-synchronizer.h"
 
-#include <cmath>
 #include <mutex>
 #include <thread>
 

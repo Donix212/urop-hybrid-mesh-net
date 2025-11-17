@@ -23,7 +23,6 @@
 #include "rng-stream.h"
 #include "string.h"
 
-#include <algorithm> // upper_bound
 #include <cmath>
 #include <iostream>
 #include <numbers>

@@ -14,7 +14,6 @@
 #include "log.h"
 
 #include <cstdlib> // itoa(), system ()
-#include <cstring>
 #include <sstream>
 #include <string>
 

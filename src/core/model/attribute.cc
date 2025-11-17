@@ -10,8 +10,6 @@
 #include "log.h"
 #include "string.h"
 
-#include <sstream>
-
 /**
  * @file
  * @ingroup attributes

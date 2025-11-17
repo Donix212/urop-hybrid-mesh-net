@@ -10,7 +10,6 @@
 #include "log.h"
 
 #include <cmath>
-#include <sstream>
 #include <tuple>
 
 /**

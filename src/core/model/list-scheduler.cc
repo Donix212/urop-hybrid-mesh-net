@@ -12,7 +12,6 @@
 #include "log.h"
 
 #include <string>
-#include <utility>
 
 /**
  * @file
