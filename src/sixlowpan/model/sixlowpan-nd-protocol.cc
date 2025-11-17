@@ -41,7 +41,6 @@
 #include "ns3/uinteger.h"
 
 #include <cmath>
-#include <iomanip>
 
 namespace ns3
 {
@@ -381,7 +380,7 @@ SixLowPanNdProtocol::Receive(Ptr<Packet> packet,
                              Ptr<Ipv6Interface> interface)
 {
     NS_LOG_FUNCTION(this << *packet << header << interface);
-    Ptr<Ipv6> ipv6 = GetNode()->GetObject<Ipv6>();
+    // Note: no local ipv6 variable needed here
 
     uint8_t type;
     packet->CopyData(&type, sizeof(type));
@@ -730,11 +729,15 @@ SixLowPanNdProtocol::CreateCache(Ptr<NetDevice> device, Ptr<Ipv6Interface> inter
     device->AddLinkChangeCallback(MakeCallback(&NdiscCache::Flush, cache));
 
     // in case a cache was previously created by Icmpv6L4Protocol, remove it.
-    for (auto iter = m_cacheList.begin(); iter != m_cacheList.end(); iter++)
+    for (auto iter = m_cacheList.begin(); iter != m_cacheList.end();)
     {
         if ((*iter)->GetDevice() == device)
         {
-            m_cacheList.erase(iter);
+            iter = m_cacheList.erase(iter); // erase returns next iterator
+        }
+        else
+        {
+            ++iter;
         }
     }
     m_cacheList.emplace_back(cache);
@@ -1073,7 +1076,6 @@ SixLowPanNdProtocol::SetInterfaceAs6lbr(Ptr<SixLowPanNetDevice> device)
     Ptr<SixLowPanRaEntry> newRa = Create<SixLowPanRaEntry>();
     newRa->SetManagedFlag(false);
     newRa->SetHomeAgentFlag(false);
-    newRa->SetOtherConfigFlag(false);
     newRa->SetOtherConfigFlag(false);
     newRa->SetCurHopLimit(0);  // unspecified by this router
     newRa->SetRetransTimer(0); // unspecified by this router
