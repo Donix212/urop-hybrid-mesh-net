@@ -9,7 +9,6 @@
 #include "list-scheduler.h"
 
 #include "assert.h"
-#include "event-impl.h"
 #include "log.h"
 
 #include <string>

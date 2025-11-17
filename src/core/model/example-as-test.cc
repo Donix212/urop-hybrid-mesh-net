@@ -9,7 +9,6 @@
 #include "example-as-test.h"
 
 #include "ascii-test.h"
-#include "assert.h"
 #include "environment-variable.h"
 #include "fatal-error.h"
 #include "log.h"

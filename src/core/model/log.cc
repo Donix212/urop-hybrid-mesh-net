@@ -12,8 +12,6 @@
 #include "fatal-error.h"
 #include "string.h"
 
-#include "ns3/core-config.h"
-
 #include <algorithm> // transform
 #include <cstring>   // strlen
 #include <iostream>

@@ -22,7 +22,6 @@
 #include "rng-seed-manager.h"
 #include "rng-stream.h"
 #include "string.h"
-#include "uinteger.h"
 
 #include <algorithm> // upper_bound
 #include <cmath>

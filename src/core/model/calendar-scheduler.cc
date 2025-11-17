@@ -11,7 +11,6 @@
 
 #include "assert.h"
 #include "boolean.h"
-#include "event-impl.h"
 #include "log.h"
 #include "type-id.h"
 
