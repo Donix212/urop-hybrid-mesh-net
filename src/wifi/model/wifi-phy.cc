@@ -502,7 +502,7 @@ WifiPhy::RegisterListener(const std::shared_ptr<WifiPhyListener>& listener)
     if (IsInitialized())
     {
         // provide CCA busy information upon registering a PHY listener
-        SwitchMaybeToCcaBusy(nullptr);
+        SwitchMaybeToCcaBusy();
     }
 }
 
@@ -536,6 +536,10 @@ WifiPhy::SetCcaEdThreshold(dBm_u threshold)
 {
     NS_LOG_FUNCTION(this << threshold);
     m_ccaEdThreshold = threshold;
+    if (IsInitialized())
+    {
+        SwitchMaybeToCcaBusy();
+    }
 }
 
 dBm_u
@@ -1306,7 +1310,10 @@ WifiPhy::DoChannelSwitch()
          * state are added to the event list and are employed later to figure
          * out the state of the medium after the switching.
          */
-        SwitchMaybeToCcaBusy(nullptr);
+        Simulator::Schedule(GetChannelSwitchDelay(), [=, this]() {
+            NS_LOG_DEBUG("Channel switching completed: update CCA indication");
+            SwitchMaybeToCcaBusy();
+        });
     }
 }
 
@@ -2217,6 +2224,10 @@ void
 WifiPhy::SwitchMaybeToCcaBusy(const Ptr<const WifiPpdu> ppdu /* = nullptr */)
 {
     NS_LOG_FUNCTION(this);
+    if (!IsStateIdle() && !IsStateCcaBusy())
+    {
+        return;
+    }
     GetLatestPhyEntity()->SwitchMaybeToCcaBusy(ppdu);
 }
 
