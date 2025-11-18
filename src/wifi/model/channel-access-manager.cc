@@ -21,6 +21,7 @@
 #include <sstream>
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT std::clog << "[link=" << +m_linkId << "] "
 
 namespace ns3

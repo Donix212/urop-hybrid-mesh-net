@@ -34,6 +34,7 @@
 #include "ns3/simulator.h"
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT WIFI_TXOP_NS_LOG_APPEND_CONTEXT
 
 namespace ns3

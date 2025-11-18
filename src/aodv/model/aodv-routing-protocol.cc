@@ -34,6 +34,7 @@
 #include <limits>
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File-local log context string */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     if (m_ipv4)                                                                                    \
     {                                                                                              \

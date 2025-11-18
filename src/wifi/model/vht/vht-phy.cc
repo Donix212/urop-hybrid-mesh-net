@@ -21,6 +21,7 @@
 #include "ns3/wifi-utils.h"
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT WIFI_PHY_NS_LOG_APPEND_CONTEXT(m_wifiPhy)
 
 namespace ns3
