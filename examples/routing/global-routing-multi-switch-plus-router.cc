@@ -237,7 +237,18 @@ using namespace ns3;
 // ########################################################################
 NS_LOG_COMPONENT_DEFINE("GlobalRoutingMultiSwitchPlusRouter");
 
-#define vssearch(loc, vec) std::find((vec).begin(), (vec).end(), (loc)) != (vec).end()
+/**
+ * Check if a vector contains a given string.
+ *
+ * @param str String to search.
+ * @param vector Vector of strings where
+ * @return Whether the vector contains the given string.
+ */
+inline bool
+VectorContainsString(const std::string& str, const std::vector<std::string>& vector)
+{
+    return std::find(vector.begin(), vector.end(), str) != vector.end();
+}
 
 int
 main(int argc, char* argv[])
@@ -329,7 +340,7 @@ main(int argc, char* argv[])
         {
             std::string substr;
             getline(sStream, substr, ',');
-            if (vssearch(substr, pcapTaps))
+            if (VectorContainsString(substr, pcapTaps))
             {
                 pcapLocationVec.push_back(substr);
             }
@@ -707,7 +718,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // multi-switch UDP echo client
     // - - - - - - - - - - - - - -
-    if (vssearch("t2", pcapLocationVec))
+    if (VectorContainsString("t2", pcapLocationVec))
     {
         csmaX.EnablePcap("t2.pcap", topLanIpDevices.Get(1), true, true);
     }
@@ -715,7 +726,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // multi-switch UDP echo server
     // - - - - - - - - - - - - - -
-    if (vssearch("b2", pcapLocationVec))
+    if (VectorContainsString("b2", pcapLocationVec))
     {
         csmaY.EnablePcap("b2.pcap", botLanIpDevices.Get(1), true, true);
     }
@@ -723,7 +734,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // single-switch UDP echo client
     // - - - - - - - - - - - - - -
-    if (vssearch("b3", pcapLocationVec))
+    if (VectorContainsString("b3", pcapLocationVec))
     {
         csmaY.EnablePcap("b3.pcap", botLanIpDevices.Get(2), true, true);
     }
@@ -731,7 +742,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // single-switch UDP echo server
     // - - - - - - - - - - - - - -
-    if (vssearch("t3", pcapLocationVec))
+    if (VectorContainsString("t3", pcapLocationVec))
     {
         csmaX.EnablePcap("t3.pcap", topLanIpDevices.Get(2), true, true);
     }
@@ -739,7 +750,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // top router, LAN side
     // - - - - - - - - - - - - - -
-    if (vssearch("trlan", pcapLocationVec))
+    if (VectorContainsString("trlan", pcapLocationVec))
     {
         csmaY.EnablePcap("trlan.pcap", topLanIpDevices.Get(0), true, true);
     }
@@ -747,7 +758,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // bottom router, LAN side
     // - - - - - - - - - - - - - -
-    if (vssearch("brlan", pcapLocationVec))
+    if (VectorContainsString("brlan", pcapLocationVec))
     {
         csmaX.EnablePcap("brlan.pcap", botLanIpDevices.Get(0), true, true);
     }
@@ -755,7 +766,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // top router, WAN side
     // - - - - - - - - - - - - - -
-    if (vssearch("trwan", pcapLocationVec))
+    if (VectorContainsString("trwan", pcapLocationVec))
     {
         p2p.EnablePcap("trwan.pcap", link_tr_br.Get(0), true, true);
     }
@@ -763,7 +774,7 @@ main(int argc, char* argv[])
     // - - - - - - - - - - - - - -
     // bottom router, WAN side
     // - - - - - - - - - - - - - -
-    if (vssearch("brwan", pcapLocationVec))
+    if (VectorContainsString("brwan", pcapLocationVec))
     {
         p2p.EnablePcap("brwan.pcap", link_tr_br.Get(1), true, true);
     }

@@ -48,8 +48,23 @@ enum PowerSource
  *
  * List the requested timeout values in minutes
  */
-static const double RequestedTimeoutField
-    [15]{0.166667, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
+constexpr std::array<double, 15> RequestedTimeoutField{
+    0.166667,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    4096,
+    8192,
+    16384,
+};
 
 /**
  * @ingroup zigbee

@@ -11,6 +11,8 @@
 
 #include "ns3/log.h"
 
+#include <array>
+
 namespace ns3
 {
 
@@ -28,7 +30,7 @@ struct FrHardDownlinkDefaultConfiguration
 };
 
 /// The hard downlink default configuration
-static const FrHardDownlinkDefaultConfiguration g_frHardDownlinkDefaultConfiguration[]{
+constexpr std::array<FrHardDownlinkDefaultConfiguration, 15> g_frHardDownlinkDefaultConfiguration{{
     {1, 15, 0, 4},
     {2, 15, 4, 4},
     {3, 15, 8, 6},
@@ -44,7 +46,7 @@ static const FrHardDownlinkDefaultConfiguration g_frHardDownlinkDefaultConfigura
     {1, 100, 0, 32},
     {2, 100, 32, 32},
     {3, 100, 64, 36},
-};
+}};
 
 /// FrHardUplinkDefaultConfiguration structure
 struct FrHardUplinkDefaultConfiguration
@@ -56,7 +58,7 @@ struct FrHardUplinkDefaultConfiguration
 };
 
 /// The hard uplink default configuration
-static const FrHardUplinkDefaultConfiguration g_frHardUplinkDefaultConfiguration[]{
+constexpr std::array<FrHardUplinkDefaultConfiguration, 15> g_frHardUplinkDefaultConfiguration{{
     {1, 15, 0, 5},
     {2, 15, 5, 5},
     {3, 15, 10, 5},
@@ -72,14 +74,7 @@ static const FrHardUplinkDefaultConfiguration g_frHardUplinkDefaultConfiguration
     {1, 100, 0, 32},
     {2, 100, 32, 32},
     {3, 100, 64, 36},
-};
-
-/** @returns number of downlink configurations */
-const uint16_t NUM_DOWNLINK_CONFS(sizeof(g_frHardDownlinkDefaultConfiguration) /
-                                  sizeof(FrHardDownlinkDefaultConfiguration));
-/** @returns number of uplink configurations */
-const uint16_t NUM_UPLINK_CONFS(sizeof(g_frHardUplinkDefaultConfiguration) /
-                                sizeof(FrHardUplinkDefaultConfiguration));
+}};
 
 LteFrHardAlgorithm::LteFrHardAlgorithm()
     : m_ffrSapUser(nullptr),
@@ -202,13 +197,12 @@ void
 LteFrHardAlgorithm::SetDownlinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_DOWNLINK_CONFS; ++i)
+    for (const auto& config : g_frHardDownlinkDefaultConfiguration)
     {
-        if ((g_frHardDownlinkDefaultConfiguration[i].m_cellId == cellId) &&
-            g_frHardDownlinkDefaultConfiguration[i].m_dlBandwidth == m_dlBandwidth)
+        if (config.m_cellId == cellId && config.m_dlBandwidth == m_dlBandwidth)
         {
-            m_dlOffset = g_frHardDownlinkDefaultConfiguration[i].m_dlOffset;
-            m_dlSubBand = g_frHardDownlinkDefaultConfiguration[i].m_dlSubBand;
+            m_dlOffset = config.m_dlOffset;
+            m_dlSubBand = config.m_dlSubBand;
         }
     }
 }
@@ -217,13 +211,12 @@ void
 LteFrHardAlgorithm::SetUplinkConfiguration(uint16_t cellId, uint8_t bandwidth)
 {
     NS_LOG_FUNCTION(this);
-    for (uint16_t i = 0; i < NUM_UPLINK_CONFS; ++i)
+    for (const auto& config : g_frHardUplinkDefaultConfiguration)
     {
-        if ((g_frHardUplinkDefaultConfiguration[i].m_cellId == cellId) &&
-            g_frHardUplinkDefaultConfiguration[i].m_ulBandwidth == m_ulBandwidth)
+        if (config.m_cellId == cellId && config.m_ulBandwidth == m_ulBandwidth)
         {
-            m_ulOffset = g_frHardUplinkDefaultConfiguration[i].m_ulOffset;
-            m_ulSubBand = g_frHardUplinkDefaultConfiguration[i].m_ulSubBand;
+            m_ulOffset = config.m_ulOffset;
+            m_ulSubBand = config.m_ulSubBand;
         }
     }
 }

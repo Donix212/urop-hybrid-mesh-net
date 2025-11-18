@@ -44,7 +44,7 @@ namespace ns3
 
 NS_LOG_COMPONENT_DEFINE("EmuFdNetDeviceHelper");
 
-#define EMU_MAGIC 65867
+constexpr uint32_t EMU_MAGIC = 65867;
 
 EmuFdNetDeviceHelper::EmuFdNetDeviceHelper()
 {

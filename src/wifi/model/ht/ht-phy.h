@@ -24,7 +24,7 @@ namespace ns3
 /**
  * This defines the BSS membership value for HT PHY.
  */
-#define HT_PHY 127
+constexpr uint64_t HT_PHY = 127;
 
 /// Maximum number of supported NSS by HT PHY
 constexpr uint8_t HT_MAX_NSS = 4;

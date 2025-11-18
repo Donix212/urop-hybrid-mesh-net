@@ -161,7 +161,7 @@ static const HighSpeedImportantValues highSpeedImportantValues[]{
     {79517, 26, /*  0.10 */}, {84035, 25, /*  0.10 */}, {89053, 24, /*  0.10 */},
 };
 
-#define HIGHSPEED_VALUES_N 71
+constexpr uint32_t HIGHSPEED_VALUES_N = 71;
 
 /**
  * @ingroup internet-test

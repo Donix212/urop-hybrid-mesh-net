@@ -20,6 +20,7 @@
 #include "ns3/string.h"
 
 #include <algorithm>
+#include <array>
 #include <cfloat>
 #include <set>
 
@@ -29,7 +30,7 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("PssFfMacScheduler");
 
 /// PSS type 0 allocation RBG (see table 7.1.6.1-1 of 36.213)
-static const int PssType0AllocationRbg[4] = {
+constexpr std::array<int, 4> PssType0AllocationRbg{
     10,  // RBG size 1
     26,  // RBG size 2
     63,  // RBG size 3

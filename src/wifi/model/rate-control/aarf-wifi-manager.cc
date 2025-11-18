@@ -11,8 +11,7 @@
 #include "ns3/log.h"
 #include "ns3/wifi-tx-vector.h"
 
-#define Min(a, b) ((a < b) ? a : b)
-#define Max(a, b) ((a > b) ? a : b)
+#include <algorithm>
 
 namespace ns3
 {
@@ -158,9 +157,11 @@ AarfWifiManager::DoReportDataFailed(WifiRemoteStation* st)
         {
             // need recovery fallback
             station->m_successThreshold =
-                (int)(Min(station->m_successThreshold * m_successK, m_maxSuccessThreshold));
+                std::min(static_cast<uint32_t>(station->m_successThreshold * m_successK),
+                         m_maxSuccessThreshold);
             station->m_timerTimeout =
-                (int)(Max(station->m_timerTimeout * m_timerK, m_minSuccessThreshold));
+                std::max(static_cast<uint32_t>(station->m_timerTimeout * m_timerK),
+                         m_minSuccessThreshold);
             if (station->m_rate != 0)
             {
                 station->m_rate--;

@@ -254,6 +254,7 @@ EhtPhy::InitializeModes()
 WifiMode
 EhtPhy::GetEhtMcs(uint8_t index)
 {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CASE(x)                                                                                    \
     case x:                                                                                        \
         return GetEhtMcs##x();
@@ -281,6 +282,7 @@ EhtPhy::GetEhtMcs(uint8_t index)
 #undef CASE
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GET_EHT_MCS(x)                                                                             \
     WifiMode EhtPhy::GetEhtMcs##x()                                                                \
     {                                                                                              \

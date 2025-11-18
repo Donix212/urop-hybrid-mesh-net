@@ -13,13 +13,15 @@
 #include "ns3/log.h"
 #include "ns3/uinteger.h"
 
+#include <array>
+
 namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("LteFfrAlgorithm");
 
 /// Type 0 RBG allocation (see table 7.1.6.1-1 of 3GPP TS 36.213)
-static const int Type0AllocationRbg[4] = {
+constexpr std::array<int, 4> Type0AllocationRbg{
     10,  // RBG size 1
     26,  // RBG size 2
     63,  // RBG size 3

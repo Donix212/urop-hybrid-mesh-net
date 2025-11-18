@@ -13,9 +13,9 @@
 #include <limits>
 #include <vector>
 
-#define USE_FREE_LIST 1
-#define FREE_LIST_SIZE 1000
-#define OFFSET_MAX (std::numeric_limits<int32_t>::max())
+#define USE_FREE_LIST
+constexpr uint32_t FREE_LIST_SIZE = 1000;
+constexpr int32_t OFFSET_MAX = std::numeric_limits<int32_t>::max();
 
 namespace ns3
 {

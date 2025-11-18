@@ -8,6 +8,7 @@
 #include "ns3/pcap-file.h"
 #include "ns3/test.h"
 
+#include <array>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -1099,22 +1100,22 @@ ReadFileTestCase::DoTeardown()
 {
 }
 
-static const uint32_t N_KNOWN_PACKETS = 6;
-static const uint32_t N_PACKET_BYTES = 16;
+constexpr uint32_t N_KNOWN_PACKETS = 6;
+constexpr uint32_t N_PACKET_BYTES = 16;
 
 /**
  * PCAP Packet structure
  */
 struct PacketEntry
 {
-    uint32_t tsSec;                //!< Time (seconds part)
-    uint32_t tsUsec;               //!< Time (micro seconds part)
-    uint32_t inclLen;              //!< Length of the entry in the PCAP
-    uint32_t origLen;              //!< length of the original packet
-    uint16_t data[N_PACKET_BYTES]; //!< Packet data
+    uint32_t tsSec;                            //!< Time (seconds part)
+    uint32_t tsUsec;                           //!< Time (micro seconds part)
+    uint32_t inclLen;                          //!< Length of the entry in the PCAP
+    uint32_t origLen;                          //!< length of the original packet
+    std::array<uint16_t, N_PACKET_BYTES> data; //!< Packet data
 };
 
-static const PacketEntry knownPackets[] = {
+constexpr std::array<PacketEntry, 6> knownPackets{{
     {2,
      3696,
      46,
@@ -1235,7 +1236,7 @@ static const PacketEntry knownPackets[] = {
       0x0000,
       0x0000,
       0x0000}},
-};
+}};
 
 void
 ReadFileTestCase::DoRun()
@@ -1352,7 +1353,7 @@ DiffTestCase::DoRun()
     {
         const PacketEntry& p = knownPackets[i];
 
-        f.Write(p.tsSec, p.tsUsec, (const uint8_t*)p.data, p.origLen);
+        f.Write(p.tsSec, p.tsUsec, (const uint8_t*)p.data.data(), p.origLen);
         NS_TEST_EXPECT_MSG_EQ(f.Fail(), false, "Write must not fail");
     }
     f.Close();

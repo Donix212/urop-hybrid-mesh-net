@@ -17,6 +17,8 @@
 #include <filesystem>
 #include <stdint.h>
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @brief Test that a pair of new/reference ascii files are equal
  *
@@ -43,5 +45,7 @@
             NS_TEST_EXPECT_MSG_EQ(fileExists, true, "File " << expectedFilename << " not found");  \
         }                                                                                          \
     } while (false)
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif /* ASCII_TEST_H */

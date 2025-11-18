@@ -35,7 +35,7 @@
 #include "ns3/vector.h"
 
 /// Minimum IPv6 MTU, as defined by \RFC{2460}
-#define IPV6_MIN_MTU 1280
+constexpr uint16_t IPV6_MIN_MTU = 1280;
 
 namespace ns3
 {

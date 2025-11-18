@@ -781,11 +781,11 @@ class DsrRouteCache : public Object
     bool m_isLinkCache; ///< Check if the route is using path cache or link cache
 
     bool m_subRoute; ///< Check if save the sub route entries or not
-/**
- * The link cache to update all the link status, bi-link is two link for link is a struct
- * when the weight is calculated we normalized them: 100*weight/max of Weight
- */
-#define MAXWEIGHT 0xFFFF;
+    /**
+     * The link cache to update all the link status, bi-link is two link for link is a struct
+     * when the weight is calculated we normalized them: 100*weight/max of Weight
+     */
+    static constexpr auto MAXWEIGHT{0xFFFF};
     /**
      * Current network graph state for this node, double is weight, which is calculated by the node
      * information and link information, any time some changes of link cache and node cache change

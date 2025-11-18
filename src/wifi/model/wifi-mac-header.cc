@@ -1018,6 +1018,7 @@ WifiMacHeader::GetSize() const
 const char*
 WifiMacHeader::GetTypeString() const
 {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CASE_WIFI_MAC_TYPE(x)                                                                      \
     case WIFI_MAC_##x:                                                                             \
         return #x;

@@ -22,6 +22,9 @@ bool g_debug = false;
 
 /** Name of this program. */
 std::string g_me;
+
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /** Log to std::cout */
 #define LOG(x) std::cout << x << std::endl
 /** Log with program name prefix. */
@@ -32,6 +35,8 @@ std::string g_me;
     {                                                                                              \
         LOGME(x);                                                                                  \
     }
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /** Output field width for numeric data. */
 int g_fwidth = 6;
@@ -295,6 +300,22 @@ BenchSuite::BenchSuite(ObjectFactory& factory,
     Simulator::Destroy();
 }
 
+/**
+ * Accumulator block for Welford's algorithm,
+ * which logs initialization and run values for the fields
+ * `time`, `rate` and `period`.
+ *
+ * @see BenchSuite::Log()
+ * @param [in] phase The Result field name `init` or `run`
+ * @param [in] field The PhaseResult field name `time`, `rate`, or `period`
+ */
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define ACCUMULATE(phase, field)                                                                   \
+    deltaPre = run.phase.field - average.phase.field;                                              \
+    average.phase.field += deltaPre / count;                                                       \
+    deltaPost = run.phase.field - average.phase.field;                                             \
+    moment2.phase.field += deltaPre * deltaPost
+
 void
 BenchSuite::Header() const
 {
@@ -342,20 +363,12 @@ BenchSuite::Log() const
         const auto& run = m_results[n];
         uint64_t count = n + 1;
 
-#define ACCUMULATE(phase, field)                                                                   \
-    deltaPre = run.phase.field - average.phase.field;                                              \
-    average.phase.field += deltaPre / count;                                                       \
-    deltaPost = run.phase.field - average.phase.field;                                             \
-    moment2.phase.field += deltaPre * deltaPost
-
         ACCUMULATE(init, time);
         ACCUMULATE(init, rate);
         ACCUMULATE(init, period);
         ACCUMULATE(run, time);
         ACCUMULATE(run, rate);
         ACCUMULATE(run, period);
-
-#undef ACCUMULATE
     }
 
     auto stdev = Result{
@@ -372,6 +385,8 @@ BenchSuite::Log() const
 
     LOG("");
 }
+
+#undef ACCUMULATE
 
 /**
  *  Create a RandomVariableStream to generate next event delays.

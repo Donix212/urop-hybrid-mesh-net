@@ -20,6 +20,8 @@
 #include "ns3/simulator.h"
 #include "ns3/string.h"
 
+#include <array>
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("LteLinkAdaptationTest");
@@ -56,7 +58,7 @@ LteLinkAdaptationTestSuite::LteLinkAdaptationTestSuite()
      * Test vectors: SNRDB, Spectral Efficiency, MCS index
      * From XXX
      */
-    SnrEfficiencyMcs snrEfficiencyMcs[] = {
+    constexpr std::array<SnrEfficiencyMcs, 36> snrEfficiencyMcs{{
         {-5.00000, 0.08024, -1}, {-4.00000, 0.10030, -1}, {-3.00000, 0.12518, -1},
         {-2.00000, 0.15589, 0},  {-1.00000, 0.19365, 0},  {0.00000, 0.23983, 2},
         {1.00000, 0.29593, 2},   {2.00000, 0.36360, 2},   {3.00000, 0.44451, 4},
@@ -69,8 +71,7 @@ LteLinkAdaptationTestSuite::LteLinkAdaptationTestSuite()
         {22.00000, 4.89060, 24}, {23.00000, 5.21276, 26}, {24.00000, 5.53693, 26},
         {25.00000, 5.86271, 28}, {26.00000, 6.18980, 28}, {27.00000, 6.51792, 28},
         {28.00000, 6.84687, 28}, {29.00000, 7.17649, 28}, {30.00000, 7.50663, 28},
-    };
-    int numOfTests = sizeof(snrEfficiencyMcs) / sizeof(SnrEfficiencyMcs);
+    }};
 
     double txPowerDbm = 30; // default eNB TX power over whole bandwidth
     double ktDbm = -174;    // reference LTE noise PSD
@@ -78,18 +79,14 @@ LteLinkAdaptationTestSuite::LteLinkAdaptationTestSuite()
         ktDbm + 10 * std::log10(25 * 180000); // corresponds to kT*bandwidth in linear units
     double receiverNoiseFigureDb = 9.0;       // default UE noise figure
 
-    for (int i = 0; i < numOfTests; i++)
+    for (const auto& sem : snrEfficiencyMcs)
     {
-        double lossDb =
-            txPowerDbm - snrEfficiencyMcs[i].snrDb - noisePowerDbm - receiverNoiseFigureDb;
+        double lossDb = txPowerDbm - sem.snrDb - noisePowerDbm - receiverNoiseFigureDb;
 
         std::ostringstream name;
-        name << " snr= " << snrEfficiencyMcs[i].snrDb << " dB, "
-             << " mcs= " << snrEfficiencyMcs[i].mcsIndex;
-        AddTestCase(new LteLinkAdaptationTestCase(name.str(),
-                                                  snrEfficiencyMcs[i].snrDb,
-                                                  lossDb,
-                                                  snrEfficiencyMcs[i].mcsIndex),
+        name << " snr= " << sem.snrDb << " dB, "
+             << " mcs= " << sem.mcsIndex;
+        AddTestCase(new LteLinkAdaptationTestCase(name.str(), sem.snrDb, lossDb, sem.mcsIndex),
                     TestCase::Duration::QUICK);
     }
 }

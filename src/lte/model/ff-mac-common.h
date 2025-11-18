@@ -17,30 +17,30 @@
 /**
  * Constants. See section 4.4
  */
-#define MAX_SCHED_CFG_LIST 10
-#define MAX_LC_LIST 10
+constexpr uint32_t MAX_SCHED_CFG_LIST = 10;
+constexpr uint32_t MAX_LC_LIST = 10;
 
-#define MAX_RACH_LIST 30
-#define MAX_DL_INFO_LIST 30
-#define MAX_BUILD_DATA_LIST 30
-#define MAX_BUILD_RAR_LIST 10
-#define MAX_BUILD_BC_LIST 3
-#define MAX_UL_INFO_LIST 30
-#define MAX_DCI_LIST 30
-#define MAX_PHICH_LIST 30
-#define MAX_TB_LIST 2
-#define MAX_RLC_PDU_LIST 30
-#define MAX_NR_LCG 4
-#define MAX_MBSFN_CONFIG 5
-#define MAX_SI_MSG_LIST 32
-#define MAX_SI_MSG_SIZE 65535
+constexpr uint32_t MAX_RACH_LIST = 30;
+constexpr uint32_t MAX_DL_INFO_LIST = 30;
+constexpr uint32_t MAX_BUILD_DATA_LIST = 30;
+constexpr uint32_t MAX_BUILD_RAR_LIST = 10;
+constexpr uint32_t MAX_BUILD_BC_LIST = 3;
+constexpr uint32_t MAX_UL_INFO_LIST = 30;
+constexpr uint32_t MAX_DCI_LIST = 30;
+constexpr uint32_t MAX_PHICH_LIST = 30;
+constexpr uint32_t MAX_TB_LIST = 2;
+constexpr uint32_t MAX_RLC_PDU_LIST = 30;
+constexpr uint32_t MAX_NR_LCG = 4;
+constexpr uint32_t MAX_MBSFN_CONFIG = 5;
+constexpr uint32_t MAX_SI_MSG_LIST = 32;
+constexpr uint32_t MAX_SI_MSG_SIZE = 65535;
 
-#define MAX_CQI_LIST 30
-#define MAX_UE_SELECTED_SB 6
-#define MAX_HL_SB 25
-#define MAX_SINR_RB_LIST 100
-#define MAX_SR_LIST 30
-#define MAX_MAC_CE_LIST 30
+constexpr uint32_t MAX_CQI_LIST = 30;
+constexpr uint32_t MAX_UE_SELECTED_SB = 6;
+constexpr uint32_t MAX_HL_SB = 25;
+constexpr uint32_t MAX_SINR_RB_LIST = 100;
+constexpr uint32_t MAX_SR_LIST = 30;
+constexpr uint32_t MAX_MAC_CE_LIST = 30;
 
 namespace ns3
 {

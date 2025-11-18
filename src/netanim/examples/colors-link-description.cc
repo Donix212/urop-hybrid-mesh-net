@@ -12,6 +12,7 @@
 #include "ns3/point-to-point-layout-module.h"
 #include "ns3/point-to-point-module.h"
 
+#include <array>
 #include <iostream>
 
 using namespace ns3;
@@ -26,11 +27,11 @@ struct Rgb
     uint8_t b; ///< blue
 };
 
-Rgb colors[] = {
+constexpr std::array<Rgb, 3> colors{{
     {255, 0, 0}, // Red
     {0, 255, 0}, // Blue
     {0, 0, 255}, // Green
-};
+}};
 
 void
 modify()

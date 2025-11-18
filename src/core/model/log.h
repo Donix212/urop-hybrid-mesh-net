@@ -158,6 +158,8 @@ void LogComponentDisableAll(LogLevel level);
 
 } // namespace ns3
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * Define a Log component with a specific name.
  *
@@ -272,6 +274,8 @@ void LogComponentDisableAll(LogLevel level);
  * @param [in] msg The message to log.
  */
 #define NS_LOG_LOGIC(msg) NS_LOG(ns3::LOG_LOGIC, msg)
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 namespace ns3
 {

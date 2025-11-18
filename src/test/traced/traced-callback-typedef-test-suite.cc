@@ -140,6 +140,8 @@ TypeName(int N)
     return "unknown";
 }
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup system-tests-traced
  *
@@ -153,6 +155,8 @@ TypeName(int N)
         ss << #T << "(" << N << ")";                                                               \
         return ss.str();                                                                           \
     }
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * @ingroup system-tests-traced
@@ -333,6 +337,8 @@ TracedCallbackTypedefTestCase::TracedCallbackTypedefTestCase()
 {
 }
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup system-tests-traced
  *
@@ -363,6 +369,8 @@ TracedCallbackTypedefTestCase::TracedCallbackTypedefTestCase()
  * Check the TracedCallback by calling its Invoke function.
  */
 #define CHECK(U, ...) CreateObject<Checker<__VA_ARGS__>>()->Invoke<U>()
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 void
 TracedCallbackTypedefTestCase::DoRun()

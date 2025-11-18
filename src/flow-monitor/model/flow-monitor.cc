@@ -437,8 +437,12 @@ FlowMonitor::SerializeToXmlStream(std::ostream& os,
     for (const auto& [flowId, flowStats] : m_flowStats)
     {
         os << std::string(indent, ' ');
+
+        // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define ATTRIB(name) " " #name "=\"" << flowStats.name << "\""
 #define ATTRIB_TIME(name) " " #name "=\"" << flowStats.name.As(Time::NS) << "\""
+        // NOLINTEND(cppcoreguidelines-macro-usage)
+
         os << "<Flow";
         os << " flowId=\"" << flowId << "\"";
         os << ATTRIB_TIME(timeFirstTxPacket);

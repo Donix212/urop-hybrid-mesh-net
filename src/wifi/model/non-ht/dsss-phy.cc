@@ -299,6 +299,7 @@ DsssPhy::GetDsssRate(uint64_t rate)
     }
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GET_DSSS_MODE(x, m)                                                                        \
     WifiMode DsssPhy::Get##x()                                                                     \
     {                                                                                              \

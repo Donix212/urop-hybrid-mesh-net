@@ -17,6 +17,8 @@
 #include <stdint.h>
 #include <string>
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @brief Test that a pair of reference/new pcap files are equal
  *
@@ -43,5 +45,7 @@
                                              << " differ starting from packet " << packets         \
                                              << " at " << sec << " s " << usec << " us");          \
     } while (false)
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif /* PCAP_TEST_H */

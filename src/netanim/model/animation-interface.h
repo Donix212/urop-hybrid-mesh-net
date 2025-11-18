@@ -37,9 +37,10 @@
 namespace ns3
 {
 
-#define MAX_PKTS_PER_TRACE_FILE 100000
-#define PURGE_INTERVAL 5
-#define NETANIM_VERSION "netanim-3.109"
+constexpr uint64_t MAX_PKTS_PER_TRACE_FILE = 100000;
+constexpr double PURGE_INTERVAL = 5;
+constexpr auto NETANIM_VERSION = "netanim-3.109";
+
 #define CHECK_STARTED_INTIMEWINDOW                                                                 \
     {                                                                                              \
         if (!m_started || !IsInTimeWindow())                                                       \

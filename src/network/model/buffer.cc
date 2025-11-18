@@ -10,6 +10,7 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define LOG_INTERNAL_STATE(y)                                                                      \
     NS_LOG_LOGIC(y << "start=" << m_start << ", end=" << m_end                                     \
                    << ", zero start=" << m_zeroAreaStart << ", zero end=" << m_zeroAreaEnd         \
@@ -62,12 +63,14 @@ uint32_t Buffer::g_recommendedStart = 0;
  * before the constructors run so this ensures perfect handling of crazy
  * constructor orderings.
  */
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define MAGIC_DESTROYED (~(long)0)
 #define IS_UNINITIALIZED(x) (x == (Buffer::FreeList*)0)
 #define IS_DESTROYED(x) (x == (Buffer::FreeList*)MAGIC_DESTROYED)
 #define IS_INITIALIZED(x) (!IS_UNINITIALIZED(x) && !IS_DESTROYED(x))
 #define DESTROYED ((Buffer::FreeList*)MAGIC_DESTROYED)
 #define UNINITIALIZED ((Buffer::FreeList*)0)
+// NOLINTEND(cppcoreguidelines-macro-usage)
 uint32_t Buffer::g_maxSize = 0;
 Buffer::FreeList* Buffer::g_freeList = nullptr;
 Buffer::LocalStaticDestructor Buffer::g_localStaticDestructor;

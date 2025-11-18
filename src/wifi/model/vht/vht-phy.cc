@@ -323,6 +323,7 @@ VhtPhy::InitializeModes()
 WifiMode
 VhtPhy::GetVhtMcs(uint8_t index)
 {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CASE(x)                                                                                    \
     case x:                                                                                        \
         return GetVhtMcs##x();
@@ -346,6 +347,7 @@ VhtPhy::GetVhtMcs(uint8_t index)
 #undef CASE
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define GET_VHT_MCS(x)                                                                             \
     WifiMode VhtPhy::GetVhtMcs##x()                                                                \
     {                                                                                              \

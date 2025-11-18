@@ -37,6 +37,8 @@ namespace ns3
  * @brief Trigger a debugger breakpoint.
  */
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup breakpoint
  *
@@ -68,6 +70,8 @@ namespace ns3
 #else /* !__i386__ && !__alpha__ */
 #define NS_BREAKPOINT() ns3::BreakpointFallback()
 #endif
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * @ingroup breakpoint

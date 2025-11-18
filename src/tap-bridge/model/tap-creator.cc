@@ -27,9 +27,11 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define TAP_MAGIC 95549
+constexpr uint32_t TAP_MAGIC = 95549;
 
 static bool gVerbose = false; // Set to true to turn on logging messages.
+
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
 #define LOG(msg)                                                                                   \
     if (gVerbose)                                                                                  \
@@ -51,6 +53,8 @@ static bool gVerbose = false; // Set to true to turn on logging messages.
     {                                                                                              \
         ABORT(msg, printErrno);                                                                    \
     }
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 static sockaddr
 CreateInetAddress(uint32_t networkOrder)

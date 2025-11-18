@@ -22,6 +22,8 @@
  * NS_OBJECT_ENSURE_REGISTERED() macro definition.
  */
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup object
  * @brief Register an Object subclass with the TypeId system.
@@ -120,6 +122,7 @@
         }                                                                                          \
     } Object##type##param1##param2##RegistrationVariable
 
+// NOLINTEND(cppcoreguidelines-macro-usage)
 namespace ns3
 {
 

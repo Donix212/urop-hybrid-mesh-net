@@ -24,6 +24,8 @@
 #include "ns3/rng-seed-manager.h"
 #include "ns3/simulator.h"
 
+#include <array>
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("LteRlcUmE2eTest");
@@ -41,12 +43,13 @@ LteRlcUmE2eTestSuite::LteRlcUmE2eTestSuite()
 {
     // NS_LOG_INFO ("Creating LteRlcUmE2eTestSuite");
 
-    double losses[] = {0.0, 0.10, 0.25, 0.50, 0.75, 0.90, 1.00};
-    uint32_t seeds[] = {1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888, 9999, 10101};
+    constexpr std::array<double, 7> losses{0.0, 0.10, 0.25, 0.50, 0.75, 0.90, 1.00};
+    constexpr std::array<uint32_t, 10>
+        seeds{1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888, 9999, 10101};
 
-    for (uint32_t l = 0; l < (sizeof(losses) / sizeof(double)); l++)
+    for (uint32_t l = 0; l < losses.size(); l++)
     {
-        for (uint32_t s = 0; s < (sizeof(seeds) / sizeof(uint32_t)); s++)
+        for (uint32_t s = 0; s < seeds.size(); s++)
         {
             std::ostringstream name;
             name << " Losses = " << losses[l] << "%. Seed = " << seeds[s];

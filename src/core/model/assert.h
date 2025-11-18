@@ -43,6 +43,8 @@
 
 #include <iostream>
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup assert
  *
@@ -99,6 +101,8 @@
     {                                                                                              \
         (void)sizeof(condition);                                                                   \
     } while (false)
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif /* NS3_ASSERT_ENABLE */
 

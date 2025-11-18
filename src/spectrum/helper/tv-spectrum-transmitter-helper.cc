@@ -16,6 +16,7 @@
 #include "ns3/position-allocator.h"
 #include "ns3/uinteger.h"
 
+#include <array>
 #include <cmath>
 #include <list>
 #include <vector>
@@ -26,9 +27,9 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("TvSpectrumTransmitterHelper");
 
 /// NORTH AMERICA: 84 elements (index 0 - 83); valid channels = 2 - 83
-const int northAmericaArrayLength = 84;
+constexpr int NORTH_AMERICA_ARRAY_LENGTH = 84;
 /// NORTH AMERICA start frequencies
-const double northAmericaStartFrequencies[84] = {
+constexpr std::array<double, NORTH_AMERICA_ARRAY_LENGTH> northAmericaStartFrequencies{
     0,     0,     54e6,  60e6,  66e6,  76e6,  82e6,  174e6, 180e6, 186e6, 192e6, 198e6,
     204e6, 210e6, 470e6, 476e6, 482e6, 488e6, 494e6, 500e6, 506e6, 512e6, 518e6, 524e6,
     530e6, 536e6, 542e6, 548e6, 554e6, 560e6, 566e6, 572e6, 578e6, 584e6, 590e6, 596e6,
@@ -38,7 +39,7 @@ const double northAmericaStartFrequencies[84] = {
     818e6, 824e6, 830e6, 836e6, 842e6, 848e6, 854e6, 860e6, 866e6, 872e6, 878e6, 884e6,
 };
 /// NORTH AMERICA end frequencies
-const double northAmericaEndFrequencies[84] = {
+constexpr std::array<double, NORTH_AMERICA_ARRAY_LENGTH> northAmericaEndFrequencies{
     0,     0,     60e6,  66e6,  72e6,  82e6,  88e6,  180e6, 186e6, 192e6, 198e6, 204e6,
     210e6, 216e6, 476e6, 482e6, 488e6, 494e6, 500e6, 506e6, 512e6, 518e6, 524e6, 530e6,
     536e6, 542e6, 548e6, 554e6, 560e6, 566e6, 572e6, 578e6, 584e6, 590e6, 596e6, 602e6,
@@ -49,9 +50,9 @@ const double northAmericaEndFrequencies[84] = {
 };
 
 /// EUROPE: 70 elements (index 0 - 69); valid channels = 5 - 12, 21 - 69
-const int europeArrayLength = 70;
+constexpr int EUROPE_ARRAY_LENGTH = 70;
 /// EUROPE start frequencies
-const double europeStartFrequencies[70] = {
+constexpr std::array<double, EUROPE_ARRAY_LENGTH> europeStartFrequencies{
     0,     0,     0,     0,     0,     174e6, 181e6, 188e6, 195e6, 202e6, 209e6, 216e6,
     223e6, 0,     0,     0,     0,     0,     0,     0,     0,     470e6, 478e6, 486e6,
     494e6, 502e6, 510e6, 518e6, 526e6, 534e6, 542e6, 550e6, 558e6, 566e6, 574e6, 582e6,
@@ -60,7 +61,7 @@ const double europeStartFrequencies[70] = {
     782e6, 790e6, 798e6, 806e6, 814e6, 822e6, 830e6, 838e6, 846e6, 854e6,
 };
 /// EUROPE end frequencies
-const double europeEndFrequencies[70] = {
+constexpr std::array<double, EUROPE_ARRAY_LENGTH> europeEndFrequencies{
     0,     0,     0,     0,     0,     181e6, 188e6, 195e6, 202e6, 209e6, 216e6, 223e6,
     230e6, 0,     0,     0,     0,     0,     0,     0,     0,     478e6, 486e6, 494e6,
     502e6, 510e6, 518e6, 526e6, 534e6, 542e6, 550e6, 558e6, 566e6, 574e6, 582e6, 590e6,
@@ -70,9 +71,9 @@ const double europeEndFrequencies[70] = {
 };
 
 /// JAPAN: 63 elements (index 0 - 62); valid channels = 1 - 62
-const int japanArrayLength = 63;
+constexpr int JAPAN_ARRAY_LENGTH = 63;
 /// JAPAN start frequencies
-const double japanStartFrequencies[63] = {
+constexpr std::array<double, JAPAN_ARRAY_LENGTH> japanStartFrequencies{
     0,     90e6,  96e6,  102e6, 170e6, 176e6, 182e6, 188e6, 192e6, 198e6, 204e6, 210e6, 216e6,
     470e6, 476e6, 482e6, 488e6, 494e6, 500e6, 506e6, 512e6, 518e6, 524e6, 530e6, 536e6, 542e6,
     548e6, 554e6, 560e6, 566e6, 572e6, 578e6, 584e6, 590e6, 596e6, 602e6, 608e6, 614e6, 620e6,
@@ -80,7 +81,7 @@ const double japanStartFrequencies[63] = {
     704e6, 710e6, 716e6, 722e6, 728e6, 734e6, 740e6, 746e6, 752e6, 758e6, 764e6,
 };
 /// JAPAN end frequencies
-const double japanEndFrequencies[63] = {
+constexpr std::array<double, JAPAN_ARRAY_LENGTH> japanEndFrequencies{
     0,     96e6,  102e6, 108e6, 176e6, 182e6, 188e6, 194e6, 198e6, 204e6, 210e6, 216e6, 222e6,
     476e6, 482e6, 488e6, 494e6, 500e6, 506e6, 512e6, 518e6, 524e6, 530e6, 536e6, 542e6, 548e6,
     554e6, 560e6, 566e6, 572e6, 578e6, 584e6, 590e6, 596e6, 602e6, 608e6, 614e6, 620e6, 626e6,
@@ -153,7 +154,7 @@ TvSpectrumTransmitterHelper::Install(NodeContainer nodeCont, Region region, uint
     double channelBandwidth;
     if (region == REGION_NORTH_AMERICA)
     {
-        NS_ASSERT_MSG(channelNumber < northAmericaArrayLength,
+        NS_ASSERT_MSG(channelNumber < NORTH_AMERICA_ARRAY_LENGTH,
                       "channel number " << channelNumber << " does not exist for this region");
         NS_ASSERT_MSG(northAmericaStartFrequencies[channelNumber] != 0,
                       "channel number " << channelNumber << " does not exist for this region");
@@ -163,7 +164,7 @@ TvSpectrumTransmitterHelper::Install(NodeContainer nodeCont, Region region, uint
     }
     else if (region == REGION_EUROPE)
     {
-        NS_ASSERT_MSG(channelNumber < europeArrayLength,
+        NS_ASSERT_MSG(channelNumber < EUROPE_ARRAY_LENGTH,
                       "channel number " << channelNumber << " does not exist for this region");
         NS_ASSERT_MSG(europeStartFrequencies[channelNumber] != 0,
                       "channel number " << channelNumber << " does not exist for this region");
@@ -173,7 +174,7 @@ TvSpectrumTransmitterHelper::Install(NodeContainer nodeCont, Region region, uint
     }
     else if (region == REGION_JAPAN)
     {
-        NS_ASSERT_MSG(channelNumber < japanArrayLength,
+        NS_ASSERT_MSG(channelNumber < JAPAN_ARRAY_LENGTH,
                       "channel number " << channelNumber << " does not exist for this region");
         NS_ASSERT_MSG(japanStartFrequencies[channelNumber] != 0,
                       "channel number " << channelNumber << " does not exist for this region");
@@ -259,7 +260,7 @@ TvSpectrumTransmitterHelper::InstallAdjacent(NodeContainer nodeCont,
         currChannelNumber = channelNumber + index;
         if (region == REGION_NORTH_AMERICA)
         {
-            NS_ASSERT_MSG(currChannelNumber < northAmericaArrayLength,
+            NS_ASSERT_MSG(currChannelNumber < NORTH_AMERICA_ARRAY_LENGTH,
                           "channel number " << currChannelNumber
                                             << " does not exist for this region");
             NS_ASSERT_MSG(northAmericaStartFrequencies[currChannelNumber] != 0,
@@ -271,7 +272,7 @@ TvSpectrumTransmitterHelper::InstallAdjacent(NodeContainer nodeCont,
         }
         else if (region == REGION_EUROPE)
         {
-            NS_ASSERT_MSG(currChannelNumber < europeArrayLength,
+            NS_ASSERT_MSG(currChannelNumber < EUROPE_ARRAY_LENGTH,
                           "channel number " << currChannelNumber
                                             << " does not exist for this region");
             NS_ASSERT_MSG(europeStartFrequencies[currChannelNumber] != 0,
@@ -283,7 +284,7 @@ TvSpectrumTransmitterHelper::InstallAdjacent(NodeContainer nodeCont,
         }
         else if (region == REGION_JAPAN)
         {
-            NS_ASSERT_MSG(currChannelNumber < japanArrayLength,
+            NS_ASSERT_MSG(currChannelNumber < JAPAN_ARRAY_LENGTH,
                           "channel number " << currChannelNumber
                                             << " does not exist for this region");
             NS_ASSERT_MSG(japanStartFrequencies[currChannelNumber] != 0,
@@ -336,19 +337,23 @@ TvSpectrumTransmitterHelper::CreateRegionalTvTransmitters(Region region,
     if (region == REGION_NORTH_AMERICA)
     {
         transmitterIndicesToCreate =
-            GenerateRegionalTransmitterIndices(northAmericaStartFrequencies,
-                                               northAmericaArrayLength,
+            GenerateRegionalTransmitterIndices(northAmericaStartFrequencies.data(),
+                                               northAmericaStartFrequencies.size(),
                                                density);
     }
     else if (region == REGION_EUROPE)
     {
         transmitterIndicesToCreate =
-            GenerateRegionalTransmitterIndices(europeStartFrequencies, europeArrayLength, density);
+            GenerateRegionalTransmitterIndices(europeStartFrequencies.data(),
+                                               europeStartFrequencies.size(),
+                                               density);
     }
     else if (region == REGION_JAPAN)
     {
         transmitterIndicesToCreate =
-            GenerateRegionalTransmitterIndices(japanStartFrequencies, japanArrayLength, density);
+            GenerateRegionalTransmitterIndices(japanStartFrequencies.data(),
+                                               japanStartFrequencies.size(),
+                                               density);
     }
     std::list<Vector> tvTransmitterLocations =
         GeographicPositions::RandCartesianPointsAroundGeographicPoint(

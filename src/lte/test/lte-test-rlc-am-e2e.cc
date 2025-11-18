@@ -25,6 +25,8 @@
 #include "ns3/rng-seed-manager.h"
 #include "ns3/simulator.h"
 
+#include <array>
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("LteRlcAmE2eTest");
@@ -34,16 +36,16 @@ LteRlcAmE2eTestSuite::LteRlcAmE2eTestSuite()
 {
     // NS_LOG_INFO ("Creating LteRlcAmE2eTestSuite");
 
-    double losses[] = {0.0, 0.05, 0.10, 0.15, 0.25, 0.50, 0.75, 0.90, 0.95};
-    uint32_t runs[] = {
+    constexpr std::array<double, 9> losses{0.0, 0.05, 0.10, 0.15, 0.25, 0.50, 0.75, 0.90, 0.95};
+    constexpr std::array<uint32_t, 30> runs{
         1111,  2222,  3333,  4444,  5555,  6666,  7777,  8888,  9999,  11110,
         12221, 13332, 14443, 15554, 16665, 17776, 18887, 19998, 21109, 22220,
         23331, 24442, 25553, 26664, 27775, 28886, 29997, 31108, 32219, 33330,
     };
 
-    for (uint32_t l = 0; l < (sizeof(losses) / sizeof(double)); l++)
+    for (uint32_t l = 0; l < losses.size(); l++)
     {
-        for (uint32_t s = 0; s < (sizeof(runs) / sizeof(uint32_t)); s++)
+        for (uint32_t s = 0; s < runs.size(); s++)
         {
             for (uint32_t sduArrivalType = 0; sduArrivalType <= 1; ++sduArrivalType)
             {

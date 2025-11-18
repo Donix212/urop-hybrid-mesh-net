@@ -30,6 +30,8 @@ namespace ns3
 // of causing recursions leading to stack overflow
 NS_LOG_COMPONENT_DEFINE_MASK("int64x64", LOG_PREFIX_TIME);
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 /**
  * @ingroup highprec
  * Print the high and low words of an int64x64 in hex, for debugging.
@@ -40,6 +42,8 @@ NS_LOG_COMPONENT_DEFINE_MASK("int64x64", LOG_PREFIX_TIME);
 #define HEXHILOW(hi, lo)                                                                           \
     std::hex << std::setfill('0') << std::right << " (0x" << std::setw(16) << hi << " "            \
              << std::setw(16) << lo << std::dec << std::setfill(' ') << std::left << ")"
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * @internal

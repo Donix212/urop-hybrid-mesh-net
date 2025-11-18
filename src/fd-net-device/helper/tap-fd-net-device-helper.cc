@@ -44,7 +44,7 @@ namespace ns3
 
 NS_LOG_COMPONENT_DEFINE("TapFdNetDeviceHelper");
 
-#define TAP_MAGIC 95549
+constexpr uint32_t TAP_MAGIC = 95549;
 
 TapFdNetDeviceHelper::TapFdNetDeviceHelper()
 {

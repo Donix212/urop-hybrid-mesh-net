@@ -16,19 +16,19 @@
 #include <sstream>
 #include <stdio.h>
 
-#define MAX_DRB 11 // According to section 6.4 3GPP TS 36.331
-#define MAX_EARFCN 262143
-#define MAX_RAT_CAPABILITIES 8
-#define MAX_SI_MESSAGE 32
-#define MAX_SIB 32
+constexpr int MAX_DRB = 11; // According to section 6.4 3GPP TS 36.331
+constexpr int MAX_EARFCN = 262143;
+constexpr int MAX_RAT_CAPABILITIES = 8;
+constexpr int MAX_SI_MESSAGE = 32;
+constexpr int MAX_SIB = 32;
 
-#define MAX_REPORT_CONFIG_ID 32
-#define MAX_OBJECT_ID 32
-#define MAX_MEAS_ID 32
-#define MAX_CELL_MEAS 32
-#define MAX_CELL_REPORT 8
+constexpr int MAX_REPORT_CONFIG_ID = 32;
+constexpr int MAX_OBJECT_ID = 32;
+constexpr int MAX_MEAS_ID = 32;
+constexpr int MAX_CELL_MEAS = 32;
+constexpr int MAX_CELL_REPORT = 8;
 
-#define MAX_SCELL_REPORT 5
+constexpr int MAX_SCELL_REPORT = 5;
 
 namespace ns3
 {

@@ -31,8 +31,8 @@
 namespace ns3
 {
 
-#define REC_INV_SQRT_CACHE (16)
-#define DEFAULT_COBALT_LIMIT 1000
+constexpr uint32_t REC_INV_SQRT_CACHE = 16;
+constexpr uint32_t DEFAULT_COBALT_LIMIT = 1000;
 
 class TraceContainer;
 

@@ -37,9 +37,9 @@ namespace ns3
  */
 static const int CODEL_SHIFT = 10;
 
-#define DEFAULT_CODEL_LIMIT 1000
-#define REC_INV_SQRT_BITS (8 * sizeof(uint16_t))
-#define REC_INV_SQRT_SHIFT (32 - REC_INV_SQRT_BITS)
+constexpr uint32_t DEFAULT_CODEL_LIMIT = 1000;
+constexpr uint32_t REC_INV_SQRT_BITS = 8 * sizeof(uint16_t);
+constexpr uint32_t REC_INV_SQRT_SHIFT = 32 - REC_INV_SQRT_BITS;
 
 class TraceContainer;
 

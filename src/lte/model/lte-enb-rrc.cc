@@ -34,6 +34,8 @@
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
 
+#include <array>
+
 namespace ns3
 {
 
@@ -3294,24 +3296,24 @@ LteEnbRrc::SetCsgId(uint32_t csgId, bool csgIndication)
 }
 
 /// Number of distinct SRS periodicity plus one.
-static const uint8_t SRS_ENTRIES = 9;
+constexpr uint8_t SRS_ENTRIES = 9;
 /**
  * Sounding Reference Symbol (SRS) periodicity (TSRS) in milliseconds. Taken
  * from 3GPP TS 36.213 Table 8.2-1. Index starts from 1.
  */
-static const uint16_t g_srsPeriodicity[SRS_ENTRIES] = {0, 2, 5, 10, 20, 40, 80, 160, 320};
+constexpr std::array<uint16_t, SRS_ENTRIES> g_srsPeriodicity{0, 2, 5, 10, 20, 40, 80, 160, 320};
 /**
  * The lower bound (inclusive) of the SRS configuration indices (ISRS) which
  * use the corresponding SRS periodicity (TSRS). Taken from 3GPP TS 36.213
  * Table 8.2-1. Index starts from 1.
  */
-static const uint16_t g_srsCiLow[SRS_ENTRIES] = {0, 0, 2, 7, 17, 37, 77, 157, 317};
+constexpr std::array<uint16_t, SRS_ENTRIES> g_srsCiLow{0, 0, 2, 7, 17, 37, 77, 157, 317};
 /**
  * The upper bound (inclusive) of the SRS configuration indices (ISRS) which
  * use the corresponding SRS periodicity (TSRS). Taken from 3GPP TS 36.213
  * Table 8.2-1. Index starts from 1.
  */
-static const uint16_t g_srsCiHigh[SRS_ENTRIES] = {0, 1, 6, 16, 36, 76, 156, 316, 636};
+constexpr std::array<uint16_t, SRS_ENTRIES> g_srsCiHigh{0, 1, 6, 16, 36, 76, 156, 316, 636};
 
 void
 LteEnbRrc::SetSrsPeriodicity(uint32_t p)

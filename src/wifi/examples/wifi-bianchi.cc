@@ -55,7 +55,7 @@
  */
 
 /// Avoid std::numbers::pi because it's C++20
-#define PI 3.1415926535
+constexpr double PI = 3.1415926535;
 
 NS_LOG_COMPONENT_DEFINE("WifiBianchi");
 

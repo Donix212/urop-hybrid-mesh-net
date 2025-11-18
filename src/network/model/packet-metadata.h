@@ -407,7 +407,7 @@ class PacketMetadata
      * the size of PacketMetadata::Data::m_data such that the total size
      * of PacketMetadata::Data is 16 bytes
      */
-#define PACKET_METADATA_DATA_M_DATA_SIZE 8
+    static constexpr uint32_t PACKET_METADATA_DATA_M_DATA_SIZE{8};
 
     /**
      * Data structure

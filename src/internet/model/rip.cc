@@ -25,8 +25,8 @@
 
 #include <iomanip>
 
-#define RIP_ALL_NODE "224.0.0.9"
-#define RIP_PORT 520
+constexpr auto RIP_ALL_NODE = "224.0.0.9";
+constexpr uint16_t RIP_PORT = 520;
 
 namespace ns3
 {
