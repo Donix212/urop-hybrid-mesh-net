@@ -11,6 +11,7 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
+#include <bit>
 #include <cstdlib>
 
 #ifdef __WIN32__
@@ -34,6 +35,8 @@ Ipv4Mask::Ipv4Mask(uint32_t mask)
     : m_mask(mask)
 {
     NS_LOG_FUNCTION(this << mask);
+    NS_ASSERT_MSG((std::countl_one(m_mask) + std::countr_zero(m_mask) == 32),
+                  "Invalid mask: " << m_mask);
 }
 
 Ipv4Mask::Ipv4Mask(const char* mask)
@@ -59,6 +62,8 @@ Ipv4Mask::Ipv4Mask(const char* mask)
             NS_ABORT_MSG("Error, can not build an IPv4 mask from an invalid string: " << mask);
         }
         m_mask = ntohl(m_mask);
+        NS_ASSERT_MSG((std::countl_one(m_mask) + std::countr_zero(m_mask) == 32),
+                      "Invalid mask: " << m_mask);
     }
 }
 
@@ -81,6 +86,8 @@ Ipv4Mask::Set(uint32_t mask)
 {
     NS_LOG_FUNCTION(this << mask);
     m_mask = mask;
+    NS_ASSERT_MSG((std::countl_one(m_mask) + std::countr_zero(m_mask) == 32),
+                  "Invalid mask: " << m_mask);
 }
 
 uint32_t
