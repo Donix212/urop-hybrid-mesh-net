@@ -5,6 +5,11 @@
  *
  * Author: Pasquale Imputato <p.imputato@gmail.com>
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ * Class ns3::NetmapNetDeviceHelper implementation.
+ */
 
 #include "netmap-net-device-helper.h"
 

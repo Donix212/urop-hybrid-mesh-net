@@ -3,6 +3,10 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ */
 
 #include "creator-utils.h"
 
@@ -41,6 +45,12 @@ struct in6_ifreq
     int32_t ifr6_ifindex;      //!< interface index
 };
 
+/**
+ * Configure a socket.
+ * @param deviceName The interface name
+ * @param ip The IP address
+ * @param netmask The address mask
+ */
 void
 SetIpv4(const char* deviceName, const char* ip, const char* netmask)
 {
@@ -79,6 +89,12 @@ SetIpv4(const char* deviceName, const char* ip, const char* netmask)
     close(sock);
 }
 
+/**
+ * Configure a socket.
+ * @param deviceName The interface name
+ * @param ip The IP address
+ * @param netprefix The address prefix
+ */
 void
 SetIpv6(const char* deviceName, const char* ip, int netprefix)
 {
@@ -113,6 +129,11 @@ SetIpv6(const char* deviceName, const char* ip, int netprefix)
     close(sock);
 }
 
+/**
+ * Set the mac address on an interface
+ * @param fd The device to configure
+ * @param mac The MAC address string
+ */
 void
 SetMacAddress(int fd, const char* mac)
 {
@@ -125,6 +146,10 @@ SetMacAddress(int fd, const char* mac)
     LOG("Set device MAC address to " << mac);
 }
 
+/**
+ * Bring up a socket
+ * @param deviceName The interface name
+ */
 void
 SetUp(char* deviceName)
 {
@@ -144,6 +169,18 @@ SetUp(char* deviceName)
     close(sock);
 }
 
+/**
+ * Create a tap device and bring it up
+ * @param deviceName The interface name
+ * @param mac The MAC address string
+ * @param ifftap
+ * @param iffpi
+ * @param ip4 The IP address
+ * @param netmask The address mask
+ * @param ip6 The IP address
+ * @param netprefix The address prefix
+ * @return the configured file descriptor
+ */
 int
 CreateTap(char* deviceName,
           const char* mac,

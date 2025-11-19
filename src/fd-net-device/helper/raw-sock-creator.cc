@@ -3,6 +3,10 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ */
 
 #include "creator-utils.h"
 

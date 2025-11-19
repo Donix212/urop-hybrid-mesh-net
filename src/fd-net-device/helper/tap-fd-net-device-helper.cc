@@ -3,6 +3,11 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ * Class ns3::TapFdNetDeviceHelper implementation.
+ */
 
 #include "tap-fd-net-device-helper.h"
 

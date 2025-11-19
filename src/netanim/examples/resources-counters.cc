@@ -16,7 +16,6 @@
 
 using namespace ns3;
 
-AnimationInterface* pAnim = nullptr;
 /** Shorthand for an RGB triple. */
 using Rgb = AnimationInterface::Rgb;
 
@@ -39,7 +38,7 @@ uint32_t nodeCounterIdDouble2;
  * @param pAnim The animation.
  */
 void
-modify()
+modify(AnimationInterface* pAnim)
 {
     std::ostringstream oss;
     oss << "Update:" << Simulator::Now().GetSeconds();
@@ -103,7 +102,7 @@ modify()
     if (Simulator::Now().GetSeconds() < 10)
     { // This is important or the simulation
         // will run endlessly
-        Simulator::Schedule(Seconds(0.1), modify);
+        Simulator::Schedule(Seconds(0.1), modify, pAnim);
     }
 }
 
@@ -175,7 +174,7 @@ main(int argc, char* argv[])
     // Set the bounding box for animation
 
     // Create the animation object and configure for specified output
-    pAnim = new AnimationInterface(animFile);
+    auto pAnim = new AnimationInterface(animFile);
     // Provide the absolute path to the resource
     resourceId1 = pAnim->AddResource("/Users/john/ns3/netanim-3.105/ns-3-logo1.png");
     resourceId2 = pAnim->AddResource("/Users/john/ns3/netanim-3.105/ns-3-logo2.png");
@@ -194,7 +193,7 @@ main(int argc, char* argv[])
     nodeCounterIdDouble2 =
         pAnim->AddNodeCounter("Double Counter 2", AnimationInterface::DOUBLE_COUNTER);
 
-    Simulator::Schedule(Seconds(0.1), modify);
+    Simulator::Schedule(Seconds(0.1), modify, pAnim);
 
     // Set up the actual simulation
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();

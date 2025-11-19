@@ -7,6 +7,11 @@
  *         Hrishikesh Hiraskar <hrishihiraskar@gmail.com>
  *         Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ * Class ns3::DpdkNetDevice implementation.
+ */
 
 #include "dpdk-net-device.h"
 

@@ -5,8 +5,10 @@
  *
  * Author: Pasquale Imputato <p.imputato@gmail.com>
  */
-
-/*
+/**
+ * @file
+ * @ingroup fd-net-device
+ *
  * This example builds a node with a device in emulation mode in {raw, netmap}.
  * The aim is to measure the maximum tx rate in pps achievable with
  * NetmapNetDevice and FdNetDevice on a specific machine.
@@ -35,10 +37,15 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("NetmapEmulationSendExample");
 
-// This function sends a number of packets by means of the SendFrom method or
-// the Write method (depending on the level value) of a FdNetDevice or
-// of a NetmapNetDevice (depending on the emulation mode value).
-
+/**
+ * This function sends a number of packets by means of the SendFrom method or
+ * the Write method (depending on the level value) of a FdNetDevice or
+ * of a NetmapNetDevice (depending on the emulation mode value).
+ *
+ * @param dev The device
+ * @param level Writing (`0`) or sending
+ * @param emuMode Emulation mode
+ */
 static void
 Send(Ptr<NetDevice> dev, int level, std::string emuMode)
 {

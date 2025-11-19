@@ -3,6 +3,11 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ * Class ns3::EmuFdNetDeviceHelper implementation.
+ */
 
 #include "emu-fd-net-device-helper.h"
 
