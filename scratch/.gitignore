@@ -6,3 +6,11 @@
 !subdir/
 !scratch-simulator.cc
 !CMakeLists.txt
+
+!replay-clocks-extension
+!replay-clocks-efficiency
+
+*.ipynb
+*.ipynb_checkpoints/
+*.csv
+*.png

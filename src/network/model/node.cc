@@ -19,6 +19,7 @@
 #include "ns3/global-value.h"
 #include "ns3/log.h"
 #include "ns3/object-vector.h"
+#include "ns3/pointer.h"
 #include "ns3/simulator.h"
 #include "ns3/uinteger.h"
 
@@ -70,7 +71,12 @@ Node::GetTypeId()
                 TypeId::ATTR_GET | TypeId::ATTR_SET,
                 UintegerValue(0),
                 MakeUintegerAccessor(&Node::m_sid),
-                MakeUintegerChecker<uint32_t>());
+                MakeUintegerChecker<uint32_t>())
+            .AddAttribute("LocalClock",
+                          "The local clock of this node.",
+                          PointerValue(),
+                          MakePointerAccessor(&Node::m_localClock),
+                          MakePointerChecker<LocalClock>());
     return tid;
 }
 
@@ -111,7 +117,7 @@ Node::GetId() const
 Time
 Node::GetLocalTime() const
 {
-    return Simulator::Now();
+    return m_localClock->Now();
 }
 
 uint32_t

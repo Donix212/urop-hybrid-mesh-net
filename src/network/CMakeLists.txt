@@ -44,6 +44,7 @@ set(source_files
     utils/ipv4-address.cc
     utils/ipv6-address.cc
     utils/llc-snap-header.cc
+    utils/local-clock.cc
     utils/mac16-address.cc
     utils/mac48-address.cc
     utils/mac64-address.cc
@@ -66,10 +67,13 @@ set(source_files
     utils/queue-size.cc
     utils/queue.cc
     utils/radiotap-header.cc
+    utils/replay-clock.cc
+    utils/replay-switch-clock.cc
     utils/simple-channel.cc
     utils/simple-net-device.cc
     utils/sll-header.cc
     utils/timestamp-tag.cc
+    utils/unbounded-skew-clock.cc
 )
 
 set(header_files
@@ -121,6 +125,7 @@ set(header_files
     utils/ipv6-address.h
     utils/llc-snap-header.h
     utils/lollipop-counter.h
+    utils/local-clock.h
     utils/mac16-address.h
     utils/mac48-address.h
     utils/mac64-address.h
@@ -145,11 +150,14 @@ set(header_files
     utils/queue-size.h
     utils/queue.h
     utils/radiotap-header.h
+    utils/replay-clock.h
+    utils/replay-switch-clock.h
     utils/sequence-number.h
     utils/simple-channel.h
     utils/simple-net-device.h
     utils/sll-header.h
     utils/timestamp-tag.h
+    utils/unbounded-skew-clock.h
 )
 
 build_lib(
@@ -161,6 +169,7 @@ build_lib(
     test/address-test.cc
     test/bit-serializer-test.cc
     test/buffer-test.cc
+    test/clock-model-test-suite.cc
     test/drop-tail-queue-test-suite.cc
     test/error-model-test-suite.cc
     test/ipv6-address-test-suite.cc
@@ -170,6 +179,7 @@ build_lib(
     test/packet-test-suite.cc
     test/packetbb-test-suite.cc
     test/pcap-file-test-suite.cc
+    test/replay-clock-test-suite.cc
     test/sequence-number-test-suite.cc
     test/test-data-rate.cc
 )

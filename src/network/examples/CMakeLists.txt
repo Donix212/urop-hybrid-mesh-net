@@ -4,6 +4,7 @@ set(base_examples
     main-packet-tag
     packet-socket-apps
     lollipop-comparisons
+    clock-model
 )
 
 foreach(
