@@ -12,18 +12,18 @@
 #include "ns3/point-to-point-module.h"
 
 /**
-* @file This example demonstrates how to use Ipv4GlobalRoutingHelper::PrintRoute()
-*  and PrintRoutePathAt() and its overloads to print the route path as calculated
-*  by the global routing protocol. The Print Format loosely follows that of traceroute.
-*  Similar to traceroute, there is an option to disable the Reverse Node ID lookup.
-*  We have two functions PrintRoute() and PrintRouteAt(). Each of these has 4 overloads.
-*  Please refer to the doxygen documentation for more details on each of the functions and its
-*  overloads.
-*  The default behaviour is to also print the node id. This can be disabled by setting the
-*  nodeIdLookup argument to false. This is similar to linux traceroute -n option.
-*  We explain the use of each of the overloads for PrintRoute() using the below topology
-*  The PrintRouteAt() variant behaves similarly with the added time argument.
-*  @verbatim  Simple point to point links:
+ * @file This example demonstrates how to use Ipv4GlobalRoutingHelper::PrintRoute()
+ *  and PrintRoutePathAt() and its overloads to print the route path as calculated
+ *  by the global routing protocol. The Print Format loosely follows that of traceroute.
+ *  Similar to traceroute, there is an option to disable the Reverse Node ID lookup.
+ *  We have two functions PrintRoute() and PrintRouteAt(). Each of these has 4 overloads.
+ *  Please refer to the doxygen documentation for more details on each of the functions and its
+ *  overloads.
+ *  The default behaviour is to also print the node id. This can be disabled by setting the
+ *  nodeIdLookup argument to false. This is similar to linux traceroute -n option.
+ *  We explain the use of each of the overloads for PrintRoute() using the below topology
+ *  The PrintRouteAt() variant behaves similarly with the added time argument.
+ *  @verbatim  Simple point to point links:
       ________
      /        \
    n0 -- n1 -- n2 -- n3     n4----n5

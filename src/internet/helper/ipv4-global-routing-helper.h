@@ -71,7 +71,6 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
      * If the routing path does not exist, it prints that the path does not exist between
      * the nodes in the ostream. This is a scheduler for the PrintRoute call.
      *
-
      * @param sourceNode the source node
      * @param dest the IPv4 destination address
      * @param printTime the time at which the routing path should be printed.
