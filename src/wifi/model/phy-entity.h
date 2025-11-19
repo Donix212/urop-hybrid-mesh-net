@@ -24,11 +24,11 @@
 #include "ns3/simple-ref-count.h"
 #include "ns3/wifi-export.h"
 
-#include <list>
 #include <map>
 #include <optional>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 /**
  * @file
@@ -178,13 +178,13 @@ class WIFI_EXPORT PhyEntity
      *
      * @return a const iterator to the first WifiMode.
      */
-    std::list<WifiMode>::const_iterator begin() const;
+    std::vector<WifiMode>::const_iterator begin() const;
     /**
      * @brief Return a const iterator to past-the-last WifiMode
      *
      * @return a const iterator to past-the-last WifiMode.
      */
-    std::list<WifiMode>::const_iterator end() const;
+    std::vector<WifiMode>::const_iterator end() const;
 
     /**
      * Return the field following the provided one.
@@ -908,7 +908,7 @@ class WIFI_EXPORT PhyEntity
     Ptr<WifiPhyStateHelper> m_state; //!< Pointer to WifiPhyStateHelper of the WifiPhy (to make it
                                      //!< reachable for child classes)
 
-    std::list<WifiMode> m_modeList; //!< the list of supported modes
+    std::vector<WifiMode> m_modeList; //!< the list of supported modes
 
     std::vector<EventId> m_endPreambleDetectionEvents; //!< the end of preamble detection events
     std::vector<EventId> m_endOfMpduEvents; //!< the end of MPDU events (only used for A-MPDUs)
