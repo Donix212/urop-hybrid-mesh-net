@@ -1,6 +1,43 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup tutorial
+ * Demonstrate tracing in a network simulation to follow changes to the
+ * congestion window.
+ *
+ *           node 0                 node 1
+ *     +----------------+    +----------------+
+ *     |    ns-3 TCP    |    |    ns-3 TCP    |
+ *     +----------------+    +----------------+
+ *     |    10.1.1.1    |    |    10.1.1.2    |
+ *     +----------------+    +----------------+
+ *     | point-to-point |    | point-to-point |
+ *     +----------------+    +----------------+
+ *             |                     |
+ *             +---------------------+
+ *                  5 Mbps, 2 ms
+ *
+ *
+ * We want to look at changes in the ns-3 TCP congestion window.  We need
+ * to crank up a flow and hook the CongestionWindow attribute on the socket
+ * of the sender.  Normally one would use an on-off application to generate a
+ * flow, but this has a couple of problems.  First, the socket of the on-off
+ * application is not created until Application Start time, so we wouldn't be
+ * able to hook the socket (now) at configuration time.  Second, even if we
+ * could arrange a call after start time, the socket is not public so we
+ * couldn't get at it.
+ *
+ * So, we can cook up a simple version of the on-off application that does what
+ * we want.  On the plus side we don't need all of the complexity of the on-off
+ * application.  On the minus side, we don't have a helper, so we have to get
+ * a little more involved in the details, but this is trivial.
+ *
+ * So first, we create a socket and do the trace connect on it; then we pass
+ * this socket into the constructor of our simple application which we then
+ * install in the source node.
+ */
 
 #include "tutorial-app.h"
 
@@ -15,41 +52,6 @@
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("FifthScriptExample");
-
-// ===========================================================================
-//
-//         node 0                 node 1
-//   +----------------+    +----------------+
-//   |    ns-3 TCP    |    |    ns-3 TCP    |
-//   +----------------+    +----------------+
-//   |    10.1.1.1    |    |    10.1.1.2    |
-//   +----------------+    +----------------+
-//   | point-to-point |    | point-to-point |
-//   +----------------+    +----------------+
-//           |                     |
-//           +---------------------+
-//                5 Mbps, 2 ms
-//
-//
-// We want to look at changes in the ns-3 TCP congestion window.  We need
-// to crank up a flow and hook the CongestionWindow attribute on the socket
-// of the sender.  Normally one would use an on-off application to generate a
-// flow, but this has a couple of problems.  First, the socket of the on-off
-// application is not created until Application Start time, so we wouldn't be
-// able to hook the socket (now) at configuration time.  Second, even if we
-// could arrange a call after start time, the socket is not public so we
-// couldn't get at it.
-//
-// So, we can cook up a simple version of the on-off application that does what
-// we want.  On the plus side we don't need all of the complexity of the on-off
-// application.  On the minus side, we don't have a helper, so we have to get
-// a little more involved in the details, but this is trivial.
-//
-// So first, we create a socket and do the trace connect on it; then we pass
-// this socket into the constructor of our simple application which we then
-// install in the source node.
-// ===========================================================================
-//
 
 /**
  * Congestion window change callback

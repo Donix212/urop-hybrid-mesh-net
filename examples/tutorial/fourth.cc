@@ -1,6 +1,13 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup tutorial
+ * Simple example of Tracing and Callbacks.  This example doesn't simulate a network;
+ * it just creates a simple object, hooks a trace to it's callback, and demonstrates
+ * the callback function being called when the object member variable is updated.
+ */
 
 #include "ns3/object.h"
 #include "ns3/simulator.h"
@@ -42,6 +49,11 @@ class MyObject : public Object
     TracedValue<int32_t> m_myInt; //!< The traced value.
 };
 
+/**
+ * Log the old and new traced value.
+ * @param oldValue The original value
+ * @param newValue The new value
+ */
 void
 IntTrace(int32_t oldValue, int32_t newValue)
 {
