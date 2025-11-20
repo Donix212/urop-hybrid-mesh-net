@@ -3,25 +3,27 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
-
-//
-// This example is designed to show the main features of an ns3::TimeProbe.
-// A test object is used to emit values through a trace source.  The
-// example shows three ways to use a ns3::TimeProbe to hook the output
-// of this trace source (in addition to hooking the raw trace source).
-//
-// It produces two types of output.  By default, it will generate a
-// gnuplot of interarrival times.  If the '--verbose=1' argument is passed,
-// it will also generate debugging output of the form (for example):
-//
-//     Emitting at 96.5378 seconds
-//     context: raw trace source old 0.293343 new 0.00760254
-//     context: probe1 old 0.293343 new 0.00760254
-//     context: probe2 old 0.293343 new 0.00760254
-//     context: probe3 old 0.293343 new 0.00760254
-//
-// The stopTime defaults to 100 seconds but can be changed by an argument.
-//
+/**
+ * @file
+ * @ingroup stats
+ *
+ * This example is designed to show the main features of an ns3::TimeProbe.
+ * A test object is used to emit values through a trace source.  The
+ * example shows three ways to use a ns3::TimeProbe to hook the output
+ * of this trace source (in addition to hooking the raw trace source).
+ *
+ * It produces two types of output.  By default, it will generate a
+ * gnuplot of interarrival times.  If the '--verbose=1' argument is passed,
+ * it will also generate debugging output of the form (for example):
+ *
+ *     Emitting at 96.5378 seconds
+ *     context: raw trace source old 0.293343 new 0.00760254
+ *     context: probe1 old 0.293343 new 0.00760254
+ *     context: probe2 old 0.293343 new 0.00760254
+ *     context: probe3 old 0.293343 new 0.00760254
+ *
+ * The stopTime defaults to 100 seconds but can be changed by an argument.
+ */
 
 #include "ns3/core-module.h"
 #include "ns3/gnuplot-helper.h"
@@ -100,7 +102,12 @@ Emitter::Emit()
     Simulator::Schedule(Seconds(m_var->GetValue()), &Emitter::Emit, this);
 }
 
-// This is a function to test hooking a raw function to the trace source
+/**
+ * This is a function to test hooking a raw function to the trace source.
+ * @param context The execution context (probe name)
+ * @param oldVal The original value
+ * @param newVal The new value
+ */
 void
 NotifyViaTraceSource(std::string context, Time oldVal, Time newVal)
 {
@@ -111,7 +118,10 @@ NotifyViaTraceSource(std::string context, Time oldVal, Time newVal)
     }
 }
 
-// This is a function to test hooking it to the probe output
+/**
+ * This is a function to test hooking it to the probe output.
+ * @copydetails NotifyViaTraceSource()
+ */
 void
 NotifyViaProbe(std::string context, double oldVal, double newVal)
 {

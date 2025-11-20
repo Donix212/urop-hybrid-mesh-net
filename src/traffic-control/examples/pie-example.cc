@@ -47,6 +47,10 @@ const Time client_stop_time = global_stop_time - Seconds(2.0);
 
 /** @} */
 
+/**
+ * Node and interface container
+ * @{
+ */
 NodeContainer n0n2;
 NodeContainer n1n2;
 NodeContainer n2n3;
@@ -59,9 +63,22 @@ Ipv4InterfaceContainer i2i3;
 Ipv4InterfaceContainer i3i4;
 Ipv4InterfaceContainer i3i5;
 
+/** @} */
+
+/**
+ * Plot file output stream
+ * @{
+ */
 std::stringstream filePlotQueueDisc;
 std::stringstream filePlotQueueDiscAvg;
 
+/** @} */
+
+/**
+ * Periodically log the instantaneous and average queue size
+ * @param queue The queue
+ * @todo Keep the output files open, instead of re-opening every iteration
+ */
 void
 CheckQueueDiscSize(Ptr<QueueDisc> queue)
 {
@@ -86,6 +103,7 @@ CheckQueueDiscSize(Ptr<QueueDisc> queue)
     fPlotQueueDiscAvg.close();
 }
 
+/** Instantiate all the applications */
 void
 BuildAppsTest()
 {

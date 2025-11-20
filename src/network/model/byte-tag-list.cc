@@ -5,6 +5,11 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::ByteTagList implementation.
+ */
 #include "byte-tag-list.h"
 
 #include "ns3/log.h"
@@ -13,6 +18,10 @@
 #include <limits>
 #include <vector>
 
+/**
+ * @ingroup packet
+ * Use internal memory free list for ByteTagList
+ */
 #define USE_FREE_LIST 1
 
 namespace ns3

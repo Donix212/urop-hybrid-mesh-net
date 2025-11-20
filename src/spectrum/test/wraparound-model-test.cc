@@ -5,6 +5,10 @@
  *
  * Author: Gabriel Ferreira <gabrielcarvfer@gmail.com>
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/boolean.h"
 #include "ns3/config.h"
@@ -47,6 +51,13 @@ class WraparoundModelTest : public TestCase
     void DoRun() override;
 };
 
+/**
+ * Find the site nearest th @c virtualPos
+ * @param sites The list of real sites
+ * @param numSites The number of @c sites to consider
+ * @param virtualPos The target virtual location
+ * @return The site index of the nearest site
+ */
 size_t
 GetNearestSite(std::vector<Vector3D>& sites, size_t numSites, Vector3D virtualPos)
 {

@@ -5,11 +5,9 @@
  *
  * Author:  Alberto Gallegos Ramonet <ramonet@fc.ritsumei.ac.jp>
  */
-
-/*
- *   Coordinator              End Device
- *       N0   <----------------  N1
- *      (dev0)                 (dev1)
+/**
+ * @file
+ * @ingroup lr-wpan
  *
  * This example demonstrate the usage of the MAC primitives involved in
  * direct transmissions for the beacon enabled mode of IEEE 802.15.4-2011.
@@ -19,6 +17,9 @@
  * This example do not demonstrate a full protocol stack usage.
  * For full protocol stack usage refer to 6lowpan examples.
  *
+ *     Coordinator              End Device
+ *         N0   <----------------  N1
+ *        (dev0)                 (dev1)
  */
 
 #include "ns3/constant-position-mobility-model.h"
@@ -36,12 +37,17 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
+/** Log receipt of a MLME-BEADON-NOTIRY.indication beacon */
 void
 BeaconIndication(MlmeBeaconNotifyIndicationParams)
 {
     NS_LOG_UNCOND(Simulator::Now().GetSeconds() << " secs | Received BEACON packet of size ");
 }
 
+/**
+ * Log MCPS-DATA.indication receipt of a packet
+ * @param p The packet
+ */
 void
 DataIndication(McpsDataIndicationParams, Ptr<Packet> p)
 {
@@ -49,6 +55,10 @@ DataIndication(McpsDataIndicationParams, Ptr<Packet> p)
                   << " secs | Received DATA packet of size " << p->GetSize());
 }
 
+/**
+ * Log successful MCPS-DATA.confirm (ACK'd) transmissions.
+ * @param params The confirmation parameters
+ */
 void
 TransEndIndication(McpsDataConfirmParams params)
 {
@@ -60,6 +70,10 @@ TransEndIndication(McpsDataConfirmParams params)
     }
 }
 
+/**
+ * Log receipt MCPS-DATA.indication
+ * @param p The packet
+ */
 void
 DataIndicationCoordinator(McpsDataIndicationParams, Ptr<Packet> p)
 {
@@ -67,6 +81,10 @@ DataIndicationCoordinator(McpsDataIndicationParams, Ptr<Packet> p)
                   << "s Coordinator Received DATA packet (size " << p->GetSize() << " bytes)");
 }
 
+/**
+ * Log successful MLME-START.confirm
+ * @param params The confirmation parameters
+ */
 void
 StartConfirm(MlmeStartConfirmParams params)
 {

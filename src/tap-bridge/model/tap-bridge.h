@@ -7,6 +7,12 @@
 #ifndef TAP_BRIDGE_H
 #define TAP_BRIDGE_H
 
+/**
+ * @file
+ * @ingroup tap-bridge
+ * Class ns3::TapBridge and ns3::TapBridgeFdReader declarations.
+ */
+
 #include "ns3/address.h"
 #include "ns3/callback.h"
 #include "ns3/data-rate.h"

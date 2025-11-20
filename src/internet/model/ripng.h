@@ -9,6 +9,12 @@
 #ifndef RIPNG_H
 #define RIPNG_H
 
+/**
+ * @file
+ * @ingroup ipv6Routing
+ * Class ns3::RipNg and ns3::RipNgRoutingTableEntry declarations.
+ */
+
 #include "ipv6-interface.h"
 #include "ipv6-l3-protocol.h"
 #include "ipv6-routing-protocol.h"

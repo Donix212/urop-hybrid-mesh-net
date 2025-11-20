@@ -5,6 +5,11 @@
  *
  * Author: Joe Kopena (tjkopena@cs.drexel.edu)
  */
+/**
+ * @file
+ * @ingroup stats
+ * Class OmnetDataOutput implementation
+ */
 
 #include "omnet-data-output.h"
 
@@ -58,6 +63,11 @@ OmnetDataOutput::DoDispose()
 
 //----------------------------------------------
 
+/**
+ * Test if a string is a numeric
+ * @param s The string
+ * @return @c true if the string is a number
+ */
 inline bool
 isNumeric(const std::string& s)
 {

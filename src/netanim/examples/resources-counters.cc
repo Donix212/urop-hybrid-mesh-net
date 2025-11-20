@@ -23,12 +23,21 @@ using Rgb = AnimationInterface::Rgb;
 /** Shorthand for the RGB primary colors. */
 const auto& colors = AnimationInterface::PrimaryColors;
 
+/** Resource and counter ids @{ */
 uint32_t resourceId1;
 uint32_t resourceId2;
 uint32_t nodeCounterIdUint32;
 uint32_t nodeCounterIdDouble1;
 uint32_t nodeCounterIdDouble2;
 
+/** @} */
+
+/**
+ * Update the display by labeling the links with the current time,
+ * relabeling Node2, changing the color for nodes 4-11, and
+ * changing the resource used on node 3, and update the node counters.
+ * @param pAnim The animation.
+ */
 void
 modify()
 {

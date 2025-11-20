@@ -5,6 +5,11 @@
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  */
+/**
+ * @file
+ * @ingroup ipv6Routing
+ * Class ns3::RipNg and ns3::RipNgRoutingTableEntry implementations.
+ */
 
 #include "ripng.h"
 

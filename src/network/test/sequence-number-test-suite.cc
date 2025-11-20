@@ -6,6 +6,12 @@
 // Author: Gustavo J. A. M. Carneiro  <gjc@inescporto.pt> <gjcarneiro@gmail.com>
 //
 
+/**
+ * @file
+ * @ingroup network-test
+ * Sequence number tests
+ */
+
 #include "ns3/object.h"
 #include "ns3/sequence-number.h"
 #include "ns3/test.h"

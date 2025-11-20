@@ -5,6 +5,10 @@
  *
  * Author: Sharan Naribole <sharan.naribole@gmail.com>
  */
+/**
+ * @file
+ * @ingroup wifi-test
+ */
 
 #include "ns3/ap-wifi-mac.h"
 #include "ns3/assert.h"
@@ -529,4 +533,5 @@ WifiStaticInfraBssTestSuite::WifiStaticInfraBssTestSuite()
     }
 }
 
+/** Test suite instance variable. */
 static WifiStaticInfraBssTestSuite g_wifiStaticInfraBssTestSuite;

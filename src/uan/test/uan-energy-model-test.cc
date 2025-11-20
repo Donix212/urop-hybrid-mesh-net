@@ -5,6 +5,10 @@
  *
  * Author: Andrea Sacco <andrea.sacco85@gmail.com>
  */
+/**
+ * @file
+ * @ingroup uan-test
+ */
 
 #include "ns3/acoustic-modem-energy-model-helper.h"
 #include "ns3/acoustic-modem-energy-model.h"
@@ -330,5 +334,5 @@ UanEnergyModelTestSuite::UanEnergyModelTestSuite()
     AddTestCase(new AcousticModemEnergyDepletionTestCase, TestCase::Duration::QUICK);
 }
 
-// create an instance of the test suite
+/** Test suite instance variable */
 static UanEnergyModelTestSuite g_uanEnergyModelTestSuite;

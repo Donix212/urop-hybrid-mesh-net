@@ -5,6 +5,10 @@
  *
  * Author: Nicola Baldo <nbaldo@cttc.es>
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/log.h"
 #include "ns3/object.h"

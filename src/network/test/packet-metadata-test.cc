@@ -5,6 +5,11 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
+/**
+ * @file
+ * @ingroup packet
+ */
+
 #include "ns3/header.h"
 #include "ns3/packet-metadata.h"
 #include "ns3/packet.h"

@@ -7,8 +7,11 @@
  * http://wiki.osll.ru/doku.php/start) Tommaso Pecorella <tommaso.pecorella@unifi.it> Pavel Vasilyev
  * <pavel.vasilyev@sredasolutions.com>
  */
-
-// Interface between ns-3 and the network animator
+/**
+ * @file
+ * @ingroup netanim
+ * Interface between ns-3 and the network animator
+ */
 
 #include <cstdio>
 #ifndef WIN32
@@ -57,6 +60,26 @@ NS_LOG_COMPONENT_DEFINE("AnimationInterface");
 // Globals
 
 static bool initialized = false; //!< Initialization flag
+
+/** Helper macros for early return in many functions @{ */
+/** Early return if not started or not in the time window. */
+#define CHECK_STARTED_INTIMEWINDOW                                                                 \
+    {                                                                                              \
+        if (!m_started || !IsInTimeWindow())                                                       \
+        {                                                                                          \
+            return;                                                                                \
+        }                                                                                          \
+    }
+/** Early return if not started, not in the time window, or not tracking packets. */
+#define CHECK_STARTED_INTIMEWINDOW_TRACKPACKETS                                                    \
+    {                                                                                              \
+        if (!m_started || !IsInTimeWindow() || !m_trackPackets)                                    \
+        {                                                                                          \
+            return;                                                                                \
+        }                                                                                          \
+    }
+
+/** @} */
 
 // Public methods
 

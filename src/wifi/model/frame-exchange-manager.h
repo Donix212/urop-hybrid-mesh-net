@@ -9,6 +9,12 @@
 #ifndef FRAME_EXCHANGE_MANAGER_H
 #define FRAME_EXCHANGE_MANAGER_H
 
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::FrameExchangeManager declaration.
+ */
+
 #include "mac-rx-middle.h"
 #include "mac-tx-middle.h"
 #include "qos-txop.h"
@@ -29,6 +35,10 @@
 #include <functional>
 #include <optional>
 
+/**
+ * @ingroup wifi
+ * Wifi local context
+ */
 #define WIFI_FEM_NS_LOG_APPEND_CONTEXT                                                             \
     std::clog << "[link=" << +m_linkId << "][mac=" << m_self << "] "
 

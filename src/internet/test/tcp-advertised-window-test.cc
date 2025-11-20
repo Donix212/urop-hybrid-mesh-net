@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
+/**
+ * @file
+ * @ingroup internet-test
+ */
+
 #include "tcp-error-model.h"
 #include "tcp-general-test.h"
 
@@ -511,5 +516,5 @@ class TcpAdvertisedWindowTestSuite : public TestSuite
     }
 };
 
-static TcpAdvertisedWindowTestSuite
-    g_tcpAdvertisedWindowTestSuite; //<! static obj for test initialization
+/** Test suite instance variable. */
+static TcpAdvertisedWindowTestSuite g_tcpAdvertisedWindowTestSuite;

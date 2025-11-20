@@ -13,6 +13,11 @@
  *
  * Ported to ns-3 by: Andrew McGregor <andrewmcgr@gmail.com>
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ * Class ns3::CoDelQueueDisc implementation.
+ */
 
 #include "codel-queue-disc.h"
 

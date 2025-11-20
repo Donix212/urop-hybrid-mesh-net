@@ -5,6 +5,11 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
+/**
+ * @file
+ * @ingroup packet
+ */
+
 #include "ns3/packet-tag-list.h"
 #include "ns3/packet.h"
 #include "ns3/test.h"

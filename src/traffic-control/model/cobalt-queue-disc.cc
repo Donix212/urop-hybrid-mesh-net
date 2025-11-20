@@ -12,6 +12,11 @@
  *                    Shefali Gupta <shefaligups11@gmail.com>
  *                    Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ * Class ns3::CobaltQueueDisc implementation.
+ */
 
 #include "cobalt-queue-disc.h"
 

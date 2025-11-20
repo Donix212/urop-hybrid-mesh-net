@@ -8,6 +8,12 @@
 #ifndef QUEUE_ITEM_H
 #define QUEUE_ITEM_H
 
+/**
+ * @file
+ * @ingroup netdevice
+ * Class ns3::QueueItem declaration.
+ */
+
 #include "ns3/address.h"
 #include "ns3/nstime.h"
 #include "ns3/ptr.h"

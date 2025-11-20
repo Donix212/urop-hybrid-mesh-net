@@ -9,6 +9,11 @@
 
 #ifndef MESH_INFORMATION_ELEMENT_VECTOR_H
 #define MESH_INFORMATION_ELEMENT_VECTOR_H
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::MeshInformationElementVector declaration.
+ */
 
 #include "ns3/wifi-information-element.h"
 

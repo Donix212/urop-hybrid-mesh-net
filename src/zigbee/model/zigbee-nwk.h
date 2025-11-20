@@ -44,13 +44,17 @@ namespace zigbee
  * This section documents the API of the Zigbee Specification related models. For a generic
  * functional description, please refer to the ns-3 manual.
  */
+/**
+ * @ingroup zigbee
+ * @defgroup zigbee-test ZIGBEE model tests
+ */
 
 static constexpr uint32_t ALL_CHANNELS = 0x07FFF800; //!< Bitmap representing all channels (11~26)
                                                      //!< LSB b0-b26, b27-b31 MSB
                                                      //!< Page 0 in Zigbee (250kbps O-QPSK)
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * Indicates a pending NWK primitive
  */
@@ -68,7 +72,7 @@ enum PendingPrimitiveNwk : std::uint8_t
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * Table 3.2 (Address Mode) NLDE-DATA-Request parameters
  */
@@ -138,7 +142,7 @@ enum RouteDiscoveryStatus : std::uint8_t
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  *  Network layer status values
  *  Combines Zigbee Specification r22.1.0 Table 3-73 and
@@ -236,7 +240,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec);
 std::ostream& operator<<(std::ostream& os, const uint8_t& num);
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  *  Status codes for network status command frame and route discovery failures.
  *
@@ -266,7 +270,7 @@ enum NetworkStatusCode : std::uint8_t
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  Channel List Structure. See Zigbee Specification 3.2.2.2.1
  */
@@ -284,7 +288,7 @@ struct ChannelList
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * NLDE-DATA.confirm params. See Zigbee Specification 3.2.1.2
  */
@@ -298,7 +302,7 @@ struct NldeDataConfirmParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * NLDE-DATA.indication params. See Zigbee Specification 3.2.1.3.1
  */
@@ -316,7 +320,7 @@ struct NldeDataIndicationParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * NLDE-DATA.request params. See Zigbee Specification 3.2.1.1
  */
@@ -341,7 +345,7 @@ struct NldeDataRequestParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-NETWORK-FORMATION.request params. See Zigbee Specification 3.2.2.5.1
  */
@@ -373,7 +377,7 @@ struct NlmeNetworkFormationRequestParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * A group of pending parameters arranged into a structure during the execution of
  * a NLME-NETWORK-FORMATION.request primitive.
@@ -386,7 +390,7 @@ struct NetFormPendingParamsGen : public SimpleRefCount<NetFormPendingParamsGen>
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-NETWORK-FORMATION.confirm params. See Zigbee Specification 3.2.2.6.1
  */
@@ -397,7 +401,7 @@ struct NlmeNetworkFormationConfirmParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-ROUTE-DISCOVERY.request params. See Zigbee Specification 3.2.2.33
  */
@@ -413,7 +417,7 @@ struct NlmeRouteDiscoveryRequestParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-ROUTE-DISCOVERY.confirm params. See Zigbee Specification r22.1.0, 3.2.2.34
  */
@@ -427,7 +431,7 @@ struct NlmeRouteDiscoveryConfirmParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-DIRECT-JOIN.request params.
  *  See Zigbee Specification r22.1.0, 3.2.2.16
@@ -440,7 +444,7 @@ struct NlmeDirectJoinRequestParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-DIRECT-JOIN.confirm params.
  *  See Zigbee Specification r22.1.0, 3.2.2.17
@@ -454,7 +458,7 @@ struct NlmeDirectJoinConfirmParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-NETWORK-DISCOVERY.request params.
  *  See Zigbee Specification r22.1.0, 3.2.2.3
@@ -494,7 +498,7 @@ struct NetworkDescriptor
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-NETWORK-DISCOVERY.confirm params. See Zigbee Specification r22.1.0, 3.2.2.4
  */
@@ -508,7 +512,7 @@ struct NlmeNetworkDiscoveryConfirmParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * NLME-JOIN.request params.
  * See Zigbee Specification r22.1.0, 3.2.2.13
@@ -530,7 +534,7 @@ struct NlmeJoinRequestParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-JOIN.confirm params.
  *  See Zigbee Specification r22.1.0, 3.2.2.15
@@ -562,7 +566,7 @@ struct NlmeJoinConfirmParams
 };
 
 /**
- *  @ingroup Zigbee
+ *  @ingroup zigbee
  *
  *  NLME-JOIN.indication params.
  *  See Zigbee Specification r22.1.0, 3.2.2.14
@@ -581,7 +585,7 @@ struct NlmeJoinIndicationParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * NLME-START-ROUTER.request params.
  * See Zigbee Specification r22.1.0, 3.2.2.13
@@ -594,7 +598,7 @@ struct NlmeStartRouterRequestParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * NLME-START-ROUTER.confirm params.
  * See Zigbee Specification r22.1.0, 3.2.2.10
@@ -606,7 +610,7 @@ struct NlmeStartRouterConfirmParams
 };
 
 /**
- * @ingroup Zigbee
+ * @ingroup zigbee
  *
  * Class that implements the Zigbee Specification Network Layer
  */

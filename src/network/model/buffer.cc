@@ -8,6 +8,7 @@
 /**
  * @file
  * @ingroup packet
+ * Class ns3::Buffer implementation.
  */
 
 #include "buffer.h"

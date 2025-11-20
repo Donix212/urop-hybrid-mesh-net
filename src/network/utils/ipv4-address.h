@@ -9,6 +9,12 @@
 #ifndef IPV4_ADDRESS_H
 #define IPV4_ADDRESS_H
 
+/**
+ * @file
+ * @ingroup address
+ * Class ns3::Ipv4Address, ns3::Ipv4Mask and ns3::Ipv4AddressHash declarations.
+ */
+
 #include "ns3/address.h"
 #include "ns3/attribute-helper.h"
 #include "ns3/deprecated.h"

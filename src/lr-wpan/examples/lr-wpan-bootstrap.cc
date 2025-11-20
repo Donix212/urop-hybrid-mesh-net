@@ -5,8 +5,10 @@
  *
  * Author:  Alberto Gallegos Ramonet <alramonet@is.tokushima-u.ac.jp>
  */
-
-/*
+/**
+ * @file
+ * @ingroup lr-wpan
+ *
  * This example demonstrates the use of lr-wpan bootstrap (i.e. IEEE 802.15.4 Scan & Association).
  * For a full description of this process check IEEE 802.15.4-2011 Section 5.1.3.1 and Figure 18.
  *
@@ -40,7 +42,11 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
-
+/**
+ * Update the animation by changing node color based on @c panId
+ * @param nodes The Nodes
+ * @param anim The animator
+ */
 static void
 UpdateAnimation(const NodeContainer& nodes, AnimationInterface* anim)
 {
@@ -67,14 +73,20 @@ UpdateAnimation(const NodeContainer& nodes, AnimationInterface* anim)
     }
 }
 
+/**
+ * On successful scans try to associate a coordinator.
+ *
+ * The algorithm to select which coordinator to associate is not
+ * covered by the standard. In this case, we use the coordinator
+ * with the highest LQI value obtained from a passive scan and make
+ * sure this coordinator allows association.
+ *
+ * @param device The device scanned
+ * @param params The results of the scan
+ */
 static void
 ScanConfirm(Ptr<LrWpanNetDevice> device, MlmeScanConfirmParams params)
 {
-    // The algorithm to select which coordinator to associate is not
-    // covered by the standard. In this case, we use the coordinator
-    // with the highest LQI value obtained from a passive scan and make
-    // sure this coordinator allows association.
-
     if (params.m_status == MacStatus::SUCCESS)
     {
         // Select the coordinator with the highest LQI from the PAN Descriptor List
@@ -172,27 +184,32 @@ ScanConfirm(Ptr<LrWpanNetDevice> device, MlmeScanConfirmParams params)
     }
 }
 
+/**
+ * Send a response to an association request.
+ *
+ * This is typically implemented by the coordinator next layer (3rd layer or higher).
+ * The steps described below are out of the scope of the standard.
+ *
+ * Here the 3rd layer should check:
+ * a. Whether or not the device was previously associated with this PAN
+ *    (the coordinator keeps a list).
+ * b. The coordinator have sufficient resources available to allow the association.
+ * If the association fails, status = 1 or 2 and assocShortAddr = FFFF.
+ *
+ * In this example, the coordinator accepts every association request and have no association
+ * limits. Furthermore, previous associated devices are not checked.
+ *
+ * When short address allocation is on (set initially in the association request), the
+ * coordinator is supposed to assign a short address. In here, we just do a dummy address
+ * assign. The assigned short address is just a truncated version of the device existing
+ * extended address (i.e the default short address).
+ *
+ * @param device The device to send on
+ * @param params The associate parameters
+ */
 static void
 AssociateIndication(Ptr<LrWpanNetDevice> device, MlmeAssociateIndicationParams params)
 {
-    // This is typically implemented by the coordinator next layer (3rd layer or higher).
-    // The steps described below are out of the scope of the standard.
-
-    // Here the 3rd layer should check:
-    //    a) Whether or not the device was previously associated with this PAN
-    //       (the coordinator keeps a list).
-    //    b) The coordinator have sufficient resources available to allow the
-    //       association.
-    // If the association fails, status = 1 or 2 and assocShortAddr = FFFF.
-
-    // In this example, the coordinator accepts every association request and have no association
-    // limits. Furthermore, previous associated devices are not checked.
-
-    // When short address allocation is on (set initially in the association request), the
-    // coordinator is supposed to assign a short address. In here, we just do a dummy address
-    // assign. The assigned short address is just a truncated version of the device existing
-    // extended address (i.e the default short address).
-
     MlmeAssociateResponseParams assocRespParams;
 
     assocRespParams.m_extDevAddr = params.m_extDevAddr;
@@ -227,12 +244,17 @@ AssociateIndication(Ptr<LrWpanNetDevice> device, MlmeAssociateIndicationParams p
     Simulator::ScheduleNow(&LrWpanMac::MlmeAssociateResponse, device->GetMac(), assocRespParams);
 }
 
+/**
+ * Used by coordinator higher layer to inform results of a
+ * association procedure from its mac layer. This is implemented by other protocol stacks
+ * and is only here for demonstration purposes.
+ *
+ * @param device The device to send on
+ * @param params The associate parameters
+ */
 static void
 CommStatusIndication(Ptr<LrWpanNetDevice> device, MlmeCommStatusIndicationParams params)
 {
-    // Used by coordinator higher layer to inform results of a
-    // association procedure from its mac layer.This is implemented by other protocol stacks
-    // and is only here for demonstration purposes.
     switch (params.m_status)
     {
     case MacStatus::TRANSACTION_EXPIRED:
@@ -263,12 +285,17 @@ CommStatusIndication(Ptr<LrWpanNetDevice> device, MlmeCommStatusIndicationParams
     }
 }
 
+/**
+ * Used by device higher layer to inform the results of a
+ * association procedure from its mac layer. This is implemented by other protocol stacks
+ * and is only here for demonstration purposes.
+ *
+ * @param device The device to send on
+ * @param params The associate parameters
+ */
 static void
 AssociateConfirm(Ptr<LrWpanNetDevice> device, MlmeAssociateConfirmParams params)
 {
-    // Used by device higher layer to inform the results of a
-    // association procedure from its mac layer.This is implemented by other protocol stacks
-    // and is only here for demonstration purposes.
     if (params.m_status == MacStatus::SUCCESS)
     {
         std::cout << Simulator::Now().As(Time::S) << " Node " << device->GetNode()->GetId() << " ["
@@ -295,6 +322,11 @@ AssociateConfirm(Ptr<LrWpanNetDevice> device, MlmeAssociateConfirmParams params)
     }
 }
 
+/**
+ * Log response to a MLME-START.confirm poll
+ * @param device The device to send on
+ * @param params The associate parameters
+ */
 static void
 PollConfirm(Ptr<LrWpanNetDevice> device, MlmePollConfirmParams params)
 {

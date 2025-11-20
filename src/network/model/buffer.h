@@ -11,6 +11,7 @@
 /**
  * @file
  * @ingroup packet
+ * Class ns3::Buffer declaration.
  */
 
 #include "ns3/assert.h"

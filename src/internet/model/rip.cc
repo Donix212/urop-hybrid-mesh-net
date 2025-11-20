@@ -5,6 +5,11 @@
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  */
+/**
+ * @file
+ * @ingroup rip
+ * Class ns3::RipRoutingTableEntry and ns3::Rip implementations.
+ */
 
 #include "rip.h"
 

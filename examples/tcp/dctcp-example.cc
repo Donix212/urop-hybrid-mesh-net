@@ -10,74 +10,78 @@
  *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  *          Tom Henderson <tomh@tomh.org>
  */
-
-// The network topology used in this example is based on Fig. 17 described in
-// Mohammad Alizadeh, Albert Greenberg, David A. Maltz, Jitendra Padhye,
-// Parveen Patel, Balaji Prabhakar, Sudipta Sengupta, and Murari Sridharan.
-// "Data Center TCP (DCTCP)." In ACM SIGCOMM Computer Communication Review,
-// Vol. 40, No. 4, pp. 63-74. ACM, 2010.
-
-// The topology is roughly as follows
-//
-//  S1         S3
-//  |           |  (1 Gbps)
-//  T1 ------- T2 -- R1
-//  |           |  (1 Gbps)
-//  S2         R2
-//
-// The link between switch T1 and T2 is 10 Gbps.  All other
-// links are 1 Gbps.  In the SIGCOMM paper, there is a Scorpion switch
-// between T1 and T2, but it doesn't contribute another bottleneck.
-//
-// S1 and S3 each have 10 senders sending to receiver R1 (20 total)
-// S2 (20 senders) sends traffic to R2 (20 receivers)
-//
-// This sets up two bottlenecks: 1) T1 -> T2 interface (30 senders
-// using the 10 Gbps link) and 2) T2 -> R1 (20 senders using 1 Gbps link)
-//
-// RED queues configured for ECN marking are used at the bottlenecks.
-//
-// Figure 17 published results are that each sender in S1 gets 46 Mbps
-// and each in S3 gets 54 Mbps, while each S2 sender gets 475 Mbps, and
-// that these are within 10% of their fair-share throughputs (Jain index
-// of 0.99).
-//
-// This program runs the program by default for five seconds.  The first
-// second is devoted to flow startup (all 40 TCP flows are stagger started
-// during this period).  There is a three second convergence time where
-// no measurement data is taken, and then there is a one second measurement
-// interval to gather raw throughput for each flow.  These time intervals
-// can be changed at the command line.
-//
-// The program outputs six files.  The first three:
-// * dctcp-example-s1-r1-throughput.dat
-// * dctcp-example-s2-r2-throughput.dat
-// * dctcp-example-s3-r1-throughput.dat
-// provide per-flow throughputs (in Mb/s) for each of the forty flows, summed
-// over the measurement window.  The fourth file,
-// * dctcp-example-fairness.dat
-// provides average throughputs for the three flow paths, and computes
-// Jain's fairness index for each flow group (i.e. across each group of
-// 10, 20, and 10 flows).  It also sums the throughputs across each bottleneck.
-// The fifth and sixth:
-// * dctcp-example-t1-length.dat
-// * dctcp-example-t2-length.dat
-// report on the bottleneck queue length (in packets and microseconds
-// of delay) at 10 ms intervals during the measurement window.
-//
-// By default, the throughput averages are 23 Mbps for S1 senders, 471 Mbps
-// for S2 senders, and 74 Mbps for S3 senders, and the Jain index is greater
-// than 0.99 for each group of flows.  The average queue delay is about 1ms
-// for the T2->R2 bottleneck, and about 200us for the T1->T2 bottleneck.
-//
-// The RED parameters (min_th and max_th) are set to the same values as
-// reported in the paper, but we observed that throughput distributions
-// and queue delays are very sensitive to these parameters, as was also
-// observed in the paper; it is likely that the paper's throughput results
-// could be achieved by further tuning of the RED parameters.  However,
-// the default results show that DCTCP is able to achieve high link
-// utilization and low queueing delay and fairness across competing flows
-// sharing the same path.
+/**
+ * @file
+ * @ingroup tcp
+ *
+ * @brief The network topology used in this example is based on Fig 17 described in
+ * Mohammad Alizadeh, Albert Greenberg, David A Maltz, Jitendra Padhye,
+ * Parveen Patel, Balaji Prabhakar, Sudipta Sengupta, and Murari Sridharan,
+ * "Data Center TCP (DCTCP)." In ACM SIGCOMM Computer Communication Review,
+ * Vol. 40, No. 4, pp. 63-74. ACM, 2010.
+ *
+ * The topology is roughly as follows
+ *
+ *     S1         S3
+ *     |           |  (1 Gbps)
+ *     T1 ------- T2 -- R1
+ *     |           |  (1 Gbps)
+ *     S2         R2
+ *
+ * The link between switch T1 and T2 is 10 Gbps.  All other
+ * links are 1 Gbps.  In the SIGCOMM paper, there is a Scorpion switch
+ * between T1 and T2, but it doesn't contribute another bottleneck.
+ *
+ * S1 and S3 each have 10 senders sending to receiver R1 (20 total)
+ * S2 (20 senders) sends traffic to R2 (20 receivers)
+ *
+ * This sets up two bottlenecks: 1) T1 -> T2 interface (30 senders
+ * using the 10 Gbps link) and 2) T2 -> R1 (20 senders using 1 Gbps link)
+ *
+ * RED queues configured for ECN marking are used at the bottlenecks.
+ *
+ * Figure 17 published results are that each sender in S1 gets 46 Mbps
+ * and each in S3 gets 54 Mbps, while each S2 sender gets 475 Mbps, and
+ * that these are within 10% of their fair-share throughputs (Jain index
+ * of 0.99).
+ *
+ * This program runs the program by default for five seconds.  The first
+ * second is devoted to flow startup (all 40 TCP flows are stagger started
+ * during this period).  There is a three second convergence time where
+ * no measurement data is taken, and then there is a one second measurement
+ * interval to gather raw throughput for each flow.  These time intervals
+ * can be changed at the command line.
+ *
+ * The program outputs six files.  The first three:
+ * * dctcp-example-s1-r1-throughput.dat
+ * * dctcp-example-s2-r2-throughput.dat
+ * * dctcp-example-s3-r1-throughput.dat
+ * provide per-flow throughputs (in Mb/s) for each of the forty flows, summed
+ * over the measurement window.  The fourth file,
+ * * dctcp-example-fairness.dat
+ * provides average throughputs for the three flow paths, and computes
+ * Jain's fairness index for each flow group (i.e. across each group of
+ * 10, 20, and 10 flows).  It also sums the throughputs across each bottleneck.
+ * The fifth and sixth:
+ * * dctcp-example-t1-length.dat
+ * * dctcp-example-t2-length.dat
+ * report on the bottleneck queue length (in packets and microseconds
+ * of delay) at 10 ms intervals during the measurement window.
+ *
+ * By default, the throughput averages are 23 Mbps for S1 senders, 471 Mbps
+ * for S2 senders, and 74 Mbps for S3 senders, and the Jain index is greater
+ * than 0.99 for each group of flows.  The average queue delay is about 1ms
+ * for the T2->R2 bottleneck, and about 200us for the T1->T2 bottleneck.
+ *
+ * The RED parameters (min_th and max_th) are set to the same values as
+ * reported in the paper, but we observed that throughput distributions
+ * and queue delays are very sensitive to these parameters, as was also
+ * observed in the paper; it is likely that the paper's throughput results
+ * could be achieved by further tuning of the RED parameters.  However,
+ * the default results show that DCTCP is able to achieve high link
+ * utilization and low queueing delay and fairness across competing flows
+ * sharing the same path.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -91,6 +95,10 @@
 
 using namespace ns3;
 
+/**
+ * Local variables for output files, streams, and counters.
+ * @{
+ */
 std::stringstream filePlotQueue1;
 std::stringstream filePlotQueue2;
 std::ofstream rxS1R1Throughput;
@@ -103,6 +111,12 @@ std::vector<uint64_t> rxS1R1Bytes;
 std::vector<uint64_t> rxS2R2Bytes;
 std::vector<uint64_t> rxS3R1Bytes;
 
+/** @} */
+
+/**
+ * Periodically show the time evolution of the simulation.
+ * @param interval How often in simulation time to log progress.
+ */
 void
 PrintProgress(Time interval)
 {
@@ -136,6 +150,7 @@ TraceS3R1Sink(std::size_t index, Ptr<const Packet> p, const Address&)
     rxS3R1Bytes[index] += p->GetSize();
 }
 
+/** Initialize the received byte counters. */
 void
 InitializeCounters()
 {
@@ -153,6 +168,10 @@ InitializeCounters()
     }
 }
 
+/**
+ * Log the throughput to the output streams.
+ * @param measurementWindow The duration the counters have been accumulating.
+ */
 void
 PrintThroughput(Time measurementWindow)
 {
@@ -176,7 +195,10 @@ PrintThroughput(Time measurementWindow)
     }
 }
 
-// Jain's fairness index:  https://en.wikipedia.org/wiki/Fairness_measure
+/**
+ * Log the average throughput and [Jain's fairness](https://en.wikipedia.org/wiki/Fairness_measure)
+ * @param measurementWindow The duration the counters have been accumulating.
+ */
 void
 PrintFairness(Time measurementWindow)
 {
@@ -246,6 +268,11 @@ PrintFairness(Time measurementWindow)
                   << static_cast<double>(sum * 8) / 1e9 << " Gbps" << std::endl;
 }
 
+/**
+ * Log the queue length.
+ * @param queue The traffic queue
+ * @{
+ */
 void
 CheckT1QueueSize(Ptr<QueueDisc> queue)
 {
@@ -270,6 +297,8 @@ CheckT2QueueSize(Ptr<QueueDisc> queue)
     // check queue size every 1/100 of a second
     Simulator::Schedule(MilliSeconds(10), &CheckT2QueueSize, queue);
 }
+
+/** @} */
 
 int
 main(int argc, char* argv[])

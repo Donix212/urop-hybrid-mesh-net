@@ -9,6 +9,12 @@
 #ifndef OLSR_HEADER_H
 #define OLSR_HEADER_H
 
+/**
+ * @file
+ * @ingroup olsr
+ * Class ns3::olsr::PacketHeader and ns3::olsr::MessageHeader declarations.
+ */
+
 #include "olsr-repositories.h"
 
 #include "ns3/header.h"
@@ -23,7 +29,19 @@ namespace ns3
 namespace olsr
 {
 
+/**
+ * @brief Converts a number of seconds in the mantissa/exponent format to a decimal number.
+ *
+ * @param emf The value in mantissa/exponent format
+ * @return the decimal number of seconds.
+ */
 double EmfToSeconds(uint8_t emf);
+/**
+ * @brief Converts a decimal number of seconds to the mantissa/exponent format.
+ *
+ * @param seconds decimal number of seconds we want to convert.
+ * @return the number of seconds in mantissa/exponent format.
+ */
 uint8_t SecondsToEmf(double seconds);
 
 /**
@@ -683,6 +701,13 @@ class MessageHeader : public Header
     }
 };
 
+/**
+ * @ingroup olsr
+ * Output streamer for PacketHeader
+ * @param os The stream
+ * @param packet The OLSR packet
+ * @return The stream
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const PacketHeader& packet)
 {
@@ -690,6 +715,13 @@ operator<<(std::ostream& os, const PacketHeader& packet)
     return os;
 }
 
+/**
+ * @ingroup olsr
+ * Output streamer for MessageHeader
+ * @param os The stream
+ * @param message The OLSR message header
+ * @return The stream
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const MessageHeader& message)
 {
@@ -697,8 +729,16 @@ operator<<(std::ostream& os, const MessageHeader& message)
     return os;
 }
 
+/** Container for MessageHeader */
 typedef std::vector<MessageHeader> MessageList;
 
+/**
+ * @ingroup olsr
+ * Output streamer for a MessageHeader container
+ * @param os The stream
+ * @param messages The OLSR MessageHeader container
+ * @return The stream
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const MessageList& messages)
 {

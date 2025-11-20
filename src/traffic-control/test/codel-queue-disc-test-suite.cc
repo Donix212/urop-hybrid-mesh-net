@@ -27,6 +27,12 @@ constexpr std::size_t REC_INV_SQRT_SHIFT_ns3{32 - REC_INV_SQRT_BITS_ns3};
 
 /** @} */
 
+/**
+ * Compute Linux value for the Newton step
+ * @param rec_inv_sqrt Sample point in estimating the reciprocal square root of @c count
+ * @param count Sample number of packets dropped since entering drop state
+ * @return The value
+ */
 static uint16_t
 _codel_Newton_step(uint16_t rec_inv_sqrt, uint32_t count)
 {
@@ -39,6 +45,12 @@ _codel_Newton_step(uint16_t rec_inv_sqrt, uint32_t count)
     return static_cast<uint16_t>(val >> REC_INV_SQRT_SHIFT_ns3);
 }
 
+/**
+ * Scale a value, borrowed from Linux codel.h,
+ * @param val The value
+ * @param ep_ro The multiplier
+ * @return The scaled value
+ */
 static uint32_t
 _reciprocal_scale(uint32_t val, uint32_t ep_ro)
 {
@@ -1343,4 +1355,7 @@ class CoDelQueueDiscTestSuite : public TestSuite
         AddTestCase(new CoDelQueueDiscBasicMark(QueueSizeUnit::PACKETS), TestCase::Duration::QUICK);
         AddTestCase(new CoDelQueueDiscBasicMark(QueueSizeUnit::BYTES), TestCase::Duration::QUICK);
     }
-} g_coDelQueueTestSuite; ///< the test suite
+};
+
+/** Test suite instance variable. */
+CoDelQueueDiscTestSuite g_coDelQueueTestSuite;

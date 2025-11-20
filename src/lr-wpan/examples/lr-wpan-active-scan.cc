@@ -5,13 +5,9 @@
  *
  * Author:  Alberto Gallegos Ramonet <alramonet@is.tokushima-u.ac.jp>
  */
-
-/*
- *      [00:01]                   [00:02]                                   [00:03]
- *  PAN Coordinator 1 (PAN: 5)       End Device                        PAN Coordinator 2 (PAN: 7)
- *       |--------100 m----------------|----------106 m -----------------------|
- *  Channel 12               (Active Scan channels 11-14)                 Channel 14
- *
+/**
+ * @file
+ * @ingroup lr-wpan
  *
  * This example demonstrate the usage of the MAC MLME-SCAN.request (ACTIVE scan) primitive as
  * described by IEEE 802.15.4-2011.
@@ -22,6 +18,11 @@
  * on each channel. If a beacon coordinator is present and in range in the channel, it responds with
  * a beacon which contains the PAN descriptor with useful information for the association process
  * (channel number, Pan ID, coord address, link quality indicator).
+ *
+ *         [00:01]                   [00:02]                                   [00:03]
+ *     PAN Coordinator 1 (PAN: 5)       End Device                        PAN Coordinator 2 (PAN: 7)
+ *          |--------100 m----------------|----------106 m -----------------------|
+ *     Channel 12               (Active Scan channels 11-14)                 Channel 14
  *
  * LQI range: 0 - 255
  * Where 255 is the MAX possible value used to described how clearly the packet was heard.
@@ -43,6 +44,11 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
+/**
+ * On successful scans write the PAN descriptors associated with the @c device
+ * @param device The device scanned
+ * @param params The results of the scan
+ */
 static void
 ScanConfirm(Ptr<LrWpanNetDevice> device, MlmeScanConfirmParams params)
 {

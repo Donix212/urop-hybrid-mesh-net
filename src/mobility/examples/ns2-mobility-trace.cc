@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * Author: Martín Giachino <martin.giachino@gmail.com>
- *
+ */
+/**
+ * @file
+ * @ingroup mobility
  *
  * This example demonstrates the use of Ns2MobilityHelper class to work with mobility.
  *
@@ -26,9 +29,9 @@
  *
  * Usage of ns2-mobility-trace:
  *
- *  ./ns3 run "ns2-mobility-trace \
- *        --traceFile=src/mobility/examples/default.ns_movements
- *        --nodeNum=2  --duration=100.0 --logFile=ns2-mobility-trace.log"
+ *     ./ns3 run "ns2-mobility-trace \
+ *         --traceFile=src/mobility/examples/default.ns_movements
+ *         --nodeNum=2  --duration=100.0 --logFile=ns2-mobility-trace.log"
  *
  *  NOTE: ns2-traces-file could be an absolute or relative path. You could use the file
  * default.ns_movements included in the same directory as the example file. NOTE 2: Number of nodes

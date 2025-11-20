@@ -6,66 +6,68 @@
  * Authors: Vivek Jain <jain.vivek.anand@gmail.com>
  *          Deepak Kumaraswamy <deepakkavoor99@gmail.com>
  */
-
-// The following network topology is used in this example, and is taken from
-// Figure 2 of https://homes.cs.washington.edu/~tom/pubs/pacing.pdf
-//
-//    n0                          n4
-//    |                           |
-//    |(4x Mbps, 5ms)             |(4x Mbps, 5ms)
-//    |                           |
-//    |                           |
-//    |      (x Mbps, 40ms)       |
-//    n2 ------------------------ n3
-//    |                           |
-//    |                           |
-//    |(4x Mbps, 5ms)             |(4x Mbps, 5ms)
-//    |                           |
-//    n1                          n5
-//
-//
-
-// This example illustrates how TCP pacing can be enabled on a socket.
-// Two long-running TCP flows are instantiated at nodes n0 and n1 to
-// send data over a bottleneck link (n2->n3) to sink nodes n4 and n5.
-// At the end of the simulation, the IP-level flow monitor tool will
-// print out summary statistics of the flows.  The flow monitor detects
-// four flows, but that is because the flow records are unidirectional;
-// the latter two flows reported are actually ack streams.
-//
-// At the end of this simulation, data files are also generated
-// that track changes in Congestion Window, Slow Start threshold and
-// TCP pacing rate for the first flow (n0). Additionally, a data file
-// that contains information about packet transmission and reception times
-// (collected through TxTrace and RxTrace respectively) is also produced.
-// This transmission and reception (ack) trace is the most direct way to
-// observe the effects of pacing.  All the above information is traced
-// just for the single node n0.
-//
-// A small amount of randomness is introduced to the program to control
-// the start time of the flows.
-//
-// This example has pacing enabled by default, which means that TCP
-// does not send packets back-to-back, but instead paces them out over
-// an RTT. The size of initial congestion window is set to 10, and pacing
-// of the initial window is enabled. The available command-line options and
-// their default values can be observed in the usual way by running the
-// program to print the help info; i.e.: ./ns3 run 'tcp-pacing --PrintHelp'
-//
-// When pacing is disabled, TCP sends eligible packets back-to-back. The
-// differences in behaviour when pacing is disabled can be observed from the
-// packet transmission data file. For instance, one can observe that
-// packets in the initial window are sent one after the other simultaneously,
-// without any inter-packet gaps. Another instance is when n0 receives a
-// packet in the form of an acknowledgement, and sends out data packets without
-// pacing them.
-//
-// Although this example serves as a useful demonstration of how pacing could
-// be enabled/disabled in ns-3 TCP congestion controls, we could not observe
-// significant improvements in throughput for the above topology when pacing
-// was enabled. In future, one could try and incorporate models such as
-// TCP Prague and ACK-filtering, which may show a stronger performance
-// impact for TCP pacing.
+/**
+ * @file
+ * @ingroup tcp
+ *
+ * The following network topology is used in this example, and is taken from
+ * Figure 2 of https://homes.cs.washington.edu/~tom/pubs/pacing.pdf
+ *
+ *     n0                          n4
+ *     |                           |
+ *     |(4x Mbps, 5ms)             |(4x Mbps, 5ms)
+ *     |                           |
+ *     |                           |
+ *     |      (x Mbps, 40ms)       |
+ *     n2 ------------------------ n3
+ *     |                           |
+ *     |                           |
+ *     |(4x Mbps, 5ms)             |(4x Mbps, 5ms)
+ *     |                           |
+ *     n1                          n5
+ *
+ * This example illustrates how TCP pacing can be enabled on a socket.
+ * Two long-running TCP flows are instantiated at nodes n0 and n1 to
+ * send data over a bottleneck link (n2->n3) to sink nodes n4 and n5.
+ * At the end of the simulation, the IP-level flow monitor tool will
+ * print out summary statistics of the flows.  The flow monitor detects
+ * four flows, but that is because the flow records are unidirectional;
+ * the latter two flows reported are actually ack streams.
+ *
+ * At the end of this simulation, data files are also generated
+ * that track changes in Congestion Window, Slow Start threshold and
+ * TCP pacing rate for the first flow (n0). Additionally, a data file
+ * that contains information about packet transmission and reception times
+ * (collected through TxTrace and RxTrace respectively) is also produced.
+ * This transmission and reception (ack) trace is the most direct way to
+ * observe the effects of pacing.  All the above information is traced
+ * just for the single node n0.
+ *
+ * A small amount of randomness is introduced to the program to control
+ * the start time of the flows.
+ *
+ * This example has pacing enabled by default, which means that TCP
+ * does not send packets back-to-back, but instead paces them out over
+ * an RTT. The size of initial congestion window is set to 10, and pacing
+ * of the initial window is enabled. The available command-line options and
+ * their default values can be observed in the usual way by running the
+ * program to print the help info; i.e.: ./ns3 run 'tcp-pacing --PrintHelp'
+ *
+ * When pacing is disabled, TCP sends eligible packets back-to-back. The
+ * differences in behaviour when pacing is disabled can be observed from the
+ * packet transmission data file. For instance, one can observe that
+ * packets in the initial window are sent one after the other simultaneously,
+ * without any inter-packet gaps. Another instance is when n0 receives a
+ * packet in the form of an acknowledgement, and sends out data packets without
+ * pacing them.
+ *
+ * Although this example serves as a useful demonstration of how pacing could
+ * be enabled/disabled in ns-3 TCP congestion controls, we could not observe
+ * significant improvements in throughput for the above topology when pacing
+ * was enabled. In future, one could try and incorporate models such as
+ * TCP Prague and ACK-filtering, which may show a stronger performance
+ * impact for TCP pacing.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -86,46 +88,77 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("TcpPacingExample");
 
+/** Output file streams. @{ */
 std::ofstream cwndStream;
 std::ofstream pacingRateStream;
 std::ofstream ssThreshStream;
 std::ofstream packetTraceStream;
 
-static void
+/** @} */
+
+/**
+ * Log the congestion window.
+ * @param oldval The prior value.
+ * @param newval The new value.
+ */
+void
 CwndTracer(uint32_t oldval, uint32_t newval)
 {
     cwndStream << std::fixed << std::setprecision(6) << Simulator::Now().GetSeconds()
                << std::setw(12) << newval << std::endl;
 }
 
-static void
+/**
+ * Log the pacing data rate.
+ * @param oldval The prior value.
+ * @param newval The new value.
+ */
+void
 PacingRateTracer(DataRate oldval, DataRate newval)
 {
     pacingRateStream << std::fixed << std::setprecision(6) << Simulator::Now().GetSeconds()
                      << std::setw(12) << newval.GetBitRate() / 1e6 << std::endl;
 }
 
-static void
+/**
+ * Log the slow start threshold
+ * @param oldval The prior value.
+ * @param newval The new value.
+ */
+void
 SsThreshTracer(uint32_t oldval, uint32_t newval)
 {
     ssThreshStream << std::fixed << std::setprecision(6) << Simulator::Now().GetSeconds()
                    << std::setw(12) << newval << std::endl;
 }
 
-static void
+/**
+ * Log the received packet size.
+ * @param p The packet
+ * @param ipv4 The Ipv4
+ * @param interface The interface index
+ */
+void
 TxTracer(Ptr<const Packet> p, Ptr<Ipv4> ipv4, uint32_t interface)
 {
     packetTraceStream << std::fixed << std::setprecision(6) << Simulator::Now().GetSeconds()
                       << " tx " << p->GetSize() << std::endl;
 }
 
-static void
+/**
+ * Log the received packet size.
+ * @param p The packet
+ * @param ipv4 The Ipv4
+ * @param interface The interface index
+ */
+void
 RxTracer(Ptr<const Packet> p, Ptr<Ipv4> ipv4, uint32_t interface)
 {
     packetTraceStream << std::fixed << std::setprecision(6) << Simulator::Now().GetSeconds()
                       << " rx " << p->GetSize() << std::endl;
 }
 
+/** Connect trace sources to the handlers defined in this file. */
 void
 ConnectSocketTraces()
 {

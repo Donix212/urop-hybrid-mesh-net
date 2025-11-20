@@ -3,6 +3,11 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup tap-bridge
+ * Class ns3::TapBridge and ns3::TapBridgeFdReader implementations.
+ */
 
 #include "tap-bridge.h"
 

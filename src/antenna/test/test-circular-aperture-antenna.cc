@@ -3,6 +3,10 @@
  *
  *   SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup antenna-tests
+ */
 
 #include "ns3/boolean.h"
 #include "ns3/circular-aperture-antenna-model.h"
@@ -24,8 +28,6 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("TestCircularApertureAntennaModel");
 
 /**
- * @ingroup antenna-tests
- *
  * @brief CircularApertureAntennaModel Test Case
  *
  * Note: Since Clang libc++ does not support the Mathematical special functions (P0226R1) yet, this
@@ -224,8 +226,6 @@ CircularApertureAntennaModelTestCase::DoRun()
 }
 
 /**
- * @ingroup antenna-tests
- *
  * @brief UniformPlanarArray Test Suite
  */
 class CircularApertureAntennaModelTestSuite : public TestSuite
@@ -240,4 +240,5 @@ CircularApertureAntennaModelTestSuite::CircularApertureAntennaModelTestSuite()
     AddTestCase(new CircularApertureAntennaModelTestCase());
 }
 
+/** Test suite instance variable */
 static CircularApertureAntennaModelTestSuite staticCircularApertureAntennaModelTestSuiteInstance;

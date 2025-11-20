@@ -5,6 +5,11 @@
  *
  * Author: Gustavo J. A. M. Carneiro  <gjc@inescporto.pt>
  */
+/**
+ * @file
+ * @ingroup olsr
+ * Class ns3::olsr::PacketHeader and ns3::olsr::MessageHeader implementations.
+ */
 
 #include "olsr-header.h"
 
@@ -21,15 +26,9 @@ NS_LOG_COMPONENT_DEFINE("OlsrHeader");
 namespace olsr
 {
 
-/// Scaling factor used in RFC 3626.
-#define OLSR_C 0.0625
+/** Scaling factor used in @RFC{3626}. */
+constexpr double OLSR_C{0.0625};
 
-///
-/// @brief Converts a decimal number of seconds to the mantissa/exponent format.
-///
-/// @param seconds decimal number of seconds we want to convert.
-/// @return the number of seconds in mantissa/exponent format.
-///
 uint8_t
 SecondsToEmf(double seconds)
 {
@@ -67,12 +66,6 @@ SecondsToEmf(double seconds)
     return (uint8_t)((a << 4) | b);
 }
 
-///
-/// @brief Converts a number of seconds in the mantissa/exponent format to a decimal number.
-///
-/// @param olsrFormat number of seconds in mantissa/exponent format.
-/// @return the decimal number of seconds.
-///
 double
 EmfToSeconds(uint8_t olsrFormat)
 {

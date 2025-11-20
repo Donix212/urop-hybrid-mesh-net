@@ -13,10 +13,15 @@
 
 #include <string>
 
-// These are in #include <libxml/xmlwriter.h>,
-// here we just need a forward declaration.
+/**
+ * Forward declarations from
+ * [<libxml/xmlwriter.h>](https://gnome.pages.gitlab.gnome.org/libxml2/html/xmlwriter_8h.html)
+ * @{
+ */
 typedef struct _xmlTextWriter xmlTextWriter;
 typedef xmlTextWriter* xmlTextWriterPtr;
+
+/** @} */
 
 namespace ns3
 {

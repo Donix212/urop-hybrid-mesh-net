@@ -5,6 +5,10 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@cutebugs.net>
  */
+/**
+ * @file
+ * @ingroup packet
+ */
 
 #include "ns3/buffer.h"
 #include "ns3/double.h"

@@ -23,11 +23,6 @@ namespace tests
 
 /**
  * @ingroup core-tests
- * @defgroup environ-var-tests Environment variable caching tests
- */
-
-/**
- * @ingroup core-tests
  *
  * SplitString tests.
  */
@@ -121,9 +116,7 @@ SplitStringTestCase::DoRun()
 }
 
 /**
- * @ingroup typeid-tests
- *
- * TypeId test suites.
+ * SplitString test suite.
  */
 class SplitStringTestSuite : public TestSuite
 {
@@ -137,10 +130,7 @@ SplitStringTestSuite::SplitStringTestSuite()
     AddTestCase(new SplitStringTestCase);
 }
 
-/**
- * @ingroup environ-var-tests
- * Static variable for test initialization.
- */
+/** Test suite instance variable */
 static SplitStringTestSuite g_SplitStringTestSuite;
 
 } // namespace tests

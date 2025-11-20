@@ -47,6 +47,10 @@ NS_LOG_COMPONENT_DEFINE("WifiStaticEmlsrTestSuite");
 
 namespace WifiStaticEmlsrTestConstants
 {
+/**
+ * Test defaults
+ * @{
+ */
 const auto DEFAULT_RNG_SEED = 3;
 const auto DEFAULT_RNG_RUN = 7;
 const auto DEFAULT_STREAM_INDEX = 100;
@@ -59,10 +63,21 @@ const auto DEFAULT_AUX_PHY_CH_WIDTH = MHz_u{20};
 const auto DEFAULT_SWITCH_AUX_PHY = false;
 const auto DEFAULT_WIFI_STANDARD = WifiStandard::WIFI_STANDARD_80211be;
 const auto DEFAULT_SSID = Ssid("static-assoc-test");
+
+/** @} */
+
+/**
+ * Channel and AP configuration strings.
+ * @{
+ */
 const std::string CHANNEL_0 = "{42, 80, BAND_5GHZ, 0}";
 const std::string CHANNEL_1 = "{23, 80, BAND_6GHZ, 0}";
 const std::string CHANNEL_2 = "{2, 0, BAND_2_4GHZ, 0}";
 const std::vector<std::string> DEFAULT_AP_CHS = {CHANNEL_0, CHANNEL_1, CHANNEL_2};
+
+/** @} */
+
+/** Map from phy band to spectrum channel. */
 using ChannelMap = std::unordered_map<WifiPhyBand, Ptr<MultiModelSpectrumChannel>>;
 } // namespace WifiStaticEmlsrTestConstants
 

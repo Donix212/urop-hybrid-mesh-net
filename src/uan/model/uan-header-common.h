@@ -8,6 +8,11 @@
 
 #ifndef UAN_HEADER_COMMON_H
 #define UAN_HEADER_COMMON_H
+/**
+ * @file
+ * @ingroup uan
+ * Class ns3::UanHeaderCommon declaration.
+ */
 
 #include "ns3/header.h"
 #include "ns3/mac8-address.h"

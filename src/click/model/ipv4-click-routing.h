@@ -9,6 +9,12 @@
 #ifndef IPV4_CLICK_ROUTING_H
 #define IPV4_CLICK_ROUTING_H
 
+/**
+ * @file
+ * @ingroup click
+ * Class ns3::Ipv4ClickRouting declaration.
+ */
+
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4.h"
 #include "ns3/object.h"
@@ -23,10 +29,19 @@
 class ClickTrivialTest;
 class ClickIfidFromNameTest;
 class ClickIpMacAddressFromNameTest;
-// These are in #include <click/simclick.h>,
-// here we just need a forward declaration.
+
+/**
+ * @ingroup click
+ * Forward declarations from
+ * [click/simclick.h](https://github.com/kohler/click/blob/master/include/click/simclick.h)
+ * @{
+ */
+/** Forward declaration */
 struct simclick_node;
+/** Forward declaration */
 typedef struct simclick_node simclick_node_t;
+
+/** @} */
 
 namespace ns3
 {
@@ -238,7 +253,8 @@ class Ipv4ClickRouting : public Ipv4RoutingProtocol
     /**
      * @brief Receives a packet from Click
      * @param ifid The interface ID from which the packet is arriving
-     * @param type The type of packet as defined in click/simclick.h
+     * @param type The type of packet as defined in
+     * [click/simclick.h](https://github.com/kohler/click/blob/master/include/click/simclick.h)
      * @param data The contents of the packet
      * @param len The length of the packet
      */
@@ -247,7 +263,8 @@ class Ipv4ClickRouting : public Ipv4RoutingProtocol
     /**
      * @brief Sends a packet to Click
      * @param ifid The interface ID from which the packet is arriving
-     * @param type The type of packet as defined in click/simclick.h
+     * @param type The type of packet as defined in
+     * [click/simclick.h](https://github.com/kohler/click/blob/master/include/click/simclick.h)
      * @param data The contents of the packet
      * @param len The length of the packet
      */

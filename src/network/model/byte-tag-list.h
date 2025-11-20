@@ -8,6 +8,12 @@
 #ifndef BYTE_TAG_LIST_H
 #define BYTE_TAG_LIST_H
 
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::ByteTagList declaration.
+ */
+
 #define __STDC_LIMIT_MACROS
 #include "tag-buffer.h"
 

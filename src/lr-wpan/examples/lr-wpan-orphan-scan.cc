@@ -6,12 +6,9 @@
  * Author:  Alberto Gallegos Ramonet <alramonet@is.tokushima-u.ac.jp>
  */
 
-/*
- * [00:00:00:00:00:00:00:01 | 00:01]     [00:00:00:00:00:00:00:02 | ff:ff]
- *  PAN Coordinator 1 (PAN: 5)                      End Device
- *       |---------------------100m-----------------------|
- *  Channel 12                                (Orphan Scan channels 11-14)
- *
+/**
+ * @file
+ * @ingroup lr-wpan
  *
  * This example demonstrate the usage of the MAC MLME-SCAN.request (ORPHAN scan) primitive as
  * described by IEEE 802.15.4-2011 (See Figures 14 and 15).
@@ -21,6 +18,11 @@
  * relocate its coordinator. In some situations, it can be used by devices higher layers to not only
  * rejoin a network but also join a network for the first time (Like in the joining through
  * orphaning mechanism described in Zigbee networks).
+ *
+ *     [00:00:00:00:00:00:00:01 | 00:01]     [00:00:00:00:00:00:00:02 | ff:ff]
+ *      PAN Coordinator 1 (PAN: 5)                      End Device
+ *           |---------------------100m-----------------------|
+ *      Channel 12                                (Orphan Scan channels 11-14)
  *
  * In this example, the end device is set to scan 4 channels (11~14) for a period of
  * macResponseWaitTime until it finally gets in contact with the coordinator.
@@ -55,6 +57,11 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
+/**
+ * Log the status of a MLME-SCAN.confirm scan
+ * @param device The device scanned
+ * @param params The results of the scan
+ */
 static void
 ScanConfirm(Ptr<LrWpanNetDevice> device, MlmeScanConfirmParams params)
 {
@@ -85,14 +92,18 @@ ScanConfirm(Ptr<LrWpanNetDevice> device, MlmeScanConfirmParams params)
     }
 }
 
+/**
+ * The steps taken by the coordinator on the event of an orphan indication
+ * are meant to be implemented by the next higher layer and are out of the scope of the
+ * standard. In this example, we simply accept the request, assign a fixed short address
+ * [DE:AF] and respond to the requesting device using a MLME-ORPHAN.response.
+ *
+ * @param device The device scanned
+ * @param params The results of the scan
+ */
 static void
 OrphanIndication(Ptr<LrWpanNetDevice> device, MlmeOrphanIndicationParams params)
 {
-    // The steps taken by the coordinator on the event of an orphan indication
-    // are meant to be implemented by the next higher layer and are out of the scope of the
-    // standard. In this example, we simply accept the request , assign a fixed short address
-    // [DE:AF] and respond to the requesting device using a MLME-ORPHAN.response.
-
     std::cout << Simulator::Now().As(Time::S) << " Node " << device->GetNode()->GetId() << " ["
               << device->GetMac()->GetShortAddress() << " | "
               << device->GetMac()->GetExtendedAddress()

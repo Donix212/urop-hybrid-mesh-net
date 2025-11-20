@@ -5,24 +5,28 @@
  * Author: Blake Hurd <naimorai@gmail.com>
  * Modified by: Josh Pelkey <joshpelkey@gmail.com>
  */
-
-// Network topology
-//
-//        n0     n1
-//        |      |
-//       ----------
-//       | Switch |
-//       ----------
-//        |      |
-//        n2     n3
-//
-//
-// - CBR/UDP flows from n0 to n1 and from n3 to n0
-// - DropTail queues
-// - Tracing of queues and packet receptions to file "openflow-switch.tr"
-// - If order of adding nodes and netdevices is kept:
-//      n0 = 00:00:00;00:00:01, n1 = 00:00:00:00:00:03, n3 = 00:00:00:00:00:07
-//      and port number corresponds to node number, so port 0 is connected to n0, for example.
+/**
+ * @file
+ * @ingroup openflow
+ *
+ * Network topology
+ *
+ *        n0     n1
+ *        |      |
+ *       ----------
+ *       | Switch |
+ *       ----------
+ *        |      |
+ *        n2     n3
+ *
+ *
+ * - CBR/UDP flows from n0 to n1 and from n3 to n0
+ * - DropTail queues
+ * - Tracing of queues and packet receptions to file "openflow-switch.tr"
+ * - If order of adding nodes and netdevices is kept:
+ *      n0 = 00:00:00;00:00:01, n1 = 00:00:00:00:00:03, n3 = 00:00:00:00:00:07
+ *      and port number corresponds to node number, so port 0 is connected to n0, for example.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"

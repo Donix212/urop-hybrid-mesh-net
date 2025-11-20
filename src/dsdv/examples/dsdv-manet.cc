@@ -16,6 +16,11 @@
  * NSF grant CNS-1050226 (Multilayer Network Resilience Analysis and Experimentation on GENI),
  * US Department of Defense (DoD), and ITTC at The University of Kansas.
  */
+/**
+ * @file
+ * @ingroup dsdv-examples
+ * DSDV Manet example
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"

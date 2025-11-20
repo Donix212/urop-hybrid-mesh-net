@@ -9,31 +9,35 @@
  *          Tommaso Pecorella <tommaso.pecorella@unifi.it>
  *          Tom Henderson <tomh@tomh.org>
  */
-
-// This test suite performs regression tests on the ns-3 Ping application.
-//
-// A simple topology is used:
-//
-// Node 0               Node 1
-//   +----SimpleChannel---+
-//
-// - the SimpleChannel implements a one-way delay of 10 ms
-// - each node has a SimpleNetDevice with a DataRate of 1 Gb/s
-// - a ReceiveErrorModel can be configured to force packet drops
-//
-// The following are described in more detail below, inline with the test cases.
-// Most tests listed below will test both IPv4 and IPv6 operation.
-//
-// 1. Unlimited pings, no losses, StopApplication () with no packets in flight
-// 2. Unlimited pings, no losses, StopApplication () with 1 packet in flight
-// 3. Test for operation of count attribute and exit time after all pings were received
-// 4. Test the operation of the interval attribute
-// 5. Test for behavior of pinging an unreachable host when the
-//    network does not send an ICMP unreachable message.
-// 6. Test pinging to IPv4 broadcast address and IPv6 all nodes multicast address
-// 7. Test behavior of first reply lost in a count-limited configuration
-// 8. Test behavior of second reply lost in a count-limited configuration
-// 9. Test behavior of last reply lost in a count-limited configuration.
+/**
+ * @file
+ * @ingroup internet-apps
+ *
+ * This test suite performs regression tests on the ns-3 Ping application.
+ *
+ * A simple topology is used:
+ *
+ *     Node 0               Node 1
+ *       +----SimpleChannel---+
+ *
+ * - the SimpleChannel implements a one-way delay of 10 ms
+ * - each node has a SimpleNetDevice with a DataRate of 1 Gb/s
+ * - a ReceiveErrorModel can be configured to force packet drops
+ *
+ * The following are described in more detail below, inline with the test cases.
+ * Most tests listed below will test both IPv4 and IPv6 operation.
+ *
+ * 1. Unlimited pings, no losses, StopApplication () with no packets in flight
+ * 2. Unlimited pings, no losses, StopApplication () with 1 packet in flight
+ * 3. Test for operation of count attribute and exit time after all pings were received
+ * 4. Test the operation of the interval attribute
+ * 5. Test for behavior of pinging an unreachable host when the
+ *    network does not send an ICMP unreachable message.
+ * 6. Test pinging to IPv4 broadcast address and IPv6 all nodes multicast address
+ * 7. Test behavior of first reply lost in a count-limited configuration
+ * 8. Test behavior of second reply lost in a count-limited configuration
+ * 9. Test behavior of last reply lost in a count-limited configuration.
+ */
 
 #include "ns3/boolean.h"
 #include "ns3/data-rate.h"
@@ -60,8 +64,11 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("PingTestSuite");
 
+/** Control use of IPv6 in tests. @{ */
 constexpr bool USEIPV6_FALSE = false;
 constexpr bool USEIPV6_TRUE = true;
+
+/** @} */
 
 /**
  * @ingroup ping

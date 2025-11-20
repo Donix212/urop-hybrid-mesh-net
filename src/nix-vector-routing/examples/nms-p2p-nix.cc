@@ -9,12 +9,16 @@
  * Modified By: Ameya Deshpande <ameyanrd@outlook.com> (IPv6 extensions)
  *              Tommaso Pecorella <tommaso.pecorella@unifi.it> (IPv6 extensions)
  */
-/*
+
+/**
+ * @file
+ * @ingroup nix-vector-routing
+ *
  * DARPA NMS Campus Network Model
  *
  * This topology replicates the original NMS Campus Network model
  * with the exception of chord links (which were never utilized in the
- * original model)
+ * original model).
  * Link Bandwidths and Delays may not be the same as the original
  * specifications
  *
@@ -43,6 +47,10 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("CampusNetworkModel");
 
+/**
+ * Placeholder for periodically showing execution progress.
+ * Modify this to suit your needs.
+ */
 void
 Progress()
 {

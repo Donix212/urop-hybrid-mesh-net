@@ -3,6 +3,10 @@
  *
  *   SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup antenna-tests
+ */
 
 #include "cmath"
 #include "iostream"
@@ -24,8 +28,6 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("TestUniformPlanarArray");
 
 /**
- * @ingroup antenna-tests
- *
  * @brief UniformPlanarArray Test Case
  */
 class UniformPlanarArrayTestCase : public TestCase
@@ -192,8 +194,6 @@ UniformPlanarArrayTestCase::DoRun()
 }
 
 /**
- * @ingroup antenna-tests
- *
  * @brief UpdateOnChange Test Case
  */
 class UpdateOnChangeTestCase : public TestCase
@@ -277,8 +277,6 @@ UpdateOnChangeTestCase::DoRun()
 }
 
 /**
- * @ingroup antenna-tests
- *
  * @brief UniformPlanarArray Test Suite
  */
 class UniformPlanarArrayTestSuite : public TestSuite
@@ -467,4 +465,5 @@ UniformPlanarArrayTestSuite::UniformPlanarArrayTestSuite()
                 TestCase::Duration::QUICK);
 }
 
+/** Test suite instance variable */
 static UniformPlanarArrayTestSuite staticUniformPlanarArrayTestSuiteInstance;

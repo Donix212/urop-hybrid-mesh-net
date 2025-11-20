@@ -12,189 +12,255 @@
  * https://gitlab.com/tomhend/modules/l4s-evaluation
  */
 
-// The 9 configurations below test BIC and DCTCP under various scenarios.
-// Scenarios are numbered 1-9.  By default, scenario number 0 (i.e., no
-// scenario) is configured, which means that the user is free to set
-// any of the parameters freely; if scenarios 1 through 9 are selected,
-// the scenario parameters are fixed.
-//
-// The configuration of the scenarios starts from basic TCP BIC without ECN
-// with the base RTT of 80ms and then in the next scenario, ECN is enabled,
-// and gradually, the complexity of the scenario increases and the last scenario
-// consists of 2 flows one with BIC and other with DCTCP and finally tests
-// The performance of the L4S mode of FqCoDel queue disc.
-
-/** Network topology - For Configuration 1, 2
- *
- *      1Gbps, 40ms      100Mbps, 1us       1Gbps, 1us
- *   n0 ---------- n2 ---------------- n3 --------------n4
- *
- * Configuration 1: single flow TCP BIC without ECN, base RTT of 80 ms
- *
- * Expected Result:
- * Throughput:        Oscillating around 100ms.
- * Ping RTT:          Oscillating between 80ms and 80.5ms
- * Drop frequency:    Should be around 1 drop per 100ms with around 9 spikes in 10 seconds
- * Length:            below 5ms but with frequent spikes
- * Mark Frequency:    There should not be any marks
- * Congestion Window: Oscillating between around 600 segments and 800 segments
- * TCP RTT:           Oscillating below 5ms frequent spikes up to 90ms
- * Queue Delay-N0:    Below 5ms with frequent spikes
- *
- * Configuration 2: single flow TCP BIC with ECN, base RTT of 80 ms
- *
- * Expected Result:
- * Throughput:        Reaching 100Mbps and oscillating more than the previous configuration.
- * Ping RTT:          Oscillating between 80ms and 80.5ms
- * Drop frequency:    There should not be any drops
- * Length:            Below 5ms with frequent spikes, average around 3ms
- * Mark Frequency:    Should be around 1 mark per 100ms with around 9 spikes in 10 seconds
- * Congestion Window: Oscillating between around 400 segments and 800 segments
- * TCP RTT:           Below 85ms with frequent spikes up to 95ms (more than the previous
- * configuration) Queue Delay-n0:    Below 5ms with frequent spikes
- */
-
-/** Network topology - For Configuration 3, 4
- *
- *     1Gbps, 1ms      100Mbps, 1us        1Gbps, 1us
- *   n0 ---------- n2 ---------------- n3 --------------n4
- *
- * Configuration 3: single flow DCTCP with ECN ECT(0), CE_threshold = 1ms, base RTT of 1ms
- *
- * Expected Result:
- * Throughput:        Fixed just below 100Mbps.
- * Ping RTT:          Oscillating below 1.5ms
- * Drop frequency:    There should not be any drops
- * Length:            Very frequently oscillating between 0.5ms and 1ms with frequent spikes up
- * to 1.2ms Mark Frequency:    Around 160 marks per 100ms Congestion Window: Very frequently
- * oscillating at a low value (below 25) TCP RTT:           Very frequently oscillating, below 5ms
- * Queue Delay-n0:    Very frequently oscillating between 0.5ms and 1ms with spikes up to 1.2ms
- *
- * Configuration 4: single flow DCTCP with ECN ECT(1), L4S mode enabled on FqCoDel, base RTT of 1ms
- *
- * Expected Result:
- * Throughput:        Fixed just below 100Mbps.
- * Ping RTT:          Oscillating below 1.5ms
- * Drop frequency:    There should not be any drops
- * Length:            Very frequently oscillating between 0.5ms and 1ms with frequent spikes up
- * to 1.2ms Mark Frequency:    Around 160 marks per 100ms Congestion Window: Very frequently
- * oscillating at a low value (below 25) TCP RTT:           Very frequently oscillating, below 5ms
- * Queue Delay-n0:    Very frequently oscillating between 0.5ms and 1ms with spikes up to 1.2ms
- */
-
-/** Network topology - For Configuration 5, 6
- *
- *    1Gbps, 40ms                            1Gbps, 1us
- * n0--------------|                    |---------------n4
- *                 |    100Mbps, 1us    |
- *                 n2------------------n3
- *    1Gbps, 40ms  |                    |    1Gbps, 1us
- * n1--------------|                    |---------------n5
- *
- * Configuration 5: Two flows TCP BIC without ECN, base RTT of 80 ms
- *
- * Expected Result:
- * Throughput-n0:        Oscillating around 100 before second flow starts, and after that,
- * oscillating around 50. Throughput-n1:        Oscillating around 50. Ping RTT: Oscillating and
- * reaching around 80.5ms Drop frequency:       Around 1 drop per 100ms, more spikes than the single
- * flow Length:               Around 5ms with spikes reaching 10ms Mark Frequency:       There
- * should not be any marks Congestion Window-n0: Oscillating between 800 segments and 600 segments
- * before second flow starts, after that oscillating around 300 segments Congestion Window-n0:
- * Oscillating around 300 segments TCP RTT-n0:           Below 85ms with spikes reaching 90ms before
- * second flow starts, and after that below 85ms with spikes reaching 90ms TCP RTT-n0: Below 85ms
- * with spikes reaching 90ms Queue Delay-n0:       Below 5ms with spikes reaching 10ms before second
- * flow starts and after that below 5ms with spikes up to 15ms. Queue Delay-n0:       Below 5ms with
- * spikes up to 15ms.
- *
- * Configuration 6: Two flows TCP BIC with ECN, base RTT of 80 ms
- *
- * Expected Result:
- *
- * Throughput-n0:        Oscillating around 100 before second flow starts, and after that,
- * oscillating around 50. Throughput-n1:        Oscillating around 50. Ping RTT: Oscillating and
- * reaching around 80.5ms Drop frequency:       There should not be any drops Mark Frequency: Around
- * 1 drop per 100ms, more spikes than the single flow Length:               Around 5ms with spikes
- * reaching 15ms Congestion Window-n0: Oscillating between 800 segments and 600 segments before
- * second flow starts, after that oscillating around 300 segments Congestion Window-n0: Oscillating
- * around 300 segments TCP RTT-n0:           Below 85ms with spikes reaching 95ms before second flow
- * starts, and after that below 85ms with spikes reaching 100ms TCP RTT-n0:           Below 85ms
- * with spikes reaching 100ms Queue Delay-n0:       Below 5ms with spikes reaching 15ms before
- * second flow starts and after that below 5ms with spikes up to 20ms. Queue Delay-n0:       Below
- * 5ms with spikes up to 20ms.
- */
-
-/**Network topology - For Configuration 7, 8
- *
- *    1Gbps, 1ms                            1Gbps, 1us
- * n0--------------|                    |---------------n4
- *                 |    100Mbps, 1us    |
- *                 n2------------------n3
- *     1Gbps, 1ms  |                    |    1Gbps, 1us
- * n1--------------|                    |---------------n5
- *
- * Configuration 7: Two flows DCTCP with ECN ECT(0), CE_threshold = 1ms, base RTT of 1ms
- *
- * Expected Result:
- * Throughput-n0:        Fixed around 100 before second flow starts, and after that, fixed
- * around 50. Throughput-n1:        Fixed around 50. Ping RTT:             Oscillating and reaching
- * around 1.5ms Drop frequency:       There should not be any drops Length:               Around
- * 1ms. Mark Frequency:       Oscillating little above 150 marks per 100ms before second flow start,
- *                       and after that oscillating little below 250 marks per 100ms
- * Congestion Window-n0: Oscillating around 20 segments before second flow starts
- *                       then oscillating around 11 segments
- * Congestion Window-n1: Oscillating around 11 segments
- * TCP RTT-n0:           Oscillating between 2ms and 5ms before seconds flow starts and after that
- *                       oscillating between 3ms and 5ms
- * TCP RTT-n1:           Oscillating between 3ms and 5ms
- * Queue Delay-n0:       Oscillating frequently below 1ms before second flow starts and after that
- * just below 1.4ms Queue Delay-n1:       Oscillating frequently between 0.4ms and 1.4ms
- *
- * Configuration 8: Two flows DCTCP with ECN ECT(1), L4S mode enabled on FqCoDel, base RTT of 1ms
- *
- * Throughput-n0:        Fixed around 100 before second flow starts, and after that, fixed
- * around 50. Throughput-n1:        Fixed around 50. Ping RTT:             Oscillating and reaching
- * around 1.5ms Drop frequency:       There should not be any drops Length:               Around
- * 1ms. Mark Frequency:       Oscillating little above 150 marks per 100ms before second flow start,
- *                       and after that oscillating little below 250 marks per 100ms
- * Congestion Window-n0: Oscillating around 20 segments before second flow starts
- *                       then oscillating around 11 segments
- * Congestion Window-n1: Oscillating around 11 segments
- * TCP RTT-n0:           Oscillating between 2ms and 5ms before seconds flow starts and after that
- *                       oscillating between 3ms and 5ms
- * TCP RTT-n1:           Oscillating between 3ms and 5ms
- * Queue Delay-n0:       Oscillating frequently below 1ms before second flow starts and after that
- * just below 1.4ms Queue Delay-n1:       Oscillating frequently between 0.4ms and 1.4ms
- */
-
-/**Network topology - For Configuration 9
- *
- *    1Gbps, 1ms                            1Gbps, 1us
- * n0--------------|                    |---------------n4
- *                 |    100Mbps, 1us    |
- *                 n2------------------n3
- *     1Gbps, 80ms |                    |    1Gbps, 1us
- * n1--------------|                    |---------------n5
- *
- * Configuration 9: One TCP BIC (n0) with base RTT of 80 ms, one DCTCP (n1) with ECN ECT(1), L4S
- * mode enabled, base RTT 1ms
- *
- * Throughput-n0:        Oscillating below 100Mbps before second flow starts, and after that,
- * oscillating around 50Mbps. Throughput-n1:        Oscillating around 50Mbps. Ping RTT: Oscillating
- * and reaching around 80.5ms Drop frequency:       There should not be any drops Length: Around 5ms
- * with frequent spikes above 10ms before second flow starts and after that spikes below 10ms. Mark
- * Frequency:       Oscillating 1 marks per 100ms before second flow start, and after that
- * oscillating below 200 marks per 100ms Congestion Window-n0: Oscillating around 600 segments
- * before second flow starts then oscillating around 300 segments Congestion Window-n1: Oscillating
- * around 300 segments TCP RTT-n0:           Around 85ms with spikes reaching around 95ms before
- * second flow starts and after that around 85ms with spikes reaching 100ms TCP RTT-n1: Around 85ms
- * with spikes reaching 100ms Queue Delay-n0:       Around 5ms with spikes above 10ms before second
- * flow starts and nearly the same after that too. Queue Delay-n1:       Oscillating frequently
- * between 0.4ms and 1.4ms with spikes reaching 3ms.
- *
- */
-
 /**
- * clients and servers are configured for ICMP measurements and TCP throughput
+ * @file
+ * @ingroup traffic-control
+ *
+ * The 9 configurations below test BIC and DCTCP under various scenarios.
+ * Scenarios are numbered 1-9.  By default, scenario number 0 (i.e., no
+ * scenario) is configured, which means that the user is free to set
+ * any of the parameters freely; if scenarios 1 through 9 are selected,
+ * the scenario parameters are fixed.
+ *
+ * The configuration of the scenarios starts from basic TCP BIC without ECN
+ * with the base RTT of 80ms and then in the next scenario, ECN is enabled,
+ * and gradually, the complexity of the scenario increases and the last scenario
+ * consists of 2 flows one with BIC and other with DCTCP and finally tests
+ * The performance of the L4S mode of FqCoDel queue disc.
+ *
+ * Network topology - For Configuration 1, 2
+ * =========================================
+ *
+ *        1Gbps, 40ms      100Mbps, 1us       1Gbps, 1us
+ *     n0 ---------- n2 ---------------- n3 --------------n4
+ *
+ * Configuration 1
+ * ---------------
+ * * Single flow TCP BIC without ECN,
+ * * Base RTT of 80 ms
+ *
+ * Expected Result:
+ * * Throughput:        Oscillating around 100ms.
+ * * Ping RTT:          Oscillating between 80ms and 80.5ms.
+ * * Drop frequency:    Should be around 1 drop per 100ms with around 9 spikes in 10 seconds.
+ * * Length:            below 5ms but with frequent spikes.
+ * * Mark Frequency:    There should not be any marks.
+ * * Congestion Window: Oscillating between around 600 segments and 800 segments.
+ * * TCP RTT:           Oscillating below 5ms frequent spikes up to 90ms.
+ * * Queue Delay-N0:    Below 5ms with frequent spikes.
+ *
+ * Configuration 2
+ * ---------------
+ * * Single flow TCP BIC with ECN,
+ * * Base RTT of 80 ms
+ *
+ * Expected Result:
+ * * Throughput:        Reaching 100Mbps and oscillating more than the previous configuration.
+ * * Ping RTT:          Oscillating between 80ms and 80.5ms.
+ * * Drop frequency:    There should not be any drops.
+ * * Length:            Below 5ms with frequent spikes, average around 3ms.
+ * * Mark Frequency:    Should be around 1 mark per 100ms with around 9 spikes in 10 seconds.
+ * * Congestion Window: Oscillating between around 400 segments and 800 segments.
+ * * TCP RTT:           Below 85ms with frequent spikes up to 95ms (more than the previous
+ *                      configuration).
+ * * Queue Delay-n0:    Below 5ms with frequent spikes.
+ *
+ * Network topology - For Configuration 3, 4
+ * =========================================
+ *
+ *       1Gbps, 1ms      100Mbps, 1us        1Gbps, 1us
+ *     n0 ---------- n2 ---------------- n3 --------------n4
+ *
+ * Configuration 3
+ * ---------------
+ * * Single flow DCTCP with ECN ECT(0),
+ * * CE_threshold = 1ms,
+ * * Base RTT of 1ms
+ *
+ * Expected Result:
+ * * Throughput:        Fixed just below 100Mbps.
+ * * Ping RTT:          Oscillating below 1.5ms.
+ * * Drop frequency:    There should not be any drops.
+ * * Length:            Very frequently oscillating between 0.5ms and 1ms with frequent spikes up
+ *                      to 1.2ms.
+ * * Mark Frequency:    Around 160 marks per 100ms.
+ * * Congestion Window: Very frequently oscillating at a low value (below 25).
+ * * TCP RTT:           Very frequently oscillating, below 5ms.
+ * * Queue Delay-n0:    Very frequently oscillating between 0.5ms and 1ms with spikes up to 1.2ms.
+ *
+ * Configuration 4
+ * ---------------
+ * * Single flow DCTCP with ECN ECT(1),
+ * * L4S mode enabled on FqCoDel,
+ * * Base RTT of 1ms
+ *
+ * Expected Result:
+ * * Throughput:        Fixed just below 100Mbps.
+ * * Ping RTT:          Oscillating below 1.5ms.
+ * * Drop frequency:    There should not be any drops.
+ * * Length:            Very frequently oscillating between 0.5ms and 1ms with frequent spikes up
+ *                      to 1.2ms.
+ * * Mark Frequency:    Around 160 marks per 100ms.
+ * * Congestion Window: Very frequently oscillating at a low value (below 25).
+ * * TCP RTT:           Very frequently oscillating, below 5ms.
+ * * Queue Delay-n0:    Very frequently oscillating between 0.5ms and 1ms with spikes up to 1.2ms.
+ *
+ * Network topology - For Configuration 5, 6
+ * =========================================
+ *
+ *        1Gbps, 40ms                            1Gbps, 1us
+ *     n0--------------|                    |---------------n4
+ *                     |    100Mbps, 1us    |
+ *                     n2------------------n3
+ *        1Gbps, 40ms  |                    |    1Gbps, 1us
+ *     n1--------------|                    |---------------n5
+ *
+ * Configuration 5
+ * ---------------
+ * * Two flows TCP BIC without ECN,
+ * * Base RTT of 80 ms
+ *
+ * Expected Result:
+ * * Throughput-n0:        Oscillating around 100 before second flow starts, and after that,
+ *                         oscillating around 50.
+ * * Throughput-n1:        Oscillating around 50.
+ * * Ping RTT: Oscillating and reaching around 80.5ms.
+ * * Drop frequency:       Around 1 drop per 100ms, more spikes than the single flow.
+ * * Length:               Around 5ms with spikes reaching 10ms.
+ * * Mark Frequency:       There should not be any marks.
+ * * Congestion Window-n0: Oscillating between 800 segments and 600 segments.
+ *                         before second flow starts, after that oscillating around
+ *                         300 segments.
+ * * Congestion Window-n1: Oscillating around 300 segments.
+ * * TCP RTT-n0:           Below 85ms with spikes reaching 90ms before second flow starts,
+ *                         and after that below 85ms with spikes reaching 90ms.
+ * * TCP RTT-n0:           Below 85ms with spikes reaching 90ms.
+ * * Queue Delay-n0:       Below 5ms with spikes reaching 10ms before second flow starts,
+ *                         and after that below 5ms with spikes up to 15ms.
+ * * Queue Delay-n0:       Below 5ms with spikes up to 15ms.
+ *
+ * Configuration 6
+ * ---------------
+ * * Two flows TCP BIC with ECN,
+ * * Base RTT of 80 ms
+ *
+ * Expected Result:
+ *
+ * * Throughput-n0:        Oscillating around 100 before second flow starts, and after that,
+ *                         oscillating around 50.
+ * * Throughput-n1:        Oscillating around 50.
+ * * Ping RTT:             Oscillating and reaching around 80.5ms.
+ * * Drop frequency:       There should not be any drops.
+ * * Mark Frequency:       Around 1 drop per 100ms, more spikes than the single flow.
+ * * Length:               Around 5ms with spikes reaching 15ms.
+ * * Congestion Window-n0: Oscillating between 800 segments and 600 segments before second
+ *                         flow starts, after that oscillating around 300 segments.
+ * * Congestion Window-n0: Oscillating around 300 segments.
+ * * TCP RTT-n0:           Below 85ms with spikes reaching 95ms before second flow starts,
+ *                         and after that below 85ms with spikes reaching 100ms.
+ * * TCP RTT-n0:           Below 85ms with spikes reaching 100ms.
+ * * Queue Delay-n0:       Below 5ms with spikes reaching 15ms before second flow starts,
+ *                         and after that below 5ms with spikes up to 20ms.
+ * * Queue Delay-n0:       Below 5ms with spikes up to 20ms.
+ *
+ * Network topology - For Configuration 7, 8
+ * =========================================
+ *
+ *            1Gbps, 1ms                            1Gbps, 1us
+ *     n0--------------|                    |---------------n4
+ *                     |    100Mbps, 1us    |
+ *                     n2------------------n3
+ *         1Gbps, 1ms  |                    |    1Gbps, 1us
+ *     n1--------------|                    |---------------n5
+ *
+ * Configuration 7
+ * ---------------
+ * * Two flows DCTCP with ECN ECT(0),
+ * *  CE_threshold = 1ms,
+ * * Bbase RTT of 1ms
+ *
+ * Expected Result:
+ * * Throughput-n0:        Fixed around 100 before second flow starts, and after that
+ *                         fixed around 50.
+ * * Throughput-n1:        Fixed around 50.
+ * * Ping RTT:             Oscillating and reaching around 1.5ms.
+ * * Drop frequency:       There should not be any drops.
+ * * Length:               Around 1ms.
+ * * Mark Frequency:       Oscillating little above 150 marks per 100ms before second flow start,
+ *                         and after that oscillating little below 250 marks per 100ms.
+ * * Congestion Window-n0: Oscillating around 20 segments before second flow starts,
+ *                         then oscillating around 11 segments.
+ * * Congestion Window-n1: Oscillating around 11 segments.
+ * * TCP RTT-n0:           Oscillating between 2ms and 5ms before second flow starts, and
+ *                         after that oscillating between 3ms and 5ms.
+ * * TCP RTT-n1:           Oscillating between 3ms and 5ms.
+ * * Queue Delay-n0:       Oscillating frequently below 1ms before second flow starts, and
+ *                         after that just below 1.4ms.
+ * * Queue Delay-n1:       Oscillating frequently between 0.4ms and 1.4ms
+ *
+ * Configuration 8
+ * ---------------
+ * * Two flows DCTCP with ECN ECT(1),
+ * * L4S mode enabled on FqCoDel,
+ * * Base RTT of 1ms
+ *
+ * Expected Result:
+ * * Throughput-n0:        Fixed around 100 before second flow starts, and after that
+ *                         fixed around 50.
+ * * Throughput-n1:        Fixed around 50.
+ * * Ping RTT:             Oscillating and reaching around 1.5ms.
+ * * Drop frequency:       There should not be any drops.
+ * * Length:               Around 1ms.
+ * * Mark Frequency:       Oscillating little above 150 marks per 100ms before second flow start,
+ *                         and after that oscillating little below 250 marks per 100ms.
+ * * Congestion Window-n0: Oscillating around 20 segments before second flow starts,
+ *                         then oscillating around 11 segments.
+ * * Congestion Window-n1: Oscillating around 11 segments.
+ * * TCP RTT-n0:           Oscillating between 2ms and 5ms before seconds flow starts,
+ *                         and after that oscillating between 3ms and 5ms.
+ * * TCP RTT-n1:           Oscillating between 3ms and 5ms.
+ * * Queue Delay-n0:       Oscillating frequently below 1ms before second flow starts,
+ *                         and after that just below 1.4ms.
+ * * Queue Delay-n1:       Oscillating frequently between 0.4ms and 1.4ms.
+ *
+ * Network topology - For Configuration 9
+ * ======================================
+ *
+ *        1Gbps, 1ms                            1Gbps, 1us
+ *     n0--------------|                    |---------------n4
+ *                     |    100Mbps, 1us    |
+ *                     n2------------------n3
+ *         1Gbps, 80ms |                    |    1Gbps, 1us
+ *     n1--------------|                    |---------------n5
+ *
+ * Configuration 9:
+ * ----------------
+ * * One TCP BIC (n0) with base RTT of 80 ms,
+ * * One DCTCP (n1) with ECN ECT(1),
+ * * L4S mode enabled,
+ * * Base RTT 1ms
+ *
+ * Expected Result:
+ * * Throughput-n0:        Oscillating below 100Mbps before second flow starts, and after that,
+ *                         oscillating around 50Mbps.
+ * * Throughput-n1:        Oscillating around 50Mbps.
+ * * Ping RTT:             Oscillating and reaching around 80.5ms.
+ * * Drop frequency:       There should not be any drops.
+ * * Length:               Around 5ms with frequent spikes above 10ms before second flow starts,
+ *                         and after that spikes below 10ms.
+ * * Mark Frequency:       Oscillating 1 marks per 100ms before second flow start, and after that
+ *                         oscillating below 200 marks per 100ms.
+ * * Congestion Window-n0: Oscillating around 600 segments before second flow starts,
+ *                         then oscillating around 300 segments.
+ * * Congestion Window-n1: Oscillating around 300 segments.
+ * * TCP RTT-n0:           Around 85ms with spikes reaching around 95ms before second flow starts,
+ *                         and after that around 85ms with spikes reaching 100ms.
+ * * TCP RTT-n1:           Around 85ms with spikes reaching 100ms.
+ * * Queue Delay-n0:       Around 5ms with spikes above 10ms before second flow starts, and
+ *                         nearly the same after that too.
+ * * Queue Delay-n1:       Oscillating frequently between 0.4ms and 1.4ms with spikes reaching 3ms.
+ *
+ * Clients and servers are configured for ICMP measurements and TCP throughput
  * and latency measurements in the downstream direction
  *
  * Depending on the scenario, the middlebox and endpoints will be
@@ -218,12 +284,13 @@
  * started at simulation time 5 sec; if a second flow is used, it starts
  * at 15 sec.
  *
- * ping frequency is set at 100ms
+ * Ping frequency is set at 100ms
+ *
  * Note that pings may miss the peak of queue buildups for short-lived flows;
  * hence, we trace also the queue length expressed in units of time at
  * the bottleneck link rate.
  *
- * A command-line option to enable CE Threshold is provided
+ * A command-line option to enable CE Threshold is provided.
  *
  * Results will be available in ns-3-dev/results/FqCoDel-L4S consisting of 14 .dat files
  *
@@ -234,30 +301,15 @@
  *  - Queue delay
  *
  * IPv4 addressing
- * ----------------------------
- * pingServer       10.1.1.2 (ping source)
- * n0Server         10.1.2.2 (data sender)
- * n1Server         10.1.3.2 (data sender)
- * pingClient       192.168.1.2
- * n4Client         192.168.2.2
- * n5Client         192.168.3.2
- *
- * Program options
  * ---------------
- *    --n0TcpType:           First TCP type (bic, dctcp, or reno) [bic]
- *    --n1TcpType:           Second TCP type (cubic, dctcp, or reno) []
- *    --scenarioNum:         Scenario number from the scenarios available in the file (1-9) [0]
- *    --bottleneckQueueType: n2 queue type (fq or codel) [fq]
- *    --baseRtt:             base RTT [80ms]
- *    --useCeThreshold:      use CE threshold [false]
- *    --useEcn:              use ECN [true]
- *    --ceThreshold:         CE threshold [1ms]
- *    --bottleneckRate       data rate of bottleneck [100Mbps]
- *    --linkrate:            data rate of edge link to bottleneck link [1Gbps]
- *    --stopTime:            simulation stop time [70s]
- *    --enablePcap:          enable Pcap [false]
- *    (additional arguments to control trace names)
- **/
+ *
+ *     pingServer       10.1.1.2 (ping source)
+ *     n0Server         10.1.2.2 (data sender)
+ *     n1Server         10.1.3.2 (data sender)
+ *     pingClient       192.168.1.2
+ *     n4Client         192.168.2.2
+ *     n5Client         192.168.3.2
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -272,14 +324,28 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("FqCoDelL4SExample");
 
-uint32_t checkTimes;
-double avgQueueDiscSize;
-
+/**
+ * @name
+ * Counters for bytes received, packet marks and drops.
+ * @{
+ */
+/** Counter. */
 uint32_t g_n0BytesReceived = 0;
 uint32_t g_n1BytesReceived = 0;
 uint32_t g_marksObserved = 0;
 uint32_t g_dropsObserved = 0;
 
+/** @} */
+
+/**
+ * @name
+ * Log changes to CWND.
+ * @{
+ */
+/**
+ * @param ofStream The output stream to log to.
+ * @param newCwnd The new CWND value.
+ */
 void
 TraceN0Cwnd(std::ofstream* ofStream, uint32_t, uint32_t newCwnd)
 {
@@ -298,6 +364,17 @@ TraceN1Cwnd(std::ofstream* ofStream, uint32_t, uint32_t newCwnd)
               << std::endl;
 }
 
+/** @} */
+
+/**
+ * @name
+ * Log changes to the RTT.
+ * @{
+ */
+/**
+ * @param ofStream The output stream to log to.
+ * @param newRtt The new RTT value.
+ */
 void
 TraceN0Rtt(std::ofstream* ofStream, Time, Time newRtt)
 {
@@ -310,6 +387,14 @@ TraceN1Rtt(std::ofstream* ofStream, Time, Time newRtt)
     *ofStream << Simulator::Now().GetSeconds() << " " << newRtt.GetSeconds() * 1000 << std::endl;
 }
 
+/** @} */
+
+/**
+ * Log the RTT in ms.
+ * @param ofStream The output stream to log to.
+ * @param seqNo Packet sequence number
+ * @param rtt The RTT.
+ */
 void
 TracePingRtt(std::ofstream* ofStream, uint16_t seqNo, Time rtt)
 {
@@ -317,6 +402,12 @@ TracePingRtt(std::ofstream* ofStream, uint16_t seqNo, Time rtt)
               << std::endl;
 }
 
+/**
+ * @name
+ * Accumulate bytes received.
+ * @{
+ */
+/** @param packet The received packet. */
 void
 TraceN0Rx(Ptr<const Packet> packet, const Address&)
 {
@@ -329,6 +420,17 @@ TraceN1Rx(Ptr<const Packet> packet, const Address&)
     g_n1BytesReceived += packet->GetSize();
 }
 
+/** @} */
+
+/**
+ * @name
+ * Log queue drops or marks by item hash.
+ * @{
+ */
+/**
+ * @param ofStream The output stream to log to.
+ * @param item The QueueDiscItem being dropped.
+ */
 void
 TraceDrop(std::ofstream* ofStream, Ptr<const QueueDiscItem> item)
 {
@@ -343,6 +445,14 @@ TraceMark(std::ofstream* ofStream, Ptr<const QueueDiscItem> item, const char*)
     g_marksObserved++;
 }
 
+/** @} */
+
+/**
+ * Log queue length in (kbps)^-1
+ * @param ofStream The output stream to log to.
+ * @param linkRate The channel data rate.
+ * @param newVal The queue length in bytes.
+ */
 void
 TraceQueueLength(std::ofstream* ofStream, DataRate linkRate, uint32_t, uint32_t newVal)
 {
@@ -351,6 +461,11 @@ TraceQueueLength(std::ofstream* ofStream, DataRate linkRate, uint32_t, uint32_t 
               << static_cast<double>(newVal * 8) / (linkRate.GetBitRate() / 1000) << std::endl;
 }
 
+/**
+ * Log and reset the number of drops observed.
+ * @param ofStream The output stream to log to.
+ * @param dropsSamplingInterval How often to repeat this log.
+ */
 void
 TraceDropsFrequency(std::ofstream* ofStream, Time dropsSamplingInterval)
 {
@@ -362,6 +477,11 @@ TraceDropsFrequency(std::ofstream* ofStream, Time dropsSamplingInterval)
                         dropsSamplingInterval);
 }
 
+/**
+ * Log and reset the number of marks observed.
+ * @param ofStream The output stream to log to.
+ * @param marksSamplingInterval How often to repeat this log.
+ */
 void
 TraceMarksFrequency(std::ofstream* ofStream, Time marksSamplingInterval)
 {
@@ -373,6 +493,15 @@ TraceMarksFrequency(std::ofstream* ofStream, Time marksSamplingInterval)
                         marksSamplingInterval);
 }
 
+/**
+ * @name
+ * Log and reset the bytes received (throughput) counter, in Mbps.
+ * @{
+ */
+/**
+ * @param ofStream The output stream to log to.
+ * @param throughputInterval How often to repeat this log.
+ */
 void
 TraceN0Throughput(std::ofstream* ofStream, Time throughputInterval)
 {
@@ -391,6 +520,16 @@ TraceN1Throughput(std::ofstream* ofStream, Time throughputInterval)
     Simulator::Schedule(throughputInterval, &TraceN1Throughput, ofStream, throughputInterval);
 }
 
+/** @} */
+
+/**
+ * @name
+ * Connect CWND or RTT traces.
+ * @{
+ */
+/**
+ * @param ofStream The output stream to log to.
+ */
 void
 ScheduleN0TcpCwndTraceConnection(std::ofstream* ofStream)
 {
@@ -403,13 +542,6 @@ ScheduleN0TcpRttTraceConnection(std::ofstream* ofStream)
 {
     Config::ConnectWithoutContext("/NodeList/1/$ns3::TcpL4Protocol/SocketList/0/RTT",
                                   MakeBoundCallback(&TraceN0Rtt, ofStream));
-}
-
-void
-ScheduleN0PacketSinkConnection()
-{
-    Config::ConnectWithoutContext("/NodeList/6/ApplicationList/*/$ns3::PacketSink/Rx",
-                                  MakeCallback(&TraceN0Rx));
 }
 
 void
@@ -426,6 +558,22 @@ ScheduleN1TcpRttTraceConnection(std::ofstream* ofStream)
                                   MakeBoundCallback(&TraceN1Rtt, ofStream));
 }
 
+/** @} */
+
+/**
+ * @name
+ * Connect packet received traces.
+ * @{
+ */
+/** Connect N0. */
+void
+ScheduleN0PacketSinkConnection()
+{
+    Config::ConnectWithoutContext("/NodeList/6/ApplicationList/*/$ns3::PacketSink/Rx",
+                                  MakeCallback(&TraceN0Rx));
+}
+
+/** Connect N1. */
 void
 ScheduleN1PacketSinkConnection()
 {
@@ -433,6 +581,14 @@ ScheduleN1PacketSinkConnection()
                                   MakeCallback(&TraceN1Rx));
 }
 
+/** @} */
+
+/**
+ * Log queuing delay, in ns.
+ * @param n0OfStream The stream to log to for node 0.
+ * @param n1OfStream The stream to log to for node 1.
+ * @param item The queued packet.
+ */
 static void
 PacketDequeue(std::ofstream* n0OfStream, std::ofstream* n1OfStream, Ptr<const QueueDiscItem> item)
 {

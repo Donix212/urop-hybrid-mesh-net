@@ -5,13 +5,15 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-/**
- * @file
- * @ingroup packet
- */
 
 #ifndef TAG_BUFFER_H
 #define TAG_BUFFER_H
+
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::TagBuffer declaration.
+ */
 
 #include <stdint.h>
 

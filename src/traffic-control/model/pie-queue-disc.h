@@ -7,14 +7,18 @@
  *          Smriti Murali <m.smriti.95@gmail.com>
  *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
+
+#ifndef PIE_QUEUE_DISC_H
+#define PIE_QUEUE_DISC_H
+
 /**
  * @file
  * @ingroup traffic-control
  * Class ns3::PieQueueDisc declaration.
+ *
+ * @note This code was ported from ns-2.36rc1 (queue/pie.h).
+ * Most of the comments are also ported from the same.
  */
-
-#ifndef PIE_QUEUE_DISC_H
-#define PIE_QUEUE_DISC_H
 
 #include "queue-disc.h"
 

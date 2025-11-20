@@ -5,6 +5,11 @@
  *
  * Authors: Lalith Suresh <suresh.lalith@gmail.com>
  */
+/**
+ * @file
+ * @ingroup click
+ * Class ns3::Ipv4ClickRouting implementation.
+ */
 
 #include "ipv4-click-routing.h"
 
@@ -580,6 +585,13 @@ Ipv4ClickRouting::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress a
 
 using ns3::g_log;
 
+/**
+ * Copy a string to a buffer
+ * @param buf The buffer
+ * @param len the size of the buffer
+ * @param s The string
+ * @return 0
+ */
 static int
 simstrlcpy(char* buf, int len, const std::string& s)
 {
@@ -598,8 +610,16 @@ simstrlcpy(char* buf, int len, const std::string& s)
     return 0;
 }
 
-// Sends a Packet from Click to the Simulator: Defined in simclick.h. Click
-// calls these methods.
+/**
+ * Sends a Packet from Click to the Simulator.
+ * Defined in
+ * [click/simclick.h](https://github.com/kohler/click/blob/master/include/click/simclick.h). Called
+ * by Click
+ * @param simnode The Click node handle
+ * @copydetails ns3::Ipv4ClickRouting::HandlePacketFromClick
+ * @param pinfo The packet metadata
+ * @return 0
+ */
 int
 simclick_sim_send(simclick_node_t* simnode,
                   int ifid,
@@ -625,7 +645,16 @@ simclick_sim_send(simclick_node_t* simnode,
     return 0;
 }
 
-// Click Service Methods: Defined in simclick.h
+/**
+ * Click Service Methods: Defined in
+ * [click/simclick.h](https://github.com/kohler/click/blob/master/include/click/simclick.h)
+ *
+ * @param simnode The Click node handle
+ * @param cmd SIMCLICK command code, from
+ * [click/simclick.h](https://github.com/kohler/click/blob/master/include/click/simclick.h)
+ * Additional arguments specific to the @c cmd
+ * @return Result or return code, depending on the @c cmd
+ */
 int
 simclick_sim_command(simclick_node_t* simnode, int cmd, ...)
 {

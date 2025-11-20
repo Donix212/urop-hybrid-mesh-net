@@ -45,7 +45,7 @@ constexpr uint8_t WIFI_IE_ELEMENT_ID_EXT_SIZE{1};
 typedef uint8_t WifiInformationElementId;
 
 /**
- * @name
+ * @name Wifi Information Element IDs
  * @ingroup wifi
  * Here we have definition of all Information Element IDs in IEEE
  * 802.11-2007. See the comments for WifiInformationElementId - this could
@@ -69,8 +69,8 @@ typedef uint8_t WifiInformationElementId;
  * * 176
  * * 178 to 181
  * * 243 to 254
+ * @{
  */
-/** @{ */
 /** Wifi information element. */
 constexpr WifiInformationElementId IE_SSID{0};
 constexpr WifiInformationElementId IE_SUPPORTED_RATES{1};

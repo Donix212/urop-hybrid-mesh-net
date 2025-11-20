@@ -5,6 +5,11 @@
  *
  * Author: Leonard Tracy <lentracy@gmail.com>
  */
+/**
+ * @file
+ * @ingroup uan
+ * Class ns3::UanHeaderCommon implementation.
+ */
 
 #include "uan-header-common.h"
 

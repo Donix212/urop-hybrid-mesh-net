@@ -9,6 +9,12 @@
 #ifndef RIP_H
 #define RIP_H
 
+/**
+ * @file
+ * @ingroup rip
+ * Class ns3::Rip and ns3::RipRoutingTableEntry declarations.
+ */
+
 #include "ipv4-interface.h"
 #include "ipv4-l3-protocol.h"
 #include "ipv4-routing-protocol.h"

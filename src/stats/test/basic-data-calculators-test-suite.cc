@@ -13,8 +13,11 @@
 
 using namespace ns3;
 
-// See issue #698 for discussion of this tolerance
-const double TOLERANCE = 1e-13;
+/**
+ * Tolerance value for test results.
+ * See issueid{#698} for discussion of this tolerance
+ */
+constexpr double TOLERANCE{1e-13};
 
 /**
  * @ingroup stats-tests

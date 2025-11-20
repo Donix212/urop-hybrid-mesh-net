@@ -3,6 +3,10 @@
  *
  * Author: John Abraham <john.abraham.in@gmail.com>
  */
+/**
+ * @file
+ * @ingroup netanim
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -16,6 +20,7 @@
 
 using namespace ns3;
 
+/** The animation interface. */
 AnimationInterface* pAnim = nullptr;
 /** Shorthand for an RGB triple. */
 using Rgb = AnimationInterface::Rgb;
@@ -23,6 +28,10 @@ using Rgb = AnimationInterface::Rgb;
 /** Shorthand for the RGB primary colors. */
 const auto& colors = AnimationInterface::PrimaryColors;
 
+/**
+ * Update the display by labeling the links with the current time,
+ * relabeling Node2, changing the color for nodes 4-11
+ */
 void
 modify()
 {

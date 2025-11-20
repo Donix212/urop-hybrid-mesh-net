@@ -5,6 +5,11 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
+/**
+ * @file
+ * @ingroup system-tests-perf
+ * Benchmark the Simulator::Scheduler variants
+ */
 
 #include "ns3/core-module.h"
 
@@ -17,6 +22,10 @@
 
 using namespace ns3;
 
+/**
+ * @{
+ * File-local logging shorthands
+ */
 /** Flag to write debugging output. */
 bool g_debug = false;
 
@@ -35,6 +44,8 @@ std::string g_me;
 
 /** Output field width for numeric data. */
 int g_fwidth = 6;
+
+/** @} */
 
 /**
  *  Benchmark instance which can do a single run.
@@ -315,6 +326,17 @@ BenchSuite::Header() const
                           << std::right << std::setw(g_fwidth) << " " << std::setfill(' '));
 }
 
+/**
+ * Accumulate results
+ * @param phase @c init or @c run
+ * @param field @c time, @c rate or @c period
+ */
+#define ACCUMULATE(phase, field)                                                                   \
+    deltaPre = run.phase.field - average.phase.field;                                              \
+    average.phase.field += deltaPre / count;                                                       \
+    deltaPost = run.phase.field - average.phase.field;                                             \
+    moment2.phase.field += deltaPre * deltaPost
+
 void
 BenchSuite::Log() const
 {
@@ -341,12 +363,6 @@ BenchSuite::Log() const
         double deltaPost;
         const auto& run = m_results[n];
         uint64_t count = n + 1;
-
-#define ACCUMULATE(phase, field)                                                                   \
-    deltaPre = run.phase.field - average.phase.field;                                              \
-    average.phase.field += deltaPre / count;                                                       \
-    deltaPost = run.phase.field - average.phase.field;                                             \
-    moment2.phase.field += deltaPre * deltaPost
 
         ACCUMULATE(init, time);
         ACCUMULATE(init, rate);

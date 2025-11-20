@@ -5,6 +5,10 @@
  *
  * Author: Dean Armstrong <deanarm@gmail.com>
  */
+/**
+ * @file
+ * @ingroup wifi-test
+ */
 
 #include "ns3/boolean.h"
 #include "ns3/double.h"
@@ -212,4 +216,5 @@ WifiMsduAggregatorTestSuite::WifiMsduAggregatorTestSuite()
     AddTestCase(new WifiMsduAggregatorThroughputTest, TestCase::Duration::QUICK);
 }
 
+/** Test suite instance variable. */
 static WifiMsduAggregatorTestSuite wifiMsduAggregatorTestSuite;
