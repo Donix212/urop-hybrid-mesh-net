@@ -54,7 +54,7 @@ CoDelGetTime()
     Time time = Simulator::Now();
     uint64_t ns = time.GetNanoSeconds();
 
-    return static_cast<uint32_t>(ns >> CODEL_SHIFT);
+    return static_cast<uint32_t>(ns >> CoDelQueueDisc::CODEL_SHIFT);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(CoDelQueueDisc);

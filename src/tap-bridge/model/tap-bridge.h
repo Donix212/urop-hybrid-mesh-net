@@ -104,6 +104,14 @@ class TapBridge : public NetDevice
     static TypeId GetTypeId();
 
     /**
+     * Magic number used as a consistency/sanity check on
+     * the socket creator process.
+     * This has to be public for use by stand-along programs, such as tap-creator.cc
+     * @todo Reference the magic symbols in src/fd-net-device/helper/creator-utils.h
+     */
+    static constexpr uint32_t TAP_MAGIC{95549};
+
+    /**
      * Enumeration of the operating modes supported in the class.
      *
      */

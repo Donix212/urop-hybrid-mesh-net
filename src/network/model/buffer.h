@@ -8,12 +8,22 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+/**
+ * @file
+ * @ingroup packet
+ */
+
 #include "ns3/assert.h"
 
+#include <array>
 #include <ostream>
 #include <stdint.h>
 #include <vector>
 
+/**
+ * @ingroup packet
+ * Enable buffer free list.
+ */
 #define BUFFER_FREE_LIST 1
 
 namespace ns3
@@ -384,7 +394,6 @@ class Buffer
         uint32_t GetRemainingSize() const;
 
       private:
-        /// Friend class
         friend class Buffer;
         /**
          * Constructor - initializes the iterator to point to the buffer start
@@ -708,6 +717,14 @@ class Buffer
      * @returns true if the buffer status is consistent.
      */
     bool CheckInternalState() const;
+    /**
+     * @brief Log internal state.
+     *
+     * Used only for debugging purposes.
+     *
+     * @returns a string describing the internal state.
+     */
+    std::string LogInternalState() const;
 
     /**
      * @brief Initializes the buffer with a number of zeroes.
@@ -793,11 +810,67 @@ class Buffer
      */
     uint32_t m_end;
 
-#ifdef BUFFER_FREE_LIST
-    /// Container for buffer data
-    typedef std::vector<Buffer::Data*> FreeList;
+    /** Max size of buffer free list, if enabled. */
+    static constexpr uint32_t FREE_LIST_SIZE{1000};
 
-    /// Local static destructor structure
+    /** @brief Zero-filled buffer, to fill out a Data when needed. */
+    static constexpr std::array<char, FREE_LIST_SIZE> ZEROS{};
+
+#ifdef BUFFER_FREE_LIST
+    /** Container for buffer data. */
+    using FreeList = std::vector<Buffer::Data*>;
+
+    /**
+     * @name Buffer free list state machine.
+     *
+     * The following constants and functions are pretty evil but they are needed to allow us to
+     * keep track of 3 possible states for the g_freeList variable:
+     *  - uninitialized means that no one has created a buffer yet
+     *    so no one has created the associated free list (it is created
+     *    on-demand when the first buffer is created)
+     *  - initialized means that the free list exists and is valid
+     *  - destroyed means that the static destructors of this compilation unit
+     *    have run so, the free list has been cleared from its content
+     * The key is that in destroyed state, we are careful not re-create it
+     * which is a typical weakness of lazy evaluation schemes which use
+     * '0' as a special value to indicate both un-initialized and destroyed.
+     * Note that it is important to use '0' as the marker for un-initialized state
+     * because the variable holding this state information is initialized to zero
+     * which the compiler assigns to zero-memory which is initialized to _zero_
+     * before the constructors run so this ensures perfect handling of crazy
+     * constructor orderings.
+     */
+    /** Buffer free list state machine states. @{ */
+    static constexpr intptr_t MAGIC_DESTROYED{~0};
+    static constexpr FreeList* UNINITIALIZED{0};
+    static const FreeList* DESTROYED;
+
+    /** @} */
+
+    /**
+     * Buffer free list state machine predicates.
+     * @param x The FreeList item to check.
+     * @returns @c true if the @c x is in the indicated state.
+     *@{
+     */
+    static bool IsUninitialized(FreeList* x)
+    {
+        return (x == UNINITIALIZED);
+    }
+
+    static bool IsDestroyed(FreeList* x)
+    {
+        return (x == DESTROYED);
+    }
+
+    static bool IsInitialized(FreeList* x)
+    {
+        return (!IsUninitialized(x) && !IsDestroyed(x));
+    }
+
+    /** @} */
+
+    /** Local static destructor structure. */
     struct LocalStaticDestructor
     {
         ~LocalStaticDestructor();

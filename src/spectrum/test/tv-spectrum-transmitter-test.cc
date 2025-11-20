@@ -5,6 +5,10 @@
  *
  * Author: Benjamin Cizdziel <ben.cizdziel@gmail.com>
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/double.h"
 #include "ns3/enum.h"
@@ -17,9 +21,13 @@ NS_LOG_COMPONENT_DEFINE("TvSpectrumTransmitterTest");
 
 using namespace ns3;
 
-const double TOLERANCE = 1e-15;
-// Bug 2094: Adjust floating point comparison epsilon based on inputs.
-//           Follows http://realtimecollisiondetection.net/blog/?p=89
+/** Tolerance for comparing double values. */
+constexpr double TOLERANCE = 1e-15;
+
+/**
+ * @issueid{2094}: Adjust floating point comparison epsilon based on inputs.
+ *           Follows http://realtimecollisiondetection.net/blog/?p=89
+ */
 double epsilon;
 
 /**

@@ -263,6 +263,11 @@ class Rip : public Ipv4RoutingProtocol
     void DoInitialize() override;
 
   private:
+    /** RIP broadcast address. */
+    static constexpr char RIP_ALL_NODE[] = "224.0.0.9";
+    /** RIP port. */
+    static constexpr uint16_t RIP_PORT{520};
+
     /// Container for the network routes - pair RipRoutingTableEntry *, EventId (update event)
     typedef std::list<std::pair<RipRoutingTableEntry*, EventId>> Routes;
 

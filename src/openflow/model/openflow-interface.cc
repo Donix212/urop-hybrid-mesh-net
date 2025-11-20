@@ -141,8 +141,6 @@ Stats::DescStatsDump(void* state, ofpbuf* buffer)
     return 0;
 }
 
-#define MAX_FLOW_STATS_BYTES 4096
-
 int
 Stats::FlowStatsInit(const void* body, int body_len, void** state)
 {

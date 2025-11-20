@@ -230,7 +230,7 @@ CobaltQueueDisc::CacheInit()
     m_recInvSqrt = ~0U;
     m_recInvSqrtCache[0] = m_recInvSqrt;
 
-    for (m_count = 1; m_count < (uint32_t)(REC_INV_SQRT_CACHE); m_count++)
+    for (m_count = 1; m_count < REC_INV_SQRT_CACHE; m_count++)
     {
         NewtonStep();
         NewtonStep();
@@ -243,7 +243,7 @@ CobaltQueueDisc::CacheInit()
 void
 CobaltQueueDisc::InvSqrt()
 {
-    if (m_count < (uint32_t)REC_INV_SQRT_CACHE)
+    if (m_count < REC_INV_SQRT_CACHE)
     {
         m_recInvSqrt = m_recInvSqrtCache[m_count];
     }

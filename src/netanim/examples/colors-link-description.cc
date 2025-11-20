@@ -17,20 +17,11 @@
 using namespace ns3;
 
 AnimationInterface* pAnim = nullptr;
+/** Shorthand for an RGB triple. */
+using Rgb = AnimationInterface::Rgb;
 
-/// RGB structure
-struct Rgb
-{
-    uint8_t r; ///< red
-    uint8_t g; ///< green
-    uint8_t b; ///< blue
-};
-
-Rgb colors[] = {
-    {255, 0, 0}, // Red
-    {0, 255, 0}, // Blue
-    {0, 0, 255}, // Green
-};
+/** Shorthand for the RGB primary colors. */
+const auto& colors = AnimationInterface::PrimaryColors;
 
 void
 modify()

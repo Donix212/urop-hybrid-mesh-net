@@ -237,7 +237,17 @@ using namespace ns3;
 // ########################################################################
 NS_LOG_COMPONENT_DEFINE("GlobalRoutingMultiSwitchPlusRouter");
 
-#define vssearch(loc, vec) std::find((vec).begin(), (vec).end(), (loc)) != (vec).end()
+/**
+ * Predicate to test for presence of @c loc within a vector @c vec
+ * @param loc The entry to search for
+ * @param vec The vector to search in
+ * @return @c true if @p loc is present in @p vec
+ */
+bool
+vssearch(std::string loc, const std::vector<std::string>& vec)
+{
+    return std::find(vec.begin(), vec.end(), loc) != vec.end();
+}
 
 int
 main(int argc, char* argv[])

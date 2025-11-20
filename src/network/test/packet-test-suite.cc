@@ -14,7 +14,9 @@
 #include <iomanip>
 #include <iostream>
 #include <limits> // std:numeric_limits
+#include <sstream>
 #include <string>
+#include <tuple>
 
 using namespace ns3;
 
@@ -152,10 +154,6 @@ class ATestTag : public ATestTagBase
     }
 };
 
-// Previous versions of ns-3 limited the tag size to 20 bytes or less
-// static const uint8_t LARGE_TAG_BUFFER_SIZE = 64;
-#define LARGE_TAG_BUFFER_SIZE 64
-
 /**
  * @ingroup network-test
  * @ingroup tests
@@ -168,6 +166,13 @@ class ATestTag : public ATestTagBase
  */
 class ALargeTestTag : public Tag
 {
+    /**
+     * Size of large tags.
+     * Previous versions of ns-3 limited the tag size to 20 bytes or less,
+     * prior value: `static const uint8_t LARGE_TAG_BUFFER_SIZE = 64;`
+     */
+    static constexpr uint8_t LARGE_TAG_BUFFER_SIZE{64};
+
   public:
     ALargeTestTag()
     {
@@ -488,18 +493,6 @@ struct Expected
 
 } // namespace
 
-// tag name, start, end
-#define E(name, start, end) name, start, end
-
-// tag name, start, end, data
-#define E_DATA(name, start, end, data) name, start, end, data
-
-// Check byte tags on a packet, checks name, start, end
-#define CHECK(p, n, ...) DoCheck(p, n, __VA_ARGS__)
-
-// Check byte tags on a packet, checks name, start, end, data
-#define CHECK_DATA(p, n, ...) DoCheckData(p, n, __VA_ARGS__)
-
 /**
  * @ingroup network-test
  * @ingroup tests
@@ -516,17 +509,17 @@ class PacketTest : public TestCase
     /**
      * Checks the packet
      * @param p The packet
-     * @param n The number of variable arguments
+     * @param eTags List of Expected tags
      * @param ... The variable arguments
      */
-    void DoCheck(Ptr<const Packet> p, uint32_t n, ...);
+    void DoCheck(Ptr<const Packet> p, std::initializer_list<Expected> eTags = {});
     /**
      * Checks the packet and its data
      * @param p The packet
-     * @param n The number of variable arguments
+     * @param eTags List of Expected tags
      * @param ... The variable arguments
      */
-    void DoCheckData(Ptr<const Packet> p, uint32_t n, ...);
+    void DoCheckData(Ptr<const Packet> p, std::initializer_list<Expected> eTags);
 };
 
 PacketTest::PacketTest()
@@ -535,22 +528,12 @@ PacketTest::PacketTest()
 }
 
 void
-PacketTest::DoCheck(Ptr<const Packet> p, uint32_t n, ...)
+PacketTest::DoCheck(Ptr<const Packet> p, std::initializer_list<Expected> eTags /* = {} */)
 {
-    std::vector<Expected> expected;
-    va_list ap;
-    va_start(ap, n);
-    for (uint32_t k = 0; k < n; ++k)
-    {
-        uint32_t N = va_arg(ap, uint32_t);
-        uint32_t start = va_arg(ap, uint32_t);
-        uint32_t end = va_arg(ap, uint32_t);
-        expected.emplace_back(N, start, end);
-    }
-    va_end(ap);
     static int testcount{0};
     ++testcount;
 
+    std::vector<Expected> expected(eTags.begin(), eTags.end());
 
     ByteTagIterator i = p->GetByteTagIterator();
     uint32_t j = 0;
@@ -575,23 +558,12 @@ PacketTest::DoCheck(Ptr<const Packet> p, uint32_t n, ...)
 }
 
 void
-PacketTest::DoCheckData(Ptr<const Packet> p, uint32_t n, ...)
+PacketTest::DoCheckData(Ptr<const Packet> p, std::initializer_list<Expected> eTags)
 {
-    std::vector<Expected> expected;
-    va_list ap;
-    va_start(ap, n);
-    for (uint32_t k = 0; k < n; ++k)
-    {
-        uint32_t N = va_arg(ap, uint32_t);
-        uint32_t start = va_arg(ap, uint32_t);
-        uint32_t end = va_arg(ap, uint32_t);
-        int data = va_arg(ap, int);
-        expected.emplace_back(N, start, end, data);
-    }
-    va_end(ap);
     static int testcount{0};
     ++testcount;
 
+    std::vector<Expected> expected(eTags.begin(), eTags.end());
 
     ByteTagIterator i = p->GetByteTagIterator();
     uint32_t j = 0;
@@ -643,29 +615,29 @@ PacketTest::DoRun()
 
     std::cout << GetName() << "byte tags: add" << std::endl;
     p->AddByteTag(ATestTag<1>());
-    CHECK(p, 1, E(1, 0, 1000));
+    DoCheck(p, {{1, 0, 1000}});
     std::cout << GetName() << "byte tags: copy" << std::endl;
     Ptr<const Packet> copy = p->Copy();
-    CHECK(copy, 1, E(1, 0, 1000));
+    DoCheck(copy, {{1, 0, 1000}});
 
     std::cout << GetName() << "byte tags: add 2nd" << std::endl;
     p->AddByteTag(ATestTag<2>());
-    CHECK(p, 2, E(1, 0, 1000), E(2, 0, 1000));
-    CHECK(copy, 1, E(1, 0, 1000));
     std::cout << GetName() << "byte tags: unmodified original" << std::endl;
+    DoCheck(p, {{1, 0, 1000}, {2, 0, 1000}});
+    DoCheck(copy, {{1, 0, 1000}});
 
     {
         std::cout << GetName() << "assignment" << std::endl;
         Packet c0 = *copy;
         Packet c1 = *copy; // NOLINT(performance-unnecessary-copy-initialization)
         c0 = c1;
-        CHECK(&c0, 1, E(1, 0, 1000));
-        CHECK(&c1, 1, E(1, 0, 1000));
-        CHECK(copy, 1, E(1, 0, 1000));
+        DoCheck(&c0, {{1, 0, 1000}});
+        DoCheck(&c1, {{1, 0, 1000}});
+        DoCheck(copy, {{1, 0, 1000}});
         c0.AddByteTag(ATestTag<10>());
-        CHECK(&c0, 2, E(1, 0, 1000), E(10, 0, 1000));
-        CHECK(&c1, 1, E(1, 0, 1000));
-        CHECK(copy, 1, E(1, 0, 1000));
+        DoCheck(&c0, {{1, 0, 1000}, {10, 0, 1000}});
+        DoCheck(&c1, {{1, 0, 1000}});
+        DoCheck(copy, {{1, 0, 1000}});
     }
 
     std::cout << GetName() << "bytetags: fragmentation" << std::endl;
@@ -673,35 +645,27 @@ PacketTest::DoRun()
     Ptr<Packet> frag1 = p->CreateFragment(10, 90);
     Ptr<const Packet> frag2 = p->CreateFragment(100, 900);
     frag0->AddByteTag(ATestTag<3>());
-    CHECK(frag0, 3, E(1, 0, 10), E(2, 0, 10), E(3, 0, 10));
+    DoCheck(frag0, {{1, 0, 10}, {2, 0, 10}, {3, 0, 10}});
     frag1->AddByteTag(ATestTag<4>());
-    CHECK(frag1, 3, E(1, 0, 90), E(2, 0, 90), E(4, 0, 90));
+    DoCheck(frag1, {{1, 0, 90}, {2, 0, 90}, {4, 0, 90}});
     frag2->AddByteTag(ATestTag<5>());
-    CHECK(frag2, 3, E(1, 0, 900), E(2, 0, 900), E(5, 0, 900));
+    DoCheck(frag2, {{1, 0, 900}, {2, 0, 900}, {5, 0, 900}});
 
     frag1->AddAtEnd(frag2);
-    CHECK(frag1,
-          6,
-          E(1, 0, 90),
-          E(2, 0, 90),
-          E(4, 0, 90),
-          E(1, 90, 990),
-          E(2, 90, 990),
-          E(5, 90, 990));
+    DoCheck(frag1, {{1, 0, 90}, {2, 0, 90}, {4, 0, 90}, {1, 90, 990}, {2, 90, 990}, {5, 90, 990}});
 
-    CHECK(frag0, 3, E(1, 0, 10), E(2, 0, 10), E(3, 0, 10));
+    DoCheck(frag0, {{1, 0, 10}, {2, 0, 10}, {3, 0, 10}});
     frag0->AddAtEnd(frag1);
-    CHECK(frag0,
-          9,
-          E(1, 0, 10),
-          E(2, 0, 10),
-          E(3, 0, 10),
-          E(1, 10, 100),
-          E(2, 10, 100),
-          E(4, 10, 100),
-          E(1, 100, 1000),
-          E(2, 100, 1000),
-          E(5, 100, 1000));
+    DoCheck(frag0,
+            {{1, 0, 10},
+             {2, 0, 10},
+             {3, 0, 10},
+             {1, 10, 100},
+             {2, 10, 100},
+             {4, 10, 100},
+             {1, 100, 1000},
+             {2, 100, 1000},
+             {5, 100, 1000}});
 
     // force caching a buffer of the right size.
     std::cout << GetName() << "right-sized buffer" << std::endl;
@@ -711,38 +675,38 @@ PacketTest::DoRun()
 
     p = Create<Packet>(1000);
     p->AddByteTag(ATestTag<20>());
-    CHECK(p, 1, E(20, 0, 1000));
+    DoCheck(p, {{20, 0, 1000}});
     frag0 = p->CreateFragment(10, 90);
-    CHECK(p, 1, E(20, 0, 1000));
-    CHECK(frag0, 1, E(20, 0, 90));
+    DoCheck(p, {{20, 0, 1000}});
+    DoCheck(frag0, {{20, 0, 90}});
     p = nullptr;
     frag0->AddHeader(ATestHeader<10>());
-    CHECK(frag0, 1, E(20, 10, 100));
+    DoCheck(frag0, {{20, 10, 100}});
 
     {
         std::cout << GetName() << "add/remove header" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddHeader(ATestHeader<10>());
-        CHECK(tmp, 1, E(20, 10, 110));
+        DoCheck(tmp, {{20, 10, 110}});
         ATestHeader<10> h;
         tmp->RemoveHeader(h);
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddHeader(ATestHeader<10>());
-        CHECK(tmp, 1, E(20, 10, 110));
+        DoCheck(tmp, {{20, 10, 110}});
 
         std::cout << GetName() << "add/remove trailer" << std::endl;
         tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddTrailer(ATestTrailer<10>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         ATestTrailer<10> t;
         tmp->RemoveTrailer(t);
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
         tmp->AddTrailer(ATestTrailer<10>());
-        CHECK(tmp, 1, E(20, 0, 100));
+        DoCheck(tmp, {{20, 0, 100}});
     }
 
     {
@@ -750,32 +714,32 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<156>());
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 156));
+        DoCheck(tmp, {{20, 0, 156}});
         tmp->RemoveAtStart(120);
-        CHECK(tmp, 1, E(20, 0, 36));
+        DoCheck(tmp, {{20, 0, 36}});
         Ptr<Packet> a = Create<Packet>(0);
         a->AddAtEnd(tmp);
-        CHECK(a, 1, E(20, 0, 36));
+        DoCheck(a, {{20, 0, 36}});
     }
 
     {
         std::cout << GetName() << "empty packet" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 0, E(20, 0, 0));
+        DoCheck(tmp); // Adding byte tag beyond end is a no-op
     }
     {
         std::cout << GetName() << "sized packet, remove at start/add at end" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(1000);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 1000));
+        DoCheck(tmp, {{20, 0, 1000}});
         tmp->RemoveAtStart(1000);
-        CHECK(tmp, 0, E(0, 0, 0));
+        DoCheck(tmp); // RemoveAtStart also removes byte tag
         Ptr<Packet> a = Create<Packet>(10);
         a->AddByteTag(ATestTag<10>());
-        CHECK(a, 1, E(10, 0, 10));
+        DoCheck(a, {{10, 0, 10}});
         tmp->AddAtEnd(a);
-        CHECK(tmp, 1, E(10, 0, 10));
+        DoCheck(tmp, {{10, 0, 10}});
     }
 
     {
@@ -857,7 +821,7 @@ PacketTest::DoRun()
         p1->AddByteTag(b1);
         p1->AddByteTag(c1);
 
-        CHECK(p1, 3, E(10, 0, 1000), E(11, 0, 1000), E(12, 0, 1000));
+        DoCheck(p1, {{10, 0, 1000}, {11, 0, 1000}, {12, 0, 1000}});
 
         uint32_t serializedSize = p1->GetSerializedSize();
         auto buffer = new uint8_t[serializedSize];
@@ -867,11 +831,7 @@ PacketTest::DoRun()
 
         delete[] buffer;
 
-        CHECK_DATA(p2,
-                   3,
-                   E_DATA(10, 0, 1000, 65),
-                   E_DATA(11, 0, 1000, 66),
-                   E_DATA(12, 0, 1000, 67));
+        DoCheckData(p2, {{10, 0, 1000, 65}, {11, 0, 1000, 66}, {12, 0, 1000, 67}});
     }
 
     {
@@ -880,14 +840,14 @@ PacketTest::DoRun()
         /// See \bugid{572}
         Ptr<Packet> tmp = Create<Packet>(1000);
         tmp->AddByteTag(ATestTag<20>());
-        CHECK(tmp, 1, E(20, 0, 1000));
+        DoCheck(tmp, {{20, 0, 1000}});
         tmp->AddHeader(ATestHeader<2>());
-        CHECK(tmp, 1, E(20, 2, 1002));
+        DoCheck(tmp, {{20, 2, 1002}});
         tmp->RemoveAtStart(1);
-        CHECK(tmp, 1, E(20, 1, 1001));
+        DoCheck(tmp, {{20, 1, 1001}});
 #if 0
     tmp->PeekData ();
-    CHECK (tmp, 1, E (20, 1, 1001));
+    DoCheck(tmp, {{20, 1, 1001}});
 #endif
     }
 
@@ -896,11 +856,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtStart(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddHeader(ATestHeader<50>());
-        CHECK(tmp, 1, E(25, 50, 100));
+        DoCheck(tmp, {{25, 50, 100}});
     }
 
     /* Similar test case, but using trailer instead of header. */
@@ -909,11 +869,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddTrailer(ATestTrailer<50>());
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test reducing tagged packet size and increasing it by half. */
@@ -921,11 +881,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddHeader(ATestHeader<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtStart(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddHeader(ATestHeader<25>());
-        CHECK(tmp, 1, E(25, 25, 75));
+        DoCheck(tmp, {{25, 25, 75}});
     }
 
     /* Similar test case, but using trailer instead of header. */
@@ -935,11 +895,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddTrailer(ATestTrailer<25>());
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test AddPaddingAtEnd. */
@@ -948,11 +908,11 @@ PacketTest::DoRun()
         Ptr<Packet> tmp = Create<Packet>(0);
         tmp->AddTrailer(ATestTrailer<100>());
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddPaddingAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test reducing tagged packet size and increasing it back,
@@ -963,11 +923,11 @@ PacketTest::DoRun()
         std::cout << GetName() << "remove/add padding at end" << std::endl;
         Ptr<Packet> tmp = Create<Packet>(100);
         tmp->AddByteTag(ATestTag<25>());
-        CHECK(tmp, 1, E(25, 0, 100));
+        DoCheck(tmp, {{25, 0, 100}});
         tmp->RemoveAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
         tmp->AddPaddingAtEnd(50);
-        CHECK(tmp, 1, E(25, 0, 50));
+        DoCheck(tmp, {{25, 0, 50}});
     }
 
     /* Test ALargeTestTag */
@@ -1000,14 +960,47 @@ class PacketTagListTest : public TestCase
      * @param msg Message
      * @param miss Expected miss/hit
      */
-    void CheckRef(const PacketTagList& ref, ATestTagBase& t, const char* msg, bool miss = false);
+    void CheckRef(const PacketTagList& ref,
+                  ATestTagBase& t,
+                  const std::string& msg,
+                  bool miss = false);
     /**
      * Checks against a reference PacketTagList
-     * @param ref Reference
+     * @param ref Reference packet tag list
      * @param msg Message
      * @param miss Expected miss/hit
      */
-    void CheckRefList(const PacketTagList& ref, const char* msg, int miss = 0);
+    void CheckRefList(const PacketTagList& ref, const std::string& msg, int miss = 0);
+
+    /** Number of test tags returned by MakeTestTags */
+    static constexpr auto TAG_LAST{7};
+
+    /**n
+     * Create a set of tags to be used in a series of tests
+     * @return an array of test tags
+     * Example usage:
+     *     auto [t1, t2, t3, t4, t5, t6, t7] = MakeTestTags();
+     */
+    std::tuple<ATestTag<1>,
+               ATestTag<2>,
+               ATestTag<3>,
+               ATestTag<4>,
+               ATestTag<5>,
+               ATestTag<6>,
+               ATestTag<7>>
+    MakeTestTags();
+    /**
+     * Check removal of a tag
+     * @param ref Reference PacketTagList
+     * @param tag The tag
+     * @param miss Expected miss/hit
+     */
+    void RemoveCheck(const PacketTagList& ref, ATestTagBase& tag, int miss = 0);
+    /**
+     * Check replacement of a tag
+     * @copydetails RemoveCheck()
+     */
+    void ReplaceCheck(const PacketTagList& ref, ATestTagBase& tag, int miss = 0);
 
     /**
      * Prints the remove time
@@ -1016,7 +1009,7 @@ class PacketTagListTest : public TestCase
      * @param msg Message - prints on cout if msg is not null.
      * @return the ticks to remove the tags.
      */
-    int RemoveTime(const PacketTagList& ref, ATestTagBase& t, const char* msg = nullptr);
+    int RemoveTime(const PacketTagList& ref, ATestTagBase& t, const std::string& msg = "");
 
     /**
      * Prints the remove time
@@ -1036,7 +1029,10 @@ PacketTagListTest::~PacketTagListTest()
 }
 
 void
-PacketTagListTest::CheckRef(const PacketTagList& ref, ATestTagBase& t, const char* msg, bool miss)
+PacketTagListTest::CheckRef(const PacketTagList& ref,
+                            ATestTagBase& t,
+                            const std::string& msg,
+                            bool miss)
 {
     int expect = t.GetData(); // the value we should find
     bool found = ref.Peek(t); // rewrites t with actual value
@@ -1049,21 +1045,26 @@ PacketTagListTest::CheckRef(const PacketTagList& ref, ATestTagBase& t, const cha
     }
 }
 
-// A set of tags with data value 1, to check COW
-#define MAKE_TEST_TAGS                                                                             \
-    ATestTag<1> t1(1);                                                                             \
-    ATestTag<2> t2(1);                                                                             \
-    ATestTag<3> t3(1);                                                                             \
-    ATestTag<4> t4(1);                                                                             \
-    ATestTag<5> t5(1);                                                                             \
-    ATestTag<6> t6(1);                                                                             \
-    ATestTag<7> t7(1);                                                                             \
-    constexpr int TAG_LAST [[maybe_unused]] = 7; /* length of ref PacketTagList */
+/* static */
+std::
+    tuple<ATestTag<1>, ATestTag<2>, ATestTag<3>, ATestTag<4>, ATestTag<5>, ATestTag<6>, ATestTag<7>>
+    PacketTagListTest::MakeTestTags()
+{
+    return {ATestTag<1>(),
+            ATestTag<2>(),
+            ATestTag<3>(),
+            ATestTag<4>(),
+            ATestTag<5>(),
+            ATestTag<6>(),
+            ATestTag<7>()};
+}
 
 void
-PacketTagListTest::CheckRefList(const PacketTagList& ptl, const char* msg, int miss /* = 0 */)
+PacketTagListTest::CheckRefList(const PacketTagList& ptl,
+                                const std::string& msg,
+                                int miss /* = 0 */)
 {
-    MAKE_TEST_TAGS;
+    auto [t1, t2, t3, t4, t5, t6, t7] = MakeTestTags();
     CheckRef(ptl, t1, msg, miss == 1);
     CheckRef(ptl, t2, msg, miss == 2);
     CheckRef(ptl, t3, msg, miss == 3);
@@ -1074,7 +1075,9 @@ PacketTagListTest::CheckRefList(const PacketTagList& ptl, const char* msg, int m
 }
 
 int
-PacketTagListTest::RemoveTime(const PacketTagList& ref, ATestTagBase& t, const char* msg /* = 0 */)
+PacketTagListTest::RemoveTime(const PacketTagList& ref,
+                              ATestTagBase& t,
+                              const std::string& msg /* = "" */)
 {
     const int reps = 10000;
     std::vector<PacketTagList> ptv(reps, ref);
@@ -1085,7 +1088,7 @@ PacketTagListTest::RemoveTime(const PacketTagList& ref, ATestTagBase& t, const c
     }
     int stop = clock();
     int delta = stop - start;
-    if (msg)
+    if (!msg.empty())
     {
         std::cout << GetName() << "remove time: " << msg << ": " << std::setw(8) << delta
                   << " ticks to remove " << reps << " times" << std::endl;
@@ -1116,11 +1119,36 @@ PacketTagListTest::AddRemoveTime(const bool verbose /* = false */)
 }
 
 void
+PacketTagListTest::RemoveCheck(const PacketTagList& ref, ATestTagBase& tag, int miss /* = 0 */)
+{
+    std::stringstream msg("remove ");
+    msg << miss;
+
+    PacketTagList ptl(ref);
+    ptl.Remove(tag);
+    CheckRefList(ref, msg.str() + " orig");
+    CheckRefList(ptl, msg.str() + " copy", miss);
+}
+
+void
+PacketTagListTest::ReplaceCheck(const PacketTagList& ref, ATestTagBase& tag, int miss /* = 0 */)
+{
+    std::stringstream msg("replace ");
+    msg << miss;
+
+    tag.m_data = 2;
+    PacketTagList ptl = ref;
+    ptl.Replace(tag);
+    CheckRefList(ref, msg.str() + " orig");
+    CheckRef(ptl, tag, msg.str() + " copy");
+}
+
+void
 PacketTagListTest::DoRun()
 {
     std::cout << GetName() << "begin" << std::endl;
 
-    MAKE_TEST_TAGS;
+    auto [t1, t2, t3, t4, t5, t6, t7] = MakeTestTags();
 
     PacketTagList ref; // empty list
     ref.Add(t1);       // last
@@ -1159,22 +1187,16 @@ PacketTagListTest::DoRun()
 
     // Removal
     {
-#define RemoveCheck(n)                                                                             \
-    PacketTagList p##n = ref;                                                                      \
-    p##n.Remove(t##n);                                                                             \
-    CheckRefList(ref, "remove " #n " orig");                                                       \
-    CheckRefList(p##n, "remove " #n " copy", n);
-
         // Remove single tags from list
         {
             std::cout << GetName() << "check removal of each tag" << std::endl;
-            RemoveCheck(1);
-            RemoveCheck(2);
-            RemoveCheck(3);
-            RemoveCheck(4);
-            RemoveCheck(5);
-            RemoveCheck(6);
-            RemoveCheck(7);
+            RemoveCheck(ref, t1, 1);
+            RemoveCheck(ref, t2, 2);
+            RemoveCheck(ref, t3, 3);
+            RemoveCheck(ref, t4, 4);
+            RemoveCheck(ref, t5, 5);
+            RemoveCheck(ref, t6, 6);
+            RemoveCheck(ref, t7, 7);
         }
 
         // Remove in the presence of a merge
@@ -1201,29 +1223,18 @@ PacketTagListTest::DoRun()
             CheckRef(mrg, t4, msg, false);
             CheckRef(mrg, m5, msg, false);
         }
-#undef RemoveCheck
     }
 
     // Replace
     {
         std::cout << GetName() << "check replacing each tag" << std::endl;
-
-#define ReplaceCheck(n)                                                                            \
-    t##n.m_data = 2;                                                                               \
-    {                                                                                              \
-        PacketTagList p##n = ref;                                                                  \
-        p##n.Replace(t##n);                                                                        \
-        CheckRefList(ref, "replace " #n " orig");                                                  \
-        CheckRef(p##n, t##n, "replace " #n " copy");                                               \
-    }
-
-        ReplaceCheck(1);
-        ReplaceCheck(2);
-        ReplaceCheck(3);
-        ReplaceCheck(4);
-        ReplaceCheck(5);
-        ReplaceCheck(6);
-        ReplaceCheck(7);
+        ReplaceCheck(ref, t1, 1);
+        ReplaceCheck(ref, t2, 2);
+        ReplaceCheck(ref, t3, 3);
+        ReplaceCheck(ref, t4, 4);
+        ReplaceCheck(ref, t5, 5);
+        ReplaceCheck(ref, t6, 6);
+        ReplaceCheck(ref, t7, 7);
     }
 
     // Timing

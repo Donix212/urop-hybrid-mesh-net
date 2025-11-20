@@ -138,6 +138,14 @@ class UanHeaderCommon : public Header
     TypeId GetInstanceTypeId() const override;
 
   private:
+    /** Protocol numbers @{ */
+    static constexpr uint16_t ARP_PROT_NUMBER{0x0806};       //!< ARP
+    static constexpr uint16_t IPV4_PROT_NUMBER{0x0800};      //!< IPv4
+    static constexpr uint16_t IPV6_PROT_NUMBER{0x86DD};      //!< IPv5
+    static constexpr uint16_t SIXLOWPAN_PROT_NUMBER{0xA0ED}; //!< 6LO-PAN
+
+    /** @} */
+
     Mac8Address m_dest;                   //!< The destination address.
     Mac8Address m_src;                    //!< The source address.
     UanProtocolBits m_uanProtocolBits{0}; //!< The type and protocol bits

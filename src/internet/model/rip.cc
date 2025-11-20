@@ -25,9 +25,6 @@
 
 #include <iomanip>
 
-#define RIP_ALL_NODE "224.0.0.9"
-#define RIP_PORT 520
-
 namespace ns3
 {
 

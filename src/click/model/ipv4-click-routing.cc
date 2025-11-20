@@ -28,11 +28,6 @@ namespace ns3
 
 NS_LOG_COMPONENT_DEFINE("Ipv4ClickRouting");
 
-// Values from nsclick ExtRouter implementation
-#define INTERFACE_ID_KERNELTAP 0
-#define INTERFACE_ID_FIRST 1
-#define INTERFACE_ID_FIRST_DROP 33
-
 NS_OBJECT_ENSURE_REGISTERED(Ipv4ClickRouting);
 
 std::map<simclick_node_t*, Ptr<Ipv4ClickRouting>> Ipv4ClickRouting::m_clickInstanceFromSimNode;

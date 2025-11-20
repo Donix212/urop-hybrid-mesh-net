@@ -19,11 +19,13 @@
 
 using namespace ns3;
 
-// The following code borrowed from Linux codel.h, for unit testing
-#define REC_INV_SQRT_BITS_ns3 (8 * sizeof(uint16_t))
-/* or sizeof_in_bits(rec_inv_sqrt) */
-/* needed shift to get a Q0.32 number from rec_inv_sqrt */
-#define REC_INV_SQRT_SHIFT_ns3 (32 - REC_INV_SQRT_BITS_ns3)
+/** Borrowed from Linux codel.h, for unit testing @{ */
+/** `sizeof_in_bits(rec_inv_sqrt)` */
+constexpr std::size_t REC_INV_SQRT_BITS_ns3{8 * sizeof(uint16_t)};
+/** Shift to get a Q0.32 number from rec_inv_sqrt */
+constexpr std::size_t REC_INV_SQRT_SHIFT_ns3{32 - REC_INV_SQRT_BITS_ns3};
+
+/** @} */
 
 static uint16_t
 _codel_Newton_step(uint16_t rec_inv_sqrt, uint32_t count)
@@ -1314,7 +1316,7 @@ CoDelQueueDiscBasicMark::Dequeue(Ptr<CoDelQueueDisc> queue, uint32_t modeSize, u
  *
  * @brief CoDel Queue Disc Test Suite
  */
-static class CoDelQueueDiscTestSuite : public TestSuite
+class CoDelQueueDiscTestSuite : public TestSuite
 {
   public:
     CoDelQueueDiscTestSuite()

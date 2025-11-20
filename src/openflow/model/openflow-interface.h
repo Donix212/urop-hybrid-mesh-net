@@ -198,6 +198,9 @@ class Stats
 
     ofp_stats_types type; //!< Status type
   private:
+    /** Maximum flow bytes to consider. */
+    static constexpr std::size_t MAX_FLOW_STATS_BYTES{4096};
+
     /**
      * Dumps the stats description
      * @param [in] state The state.
@@ -617,18 +620,22 @@ void ExecuteVendor(ofpbuf* buffer, const sw_flow_key* key, const ofp_action_head
  */
 uint16_t ValidateVendor(const sw_flow_key* key, const ofp_action_header* ah, uint16_t len);
 
-/*
- * From datapath.c
+/**
+ * @ingroup openflow
+ * Buffer id field specifiers, from datapath.c.
  * Buffers are identified to userspace by a 31-bit opaque ID.  We divide the ID
  * into a buffer number (low bits) and a cookie (high bits).  The buffer number
  * is an index into an array of buffers.  The cookie distinguishes between
  * different packets that have occupied a single buffer.  Thus, the more
  * buffers we have, the lower-quality the cookie...
+ * @{
  */
-#define PKT_BUFFER_BITS 8
-#define N_PKT_BUFFERS (1 << PKT_BUFFER_BITS)
-#define PKT_BUFFER_MASK (N_PKT_BUFFERS - 1)
-#define PKT_COOKIE_BITS (32 - PKT_BUFFER_BITS)
+constexpruint32_t PKT_BUFFER_BITS{8};
+constexpruint32_t N_PKT_BUFFERS{1 << PKT_BUFFER_BITS};
+constexpruint32_t PKT_BUFFER_MASK{N_PKT_BUFFERS - 1};
+constexpruint32_t PKT_COOKIE_BITS{32 - PKT_BUFFER_BITS};
+
+/** @} */
 
 } // namespace ofi
 

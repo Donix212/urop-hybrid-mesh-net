@@ -2084,7 +2084,7 @@ AnimationInterface::CheckMaxPktsPerTraceFile()
 std::string
 AnimationInterface::GetNetAnimVersion()
 {
-    return NETANIM_VERSION;
+    return std::string(NETANIM_VERSION);
 }
 
 void

@@ -45,17 +45,11 @@
 
 #include <fstream>
 #include <iomanip>
+#include <numbers>
 #include <vector>
 
-/**
- * @file
- * Example comparing ns-3 to the Bianchi model.
- *
- * See the Wi-Fi Module documentation in the Models chapter.
- */
-
-/// Avoid std::numbers::pi because it's C++20
-#define PI 3.1415926535
+/** Shorthand for PI */
+constexpr double PI{std::numbers::pi};
 
 NS_LOG_COMPONENT_DEFINE("WifiBianchi");
 

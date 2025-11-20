@@ -5,6 +5,11 @@
  *
  * Author: Gustavo Carneiro  <gjc@inescporto.pt>
  */
+/**
+ * @file
+ * @ingroup visualizer
+ * Class ns3::PyViz implementation.
+ */
 
 #include "pyviz.h"
 
@@ -26,42 +31,27 @@
 
 NS_LOG_COMPONENT_DEFINE("PyViz");
 
+/** @copydoc ns3::SystemPath::Split() */
 static std::vector<std::string>
-PathSplit(std::string str)
+PathSplit(std::string path)
 {
-  auto dirs = SystemPath::Split(str);
-  std::vector<std::string> results(std::make_move_iterator(dirs.begin()),
-				   std::make_move_iterator(dirs.end()));
-  return results;
+    auto dirs = ns3::SystemPath::Split(path);
+    std::vector<std::string> results(std::make_move_iterator(dirs.begin()),
+                                     std::make_move_iterator(dirs.end()));
+    return results;
 }
 
 namespace ns3
 {
 
-static PyViz* g_visualizer = nullptr; ///< the visualizer
-
-/**
- * PyVizPacketTag structure
- */
-struct PyVizPacketTag : public Tag
-{
-    static TypeId GetTypeId();
-    TypeId GetInstanceTypeId() const override;
-    uint32_t GetSerializedSize() const override;
-    void Serialize(TagBuffer buf) const override;
-    void Deserialize(TagBuffer buf) override;
-    void Print(std::ostream& os) const override;
-    PyVizPacketTag();
-
-    uint32_t m_packetId; ///< packet id
-};
+PyViz* PyViz::g_visualizer;
 
 /**
  * @brief Get the type ID.
  * @return the object TypeId
  */
 TypeId
-PyVizPacketTag::GetTypeId()
+PyViz::PyVizPacketTag::GetTypeId()
 {
     static TypeId tid = TypeId("ns3::PyVizPacketTag")
                             .SetParent<Tag>()
@@ -71,36 +61,36 @@ PyVizPacketTag::GetTypeId()
 }
 
 TypeId
-PyVizPacketTag::GetInstanceTypeId() const
+PyViz::PyVizPacketTag::GetInstanceTypeId() const
 {
     return GetTypeId();
 }
 
 uint32_t
-PyVizPacketTag::GetSerializedSize() const
+PyViz::PyVizPacketTag::GetSerializedSize() const
 {
     return 4;
 }
 
 void
-PyVizPacketTag::Serialize(TagBuffer buf) const
+PyViz::PyVizPacketTag::Serialize(TagBuffer buf) const
 {
     buf.WriteU32(m_packetId);
 }
 
 void
-PyVizPacketTag::Deserialize(TagBuffer buf)
+PyViz::PyVizPacketTag::Deserialize(TagBuffer buf)
 {
     m_packetId = buf.ReadU32();
 }
 
 void
-PyVizPacketTag::Print(std::ostream& os) const
+PyViz::PyVizPacketTag::Print(std::ostream& os) const
 {
     os << "PacketId=" << m_packetId;
 }
 
-PyVizPacketTag::PyVizPacketTag()
+PyViz::PyVizPacketTag::PyVizPacketTag()
     : Tag()
 {
 }

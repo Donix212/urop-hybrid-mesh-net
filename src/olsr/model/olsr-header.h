@@ -107,6 +107,9 @@ class PacketHeader : public Header
     }
 
   private:
+    /** PacketHeader size. */
+    static constexpr uint32_t OLSR_PKT_HEADER_SIZE = 4;
+
     uint16_t m_packetLength;         //!< The packet length.
     uint16_t m_packetSequenceNumber; //!< The packet sequence number.
 
@@ -272,6 +275,11 @@ class MessageHeader : public Header
     }
 
   private:
+    /** Address size. */
+    static constexpr uint32_t IPV4_ADDRESS_SIZE{4};
+    /** MessageHeader size. */
+    static constexpr uint32_t OLSR_MSG_HEADER_SIZE{12};
+
     MessageType m_messageType;        //!< The message type
     uint8_t m_vTime;                  //!< The validity time.
     Ipv4Address m_originatorAddress;  //!< The originator address.

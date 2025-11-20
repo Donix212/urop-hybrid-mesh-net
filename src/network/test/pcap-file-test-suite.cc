@@ -3,6 +3,10 @@
  *
  * Author:  Craig Dowell (craigdo@ee.washington.edu)
  */
+/**
+ * @file
+ * @ingroup network-test
+ */
 
 #include "ns3/log.h"
 #include "ns3/pcap-file.h"
@@ -24,6 +28,15 @@ NS_LOG_COMPONENT_DEFINE("pcap-file-test-suite");
 // Some utility functions for the tests.
 // ===========================================================================
 
+/**
+ * @name
+ * Reverse (swap) bytes on a value.
+ * @{
+ */
+/**
+ * @param val The value to swap bytes on.
+ * @return The byte-swapped value.
+ */
 static uint16_t
 Swap(uint16_t val)
 {
@@ -37,6 +50,14 @@ Swap(uint32_t val)
            ((val << 24) & 0xff000000);
 }
 
+/** @} */
+
+/**
+ * Test that a file has the expected size.
+ * @param filename The file.
+ * @param sizeExpected The expected size.
+ * @returns @c true if the file has the expected size
+ */
 static bool
 CheckFileLength(std::string filename, unsigned sizeExpected)
 {
@@ -1082,7 +1103,7 @@ ReadFileTestCase::DoTeardown()
 {
 }
 
-static const uint32_t N_KNOWN_PACKETS = 6;
+/** Length of each @c knownPackets */
 static const uint32_t N_PACKET_BYTES = 16;
 
 /**
@@ -1097,6 +1118,8 @@ struct PacketEntry
     uint16_t data[N_PACKET_BYTES]; //!< Packet data
 };
 
+/** Test case packets. */
+// clang-format off
 static const PacketEntry knownPackets[] = {
     {2,       3696,   46,     46,
      {0x0001, 0x0800, 0x0604, 0x0001, 0x0000, 0x0000, 0x0003, 0x0a01,
@@ -1147,10 +1170,8 @@ ReadFileTestCase::DoRun()
     uint32_t origLen;
     uint32_t readLen;
 
-    for (uint32_t i = 0; i < N_KNOWN_PACKETS; ++i)
+    for (const auto p : knownPackets)
     {
-        const PacketEntry& p = knownPackets[i];
-
         f.Read(data, sizeof(data), tsSec, tsUsec, inclLen, origLen, readLen);
         NS_TEST_ASSERT_MSG_EQ(f.Fail(), false, "Read() of known good pcap file returns error");
         NS_TEST_ASSERT_MSG_EQ(tsSec,
@@ -1230,10 +1251,8 @@ DiffTestCase::DoRun()
     f.Init(1, N_PACKET_BYTES);
     NS_TEST_ASSERT_MSG_EQ(f.Fail(), false, "Init (1, " << N_PACKET_BYTES << ") returns error");
 
-    for (uint32_t i = 0; i < N_KNOWN_PACKETS; ++i)
+    for (const auto p : knownPackets)
     {
-        const PacketEntry& p = knownPackets[i];
-
         f.Write(p.tsSec, p.tsUsec, (const uint8_t*)p.data, p.origLen);
         NS_TEST_EXPECT_MSG_EQ(f.Fail(), false, "Write must not fail");
     }

@@ -125,6 +125,18 @@ class Ipv4ClickRouting : public Ipv4RoutingProtocol
     void SetPromisc(int ifid);
 
   private:
+    /**
+     * @name
+     * Values from nsclick ExtRouter implementation
+     */
+    /** @{ */
+    /** nslick implementation value. */
+    static constexpr int INTERFACE_ID_KERNELTAP{0};
+    static constexpr int INTERFACE_ID_FIRST{1};
+    static constexpr int INTERFACE_ID_FIRST_DROP{33};
+
+    /** @} */
+
     /// Pointer to the simclick node
     simclick_node_t* m_simNode;
 

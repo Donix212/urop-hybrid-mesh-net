@@ -275,6 +275,11 @@ class RipNg : public Ipv6RoutingProtocol
     void DoInitialize() override;
 
   private:
+    /** RIP broadcast address. */
+    static constexpr char RIPNG_ALL_NODE[] = "ff02::9";
+    /** RIP port. */
+    static constexpr uint16_t RIPNG_PORT{521};
+
     /// Container for the network routes - pair RipNgRoutingTableEntry *, EventId (update event)
     typedef std::list<std::pair<RipNgRoutingTableEntry*, EventId>> Routes;
 

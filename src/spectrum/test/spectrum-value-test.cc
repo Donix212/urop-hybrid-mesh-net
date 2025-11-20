@@ -20,7 +20,8 @@ using namespace ns3;
 
 // NS_LOG_COMPONENT_DEFINE ("SpectrumValueTest");
 
-#define TOLERANCE 1e-6
+/** Tolerance for comparing double values. */
+constexpr double TOLERANCE{1e-6};
 
 /**
  * @ingroup spectrum-tests

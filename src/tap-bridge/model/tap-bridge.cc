@@ -62,8 +62,6 @@ TapBridgeFdReader::DoRead()
     return FdReader::Data(buf, len);
 }
 
-#define TAP_MAGIC 95549
-
 NS_OBJECT_ENSURE_REGISTERED(TapBridge);
 
 TypeId

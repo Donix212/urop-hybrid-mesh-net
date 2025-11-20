@@ -9,6 +9,12 @@
 #ifndef WIFI_INFORMATION_ELEMENT_H
 #define WIFI_INFORMATION_ELEMENT_H
 
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::WifiInformationElement declaration and WifiInformationElementId symbols.
+ */
+
 #include "ns3/header.h"
 
 #include <optional>
@@ -16,10 +22,15 @@
 namespace ns3
 {
 
-/// Size in bytes of the Element ID Extension field (IEEE 802.11-2020 9.4.2.1 General)
-constexpr uint8_t WIFI_IE_ELEMENT_ID_EXT_SIZE = 1;
+/**
+ * @ingroup wifi
+ * Size in bytes of the Element ID Extension field (IEEE 802.11-2020 9.4.2.1 General)
+ * @todo Move this to a wifi namespace or class
+ */
+constexpr uint8_t WIFI_IE_ELEMENT_ID_EXT_SIZE{1};
 
 /**
+ * @ingroup wifi
  * This type is used to represent an Information Element ID. An
  * enumeration would be tidier, but doesn't provide for the
  * inheritance that is currently preferable to cleanly support
@@ -34,209 +45,217 @@ constexpr uint8_t WIFI_IE_ELEMENT_ID_EXT_SIZE = 1;
 typedef uint8_t WifiInformationElementId;
 
 /**
+ * @name
+ * @ingroup wifi
  * Here we have definition of all Information Element IDs in IEEE
  * 802.11-2007. See the comments for WifiInformationElementId - this could
  * probably be done in a considerably tidier manner.
+ * @todo Move these to a wifi namespace or class
+ * @todo Add 202 to 220. See Table 9-92 of 802.11-2020
+ * @todo Add 222 to 241. See Table 9-92 of 802.11-2020
+ * @note The following values are reserved:
+ * * 17 to 31
+ * * 47
+ * * 49
+ * * 77
+ * * 103
+ * * 67 to 126
+ * * 128 to 129
+ * * 133 to 136
+ * * 149 to 150
+ * * 155 to 156
+ * * 170 to 171
+ * * 173
+ * * 176
+ * * 178 to 181
+ * * 243 to 254
  */
-#define IE_SSID ((WifiInformationElementId)0)
-#define IE_SUPPORTED_RATES ((WifiInformationElementId)1)
-#define IE_FH_PARAMETER_SET ((WifiInformationElementId)2)
-#define IE_DSSS_PARAMETER_SET ((WifiInformationElementId)3)
-#define IE_CF_PARAMETER_SET ((WifiInformationElementId)4)
-#define IE_TIM ((WifiInformationElementId)5)
-#define IE_IBSS_PARAMETER_SET ((WifiInformationElementId)6)
-#define IE_COUNTRY ((WifiInformationElementId)7)
-#define IE_HOPPING_PATTERN_PARAMETERS ((WifiInformationElementId)8)
-#define IE_HOPPING_PATTERN_TABLE ((WifiInformationElementId)9)
-#define IE_REQUEST ((WifiInformationElementId)10)
-#define IE_BSS_LOAD ((WifiInformationElementId)11)
-#define IE_EDCA_PARAMETER_SET ((WifiInformationElementId)12)
-#define IE_TSPEC ((WifiInformationElementId)13)
-#define IE_TCLAS ((WifiInformationElementId)14)
-#define IE_SCHEDULE ((WifiInformationElementId)15)
-#define IE_CHALLENGE_TEXT ((WifiInformationElementId)16)
-// 17 to 31 are reserved
-#define IE_POWER_CONSTRAINT ((WifiInformationElementId)32)
-#define IE_POWER_CAPABILITY ((WifiInformationElementId)33)
-#define IE_TPC_REQUEST ((WifiInformationElementId)34)
-#define IE_TPC_REPORT ((WifiInformationElementId)35)
-#define IE_SUPPORTED_CHANNELS ((WifiInformationElementId)36)
-#define IE_CHANNEL_SWITCH_ANNOUNCEMENT ((WifiInformationElementId)37)
-#define IE_MEASUREMENT_REQUEST ((WifiInformationElementId)38)
-#define IE_MEASUREMENT_REPORT ((WifiInformationElementId)39)
-#define IE_QUIET ((WifiInformationElementId)40)
-#define IE_IBSS_DFS ((WifiInformationElementId)41)
-#define IE_ERP_INFORMATION ((WifiInformationElementId)42)
-#define IE_TS_DELAY ((WifiInformationElementId)43)
-#define IE_TCLAS_PROCESSING ((WifiInformationElementId)44)
-#define IE_HT_CAPABILITIES ((WifiInformationElementId)45)
-#define IE_QOS_CAPABILITY ((WifiInformationElementId)46)
-// 47 is reserved
-#define IE_RSN ((WifiInformationElementId)48)
-// 49 is reserved
-#define IE_EXTENDED_SUPPORTED_RATES ((WifiInformationElementId)50)
-#define IE_AP_CHANNEL_REPORT ((WifiInformationElementId)51)
-#define IE_NEIGHBOR_REPORT ((WifiInformationElementId)52)
-#define IE_RCPI ((WifiInformationElementId)53)
-#define IE_MOBILITY_DOMAIN ((WifiInformationElementId)54)
-#define IE_FAST_BSS_TRANSITION ((WifiInformationElementId)55)
-#define IE_TIMEOUT_INTERVAL ((WifiInformationElementId)56)
-#define IE_RIC_DATA ((WifiInformationElementId)57)
-#define IE_DSE_REGISTERED_LOCATION ((WifiInformationElementId)58)
-#define IE_SUPPORTED_OPERATING_CLASSES ((WifiInformationElementId)59)
-#define IE_EXTENDED_CHANNEL_SWITCH_ANNOUNCEMENT ((WifiInformationElementId)60)
-#define IE_HT_OPERATION ((WifiInformationElementId)61)
-#define IE_SECONDARY_CHANNEL_OFFSET ((WifiInformationElementId)62)
-#define IE_BSS_AVERAGE_ACCESS_DELAY ((WifiInformationElementId)63)
-#define IE_ANTENNA ((WifiInformationElementId)64)
-#define IE_RSNI ((WifiInformationElementId)65)
-#define IE_MEASUREMENT_PILOT_TRANSMISSION ((WifiInformationElementId)66)
-#define IE_BSS_AVAILABLE_ADMISSION_CAPACITY ((WifiInformationElementId)67)
-#define IE_BSS_AC_ACCESS_DELAY ((WifiInformationElementId)68)
-#define IE_TIME_ADVERTISEMENT ((WifiInformationElementId)69)
-#define IE_RM_ENABLED_CAPACITIES ((WifiInformationElementId)70)
-#define IE_MULTIPLE_BSSID ((WifiInformationElementId)71)
-#define IE_20_40_BSS_COEXISTENCE ((WifiInformationElementId)72)
-#define IE_20_40_BSS_INTOLERANT_CHANNEL_REPORT ((WifiInformationElementId)73)
-#define IE_OVERLAPPING_BSS_SCAN_PARAMETERS ((WifiInformationElementId)74)
-#define IE_RIC_DESCRIPTOR ((WifiInformationElementId)75)
-#define IE_MANAGEMENT_MIC ((WifiInformationElementId)76)
-// 77 is reserved
-#define IE_EVENT_REQUEST ((WifiInformationElementId)78)
-#define IE_EVENT_REPORT ((WifiInformationElementId)79)
-#define IE_DIAGNOSTIC_REQUEST ((WifiInformationElementId)80)
-#define IE_DIAGNOSTIC_REPORT ((WifiInformationElementId)81)
-#define IE_LOCATION_PARAMETERS ((WifiInformationElementId)82)
-#define IE_NONTRANSMITTED_BSSID_CAPABILITY ((WifiInformationElementId)83)
-#define IE_SSID_LIST ((WifiInformationElementId)84)
-#define IE_MULTIPLE_BSSID_INDEX ((WifiInformationElementId)85)
-#define IE_FMS_DESCRIPTOR ((WifiInformationElementId)86)
-#define IE_FMS_REQUEST ((WifiInformationElementId)87)
-#define IE_FMS_RESPONSE ((WifiInformationElementId)88)
-#define IE_QOS_TRAFFIC_CAPABILITY ((WifiInformationElementId)89)
-#define IE_BSS_MAX_IDLE_PERIOD ((WifiInformationElementId)90)
-#define IE_TFS_REQUEST ((WifiInformationElementId)91)
-#define IE_TFS_RESPONSE ((WifiInformationElementId)92)
-#define IE_WNM_SLEEP_MODE ((WifiInformationElementId)93)
-#define IE_TIM_BROADCAST_REQUEST ((WifiInformationElementId)94)
-#define IE_TIM_BROADCAST_RESPONSE ((WifiInformationElementId)95)
-#define IE_COLLOCATED_INTERFERENCE_REPORT ((WifiInformationElementId)96)
-#define IE_CHANNEL_USAGE ((WifiInformationElementId)97)
-#define IE_TIME_ZONE ((WifiInformationElementId)98)
-#define IE_DMS_REQUEST ((WifiInformationElementId)99)
-#define IE_DMS_RESPONSE ((WifiInformationElementId)100)
-#define IE_LINK_IDENTIFIER ((WifiInformationElementId)101)
-#define IE_WAKEUP_SCHEDULE ((WifiInformationElementId)102)
-// 103 is reserved
-#define IE_CHANNEL_SWITCH_TIMING ((WifiInformationElementId)104)
-#define IE_PTI_CONTROL ((WifiInformationElementId)105)
-#define IE_TPU_BUFFER_STATUS ((WifiInformationElementId)106)
-#define IE_INTERWORKING ((WifiInformationElementId)107)
-#define IE_ADVERTISEMENT_PROTOCOL ((WifiInformationElementId)108)
-#define IE_EXPEDITED_BANDWIDTH_REQUEST ((WifiInformationElementId)109)
-#define IE_QOS_MAP_SET ((WifiInformationElementId)110)
-#define IE_ROAMING_CONSORTIUM ((WifiInformationElementId)111)
-#define IE_EMERGENCY_ALART_IDENTIFIER ((WifiInformationElementId)112)
-#define IE_MESH_CONFIGURATION ((WifiInformationElementId)113)
-#define IE_MESH_ID ((WifiInformationElementId)114)
-#define IE_MESH_LINK_METRIC_REPORT ((WifiInformationElementId)115)
-#define IE_CONGESTION_NOTIFICATION ((WifiInformationElementId)116)
-#define IE_MESH_PEERING_MANAGEMENT ((WifiInformationElementId)117)
-#define IE_MESH_CHANNEL_SWITCH_PARAMETERS ((WifiInformationElementId)118)
-#define IE_MESH_AWAKE_WINDOW ((WifiInformationElementId)119)
-#define IE_BEACON_TIMING ((WifiInformationElementId)120)
-#define IE_MCCAOP_SETUP_REQUEST ((WifiInformationElementId)121)
-#define IE_MCCAOP_SETUP_REPLY ((WifiInformationElementId)122)
-#define IE_MCCAOP_ADVERTISEMENT ((WifiInformationElementId)123)
-#define IE_MCCAOP_TEARDOWN ((WifiInformationElementId)124)
-#define IE_GANN ((WifiInformationElementId)125)
-#define IE_RANN ((WifiInformationElementId)126)
-// 67 to 126 are reserved
-#define IE_EXTENDED_CAPABILITIES ((WifiInformationElementId)127)
-// 128 to 129 are reserved
-#define IE_PREQ ((WifiInformationElementId)130)
-#define IE_PREP ((WifiInformationElementId)131)
-#define IE_PERR ((WifiInformationElementId)132)
-// 133 to 136 are reserved
-#define IE_PROXY_UPDATE ((WifiInformationElementId)137)
-#define IE_PROXY_UPDATE_CONFIRMATION ((WifiInformationElementId)138)
-#define IE_AUTHENTICATED_MESH_PEERING_EXCHANGE ((WifiInformationElementId)139)
-#define IE_MIC ((WifiInformationElementId)140)
-#define IE_DESTINATION_URI ((WifiInformationElementId)141)
-#define IE_UAPSD_COEXISTENCE ((WifiInformationElementId)142)
-#define IE_DMG_WAKEUP_SCHEDULE ((WifiInformationElementId)143)
-#define IE_EXTENDED_SCHEDULE ((WifiInformationElementId)144)
-#define IE_STA_AVAILABILITY ((WifiInformationElementId)145)
-#define IE_DMG_TSPEC ((WifiInformationElementId)146)
-#define IE_NEXT_DMG_ATI ((WifiInformationElementId)147)
-#define IE_DMG_CAPABILITIES ((WifiInformationElementId)148)
-// 149 to 150 are reserved
-#define IE_DMG_OPERATION ((WifiInformationElementId)151)
-#define IE_DMG_BSS_PARAMETER_CHANGE ((WifiInformationElementId)152)
-#define IE_DMG_BEAM_REFINEMENT ((WifiInformationElementId)153)
-#define IE_CHANNEL_MEASUREMENT_FEEDBACK ((WifiInformationElementId)154)
-// 155 to 156 are reserved
-#define IE_AWAKE_WINDOW ((WifiInformationElementId)157)
-#define IE_MULTI_BAND ((WifiInformationElementId)158)
-#define IE_ADDBA_EXTENSION ((WifiInformationElementId)159)
-#define IE_NEXT_PCP_LIST ((WifiInformationElementId)160)
-#define IE_PCP_HANDOVER ((WifiInformationElementId)161)
-#define IE_DMG_LINK_MARGIN ((WifiInformationElementId)162)
-#define IE_SWITCHING_STREAM ((WifiInformationElementId)163)
-#define IE_SESSION_TRANSITION ((WifiInformationElementId)164)
-#define IE_DYNAMIC_TONE_PAIRING_REPORT ((WifiInformationElementId)165)
-#define IE_CLUSTER_REPORT ((WifiInformationElementId)166)
-#define IE_RELAY_CAPABILITIES ((WifiInformationElementId)167)
-#define IE_RELAY_TRANSFER_PARAMETER_SET ((WifiInformationElementId)168)
-#define IE_BEAMLINK_MAINTENANCE ((WifiInformationElementId)169)
-// 170 to 171 are reserved
-#define IE_DMG_LINK_ADAPTATION_ACKNOWLEDGMENT ((WifiInformationElementId)172)
-// 173 is reserved
-#define IE_MCCAOP_ADVERTISEMENT_OVERVIEW ((WifiInformationElementId)174)
-#define IE_QUIET_PERIOD_REQUEST ((WifiInformationElementId)175)
-// 176 is reserved
-#define IE_QUIET_PERIOD_RESPONSE ((WifiInformationElementId)177)
-// 178 to 181 are reserved
-#define IE_ECPAC_POLICY ((WifiInformationElementId)182)
-#define IE_CLUSTER_TIME_OFFSET ((WifiInformationElementId)183)
-#define IE_INTRA_ACCESS_CATEGORY_PRIORITY ((WifiInformationElementId)184)
-#define IE_SCS_DESCRIPTOR ((WifiInformationElementId)185)
-#define IE_QLOAD_REPORT ((WifiInformationElementId)186)
-#define IE_HCCA_TXOP_UPDATE_COUNT ((WifiInformationElementId)187)
-#define IE_HIGHER_LAYER_STREAM_ID ((WifiInformationElementId)188)
-#define IE_GCR_GROUP_ADDRESS ((WifiInformationElementId)189)
-#define IE_ANTENNA_SECTOR_ID_PATTERN ((WifiInformationElementId)190)
-#define IE_VHT_CAPABILITIES ((WifiInformationElementId)191)
-#define IE_VHT_OPERATION ((WifiInformationElementId)192)
-#define IE_EXTENDED_BSS_LOAD ((WifiInformationElementId)193)
-#define IE_WIDE_BANDWIDTH_CHANNEL_SWITCH ((WifiInformationElementId)194)
-#define IE_VHT_TRANSMIT_POWER_ENVELOPE ((WifiInformationElementId)195)
-#define IE_CHANNEL_SWITCH_WRAPPER ((WifiInformationElementId)196)
-#define IE_AID ((WifiInformationElementId)197)
-#define IE_QUIET_CHANNEL ((WifiInformationElementId)198)
-#define IE_OPERATING_MODE_NOTIFICATION ((WifiInformationElementId)199)
-#define IE_UPSIM ((WifiInformationElementId)200)
-#define IE_REDUCED_NEIGHBOR_REPORT ((WifiInformationElementId)201)
-// TODO Add 202 to 220. See Table 9-92 of 802.11-2020
-#define IE_VENDOR_SPECIFIC ((WifiInformationElementId)221)
-// TODO Add 222 to 241. See Table 9-92 of 802.11-2020
-#define IE_FRAGMENT ((WifiInformationElementId)242)
-// 243 to 254 are reserved
-#define IE_EXTENSION ((WifiInformationElementId)255)
+/** @{ */
+/** Wifi information element. */
+constexpr WifiInformationElementId IE_SSID{0};
+constexpr WifiInformationElementId IE_SUPPORTED_RATES{1};
+constexpr WifiInformationElementId IE_FH_PARAMETER_SET{2};
+constexpr WifiInformationElementId IE_DSSS_PARAMETER_SET{3};
+constexpr WifiInformationElementId IE_CF_PARAMETER_SET{4};
+constexpr WifiInformationElementId IE_TIM{5};
+constexpr WifiInformationElementId IE_IBSS_PARAMETER_SET{6};
+constexpr WifiInformationElementId IE_COUNTRY{7};
+constexpr WifiInformationElementId IE_HOPPING_PATTERN_PARAMETERS{8};
+constexpr WifiInformationElementId IE_HOPPING_PATTERN_TABLE{9};
+constexpr WifiInformationElementId IE_REQUEST{10};
+constexpr WifiInformationElementId IE_BSS_LOAD{11};
+constexpr WifiInformationElementId IE_EDCA_PARAMETER_SET{12};
+constexpr WifiInformationElementId IE_TSPEC{13};
+constexpr WifiInformationElementId IE_TCLAS{14};
+constexpr WifiInformationElementId IE_SCHEDULE{15};
+constexpr WifiInformationElementId IE_CHALLENGE_TEXT{16};
+constexpr WifiInformationElementId IE_POWER_CONSTRAINT{32};
+constexpr WifiInformationElementId IE_POWER_CAPABILITY{33};
+constexpr WifiInformationElementId IE_TPC_REQUEST{34};
+constexpr WifiInformationElementId IE_TPC_REPORT{35};
+constexpr WifiInformationElementId IE_SUPPORTED_CHANNELS{36};
+constexpr WifiInformationElementId IE_CHANNEL_SWITCH_ANNOUNCEMENT{37};
+constexpr WifiInformationElementId IE_MEASUREMENT_REQUEST{38};
+constexpr WifiInformationElementId IE_MEASUREMENT_REPORT{39};
+constexpr WifiInformationElementId IE_QUIET{40};
+constexpr WifiInformationElementId IE_IBSS_DFS{41};
+constexpr WifiInformationElementId IE_ERP_INFORMATION{42};
+constexpr WifiInformationElementId IE_TS_DELAY{43};
+constexpr WifiInformationElementId IE_TCLAS_PROCESSING{44};
+constexpr WifiInformationElementId IE_HT_CAPABILITIES{45};
+constexpr WifiInformationElementId IE_QOS_CAPABILITY{46};
+constexpr WifiInformationElementId IE_RSN{48};
+constexpr WifiInformationElementId IE_EXTENDED_SUPPORTED_RATES{50};
+constexpr WifiInformationElementId IE_AP_CHANNEL_REPORT{51};
+constexpr WifiInformationElementId IE_NEIGHBOR_REPORT{52};
+constexpr WifiInformationElementId IE_RCPI{53};
+constexpr WifiInformationElementId IE_MOBILITY_DOMAIN{54};
+constexpr WifiInformationElementId IE_FAST_BSS_TRANSITION{55};
+constexpr WifiInformationElementId IE_TIMEOUT_INTERVAL{56};
+constexpr WifiInformationElementId IE_RIC_DATA{57};
+constexpr WifiInformationElementId IE_DSE_REGISTERED_LOCATION{58};
+constexpr WifiInformationElementId IE_SUPPORTED_OPERATING_CLASSES{59};
+constexpr WifiInformationElementId IE_EXTENDED_CHANNEL_SWITCH_ANNOUNCEMENT{60};
+constexpr WifiInformationElementId IE_HT_OPERATION{61};
+constexpr WifiInformationElementId IE_SECONDARY_CHANNEL_OFFSET{62};
+constexpr WifiInformationElementId IE_BSS_AVERAGE_ACCESS_DELAY{63};
+constexpr WifiInformationElementId IE_ANTENNA{64};
+constexpr WifiInformationElementId IE_RSNI{65};
+constexpr WifiInformationElementId IE_MEASUREMENT_PILOT_TRANSMISSION{66};
+constexpr WifiInformationElementId IE_BSS_AVAILABLE_ADMISSION_CAPACITY{67};
+constexpr WifiInformationElementId IE_BSS_AC_ACCESS_DELAY{68};
+constexpr WifiInformationElementId IE_TIME_ADVERTISEMENT{69};
+constexpr WifiInformationElementId IE_RM_ENABLED_CAPACITIES{70};
+constexpr WifiInformationElementId IE_MULTIPLE_BSSID{71};
+constexpr WifiInformationElementId IE_20_40_BSS_COEXISTENCE{72};
+constexpr WifiInformationElementId IE_20_40_BSS_INTOLERANT_CHANNEL_REPORT{73};
+constexpr WifiInformationElementId IE_OVERLAPPING_BSS_SCAN_PARAMETERS{74};
+constexpr WifiInformationElementId IE_RIC_DESCRIPTOR{75};
+constexpr WifiInformationElementId IE_MANAGEMENT_MIC{76};
+constexpr WifiInformationElementId IE_EVENT_REQUEST{78};
+constexpr WifiInformationElementId IE_EVENT_REPORT{79};
+constexpr WifiInformationElementId IE_DIAGNOSTIC_REQUEST{80};
+constexpr WifiInformationElementId IE_DIAGNOSTIC_REPORT{81};
+constexpr WifiInformationElementId IE_LOCATION_PARAMETERS{82};
+constexpr WifiInformationElementId IE_NONTRANSMITTED_BSSID_CAPABILITY{83};
+constexpr WifiInformationElementId IE_SSID_LIST{84};
+constexpr WifiInformationElementId IE_MULTIPLE_BSSID_INDEX{85};
+constexpr WifiInformationElementId IE_FMS_DESCRIPTOR{86};
+constexpr WifiInformationElementId IE_FMS_REQUEST{87};
+constexpr WifiInformationElementId IE_FMS_RESPONSE{88};
+constexpr WifiInformationElementId IE_QOS_TRAFFIC_CAPABILITY{89};
+constexpr WifiInformationElementId IE_BSS_MAX_IDLE_PERIOD{90};
+constexpr WifiInformationElementId IE_TFS_REQUEST{91};
+constexpr WifiInformationElementId IE_TFS_RESPONSE{92};
+constexpr WifiInformationElementId IE_WNM_SLEEP_MODE{93};
+constexpr WifiInformationElementId IE_TIM_BROADCAST_REQUEST{94};
+constexpr WifiInformationElementId IE_TIM_BROADCAST_RESPONSE{95};
+constexpr WifiInformationElementId IE_COLLOCATED_INTERFERENCE_REPORT{96};
+constexpr WifiInformationElementId IE_CHANNEL_USAGE{97};
+constexpr WifiInformationElementId IE_TIME_ZONE{98};
+constexpr WifiInformationElementId IE_DMS_REQUEST{99};
+constexpr WifiInformationElementId IE_DMS_RESPONSE{100};
+constexpr WifiInformationElementId IE_LINK_IDENTIFIER{101};
+constexpr WifiInformationElementId IE_WAKEUP_SCHEDULE{102};
+constexpr WifiInformationElementId IE_CHANNEL_SWITCH_TIMING{104};
+constexpr WifiInformationElementId IE_PTI_CONTROL{105};
+constexpr WifiInformationElementId IE_TPU_BUFFER_STATUS{106};
+constexpr WifiInformationElementId IE_INTERWORKING{107};
+constexpr WifiInformationElementId IE_ADVERTISEMENT_PROTOCOL{108};
+constexpr WifiInformationElementId IE_EXPEDITED_BANDWIDTH_REQUEST{109};
+constexpr WifiInformationElementId IE_QOS_MAP_SET{110};
+constexpr WifiInformationElementId IE_ROAMING_CONSORTIUM{111};
+constexpr WifiInformationElementId IE_EMERGENCY_ALART_IDENTIFIER{112};
+constexpr WifiInformationElementId IE_MESH_CONFIGURATION{113};
+constexpr WifiInformationElementId IE_MESH_ID{114};
+constexpr WifiInformationElementId IE_MESH_LINK_METRIC_REPORT{115};
+constexpr WifiInformationElementId IE_CONGESTION_NOTIFICATION{116};
+constexpr WifiInformationElementId IE_MESH_PEERING_MANAGEMENT{117};
+constexpr WifiInformationElementId IE_MESH_CHANNEL_SWITCH_PARAMETERS{118};
+constexpr WifiInformationElementId IE_MESH_AWAKE_WINDOW{119};
+constexpr WifiInformationElementId IE_BEACON_TIMING{120};
+constexpr WifiInformationElementId IE_MCCAOP_SETUP_REQUEST{121};
+constexpr WifiInformationElementId IE_MCCAOP_SETUP_REPLY{122};
+constexpr WifiInformationElementId IE_MCCAOP_ADVERTISEMENT{123};
+constexpr WifiInformationElementId IE_MCCAOP_TEARDOWN{124};
+constexpr WifiInformationElementId IE_GANN{125};
+constexpr WifiInformationElementId IE_RANN{126};
+constexpr WifiInformationElementId IE_EXTENDED_CAPABILITIES{127};
+constexpr WifiInformationElementId IE_PREQ{130};
+constexpr WifiInformationElementId IE_PREP{131};
+constexpr WifiInformationElementId IE_PERR{132};
+constexpr WifiInformationElementId IE_PROXY_UPDATE{137};
+constexpr WifiInformationElementId IE_PROXY_UPDATE_CONFIRMATION{138};
+constexpr WifiInformationElementId IE_AUTHENTICATED_MESH_PEERING_EXCHANGE{139};
+constexpr WifiInformationElementId IE_MIC{140};
+constexpr WifiInformationElementId IE_DESTINATION_URI{141};
+constexpr WifiInformationElementId IE_UAPSD_COEXISTENCE{142};
+constexpr WifiInformationElementId IE_DMG_WAKEUP_SCHEDULE{143};
+constexpr WifiInformationElementId IE_EXTENDED_SCHEDULE{144};
+constexpr WifiInformationElementId IE_STA_AVAILABILITY{145};
+constexpr WifiInformationElementId IE_DMG_TSPEC{146};
+constexpr WifiInformationElementId IE_NEXT_DMG_ATI{147};
+constexpr WifiInformationElementId IE_DMG_CAPABILITIES{148};
+constexpr WifiInformationElementId IE_DMG_OPERATION{151};
+constexpr WifiInformationElementId IE_DMG_BSS_PARAMETER_CHANGE{152};
+constexpr WifiInformationElementId IE_DMG_BEAM_REFINEMENT{153};
+constexpr WifiInformationElementId IE_CHANNEL_MEASUREMENT_FEEDBACK{154};
+constexpr WifiInformationElementId IE_AWAKE_WINDOW{157};
+constexpr WifiInformationElementId IE_MULTI_BAND{158};
+constexpr WifiInformationElementId IE_ADDBA_EXTENSION{159};
+constexpr WifiInformationElementId IE_NEXT_PCP_LIST{160};
+constexpr WifiInformationElementId IE_PCP_HANDOVER{161};
+constexpr WifiInformationElementId IE_DMG_LINK_MARGIN{162};
+constexpr WifiInformationElementId IE_SWITCHING_STREAM{163};
+constexpr WifiInformationElementId IE_SESSION_TRANSITION{164};
+constexpr WifiInformationElementId IE_DYNAMIC_TONE_PAIRING_REPORT{165};
+constexpr WifiInformationElementId IE_CLUSTER_REPORT{166};
+constexpr WifiInformationElementId IE_RELAY_CAPABILITIES{167};
+constexpr WifiInformationElementId IE_RELAY_TRANSFER_PARAMETER_SET{168};
+constexpr WifiInformationElementId IE_BEAMLINK_MAINTENANCE{169};
+constexpr WifiInformationElementId IE_DMG_LINK_ADAPTATION_ACKNOWLEDGMENT{172};
+constexpr WifiInformationElementId IE_MCCAOP_ADVERTISEMENT_OVERVIEW{174};
+constexpr WifiInformationElementId IE_QUIET_PERIOD_REQUEST{175};
+constexpr WifiInformationElementId IE_QUIET_PERIOD_RESPONSE{177};
+constexpr WifiInformationElementId IE_ECPAC_POLICY{182};
+constexpr WifiInformationElementId IE_CLUSTER_TIME_OFFSET{183};
+constexpr WifiInformationElementId IE_INTRA_ACCESS_CATEGORY_PRIORITY{184};
+constexpr WifiInformationElementId IE_SCS_DESCRIPTOR{185};
+constexpr WifiInformationElementId IE_QLOAD_REPORT{186};
+constexpr WifiInformationElementId IE_HCCA_TXOP_UPDATE_COUNT{187};
+constexpr WifiInformationElementId IE_HIGHER_LAYER_STREAM_ID{188};
+constexpr WifiInformationElementId IE_GCR_GROUP_ADDRESS{189};
+constexpr WifiInformationElementId IE_ANTENNA_SECTOR_ID_PATTERN{190};
+constexpr WifiInformationElementId IE_VHT_CAPABILITIES{191};
+constexpr WifiInformationElementId IE_VHT_OPERATION{192};
+constexpr WifiInformationElementId IE_EXTENDED_BSS_LOAD{193};
+constexpr WifiInformationElementId IE_WIDE_BANDWIDTH_CHANNEL_SWITCH{194};
+constexpr WifiInformationElementId IE_VHT_TRANSMIT_POWER_ENVELOPE{195};
+constexpr WifiInformationElementId IE_CHANNEL_SWITCH_WRAPPER{196};
+constexpr WifiInformationElementId IE_AID{197};
+constexpr WifiInformationElementId IE_QUIET_CHANNEL{198};
+constexpr WifiInformationElementId IE_OPERATING_MODE_NOTIFICATION{199};
+constexpr WifiInformationElementId IE_UPSIM{200};
+constexpr WifiInformationElementId IE_REDUCED_NEIGHBOR_REPORT{201};
+constexpr WifiInformationElementId IE_VENDOR_SPECIFIC{221};
+constexpr WifiInformationElementId IE_FRAGMENT{242};
+constexpr WifiInformationElementId IE_EXTENSION{255};
 
-#define IE_EXT_HE_CAPABILITIES ((WifiInformationElementId)35)
-#define IE_EXT_HE_OPERATION ((WifiInformationElementId)36)
-#define IE_EXT_UORA_PARAMETER_SET ((WifiInformationElementId)37)
-#define IE_EXT_MU_EDCA_PARAMETER_SET ((WifiInformationElementId)38)
+constexpr WifiInformationElementId IE_EXT_HE_CAPABILITIES{35};
+constexpr WifiInformationElementId IE_EXT_HE_OPERATION{36};
+constexpr WifiInformationElementId IE_EXT_UORA_PARAMETER_SET{37};
+constexpr WifiInformationElementId IE_EXT_MU_EDCA_PARAMETER_SET{38};
 
-#define IE_EXT_NON_INHERITANCE ((WifiInformationElementId)56)
+constexpr WifiInformationElementId IE_EXT_NON_INHERITANCE{56};
 
-#define IE_EXT_HE_6GHZ_CAPABILITIES ((WifiInformationElementId)59)
+constexpr WifiInformationElementId IE_EXT_HE_6GHZ_CAPABILITIES{59};
 
-#define IE_EXT_EHT_OPERATION ((WifiInformationElementId)106)
-#define IE_EXT_MULTI_LINK_ELEMENT ((WifiInformationElementId)107)
-#define IE_EXT_EHT_CAPABILITIES ((WifiInformationElementId)108)
-#define IE_EXT_TID_TO_LINK_MAPPING_ELEMENT ((WifiInformationElementId)109)
+constexpr WifiInformationElementId IE_EXT_EHT_OPERATION{106};
+constexpr WifiInformationElementId IE_EXT_MULTI_LINK_ELEMENT{107};
+constexpr WifiInformationElementId IE_EXT_EHT_CAPABILITIES{108};
+constexpr WifiInformationElementId IE_EXT_TID_TO_LINK_MAPPING_ELEMENT{109};
+
+/** @} */
 
 /**
  * @brief Information element, as defined in 802.11-2007 standard
