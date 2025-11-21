@@ -26,10 +26,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define EMU_MAGIC 65867
-
-using namespace ns3;
-
 int
 main(int argc, char* argv[])
 {

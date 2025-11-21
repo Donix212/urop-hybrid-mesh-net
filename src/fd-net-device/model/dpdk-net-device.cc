@@ -115,8 +115,8 @@ DpdkNetDevice::CheckAllPortsLinkStatus()
 {
     NS_LOG_FUNCTION(this);
 
-#define CHECK_INTERVAL 100 /* 100ms */
-#define MAX_CHECK_TIME 90  /* 9s (90 * 100ms) in total */
+    constexpr unsigned CHECK_INTERVAL{100}; /* 100ms */
+    constexpr uint8_t MAX_CHECK_TIME{90};   /* 9s (90 * 100ms) in total */
 
     uint8_t printFlag = 0;
     struct rte_eth_link link;

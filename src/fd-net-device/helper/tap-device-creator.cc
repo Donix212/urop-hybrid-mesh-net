@@ -31,8 +31,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define TAP_MAGIC 95549
-
 using namespace ns3;
 
 /**
