@@ -271,13 +271,6 @@ Ipv6Address::MakeAutoconfiguredAddress(Address addr, Ipv6Address prefix)
 }
 
 Ipv6Address
-Ipv6Address::MakeAutoconfiguredAddress(Address addr, Ipv6Prefix prefix)
-{
-    Ipv6Address ipv6PrefixAddr = Ipv6Address::GetOnes().CombinePrefix(prefix);
-    return MakeAutoconfiguredAddress(addr, ipv6PrefixAddr);
-}
-
-Ipv6Address
 Ipv6Address::MakeAutoconfiguredAddress(Mac16Address addr, Ipv6Address prefix)
 {
     NS_LOG_FUNCTION(addr << prefix);
@@ -602,17 +595,6 @@ Ipv6Address::IsDocumentation() const
     NS_LOG_FUNCTION(this);
     static Ipv6Address documentation("2001:db8::0");
     return CombinePrefix(Ipv6Prefix(32)) == documentation;
-}
-
-bool
-Ipv6Address::HasPrefix(const Ipv6Prefix& prefix) const
-{
-    NS_LOG_FUNCTION(this << prefix);
-
-    Ipv6Address masked = CombinePrefix(prefix);
-    Ipv6Address reference = Ipv6Address::GetOnes().CombinePrefix(prefix);
-
-    return masked == reference;
 }
 
 bool
