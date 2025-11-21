@@ -9,9 +9,6 @@
  */
 #include "three-gpp-channel-model.h"
 
-#include "../../core/model/traced-value.h"
-#include "../../wifi/model/wifi-information-element.h"
-
 #include "ns3/double.h"
 #include "ns3/geocentric-constant-position-mobility-model.h"
 #include "ns3/integer.h"
@@ -2775,13 +2772,9 @@ ThreeGppChannelModel::GenerateClusterPowers(const DoubleVector& clusterDelays,
         clusterPowers->push_back(power);
     }
 
-    if (powerSum == 0)
-    {
-        std::cout << "Power sum must be greater than zero. Time: " << Simulator::Now() << std::endl;
-    }
     // Normalize cluster powers with NS_ASSERT for division by zero protection
 
-    NS_ASSERT_MSG(powerSum > 0, "Power sum must be greater than zero. Time: ");
+    NS_ASSERT_MSG(powerSum > 0, "Power sum must be greater than zero. Time: " << Simulator::Now());
 
     for (size_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
     {
@@ -3853,9 +3846,6 @@ ThreeGppChannelModel::UpdateChannelParameters(Ptr<ThreeGppChannelParams> channel
                           &(channelParams->m_cluster2nd),
                           &(channelParams->m_delay),
                           &(channelParams->m_angles));
-
-    std::cout << " Time: " << Simulator::Now() << ", cluster1st: " << +channelParams->m_cluster1st
-              << ", cluster2nd: " << +channelParams->m_cluster2nd << std::endl;
 
     // Precompute angle sin/cos for efficiency
     PrecomputeAnglesSinCos(channelParams, &channelParams->m_cachedAngleSincos);
