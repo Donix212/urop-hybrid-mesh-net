@@ -23,7 +23,7 @@ namespace ns3
  * @returns A string containing a hex representation of the data in buffer.
  */
 std::string
-TapBufferToString(uint8_t* buffer, uint32_t len)
+BufferToString(uint8_t* buffer, uint32_t len)
 {
     std::ostringstream oss;
     //
@@ -44,7 +44,7 @@ TapBufferToString(uint8_t* buffer, uint32_t len)
 }
 
 /**
- * @brief Convert string encoded by the inverse function (TapBufferToString)
+ * @brief Convert string encoded by the inverse function (BufferToString)
  * back into a byte buffer.
  *
  * @param s The input string.
@@ -53,7 +53,7 @@ TapBufferToString(uint8_t* buffer, uint32_t len)
  * @returns True indicates a successful conversion.
  */
 bool
-TapStringToBuffer(std::string s, uint8_t* buffer, uint32_t* len)
+StringToBuffer(std::string s, uint8_t* buffer, uint32_t* len)
 {
     //
     // If the string was made by our inverse function, the string length must
