@@ -837,7 +837,6 @@ Ipv6Prefix::Ipv6Prefix(uint8_t prefix)
     }
 }
 
-
 Ipv6Prefix::Ipv6Prefix(const Ipv6Prefix& prefix)
 {
     std::copy(prefix.m_prefix.begin(), prefix.m_prefix.end(), m_prefix.begin());
@@ -855,7 +854,6 @@ Ipv6Prefix::~Ipv6Prefix()
     /* do nothing */
     NS_LOG_FUNCTION(this);
 }
-
 
 bool
 Ipv6Prefix::IsMatch(Ipv6Address a, Ipv6Address b) const

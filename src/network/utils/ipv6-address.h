@@ -73,7 +73,7 @@ class Ipv6Address
      * @warning the parameter must point on a 16 bytes integer array!
      */
     Ipv6Address(uint8_t address[16]);
-    
+
     /**
      * @brief Sets an Ipv6Address by parsing the input C-string.
      * @param address the C-string containing the IPv6 address (e.g. 2001:db8:f00d:cafe::1).
@@ -568,7 +568,7 @@ class Ipv6Prefix
      * @param other the other prefix to compare with
      * @returns comparison result
      */
-     std::strong_ordering operator<=>(const Ipv6Prefix& other) const = default;
+    std::strong_ordering operator<=>(const Ipv6Prefix& other) const = default;
 
   private:
     /**
