@@ -43,7 +43,7 @@ class Ipv6Address
     /**
      * @brief Default constructor.
      */
-    Ipv6Address();
+    Ipv6Address() = default;
 
     /**
      * @brief Constructs an Ipv6Address by parsing the input C-string.
@@ -73,24 +73,7 @@ class Ipv6Address
      * @warning the parameter must point on a 16 bytes integer array!
      */
     Ipv6Address(uint8_t address[16]);
-
-    /**
-     * @brief Copy constructor.
-     * @param addr Ipv6Address object
-     */
-    Ipv6Address(const Ipv6Address& addr);
-
-    /**
-     * @brief Copy constructor.
-     * @param addr Ipv6Address pointer
-     */
-    Ipv6Address(const Ipv6Address* addr);
-
-    /**
-     * @brief Destructor.
-     */
-    ~Ipv6Address();
-
+    
     /**
      * @brief Sets an Ipv6Address by parsing the input C-string.
      * @param address the C-string containing the IPv6 address (e.g. 2001:db8:f00d:cafe::1).

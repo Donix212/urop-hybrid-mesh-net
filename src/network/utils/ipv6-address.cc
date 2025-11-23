@@ -136,24 +136,6 @@ extern "C"
 }
 #endif
 
-Ipv6Address::Ipv6Address()
-{
-    NS_LOG_FUNCTION(this);
-    m_address.fill(0x00);
-}
-
-Ipv6Address::Ipv6Address(const Ipv6Address& addr)
-{
-    // Do not add function logging here, to avoid stack overflow
-    m_address = addr.m_address;
-}
-
-Ipv6Address::Ipv6Address(const Ipv6Address* addr)
-{
-    // Do not add function logging here, to avoid stack overflow
-    m_address = addr->m_address;
-}
-
 Ipv6Address::Ipv6Address(const char* address)
 {
     NS_LOG_FUNCTION(this << address);
@@ -185,12 +167,6 @@ Ipv6Address::Ipv6Address(uint8_t address[16])
 {
     NS_LOG_FUNCTION(this << &address);
     std::copy(address, address + 16, m_address.begin());
-}
-
-Ipv6Address::~Ipv6Address()
-{
-    /* do nothing */
-    NS_LOG_FUNCTION(this);
 }
 
 void
