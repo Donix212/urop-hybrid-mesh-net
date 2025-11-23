@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iterator>
 #include <map>
 #include <numeric>
 #include <optional>
@@ -637,13 +636,13 @@ WifiSpectrumValueHelper::CreateHeMuOfdmTxPowerSpectralDensity(
     MHz_u channelWidth,
     Watt_u txPower,
     MHz_u guardBandwidth,
-    const std::vector<WifiSpectrumBandIndices>& ru)
+    const WifiSpectrumBandInfo& ru)
 {
-    auto printRuIndices = [](const std::vector<WifiSpectrumBandIndices>& v) {
+    auto printRuIndices = [](const WifiSpectrumBandInfo& v) {
         std::stringstream ss;
-        for (const auto& [start, stop] : v)
+        for (const auto& segment : v)
         {
-            ss << start << "-" << stop << " ";
+            ss << segment.startIndex << "-" << segment.stopIndex << " ";
         }
         return ss.str();
     };
@@ -658,7 +657,7 @@ WifiSpectrumValueHelper::CreateHeMuOfdmTxPowerSpectralDensity(
     auto bit = c->ConstBandsBegin();
     const auto numSubcarriers =
         std::accumulate(ru.cbegin(), ru.cend(), 0, [](uint32_t sum, const auto& p) {
-            return sum + (p.second - p.first) + 1;
+            return sum + (p.stopIndex - p.startIndex) + 1;
         });
     const auto txPowerPerBand = (txPower / numSubcarriers); // FIXME: null subcarriers
     uint32_t numBands = c->GetSpectrumModel()->GetNumBands();
@@ -666,7 +665,7 @@ WifiSpectrumValueHelper::CreateHeMuOfdmTxPowerSpectralDensity(
     for (size_t i = 0; i < numBands; i++, vit++, bit++)
     {
         const auto allocated = std::any_of(ru.cbegin(), ru.cend(), [i](const auto& p) {
-            return (i >= p.first && i <= p.second);
+            return (i >= p.startIndex && i <= p.stopIndex);
         });
         *vit = allocated ? psd : 0.0;
     }
@@ -1087,18 +1086,17 @@ WifiSpectrumValueHelper::NormalizeSpectrumMask(Ptr<SpectrumValue> c, Watt_u txPo
 }
 
 Watt_u
-WifiSpectrumValueHelper::GetBandPowerW(Ptr<SpectrumValue> psd,
-                                       const std::vector<WifiSpectrumBandIndices>& segments)
+WifiSpectrumValueHelper::GetBandPowerW(Ptr<SpectrumValue> psd, const WifiSpectrumBandInfo& band)
 {
     auto powerWattPerHertz{0.0};
-    auto bandIt = psd->ConstBandsBegin() + segments.front().first; // all bands have same width
+    auto bandIt = psd->ConstBandsBegin() + band.front().startIndex; // all bands have same width
     const auto bandWidth = (bandIt->fh - bandIt->fl);
     NS_ASSERT_MSG(bandWidth >= 0.0,
                   "Invalid width for subband [" << bandIt->fl << ";" << bandIt->fh << "]");
-    for (const auto& [start, stop] : segments)
+    for (const auto& segment : band)
     {
-        auto valueIt = psd->ConstValuesBegin() + start;
-        auto end = psd->ConstValuesBegin() + stop;
+        auto valueIt = psd->ConstValuesBegin() + segment.startIndex;
+        auto end = psd->ConstValuesBegin() + segment.stopIndex;
         uint32_t index [[maybe_unused]] = 0;
         while (valueIt <= end)
         {

@@ -94,7 +94,12 @@ class ExtInterferenceHelper : public InterferenceHelper
     {
         for (const auto& [band, nis] : m_niChanges)
         {
-            if (band.frequencies == startStopFreqs)
+            std::vector<WifiSpectrumBandFrequencies> frequencies;
+            for (const auto& segment : band)
+            {
+                frequencies.emplace_back(segment.minFreq, segment.maxFreq);
+            }
+            if (frequencies == startStopFreqs)
             {
                 return true;
             }
@@ -841,21 +846,19 @@ SpectrumWifiPhyGetBandTest::RunOne(
 
     const auto& bandInfo = m_phy->GetBand(bandWidth, bandIndex);
     NS_ASSERT(expectedIndices.size() == expectedFrequencies.size());
-    NS_ASSERT(expectedIndices.size() == bandInfo.indices.size());
-    NS_ASSERT(expectedFrequencies.size() == bandInfo.frequencies.size());
+    NS_ASSERT(expectedIndices.size() == bandInfo.size());
     for (std::size_t i = 0; i < expectedIndices.size(); ++i)
     {
-        NS_ASSERT(bandInfo.indices.at(i).first == expectedIndices.at(i).first);
-        NS_TEST_ASSERT_MSG_EQ(bandInfo.indices.at(i).first,
+        NS_TEST_ASSERT_MSG_EQ(bandInfo.at(i).startIndex,
                               expectedIndices.at(i).first,
-                              "Incorrect start indice for segment " << i);
-        NS_TEST_ASSERT_MSG_EQ(bandInfo.indices.at(i).second,
+                              "Incorrect start index for segment " << i);
+        NS_TEST_ASSERT_MSG_EQ(bandInfo.at(i).stopIndex,
                               expectedIndices.at(i).second,
-                              "Incorrect stop indice for segment " << i);
-        NS_TEST_ASSERT_MSG_EQ(bandInfo.frequencies.at(i).first,
+                              "Incorrect stop index for segment " << i);
+        NS_TEST_ASSERT_MSG_EQ(bandInfo.at(i).minFreq,
                               expectedFrequencies.at(i).first,
                               "Incorrect start frequency for segment " << i);
-        NS_TEST_ASSERT_MSG_EQ(bandInfo.frequencies.at(i).second,
+        NS_TEST_ASSERT_MSG_EQ(bandInfo.at(i).maxFreq,
                               expectedFrequencies.at(i).second,
                               "Incorrect stop frequency for segment " << i);
     }

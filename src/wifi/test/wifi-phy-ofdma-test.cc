@@ -166,9 +166,12 @@ OfdmaTestPhy<PhyEntityType>::GetNonOfdmaBand(const WifiTxVector& txVector, uint1
     WifiSpectrumBandInfo nonOfdmaBand{};
     for (const auto& indicesPerSegment : indices)
     {
-        nonOfdmaBand.indices.emplace_back(indicesPerSegment);
-        nonOfdmaBand.frequencies.emplace_back(
-            PhyEntityType::m_wifiPhy->ConvertIndicesToFrequencies(indicesPerSegment));
+        const auto frequencies =
+            PhyEntityType::m_wifiPhy->ConvertIndicesToFrequencies(indicesPerSegment);
+        nonOfdmaBand.emplace_back(frequencies.first,
+                                  frequencies.second,
+                                  indicesPerSegment.first,
+                                  indicesPerSegment.second);
     }
     return nonOfdmaBand;
 }
@@ -2720,7 +2723,7 @@ TestMultipleHeTbPreambles::RxHeTbPpdu(uint64_t uid,
                                                                       DEFAULT_CHANNEL_WIDTH,
                                                                       txPower,
                                                                       DEFAULT_GUARD_WIDTH,
-                                                                      band.indices);
+                                                                      band);
     auto rxParamsOfdma = Create<WifiSpectrumSignalParameters>();
     rxParamsOfdma->psd = rxPsd;
     rxParamsOfdma->txPhy = nullptr;

@@ -266,19 +266,33 @@ InterferenceHelper::UpdateBands(const std::vector<WifiSpectrumBandInfo>& bands,
     std::vector<WifiSpectrumBandInfo> bandsToRemove{};
     for (auto it = m_niChanges.begin(); it != m_niChanges.end(); ++it)
     {
-        if (!IsBandInFrequencyRange(it->first, freqRange))
+        const auto& band = it->first;
+        if (!IsBandInFrequencyRange(band, freqRange))
         {
             continue;
         }
-        const auto frequencies = it->first.frequencies;
-        const auto found =
-            std::find_if(bands.cbegin(), bands.cend(), [frequencies](const auto& item) {
-                return frequencies == item.frequencies;
-            }) != std::end(bands);
+        size_t segmentCount = band.size();
+        auto check = [band, segmentCount](const WifiSpectrumBandInfo& item) {
+            if (segmentCount != item.size())
+            {
+                return false;
+            }
+            for (size_t i = 0; i < segmentCount; ++i)
+            {
+                const auto& lhs = band[i];
+                const auto& rhs = item[i];
+                if (lhs.minFreq != rhs.minFreq || lhs.maxFreq != rhs.maxFreq)
+                {
+                    return false;
+                }
+            }
+            return true;
+        };
+        const auto found = std::find_if(bands.cbegin(), bands.cend(), check) != std::end(bands);
         if (!found)
         {
             // band does not belong to the new bands, erase it
-            bandsToRemove.emplace_back(it->first);
+            bandsToRemove.emplace_back(band);
         }
     }
     for (const auto& band : bandsToRemove)
@@ -836,11 +850,13 @@ bool
 InterferenceHelper::IsBandInFrequencyRange(const WifiSpectrumBandInfo& band,
                                            const FrequencyRange& freqRange) const
 {
-    return std::all_of(band.frequencies.cbegin(),
-                       band.frequencies.cend(),
-                       [&freqRange](const auto& freqs) {
-                           return ((freqs.second > MHzToHz(freqRange.minFrequency)) &&
-                                   (freqs.first < MHzToHz(freqRange.maxFrequency)));
+    const auto minFrequency = MHzToHz(freqRange.minFrequency);
+    const auto maxFrequency = MHzToHz(freqRange.maxFrequency);
+    return std::all_of(band.cbegin(),
+                       band.cend(),
+                       [minFrequency, maxFrequency](const auto& segment) {
+                           return ((segment.maxFreq > minFrequency) &&
+                                   (segment.minFreq < maxFrequency));
                        });
 }
 

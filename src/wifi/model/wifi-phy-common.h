@@ -45,60 +45,8 @@ class Time;
  */
 using WifiSpectrumBandFrequencies = std::pair<Hz_u, Hz_u>;
 
-/// WifiSpectrumBandInfo structure containing info about a spectrum band
-struct WifiSpectrumBandInfo
-{
-    std::vector<WifiSpectrumBandIndices>
-        indices; //!< the start and stop indices for each segment of the band
-    std::vector<WifiSpectrumBandFrequencies>
-        frequencies; //!< the start and stop frequencies for each segment of the band
-};
-
 /// vector of spectrum bands
 using WifiSpectrumBands = std::vector<WifiSpectrumBandInfo>;
-
-/**
- * @ingroup wifi
- * Compare two bands.
- *
- * @param lhs the band on the left of operator<
- * @param rhs the band on the right of operator<
- * @return true if the start/stop frequencies of the first segment of left are lower than the
- * start/stop frequencies of the first segment of right. If the first segment is the same for left
- * and right, it return true if the start/stop frequencies of the second segment of left are lower
- * than the start/stop frequencies of the second segment of right. Otherwise, the function return
- * false.
- */
-inline bool
-operator<(const WifiSpectrumBandInfo& lhs, const WifiSpectrumBandInfo& rhs)
-{
-    if (lhs.frequencies.front() == rhs.frequencies.front())
-    {
-        return lhs.frequencies.back() < rhs.frequencies.back();
-    }
-    return lhs.frequencies.front() < rhs.frequencies.front();
-}
-
-/**
- * @brief Stream insertion operator.
- *
- * @param os the stream
- * @param band the band
- * @returns a reference to the stream
- */
-inline std::ostream&
-operator<<(std::ostream& os, const WifiSpectrumBandInfo& band)
-{
-    NS_ASSERT(band.indices.size() == band.frequencies.size());
-    for (std::size_t segmentIndex = 0; segmentIndex < band.indices.size(); ++segmentIndex)
-    {
-        os << "indices segment" << segmentIndex << ": [" << band.indices.at(segmentIndex).first
-           << "-" << band.indices.at(segmentIndex).second << "], frequencies segment"
-           << segmentIndex << ": [" << band.frequencies.at(segmentIndex).first << "Hz-"
-           << band.frequencies.at(segmentIndex).second << "Hz] ";
-    }
-    return os;
-}
 
 /**
  * These constants define the various convolutional coding rates
