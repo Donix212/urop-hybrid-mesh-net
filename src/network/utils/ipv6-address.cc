@@ -749,13 +749,6 @@ operator>>(std::istream& is, Ipv6Address& address)
     return is;
 }
 
-Ipv6Prefix::Ipv6Prefix()
-{
-    NS_LOG_FUNCTION(this);
-    m_prefix.fill(0x00);
-    m_prefixLength = 0;
-}
-
 Ipv6Prefix::Ipv6Prefix(const char* prefix)
 {
     NS_LOG_FUNCTION(this << prefix);
@@ -837,24 +830,6 @@ Ipv6Prefix::Ipv6Prefix(uint8_t prefix)
     }
 }
 
-Ipv6Prefix::Ipv6Prefix(const Ipv6Prefix& prefix)
-{
-    std::copy(prefix.m_prefix.begin(), prefix.m_prefix.end(), m_prefix.begin());
-    m_prefixLength = prefix.m_prefixLength;
-}
-
-Ipv6Prefix::Ipv6Prefix(const Ipv6Prefix* prefix)
-{
-    std::copy(prefix->m_prefix.begin(), prefix->m_prefix.end(), m_prefix.begin());
-    m_prefixLength = prefix->m_prefixLength;
-}
-
-Ipv6Prefix::~Ipv6Prefix()
-{
-    /* do nothing */
-    NS_LOG_FUNCTION(this);
-}
-
 bool
 Ipv6Prefix::IsMatch(Ipv6Address a, Ipv6Address b) const
 {
@@ -922,7 +897,7 @@ Ipv6Prefix::ConvertToIpv6Address() const
     uint8_t prefixBytes[16];
     memcpy(prefixBytes, m_prefix.data(), 16);
 
-    Ipv6Address convertedPrefix = Ipv6Address(prefixBytes);
+    auto convertedPrefix = Ipv6Address(prefixBytes);
     return convertedPrefix;
 }
 

@@ -430,7 +430,7 @@ class Ipv6Prefix
      *
      * The default prefix is empty, corresponding to /0
      */
-    Ipv6Prefix();
+    Ipv6Prefix() = default;
 
     /**
      * @brief Constructs an Ipv6Prefix by using the input 16 bytes.
@@ -472,23 +472,6 @@ class Ipv6Prefix
      * @note A valid number of bits is between 0 and 128).
      */
     Ipv6Prefix(uint8_t prefix);
-
-    /**
-     * @brief Copy constructor.
-     * @param prefix Ipv6Prefix object
-     */
-    Ipv6Prefix(const Ipv6Prefix& prefix);
-
-    /**
-     * @brief Copy constructor.
-     * @param prefix Ipv6Prefix pointer
-     */
-    Ipv6Prefix(const Ipv6Prefix* prefix);
-
-    /**
-     * @brief Destructor.
-     */
-    ~Ipv6Prefix();
 
     /**
      * @brief Check whether two addresses have the same bits in the prefix

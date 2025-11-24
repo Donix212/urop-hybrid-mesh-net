@@ -259,7 +259,7 @@ class Ipv4Mask
     /**
      * Will initialize to a zero-length mask, which will match any address.
      */
-    Ipv4Mask();
+    Ipv4Mask() = default;
     /**
      * @param mask bitwise integer representation of the mask
      *
