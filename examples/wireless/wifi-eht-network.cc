@@ -16,6 +16,7 @@
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/log.h"
+#include "ns3/mhz.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/multi-model-spectrum-channel.h"
 #include "ns3/neighbor-cache-helper.h"
@@ -145,7 +146,7 @@ main(int argc, char* argv[])
     uint16_t transitionDelayUsec{128};
     Time channelSwitchDelay{"100us"};
     bool switchAuxPhy{true};
-    uint16_t auxPhyChWidth{20};
+    auto auxPhyChWidth{20_MHz};
     bool auxPhyTxCapable{true};
     Time simulationTime{"10s"};
     bool staticSetup{true};
@@ -461,7 +462,7 @@ main(int argc, char* argv[])
                                     "AuxPhyTxCapable",
                                     BooleanValue(auxPhyTxCapable),
                                     "AuxPhyChannelWidth",
-                                    UintegerValue(auxPhyChWidth));
+                                    MhzValue(auxPhyChWidth));
                 for (uint8_t linkId = 0; linkId < nLinks; linkId++)
                 {
                     phy.Set(linkId, "ChannelSettings", StringValue(channelStr[linkId]));
@@ -563,7 +564,7 @@ main(int argc, char* argv[])
 
                 const auto maxLoad = nLinks *
                                      EhtPhy::GetDataRate(mcs,
-                                                         MHz_u{static_cast<double>(width)},
+                                                         MHz_t{static_cast<double>(width)},
                                                          NanoSeconds(gi),
                                                          1) /
                                      nStations;

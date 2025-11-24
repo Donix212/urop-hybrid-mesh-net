@@ -331,7 +331,7 @@ main(int argc, char* argv[])
 
                 /* Setting applications */
                 const auto maxLoad = VhtPhy::GetDataRate(mcs,
-                                                         MHz_u{static_cast<double>(width)},
+                                                         MHz_t{static_cast<double>(width)},
                                                          NanoSeconds(sgi ? 400 : 800),
                                                          1);
                 ApplicationContainer serverApp;

@@ -430,7 +430,7 @@ main(int argc, char* argv[])
                 }
 
                 const auto maxLoad =
-                    HePhy::GetDataRate(mcs, MHz_u{static_cast<double>(width)}, NanoSeconds(gi), 1) /
+                    HePhy::GetDataRate(mcs, MHz_t{static_cast<double>(width)}, NanoSeconds(gi), 1) /
                     nStations;
                 if (udp)
                 {
