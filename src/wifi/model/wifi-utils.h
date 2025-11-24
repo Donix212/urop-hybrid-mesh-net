@@ -38,9 +38,9 @@ enum class TriggerFrameVariant : uint8_t;
  */
 enum class WifiDirection : uint8_t
 {
-    DOWNLINK = 0,
-    UPLINK = 1,
-    BOTH_DIRECTIONS = 2,
+    DOWNLINK = 0,        //!< Downlink only.
+    UPLINK = 1,          //!< Uplink only.
+    BOTH_DIRECTIONS = 2, //!< Both uplink and downlink.
 };
 
 /**

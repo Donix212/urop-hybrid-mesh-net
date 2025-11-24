@@ -27,8 +27,8 @@ class ThreeGppAntennaModel : public AntennaModel
      */
     enum class RadiationPattern
     {
-        OUTDOOR,
-        INDOOR
+        OUTDOOR, //!< Outdoor antenna pattern.
+        INDOOR   //!< Indoor antenna pattern.
     };
 
     ThreeGppAntennaModel();

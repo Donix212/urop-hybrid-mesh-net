@@ -34,10 +34,10 @@ class Duid
     /// DUID type.
     enum class Type
     {
-        LLT = 1, // Link-layer address plus time
-        EN,      // Vendor-assigned unique ID based on Enterprise Number
-        LL,      // Link-layer address
-        UUID,    // Universally Unique Identifier (UUID) [RFC6355]
+        LLT = 1, //!< Link-layer address plus time
+        EN,      //!< Vendor-assigned unique ID based on Enterprise Number
+        LL,      //!< Link-layer address
+        UUID,    //!< Universally Unique Identifier (UUID) [RFC6355]
     };
 
     /**

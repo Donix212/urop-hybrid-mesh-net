@@ -186,8 +186,8 @@ class RipHeader : public Header
      */
     enum Command_e
     {
-        REQUEST = 0x1,
-        RESPONSE = 0x2,
+        REQUEST = 0x1,  //!< Request command.
+        RESPONSE = 0x2, //!< Response command.
     };
 
     /**

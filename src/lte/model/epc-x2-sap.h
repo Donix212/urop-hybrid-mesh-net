@@ -104,9 +104,9 @@ class EpcX2Sap
      */
     enum UlInterferenceOverloadIndicationItem
     {
-        HighInterference,
-        MediumInterference,
-        LowInterference
+        HighInterference,   ///< High interference.
+        MediumInterference, ///< Medium interference.
+        LowInterference     ///< Low interference.
     };
 
     /**
@@ -160,10 +160,10 @@ class EpcX2Sap
      */
     enum LoadIndicator
     {
-        LowLoad,
-        MediumLoad,
-        HighLoad,
-        Overload
+        LowLoad,    ///< Low load.
+        MediumLoad, ///< Medium load.
+        HighLoad,   ///< High load.
+        Overload    ///< Overload.
     };
 
     /**
@@ -206,8 +206,8 @@ class EpcX2Sap
     /// Cause ID enumeration
     enum IdCause
     {
-        HandoverDesirableForRadioReason,
-        TimeCriticalHandover
+        HandoverDesirableForRadioReason, ///< Handover desirable.
+        TimeCriticalHandover             ///< Handover is time critical.
     };
 
     /**

@@ -62,9 +62,9 @@ class TvSpectrumTransmitterHelper
      */
     enum Region
     {
-        REGION_NORTH_AMERICA,
-        REGION_JAPAN,
-        REGION_EUROPE
+        REGION_NORTH_AMERICA, //!< Use North American TV transmitter PSD.
+        REGION_JAPAN,         //!< Use Japan TV transmitter PSD.
+        REGION_EUROPE         //!< Use European TV transmitter PSD.
     };
 
     /**
@@ -72,9 +72,9 @@ class TvSpectrumTransmitterHelper
      */
     enum Density
     {
-        DENSITY_LOW,
-        DENSITY_MEDIUM,
-        DENSITY_HIGH
+        DENSITY_LOW,    //!< Low TV transmitter density.
+        DENSITY_MEDIUM, //!< Medium TV transmitter density.
+        DENSITY_HIGH    //!< High TV transmitter density.
     };
 
     TvSpectrumTransmitterHelper();          //!< Default constructor

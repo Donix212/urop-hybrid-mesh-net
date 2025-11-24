@@ -57,8 +57,8 @@ class RandomWalk2dMobilityModel : public MobilityModel
     /** An enum representing the different working modes of this module. */
     enum Mode
     {
-        MODE_DISTANCE,
-        MODE_TIME
+        MODE_DISTANCE, //!< Change course after traveling a fixed distance.
+        MODE_TIME      //!< Change course after traveling a fixed time.
     };
 
   private:

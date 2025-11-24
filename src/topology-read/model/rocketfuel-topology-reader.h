@@ -89,9 +89,9 @@ class RocketfuelTopologyReader : public TopologyReader
      */
     enum RF_FileType
     {
-        RF_MAPS,
-        RF_WEIGHTS,
-        RF_UNKNOWN
+        RF_MAPS,    //!< File is a maps file.
+        RF_WEIGHTS, //!< File is a weights file.
+        RF_UNKNOWN  //!< File type is unknown.
     };
 
     /**

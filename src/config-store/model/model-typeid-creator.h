@@ -17,10 +17,11 @@
 namespace ns3
 {
 
+/** GTK column numbers. */
 enum
 {
-    COL_TYPEID = 0,
-    COL_LASTID
+    COL_TYPEID = 0, //!< TypeId column number.
+    COL_LASTID      //!< Last ID column number.
 };
 
 /**
@@ -34,9 +35,9 @@ struct ModelTypeid
      */
     enum
     {
-        // store TypeId + attribute name +defaultValue and index
+        /// store TypeId + attribute name +defaultValue and index
         NODE_ATTRIBUTE,
-        // store TypeId
+        /// store TypeId
         NODE_TYPEID
     } type; ///< node type
 

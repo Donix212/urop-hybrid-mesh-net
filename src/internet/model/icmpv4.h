@@ -36,10 +36,10 @@ class Icmpv4Header : public Header
      */
     enum Type_e
     {
-        ICMPV4_ECHO_REPLY = 0,
-        ICMPV4_DEST_UNREACH = 3,
-        ICMPV4_ECHO = 8,
-        ICMPV4_TIME_EXCEEDED = 11
+        ICMPV4_ECHO_REPLY = 0,    //!< ICMP Echo reply.
+        ICMPV4_DEST_UNREACH = 3,  //!< Destination unreachable.
+        ICMPV4_ECHO = 8,          //!< ICMP ECHO.
+        ICMPV4_TIME_EXCEEDED = 11 //!< Time exceeded.
     };
 
     /**
@@ -168,12 +168,12 @@ class Icmpv4DestinationUnreachable : public Header
      */
     enum ErrorDestinationUnreachable_e
     {
-        ICMPV4_NET_UNREACHABLE = 0,
-        ICMPV4_HOST_UNREACHABLE = 1,
-        ICMPV4_PROTOCOL_UNREACHABLE = 2,
-        ICMPV4_PORT_UNREACHABLE = 3,
-        ICMPV4_FRAG_NEEDED = 4,
-        ICMPV4_SOURCE_ROUTE_FAILED = 5
+        ICMPV4_NET_UNREACHABLE = 0,      //!< Network unreachable.
+        ICMPV4_HOST_UNREACHABLE = 1,     //!< Host unreachable.
+        ICMPV4_PROTOCOL_UNREACHABLE = 2, //!< Protocol unreachable.
+        ICMPV4_PORT_UNREACHABLE = 3,     //!< Port unreachable.
+        ICMPV4_FRAG_NEEDED = 4,          //!< Fragment needed.
+        ICMPV4_SOURCE_ROUTE_FAILED = 5   //!< Source route failed.
     };
 
     /**
@@ -243,8 +243,8 @@ class Icmpv4TimeExceeded : public Header
      */
     enum ErrorTimeExceeded_e
     {
-        ICMPV4_TIME_TO_LIVE = 0,
-        ICMPV4_FRAGMENT_REASSEMBLY = 1
+        ICMPV4_TIME_TO_LIVE = 0,       //!< Time to live error.
+        ICMPV4_FRAGMENT_REASSEMBLY = 1 //!< Fragment reassembly error.
     };
 
     /**

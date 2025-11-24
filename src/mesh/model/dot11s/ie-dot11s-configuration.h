@@ -26,36 +26,36 @@ namespace dot11s
 /** in 7.3.2.98.2 Active Path Selection Protocol Identifier - 802.11s-2011 */
 enum Dot11sPathSelectionProtocol
 {
-    PROTOCOL_HWMP = 0x01,
+    PROTOCOL_HWMP = 0x01, //!< Active path selection protocol.
 };
 
 /** in 7.3.2.98.3 Active Path Selection Metric Identifier - 802.11s-2011 */
 enum Dot11sPathSelectionMetric
 {
-    METRIC_AIRTIME = 0x01,
+    METRIC_AIRTIME = 0x01, //!< Active path metric.
 };
 
 /** in 7.3.2.98.4 Congestion Control Mode Identifier - 802.11s-2011 */
 enum Dot11sCongestionControlMode
 {
-    CONGESTION_SIGNALING = 0x01,
-    CONGESTION_NULL = 0x00,
+    CONGESTION_SIGNALING = 0x01, //!< Signal congestion.
+    CONGESTION_NULL = 0x00,      //!< Do not signal congestion.
 };
 
 /** in 7.3.2.98.5 Synchronization Method Identifier - 802.11s-2011 */
 enum Dot11sSynchronizationProtocolIdentifier
 {
-    SYNC_NEIGHBOUR_OFFSET = 0x01, // Neighbor offset synchronization method
-    SYNC_NULL = 0x00,             // Reserved
+    SYNC_NEIGHBOUR_OFFSET = 0x01, //!< Neighbor offset synchronization method.
+    SYNC_NULL = 0x00,             //!< Reserved synchronization method value.
 };
 
 /** in 7.3.2.98.6 Authentication Protocol Identifier - 802.11s-2011 */
 enum Dot11sAuthenticationProtocol
 {
     AUTH_NULL =
-        0x00, // No authentication method is required to establish mesh peerings within the MBSS
-    AUTH_SAE = 0x01,  // SAE defined in 8.2a
-    AUTH_IEEE = 0x02, // IEEE 802.1X authentication
+        0x00, //!< No authentication method is required to establish mesh peerings within the MBSS.
+    AUTH_SAE = 0x01,  //!< SAE defined in 8.2a
+    AUTH_IEEE = 0x02, //!< IEEE 802.1X authentication
 };
 
 /** @} */

@@ -27,17 +27,17 @@ namespace ns3
  */
 enum WifiStandard
 {
-    WIFI_STANDARD_UNSPECIFIED,
-    WIFI_STANDARD_80211a,
-    WIFI_STANDARD_80211b,
-    WIFI_STANDARD_80211g,
-    WIFI_STANDARD_80211p,
-    WIFI_STANDARD_80211n,
-    WIFI_STANDARD_80211ac,
-    WIFI_STANDARD_80211ad,
-    WIFI_STANDARD_80211ax,
-    WIFI_STANDARD_80211be,
-    WIFI_STANDARD_COUNT
+    WIFI_STANDARD_UNSPECIFIED, //!< Unspecified standard.
+    WIFI_STANDARD_80211a,      //!< 802.11a standard.
+    WIFI_STANDARD_80211b,      //!< 802.11b standard.
+    WIFI_STANDARD_80211g,      //!< 802.11g standard.
+    WIFI_STANDARD_80211p,      //!< 802.11p standard.
+    WIFI_STANDARD_80211n,      //!< 802.11n standard.
+    WIFI_STANDARD_80211ac,     //!< 802.11ac standard.
+    WIFI_STANDARD_80211ad,     //!< 802.11ad standard.
+    WIFI_STANDARD_80211ax,     //!< 802.11ax standard.
+    WIFI_STANDARD_80211be,     //!< 802.11be standard.
+    WIFI_STANDARD_COUNT        //!< Number of supported standards.
 };
 
 /**

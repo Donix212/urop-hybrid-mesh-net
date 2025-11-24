@@ -74,9 +74,9 @@ class Txop : public Object
      */
     enum ChannelAccessStatus
     {
-        NOT_REQUESTED = 0,
-        REQUESTED,
-        GRANTED
+        NOT_REQUESTED = 0, //!< Channel access not requested.
+        REQUESTED,         //!< Channel access requested but not yet granted.
+        GRANTED            //!< Channel access granted.
     };
 
     /**

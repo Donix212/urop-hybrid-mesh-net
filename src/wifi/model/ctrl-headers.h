@@ -551,14 +551,14 @@ class CtrlBAckResponseHeader : public Header
  */
 enum class TriggerFrameType : uint8_t
 {
-    BASIC_TRIGGER = 0,      // Basic
-    BFRP_TRIGGER = 1,       // Beamforming Report Poll
-    MU_BAR_TRIGGER = 2,     // Multi-User Block Ack Request
-    MU_RTS_TRIGGER = 3,     // Multi-User Request To Send
-    BSRP_TRIGGER = 4,       // Buffer Status Report Poll
-    GCR_MU_BAR_TRIGGER = 5, // Groupcast with Retries MU-BAR
-    BQRP_TRIGGER = 6,       // Bandwidth Query Report Poll
-    NFRP_TRIGGER = 7        // NDP Feedback Report Poll
+    BASIC_TRIGGER = 0,      //!< Basic
+    BFRP_TRIGGER = 1,       //!< Beamforming Report Poll
+    MU_BAR_TRIGGER = 2,     //!< Multi-User Block Ack Request
+    MU_RTS_TRIGGER = 3,     //!< Multi-User Request To Send
+    BSRP_TRIGGER = 4,       //!< Buffer Status Report Poll
+    GCR_MU_BAR_TRIGGER = 5, //!< Groupcast with Retries MU-BAR
+    BQRP_TRIGGER = 6,       //!< Bandwidth Query Report Poll
+    NFRP_TRIGGER = 7        //!< NDP Feedback Report Poll
 };
 
 /**

@@ -42,8 +42,8 @@ namespace dsr
 /** Flag used to prioritize packets */
 enum DsrMessageType
 {
-    DSR_CONTROL_PACKET = 1,
-    DSR_DATA_PACKET = 2
+    DSR_CONTROL_PACKET = 1, //!< Control message packet.
+    DSR_DATA_PACKET = 2     //!< Data message packet.
 };
 
 /**

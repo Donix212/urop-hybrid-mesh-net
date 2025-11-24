@@ -25,11 +25,11 @@ class MgtEmlOmn;
  */
 enum class WifiIcfDrop : uint8_t
 {
-    USING_OTHER_LINK = 0,   // another EMLSR link is being used
-    NOT_ENOUGH_TIME_TX,     // not enough time for the main PHY to switch (because in TX state)
-    NOT_ENOUGH_TIME_RX,     // not enough time for the main PHY to switch (because in RX state)
-    NOT_ENOUGH_TIME_SWITCH, // not enough time for the main PHY to switch (already switching)
-    NOT_ENOUGH_TIME_SLEEP,  // not enough time for the main PHY to switch (because in SLEEP state)
+    USING_OTHER_LINK = 0,   //!< another EMLSR link is being used
+    NOT_ENOUGH_TIME_TX,     //!< not enough time for the main PHY to switch (because in TX state)
+    NOT_ENOUGH_TIME_RX,     //!< not enough time for the main PHY to switch (because in RX state)
+    NOT_ENOUGH_TIME_SWITCH, //!< not enough time for the main PHY to switch (already switching)
+    NOT_ENOUGH_TIME_SLEEP,  //!< not enough time for the main PHY to switch (because in SLEEP state)
 };
 
 /**

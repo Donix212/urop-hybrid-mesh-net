@@ -31,9 +31,9 @@ class TupleObject : public Object
      */
     enum TupleTestEnum
     {
-        VALUE1,
-        VALUE2,
-        VALUE3
+        VALUE1, //!< Tuple test enum value.
+        VALUE2, //!< Tuple test enum value.
+        VALUE3  //!< Tuple test enum value.
     };
 
     TupleObject();

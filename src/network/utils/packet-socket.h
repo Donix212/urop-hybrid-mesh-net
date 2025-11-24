@@ -179,10 +179,10 @@ class PacketSocket : public Socket
      */
     enum State
     {
-        STATE_OPEN,
-        STATE_BOUND,     // open and bound
-        STATE_CONNECTED, // open, bound and connected
-        STATE_CLOSED
+        STATE_OPEN,      //!< open
+        STATE_BOUND,     //!< open and bound
+        STATE_CONNECTED, //!< open, bound and connected
+        STATE_CLOSED     //!< closed
     };
 
     Ptr<Node> m_node;            //!< the associated node

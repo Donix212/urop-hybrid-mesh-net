@@ -502,10 +502,10 @@ class ThreeGppChannelConditionModel : public ChannelConditionModel
      */
     enum VehicleDensity
     {
-        LOW,
-        MEDIUM,
-        HIGH,
-        INVALID
+        LOW,    //!< Low vehicle density.
+        MEDIUM, //!< Medium vehicle density.
+        HIGH,   //!< High vehicle density.
+        INVALID //!< Invalid value for vehicle density.
     };
 
     Ptr<UniformRandomVariable> m_uniformVar; //!< uniform random variable

@@ -43,16 +43,16 @@ class LteControlMessage : public SimpleRefCount<LteControlMessage>
      */
     enum MessageType
     {
-        DL_DCI,
-        UL_DCI, // Downlink/Uplink Data Control Indicator
-        DL_CQI,
-        UL_CQI,        // Downlink/Uplink Channel Quality Indicator
-        BSR,           // Buffer Status Report
-        DL_HARQ,       // UL HARQ feedback
-        RACH_PREAMBLE, // Random Access Preamble
-        RAR,           // Random Access Response
-        MIB,           // Master Information Block
-        SIB1,          // System Information Block Type 1
+        DL_DCI,        //!< Downlink Data Control Indicator.
+        UL_DCI,        //!< Downlink/Uplink Data Control Indicator.
+        DL_CQI,        //!< Downlink Channel Quality Indicator.
+        UL_CQI,        //!< Downlink/Uplink Channel Quality Indicator.
+        BSR,           //!< Buffer Status Report.
+        DL_HARQ,       //!< UL HARQ feedback.
+        RACH_PREAMBLE, //!< Random Access Preamble.
+        RAR,           //!< Random Access Response.
+        MIB,           //!< Master Information Block.
+        SIB1,          //!< System Information Block Type 1.
     };
 
     LteControlMessage();

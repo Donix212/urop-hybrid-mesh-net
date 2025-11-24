@@ -48,8 +48,8 @@ namespace dsdv
  */
 enum RouteFlags
 {
-    VALID = 0,   // !< VALID
-    INVALID = 1, // !< INVALID
+    VALID = 0,   //!< VALID
+    INVALID = 1, //!< INVALID
 };
 
 /**

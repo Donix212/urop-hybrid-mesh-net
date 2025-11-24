@@ -242,15 +242,15 @@ class TcpSocketBase : public TcpSocket
      */
     enum TcpPacketType_t
     {
-        SYN,
-        SYN_ACK,
-        PURE_ACK,
-        WINDOW_PROBE,
-        FIN,
-        RST,
-        RE_XMT,
-        DATA,
-        INVALID
+        SYN,          //!< Synchronize packet
+        SYN_ACK,      //!< Synchronization acknowledgement packet
+        PURE_ACK,     //!< Pure acknowledgement packet
+        WINDOW_PROBE, //!< Window probe packet
+        FIN,          //!< Finalize packet
+        RST,          //!< Reset packet
+        RE_XMT,       //!< Retransmit packet
+        DATA,         //!< Data packet
+        INVALID       //!< Invalid value
     };
 
     // Set associated Node, TcpL4Protocol, RttEstimator to this socket

@@ -80,8 +80,8 @@ class AnimationInterface
      */
     enum CounterType
     {
-        UINT32_COUNTER,
-        DOUBLE_COUNTER
+        UINT32_COUNTER, //!< Use `uint32_t` counter.
+        DOUBLE_COUNTER  //!< Use `double` counter.
     };
 
     /** RGB triplet structure. */
@@ -527,11 +527,11 @@ class AnimationInterface
     /// ProtocolType enumeration
     enum ProtocolType
     {
-        UAN,
-        LTE,
-        WIFI,
-        CSMA,
-        LRWPAN
+        UAN,   //!< UAN protocol.
+        LTE,   //!< LTE protocol.
+        WIFI,  //!< Wifi (802.11...) protocol.
+        CSMA,  //!< CSMA (ethernet) protocol.
+        LRWPAN //!< LR-WPAN protocol.
     };
 
     /// NodeSize structure

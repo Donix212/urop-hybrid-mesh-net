@@ -52,9 +52,9 @@ class FqPieFlow : public QueueDiscClass
      */
     enum FlowStatus
     {
-        INACTIVE,
-        NEW_FLOW,
-        OLD_FLOW
+        INACTIVE, //!< Flow queue is inactive.
+        NEW_FLOW, //!< Flow queue is new.
+        OLD_FLOW  //!< Flow queue is old.
     };
 
     /**

@@ -64,8 +64,8 @@ class FcfsWifiQueueScheduler : public WifiMacQueueSchedulerImpl<FcfsPrio>
     /// drop policy
     enum DropPolicy
     {
-        DROP_NEWEST,
-        DROP_OLDEST
+        DROP_NEWEST, //!< Drop newest packet when queue full.
+        DROP_OLDEST  //!< Drop oldest packet when queue full.
     };
 
   private:

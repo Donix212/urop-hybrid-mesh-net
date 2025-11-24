@@ -184,8 +184,8 @@ struct NeighborTuple
     /// Status of the link (Symmetric or not Symmetric).
     enum Status
     {
-        STATUS_NOT_SYM = 0, // "not symmetric"
-        STATUS_SYM = 1,     // "symmetric"
+        STATUS_NOT_SYM = 0, //!< not symmetric
+        STATUS_SYM = 1,     //!< symmetric
     };
 
     /// Status of the link.

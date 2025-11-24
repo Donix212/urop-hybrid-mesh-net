@@ -31,18 +31,18 @@ namespace ns3
  */
 enum class WifiChannelWidthType : uint8_t
 {
-    UNKNOWN = 0,
-    CW_20MHZ,
-    CW_22MHZ,
-    CW_5MHZ,
-    CW_10MHZ,
-    CW_40MHZ,
-    CW_80MHZ,
-    CW_160MHZ,
-    CW_80_PLUS_80MHZ,
-    CW_320MHZ,
-    CW_2160MHZ,
-    MAX,
+    UNKNOWN = 0,      //!< Unknown channel width.
+    CW_20MHZ,         //!< 20 MHz channel.
+    CW_22MHZ,         //!< 22 MHz channel.
+    CW_5MHZ,          //!< 5 MHz channel.
+    CW_10MHZ,         //!< 10 MHz channel.
+    CW_40MHZ,         //!< 40 MHz channel.
+    CW_80MHZ,         //!< 80 MHz channel.
+    CW_160MHZ,        //!< 160 MHz channel.
+    CW_80_PLUS_80MHZ, //!< Dual 80 MHz channels.
+    CW_320MHZ,        //!< 320 MHz channel.
+    CW_2160MHZ,       //!< 2160 MHz channel.
+    MAX,              //!< Number of channedl widths.
 };
 
 /**

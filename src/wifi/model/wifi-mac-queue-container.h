@@ -25,19 +25,19 @@ namespace ns3
 /// enumeration of container queue types
 enum WifiContainerQueueType
 {
-    WIFI_CTL_QUEUE = 0,
-    WIFI_MGT_QUEUE = 1,
-    WIFI_QOSDATA_QUEUE = 2,
-    WIFI_DATA_QUEUE = 3
+    WIFI_CTL_QUEUE = 0,     //!< Control queue.
+    WIFI_MGT_QUEUE = 1,     //!< Management queue.
+    WIFI_QOSDATA_QUEUE = 2, //!< QOS data queue.
+    WIFI_DATA_QUEUE = 3     //!< Data queue.
 };
 
 /// enumeration of frame types based on receiver address
 enum class WifiRcvAddr : uint8_t
 {
-    UNICAST = 0,
-    BROADCAST,
-    GROUPCAST,
-    COUNT
+    UNICAST = 0, //!< Unicast frame.
+    BROADCAST,   //!< Broadcast frame.
+    GROUPCAST,   //!< Groupcast frame.
+    COUNT        //!< Count of frame types.
 };
 
 /**

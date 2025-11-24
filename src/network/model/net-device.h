@@ -287,14 +287,14 @@ class NetDevice : public Object
      */
     enum PacketType
     {
-        PACKET_HOST = 1, //!< Packet addressed to us
-        NS3_PACKET_HOST = PACKET_HOST,
-        PACKET_BROADCAST, //!< Packet addressed to all
-        NS3_PACKET_BROADCAST = PACKET_BROADCAST,
-        PACKET_MULTICAST, //!< Packet addressed to multicast group
-        NS3_PACKET_MULTICAST = PACKET_MULTICAST,
-        PACKET_OTHERHOST, //!< Packet addressed to someone else
-        NS3_PACKET_OTHERHOST = PACKET_OTHERHOST,
+        PACKET_HOST = 1,                         //!< Packet addressed to us
+        NS3_PACKET_HOST = PACKET_HOST,           //!< ns-3: packet addressed to us
+        PACKET_BROADCAST,                        //!< Packet addressed to all
+        NS3_PACKET_BROADCAST = PACKET_BROADCAST, //!< ns-3: packet addressed to all
+        PACKET_MULTICAST,                        //!< Packet addressed to multicast group
+        NS3_PACKET_MULTICAST = PACKET_MULTICAST, //!< ns-3: packet addressed to multicast group
+        PACKET_OTHERHOST,                        //!< Packet addressed to someone else
+        NS3_PACKET_OTHERHOST = PACKET_OTHERHOST, //!< ns-3: packet addressed to someone else
     };
 
     /**

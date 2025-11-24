@@ -343,7 +343,7 @@ class EmlsrIcfSentDuringMainPhySwitchTest : public EmlsrOperationsTestBase
         BEFORE_MAC_HDR_END,
         BEFORE_MAC_PAYLOAD_END,
         BEFORE_PADDING_END,
-        CSD_COUNT
+        CSD_COUNT //!< Number of ChannelSwitchEnd values.
     };
 
   protected:
@@ -520,7 +520,7 @@ class EmlsrSwitchMainPhyBackTest : public EmlsrOperationsTestBase
         NON_HT_PPDU_USE_MAC_HDR,
         LONG_SWITCH_BACK_DELAY_DONT_USE_MAC_HDR,
         LONG_SWITCH_BACK_DELAY_USE_MAC_HDR,
-        COUNT
+        COUNT //!< Number of test scenarios.
     };
 
   protected:
@@ -633,7 +633,7 @@ class EmlsrCheckNavAndCcaLastPifsTest : public EmlsrOperationsTestBase
         BACKOFF_END_BEFORE_SWITCH_END = 0,
         LESS_THAN_PIFS_UNTIL_BACKOFF_END,
         MORE_THAN_PIFS_UNTIL_BACKOFF_END,
-        COUNT
+        COUNT //!< Number of test scenarios.
     };
 
   protected:

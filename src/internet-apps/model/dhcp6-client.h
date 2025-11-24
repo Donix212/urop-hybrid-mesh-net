@@ -52,11 +52,11 @@ class Dhcp6Client : public Application
     /// State of the DHCPv6 client.
     enum class State
     {
-        WAIT_ADVERTISE,           // Waiting for an advertise message
-        WAIT_REPLY,               // Waiting for a reply message
-        RENEW,                    // Renewing the lease
-        WAIT_REPLY_AFTER_DECLINE, // Waiting for a reply after sending a decline message
-        WAIT_REPLY_AFTER_RELEASE, // Waiting for a reply after sending a release message
+        WAIT_ADVERTISE,           //!< Waiting for an advertise message
+        WAIT_REPLY,               //!< Waiting for a reply message
+        RENEW,                    //!< Renewing the lease
+        WAIT_REPLY_AFTER_DECLINE, //!< Waiting for a reply after sending a decline message
+        WAIT_REPLY_AFTER_RELEASE, //!< Waiting for a reply after sending a release message
     };
 
     int64_t AssignStreams(int64_t stream) override;

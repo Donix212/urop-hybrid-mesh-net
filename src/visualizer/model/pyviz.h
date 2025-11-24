@@ -194,11 +194,11 @@ class PyViz
     /// PacketCaptureMode enumeration
     enum PacketCaptureMode
     {
-        PACKET_CAPTURE_DISABLED = 1,       // packet capture is disabled
-        PACKET_CAPTURE_FILTER_HEADERS_OR,  // packet capture if any of the indicated headers is
-                                           // present
-        PACKET_CAPTURE_FILTER_HEADERS_AND, // packet capture if all of the indicated headers are
-                                           // present
+        PACKET_CAPTURE_DISABLED = 1,       ///< packet capture is disabled
+        PACKET_CAPTURE_FILTER_HEADERS_OR,  ///< packet capture if any of the indicated headers is
+                                           ///< present
+        PACKET_CAPTURE_FILTER_HEADERS_AND, ///< packet capture if all of the indicated headers are
+                                           ///< present
     };
 
     /// PacketCaptureOptions structure

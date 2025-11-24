@@ -60,8 +60,8 @@ class WifiTxStatsHelper
      */
     enum MultiLinkSuccessType : uint8_t
     {
-        FIRST_LINK_IN_SET,
-        ALL_LINKS
+        FIRST_LINK_IN_SET, //!< Count ACK success on the first link of a MLO set.
+        ALL_LINKS          //!< Count ACK success on all links in the MLO set.
     };
 
     /**

@@ -32,10 +32,10 @@ class FileAggregator : public DataCollectionObject
     /// The type of file written by the aggregator.
     enum FileType
     {
-        FORMATTED,
-        SPACE_SEPARATED,
-        COMMA_SEPARATED,
-        TAB_SEPARATED
+        FORMATTED,       //!< Use native formatting.
+        SPACE_SEPARATED, //!< Use space-separated format.
+        COMMA_SEPARATED, //!< Use comma-separated format (CSV).
+        TAB_SEPARATED    //!< Use tab-separated format (TSV).
     };
 
     /**
