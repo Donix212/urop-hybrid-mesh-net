@@ -225,54 +225,54 @@ SetMarkup()
     else
     {
         anchor = "@anchor ";
-        argument = "@param ";
+        argument = "  @param ";
         boldStart = "<b>";
         boldStop = "</b>";
-        boldWithIdStart = "<b id=\"";
+        boldWithIdStart = "  <b id=\"";
         boldWithIdMid = "\">";
         boldWithIdStop = "</b>";
         breakBoth = "<br>";
         breakHtmlOnly = "<br>";
-        brief = "@brief ";
-        classStart = "@class ";
+        brief = "  @brief ";
+        classStart = "  @class ";
         codeWord = "@p ";
         commentStart = "/**\n";
-        commentStop = "*/\n";
-        copyDoc = "@copydoc ";
-        file = "@file";
+        commentStop = " */\n";
+        copyDoc = "  @copydoc ";
+        file = "  @file";
         flagSpanStart = "<span class=\"mlabel\">";
         flagSpanStop = "</span>";
-        functionStart = "@fn ";
-        headingStart = "<h3>";
-        headingStop = "</h3>";
-        headingWithIdStart = "<h3 id=\"";
+        functionStart = "  @fn ";
+        headingStart = "  <h3>";
+        headingStop = "  </h3>";
+        headingWithIdStart = "  <h3 id=\"";
         headingWithIdMid = "\">";
         headingWithIdStop = "</h3>";
-        hideCaller = "@hidecaller";
+        hideCaller = "\n  @hidecaller";
         // Linking:  [The link text displayed](\ref TheTarget)
         hrefStart = "[";
         hrefMid = "](@ref ";
         hrefStop = ")";
         indentHtmlOnly = "  ";
-        listLineStart = "<li>";
+        listLineStart = "    <li>";
         listLineStop = "</li>";
-        listStart = "<ul>";
-        listStop = "</ul>";
-        note = "@note ";
-        page = "@page ";
+        listStart = "  <ul>";
+        listStop = "  </ul>";
+        note = "  @note ";
+        page = "  @page ";
         reference = " @ref ";
         referenceNo = " %";
-        returns = "@returns ";
-        sectionStart = "@ingroup ";
-        seeAlso = "@see ";
-        spanWithIdStart = "<span id=\"";
+        returns = "  @returns ";
+        sectionStart = "  @ingroup ";
+        seeAlso = "  @see ";
+        spanWithIdStart = "  <span id=\"";
         spanWithIdMid = "\">";
         spanWithIdStop = "</span>";
-        subSectionStart = "@addtogroup ";
+        subSectionStart = "  @addtogroup ";
         templArgDeduced = "@deduced ";
         templArgExplicit = "@explicit ";
-        templateArgument = "@tparam ";
-        variable = "@var ";
+        templateArgument = "  @tparam ";
+        variable = "  @var ";
     }
 } // SetMarkup()
 
@@ -773,8 +773,8 @@ PrintConfigPaths(std::ostream& os, const TypeId tid)
     }
     else
     {
-        os << HeadingWithId("config-paths", "Config Paths") << "\n\n"
-           << tid.GetName() << " is accessible through the following paths"
+        os << HeadingWithId("config-paths", "Config Paths") << "\n\n  " << tid.GetName()
+           << " is accessible through the following paths"
            << " with Config::Set and Config::Connect:\n"
            << listStart << "\n";
         for (const auto& path : paths)
@@ -1039,7 +1039,7 @@ PrintTypeIdBlock(std::ostream& os, const TypeId tid)
 
     std::string name = tid.GetName();
 
-    os << commentStart << "\n" << classStart << name << "\n\n";
+    os << commentStart << classStart << name << "\n\n";
 
     PrintConfigPaths(os, tid);
     PrintAttributes(os, tid);
@@ -1101,8 +1101,8 @@ PrintAllTypeIds(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
     os << commentStart << page << "TypeIdList All ns3::TypeId's\n\n"
-       << "This is a list of all" << reference << "ns3::TypeId's.\n"
-       << "For more information see the" << reference << "ns3::TypeId "
+       << "  This is a list of all" << reference << "ns3::TypeId's.\n"
+       << "  For more information see the" << reference << "ns3::TypeId "
        << "section of this API documentation and the" << referenceNo << "TypeId section "
        << "in the Configuration and " << referenceNo << "Attributes chapter of the Manual.\n\n";
 
@@ -1141,7 +1141,7 @@ PrintAllAttributes(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
     os << commentStart << page << "AttributeList All Attributes\n\n"
-       << "This is a list of all" << reference << "attributes classes.  "
+       << "  This is a list of all" << reference << "attributes classes.  "
        << "For more information see the" << reference << "attributes "
        << "section of this API documentation and the Attributes sections "
        << "in the Tutorial and Manual.\n\n";
@@ -1166,7 +1166,8 @@ PrintAllAttributes(std::ostream& os)
 
         auto index = SortedAttributeInfo(tid);
 
-        os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << "\n" << listStart << "\n";
+        os << "  " << boldStart << tid.GetName() << boldStop << breakHtmlOnly << "\n"
+           << listStart << "\n";
         for (const auto& [name, info] : index)
         {
             os << listLineStart << boldStart << name << boldStop << ": " << info.help
@@ -1188,8 +1189,8 @@ PrintAllGlobals(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
     os << commentStart << page << "GlobalValueList All GlobalValues\n\n"
-       << "This is a list of all" << reference << "ns3::GlobalValue instances.\n"
-       << "See ns3::GlobalValue for how to set these.\n";
+       << "  This is a list of all" << reference << "ns3::GlobalValue instances.\n"
+       << "  See ns3::GlobalValue for how to set these.\n";
 
     os << listStart << "\n";
     for (auto i = GlobalValue::Begin(); i != GlobalValue::End(); ++i)
@@ -1214,15 +1215,15 @@ PrintAllGroups(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
     os << commentStart << page << "GroupsList All Object Groups\n\n"
-       << "This is a list of all Object Groups.\n"
-       << "Objects are added to groups by " << hrefStart << "ns3::TypeId::SetGroupName()" << hrefMid
-       << "ns3::TypeId::SetGroupName" << hrefStop << "\n\n";
+       << "  This is a list of all Object Groups.\n"
+       << "  Objects are added to groups by " << hrefStart << "ns3::TypeId::SetGroupName()"
+       << hrefMid << "ns3::TypeId::SetGroupName" << hrefStop << "\n\n";
 
     auto groups = GetGroupsList();
 
     for (const auto& g : groups)
     {
-        os << boldStart << g.first << boldStop << breakHtmlOnly << "\n";
+        os << "  " << boldStart << g.first << boldStop << breakHtmlOnly << "\n";
 
         os << listStart << "\n";
         for (const auto& tid : g.second)
@@ -1245,7 +1246,7 @@ PrintAllLogComponents(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
     os << commentStart << page << "LogComponentList All LogComponents\n\n"
-       << "This is a list of all" << reference << "ns3::LogComponent instances.\n\n";
+       << "  This is a list of all" << reference << "ns3::LogComponent instances.\n\n";
 
     /**
      * @todo Switch to a border-less table, so the file links align
@@ -1306,7 +1307,7 @@ PrintAllTraceSources(std::ostream& os)
 {
     NS_LOG_FUNCTION_NOARGS();
     os << commentStart << page << "TraceSourceList All TraceSources\n\n"
-       << "This is a list of all" << reference << "tracing sources.  "
+       << "  This is a list of all" << reference << "tracing sources.  "
        << "For more information see the " << reference << "tracing "
        << "section of this API documentation and the Tracing sections "
        << "in the Tutorial and Manual.\n\n";
@@ -1332,7 +1333,7 @@ PrintAllTraceSources(std::ostream& os)
 
         auto index = SortedTraceSourceInfo(tid);
 
-        os << boldStart << tid.GetName() << boldStop << breakHtmlOnly << "\n";
+        os << "  " << boldStart << tid.GetName() << boldStop << breakHtmlOnly << "\n";
 
         os << listStart << "\n";
         for (const auto& [name, info] : index)
@@ -1373,7 +1374,7 @@ PrintAttributeValueSection(std::ostream& os, const std::string& name, const bool
     // @defgroup attribute_<name>Value <name> Attribute
     os << commentStart << sectionStart << "attributes\n"
        << subSectionStart << "attribute_" << name << " " << name << " Attribute\n"
-       << "AttributeValue implementation for " << name << "\n";
+       << "  AttributeValue implementation for " << name << "\n";
     if (seeBase)
     {
         os << seeAlso << "ns3::" << name << "\n";
@@ -1413,16 +1414,18 @@ PrintAttributeValueWithName(std::ostream& os,
 
     os << commentStart << sectAttr << "\n"
        << classStart << qualClass << " \"" << header << "\"\n"
-       << "AttributeValue implementation for " << name << ".\n"
+       << "  AttributeValue implementation for " << name << ".\n"
        << seeAlso << "ns3::AttributeValue\n"
        << hideCaller << "\n"
        << commentStop;
 
     // Ctor: <name>Value::<name>Value
-    os << commentStart << functionStart << qualClass << "::" << valClass;
-    // Constructors
-    os << "(const " << argType << " & value)\n"
-       << "Constructor.\n"
+    os << commentStart << functionStart << qualClass << "::" << valClass << "()\n"
+       << "  Default constructor.\n"
+       << commentStop;
+    os << commentStart << functionStart << qualClass << "::" << valClass << "(const " << argType
+       << " & value)\n"
+       << "  Constructor.\n"
        << argument << "[in] value The " << name << " value to use.\n";
     os << commentStop;
 
@@ -1433,7 +1436,7 @@ PrintAttributeValueWithName(std::ostream& os,
 
     // <name>Value::GetAccessor(T & value) const
     os << commentStart << functionStart << "bool" << qualClass << "::GetAccessor(T & value) const\n"
-       << "Access the " << name << " value as type " << codeWord << "T.\n"
+       << "  Access the " << name << " value as type " << codeWord << "T.\n"
        << templateArgument << "T " << templArgExplicit << "The type to cast to.\n"
        << argument << "[out] value The " << name << " value, as type " << codeWord << "T.\n"
        << returns << "true.\n"
@@ -1444,14 +1447,14 @@ PrintAttributeValueWithName(std::ostream& os,
     {
         os << commentStart << functionStart << "void" << qualClass << "::Set(const " << argType
            << " & value)\n"
-           << "Set the value.\n"
+           << "  Set the value.\n"
            << argument << "[in] value The value to adopt.\n"
            << commentStop;
     }
 
     // <name>Value::m_value
     os << commentStart << variable << type << qualClass << "::m_value\n"
-       << "The stored " << name << " instance.\n"
+       << "  The stored " << name << " instance.\n"
        << commentStop << std::endl;
 
 } // PrintAttributeValueWithName()
@@ -1511,7 +1514,7 @@ PrintMakeChecker(std::ostream& os, const std::string& name, const std::string& h
     os << commentStart << sectAttr << "\n"
        << classStart << " ns3::" << name << "Checker"
        << " \"" << header << "\"\n"
-       << "AttributeChecker implementation for " << name << "Value.\n"
+       << "  AttributeChecker implementation for " << name << "Value.\n"
        << seeAlso << "ns3::AttributeChecker\n"
        << hideCaller << "\n"
        << commentStop;
@@ -1678,7 +1681,7 @@ main(int argc, char* argv[])
     std::cout << "\n"
               << commentStart << file << "\n"
               << sectionStart << "utils\n"
-              << "Doxygen docs generated from the ns3::TypeId database.\n"
+              << "  Doxygen docs generated from the ns3::TypeId database.\n"
               << note << "This file is automatically generated by " << codeWord
               << "print-introspected-doxygen.cc. Do not edit this file! "
               << "Edit that file instead.\n"
