@@ -83,7 +83,7 @@ class Ipv4NetworkAddress
      * because an address is automatically converted into an address with
      * a /32 mask, e.g., "192.168.1.1/32"
      *
-     * Note: The comparion is based on the network length of the object.
+     * Note: The comparison is based on the network length of the object.
      * The operand network length is irrelevant. I.e.,
      * "169.254.10.2/16" will include "169.254.20.42/24".
      *

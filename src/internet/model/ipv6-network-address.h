@@ -71,7 +71,7 @@ class Ipv6NetworkAddress
      * because an address is automatically converted into an address with
      * a /128 mask, e.g., "2001:db8:cafe::1/128"
      *
-     * Note: The comparion is based on the network length of the object.
+     * Note: The comparison is based on the network length of the object.
      * The operand network length is irrelevant. I.e.,
      * "2001:db8:cafe::/16" will include "2001:db8:f00d::/64".
      *
