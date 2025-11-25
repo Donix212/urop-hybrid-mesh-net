@@ -15,6 +15,7 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
+#include <bit>
 #include <iomanip>
 #include <memory>
 
@@ -179,7 +180,7 @@ Ipv6Address::CheckCompatible(const std::string& addressStr)
     return true;
 }
 
-Ipv6Address::Ipv6Address(uint8_t address[16])
+Ipv6Address::Ipv6Address(const uint8_t address[16])
 {
     NS_LOG_FUNCTION(this << &address);
     /* 128 bit => 16 bytes */
@@ -970,28 +971,37 @@ Ipv6Prefix::GetMinimumPrefixLength() const
 {
     NS_LOG_FUNCTION(this);
 
-    uint8_t prefixLength = 0;
-    bool stop = false;
-
-    for (int8_t i = 15; i >= 0 && !stop; i--)
-    {
-        uint8_t mask = m_prefix[i];
-
-        for (uint8_t j = 0; j < 8 && !stop; j++)
+    auto fold = [](const uint8_t* a) -> uint64_t {
+        uint64_t f = 0;
+        for (auto i = 0; i < 8; i++)
         {
-            if ((mask & 1) == 0)
-            {
-                mask = mask >> 1;
-                prefixLength++;
-            }
-            else
-            {
-                stop = true;
-            }
+            f <<= 8;
+            f |= a[i];
         }
-    }
+        return f;
+    };
 
-    return 128 - prefixLength;
+    uint64_t high = fold(m_prefix);
+    uint64_t low = fold(m_prefix + 8);
+
+    int32_t highLeftOne = std::countl_one(high);
+    int32_t lowLeftOne = std::countl_one(low);
+
+    // Checks that the bits are contiguous in the two halves.
+    NS_ASSERT_MSG(
+        (highLeftOne + std::countr_zero(high) + lowLeftOne + std::countr_zero(low) == 128),
+        "Invalid prefix: " << Ipv6Address(m_prefix) << " " << highLeftOne << " "
+                           << std::countr_zero(high) << " " << lowLeftOne << " "
+                           << std::countr_zero(low) << " - " << std::hex << high << " " << low);
+
+    // Checks that the 1s are either all in low or all in high.
+    NS_ASSERT_MSG((lowLeftOne == 0) || (highLeftOne == 64),
+                  "Invalid prefix: " << Ipv6Address(m_prefix) << " " << highLeftOne << " "
+                                     << std::countr_zero(high) << " " << lowLeftOne << " "
+                                     << std::countr_zero(low) << " - " << std::hex << high << " "
+                                     << low);
+
+    return highLeftOne + lowLeftOne;
 }
 
 std::ostream&

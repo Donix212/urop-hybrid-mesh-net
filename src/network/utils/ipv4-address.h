@@ -269,6 +269,10 @@ class Ipv4Address
  * Ipv4Mask ("255.255.255.255"), Ipv4Mask ("/32"), and Ipv4Mask (0xffffffff)
  * are all equivalent.
  *
+ * A mask must have all the 1 bits contiguous, i.e., "255.255.0.255" is not
+ * valid, in accordance with \RFC{4632}. Note that in \RFC{950} a non-contiguous
+ * mask was not forbidden, but discouraged. Nowadays it's forbidden.
+ *
  * @see attribute_Ipv4Mask
  */
 class Ipv4Mask

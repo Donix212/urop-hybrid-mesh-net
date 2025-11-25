@@ -70,7 +70,7 @@ class Ipv6Address
      * @param address the 128-bit address
      * @warning the parameter must point on a 16 bytes integer array!
      */
-    Ipv6Address(uint8_t address[16]);
+    Ipv6Address(const uint8_t address[16]);
 
     /**
      * @brief Copy constructor.
@@ -454,6 +454,9 @@ class Ipv6Address
  * @ingroup address
  * @class Ipv6Prefix
  * @brief Describes an IPv6 prefix. It is just a bitmask like Ipv4Mask.
+ *
+ * Note: this class MUST hold a bitmask, where all the 1 bits are contiguous.
+ *
  * @see Ipv6Address
  * @see attribute_Ipv6Prefix
  */
