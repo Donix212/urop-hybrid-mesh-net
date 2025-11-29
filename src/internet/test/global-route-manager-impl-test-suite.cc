@@ -15,10 +15,10 @@
 #include "ns3/candidate-queue.h"
 #include "ns3/config.h"
 #include "ns3/global-route-manager-impl.h"
+#include "ns3/global-routing.h"
 #include "ns3/internet-module.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
-#include "ns3/ipv4-global-routing.h"
 #include "ns3/network-module.h"
 #include "ns3/node-container.h"
 #include "ns3/rng-seed-manager.h"
@@ -89,8 +89,8 @@ class LinkRoutesTestCase : public TestCase
                      std::vector<Ipv4Address>& dests,
                      std::vector<Ipv4Address>& gws);
 
-    NodeContainer nodes;                   //!< NodeContainer to hold the nodes in the topology
-    std::vector<GlobalRoutingLSA*> m_lsas; //!< The LSAs for the topology
+    NodeContainer nodes; //!< NodeContainer to hold the nodes in the topology
+    std::vector<GlobalRoutingLSA<Ipv4Manager>*> m_lsas; //!< The LSAs for the topology
 };
 
 LinkRoutesTestCase::LinkRoutesTestCase()
@@ -170,18 +170,20 @@ LinkRoutesTestCase::BuildLsa()
     // links
 
     // Router 0
-    auto lr0 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.2",  // link id -> router ID 0.0.0.2
-                                           "10.1.1.1", // link data -> Local IP address of router 0
-                                           1);         // metric
+    auto lr0 = new GlobalRoutingLinkRecord<Ipv4Manager>(
+        GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+        "0.0.0.2",  // link id -> router ID 0.0.0.2
+        "10.1.1.1", // link data -> Local IP address of router 0
+        1);         // metric
 
-    auto lr1 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.1.2", // link id ->adjacent neighbor's IP address
-                                           "255.255.255.252",
-                                           1);
+    auto lr1 = new GlobalRoutingLinkRecord<Ipv4Manager>(
+        GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+        "10.1.1.2", // link id ->adjacent neighbor's IP address
+        "255.255.255.252",
+        1);
 
-    auto lsa0 = new GlobalRoutingLSA();
-    lsa0->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lsa0 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa0->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa0->SetLinkStateId("0.0.0.0");
     lsa0->SetAdvertisingRouter("0.0.0.0");
     lsa0->SetNode(nodes.Get(0));
@@ -190,18 +192,20 @@ LinkRoutesTestCase::BuildLsa()
     m_lsas.push_back(lsa0);
 
     // Router 1
-    auto lr2 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.2",
-                                           "10.1.2.1",
-                                           1);
+    auto lr2 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.2",
+                                                 "10.1.2.1",
+                                                 1);
 
-    auto lr3 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.2.2",
-                                           "255.255.255.252",
-                                           1);
+    auto lr3 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.2.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa1 = new GlobalRoutingLSA();
-    lsa1->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lsa1 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa1->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa1->SetLinkStateId("0.0.0.1");
     lsa1->SetAdvertisingRouter("0.0.0.1");
     lsa1->AddLinkRecord(lr2);
@@ -210,38 +214,44 @@ LinkRoutesTestCase::BuildLsa()
     m_lsas.push_back(lsa1);
 
     // Router 2
-    auto lr4 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.0",
-                                           "10.1.1.2",
-                                           1);
+    auto lr4 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.0",
+                                                 "10.1.1.2",
+                                                 1);
 
-    auto lr5 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.1.1",
-                                           "255.255.255.252",
-                                           1);
+    auto lr5 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.1.1",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lr6 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.1",
-                                           "10.1.2.2",
-                                           1);
+    auto lr6 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.1",
+                                                 "10.1.2.2",
+                                                 1);
 
-    auto lr7 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.2.2",
-                                           "255.255.255.252",
-                                           1);
+    auto lr7 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.2.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lr8 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.3",
-                                           "10.1.3.1",
-                                           1);
+    auto lr8 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.3",
+                                                 "10.1.3.1",
+                                                 1);
 
-    auto lr9 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.3.2",
-                                           "255.255.255.252",
-                                           1);
+    auto lr9 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.3.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa2 = new GlobalRoutingLSA();
-    lsa2->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lsa2 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa2->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa2->SetLinkStateId("0.0.0.2");
     lsa2->SetAdvertisingRouter("0.0.0.2");
     lsa2->AddLinkRecord(lr4);
@@ -254,18 +264,20 @@ LinkRoutesTestCase::BuildLsa()
     m_lsas.push_back(lsa2);
 
     // Router 3
-    auto lr10 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                            "0.0.0.2",
-                                            "10.1.3.2",
-                                            1);
+    auto lr10 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.2",
+                                                 "10.1.3.2",
+                                                 1);
 
-    auto lr11 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                            "10.1.3.1",
-                                            "255.255.255.252",
-                                            1);
+    auto lr11 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.3.1",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa3 = new GlobalRoutingLSA();
-    lsa3->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lsa3 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa3->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa3->SetLinkStateId("0.0.0.3");
     lsa3->SetAdvertisingRouter("0.0.0.3");
     lsa3->AddLinkRecord(lr10);
@@ -288,7 +300,7 @@ LinkRoutesTestCase::DoRun()
     BuildLsa();
 
     // Test the database
-    auto srmlsdb = new GlobalRouteManagerLSDB();
+    auto srmlsdb = new GlobalRouteManagerLSDB<Ipv4Manager>();
     srmlsdb->Insert(m_lsas[0]->GetLinkStateId(), m_lsas[0]);
     srmlsdb->Insert(m_lsas[1]->GetLinkStateId(), m_lsas[1]);
     srmlsdb->Insert(m_lsas[2]->GetLinkStateId(), m_lsas[2]);
@@ -303,7 +315,7 @@ LinkRoutesTestCase::DoRun()
                                                                // the right key
 
     // next, calculate routes based on the manually created LSDB
-    auto srm = new GlobalRouteManagerImpl();
+    auto srm = new GlobalRouteManagerImpl<Ipv4Manager>();
     srm->DebugUseLsdb(srmlsdb); // manually add in an LSDB
 
     srm->DebugSPFCalculate(m_lsas[0]->GetLinkStateId()); // fill routing table for node n0
@@ -379,7 +391,7 @@ LinkRoutesTestCase::DoRun()
     delete srm;
     // reset the router ID counter to zero so that it does not affect other tests
     //  that may run after this one in the same program run.
-    GlobalRouteManager::ResetRouterId();
+    GlobalRouteManager<Ipv4Manager>::ResetRouterId();
 }
 
 /**
@@ -403,8 +415,8 @@ class LanRoutesTestCase : public TestCase
      */
     void BuildLsa();
 
-    NodeContainer nodes;                   //!< NodeContainer to hold the nodes in the topology
-    std::vector<GlobalRoutingLSA*> m_lsas; //!< The LSAs for the topology
+    NodeContainer nodes; //!< NodeContainer to hold the nodes in the topology
+    std::vector<GlobalRoutingLSA<Ipv4Manager>*> m_lsas; //!< The LSAs for the topology
 };
 
 LanRoutesTestCase::LanRoutesTestCase()
@@ -451,12 +463,13 @@ LanRoutesTestCase::BuildLsa()
     // easier to debug each individually
 
     // router 0
-    auto lr0 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::TransitNetwork,
-                                           "10.1.1.1",
-                                           "10.1.1.1",
-                                           1);
-    auto lsa0 = new GlobalRoutingLSA();
-    lsa0->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lr0 = new GlobalRoutingLinkRecord<Ipv4Manager>(
+        GlobalRoutingLinkRecord<Ipv4Manager>::TransitNetwork,
+        "10.1.1.1",
+        "10.1.1.1",
+        1);
+    auto lsa0 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa0->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa0->AddLinkRecord(lr0);
     lsa0->SetLinkStateId("0.0.0.0");
     lsa0->SetAdvertisingRouter("0.0.0.0");
@@ -464,12 +477,13 @@ LanRoutesTestCase::BuildLsa()
     m_lsas.push_back(lsa0);
 
     // router 1
-    auto lr1 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::TransitNetwork,
-                                           "10.1.1.1",
-                                           "10.1.1.2",
-                                           1);
-    auto lsa1 = new GlobalRoutingLSA();
-    lsa1->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lr1 = new GlobalRoutingLinkRecord<Ipv4Manager>(
+        GlobalRoutingLinkRecord<Ipv4Manager>::TransitNetwork,
+        "10.1.1.1",
+        "10.1.1.2",
+        1);
+    auto lsa1 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa1->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa1->AddLinkRecord(lr1);
     lsa1->SetLinkStateId("0.0.0.1");
     lsa1->SetAdvertisingRouter("0.0.0.1");
@@ -477,12 +491,13 @@ LanRoutesTestCase::BuildLsa()
     m_lsas.push_back(lsa1);
 
     // router 2
-    auto lr2 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::TransitNetwork,
-                                           "10.1.1.1",
-                                           "10.1.1.3",
-                                           1);
-    auto lsa2 = new GlobalRoutingLSA();
-    lsa2->SetLSType(GlobalRoutingLSA::RouterLSA);
+    auto lr2 = new GlobalRoutingLinkRecord<Ipv4Manager>(
+        GlobalRoutingLinkRecord<Ipv4Manager>::TransitNetwork,
+        "10.1.1.1",
+        "10.1.1.3",
+        1);
+    auto lsa2 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa2->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
     lsa2->AddLinkRecord(lr2);
     lsa2->SetLinkStateId("0.0.0.2");
     lsa2->SetAdvertisingRouter("0.0.0.2");
@@ -490,8 +505,8 @@ LanRoutesTestCase::BuildLsa()
     m_lsas.push_back(lsa2);
 
     // router0 is the designated router for the LAN. it also exports the network LSA
-    auto lsa0network = new GlobalRoutingLSA();
-    lsa0network->SetLSType(GlobalRoutingLSA::NetworkLSA);
+    auto lsa0network = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa0network->SetLSType(GlobalRoutingLSA<Ipv4Manager>::NetworkLSA);
     lsa0network->SetLinkStateId("10.1.1.1");
     lsa0network->SetAdvertisingRouter("0.0.0.0");
     lsa0network->AddAttachedRouter("10.1.1.1");
@@ -506,7 +521,7 @@ LanRoutesTestCase::DoRun()
 {
     BuildLsa();
     // insert the LSAs into the GlobalRouteManagerLSDB
-    auto srmlsdb = new GlobalRouteManagerLSDB();
+    auto srmlsdb = new GlobalRouteManagerLSDB<Ipv4Manager>();
 
     srmlsdb->Insert(m_lsas[0]->GetLinkStateId(), m_lsas[0]);
     srmlsdb->Insert(m_lsas[1]->GetLinkStateId(), m_lsas[1]);
@@ -514,7 +529,7 @@ LanRoutesTestCase::DoRun()
     srmlsdb->Insert(m_lsas[3]->GetLinkStateId(), m_lsas[3]);
 
     // create the GlobalRouteManagerImpl
-    auto srm = new GlobalRouteManagerImpl();
+    auto srm = new GlobalRouteManagerImpl<Ipv4Manager>();
     srm->DebugUseLsdb(srmlsdb);
 
     srm->DebugSPFCalculate(m_lsas[0]->GetLinkStateId()); // fill the routing table for node 0
@@ -546,7 +561,7 @@ LanRoutesTestCase::DoRun()
     // This delete clears the srm, which deletes the LSDB, which clears
     // all of the LSAs, which each destroys the attached LinkRecords.
     delete srm;
-    GlobalRouteManager::ResetRouterId();
+    GlobalRouteManager<Ipv4Manager>::ResetRouterId();
 }
 
 /**
@@ -589,7 +604,7 @@ class RandomEcmpTestCase : public TestCase
     uint32_t route1 = 0; //!< Counter to keep track of the number of times route1 is used
     uint32_t route2 = 0; //!< Counter to keep track of the number of times route2 is used
     NodeContainer nodes; //!< NodeContainer to hold the nodes in the topology
-    std::vector<GlobalRoutingLSA*> m_lsas; //!< The LSAs for the topology
+    std::vector<GlobalRoutingLSA<Ipv4Manager>*> m_lsas; //!< The LSAs for the topology
 };
 
 RandomEcmpTestCase::RandomEcmpTestCase()
@@ -691,27 +706,31 @@ RandomEcmpTestCase::BuildLsa()
     // easier to debug each individually
 
     // router 0
-    auto lr0 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.1",
-                                           "10.1.1.1",
-                                           1);
-    auto lr1 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.1.2",
-                                           "255.255.255.252",
-                                           1);
+    auto lr0 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.1",
+                                                 "10.1.1.1",
+                                                 1);
+    auto lr1 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.1.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lr2 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.2",
-                                           "10.1.2.1",
-                                           1);
-    auto lr3 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.2.2",
-                                           "255.255.255.252",
-                                           1);
+    auto lr2 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.2",
+                                                 "10.1.2.1",
+                                                 1);
+    auto lr3 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.2.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa0 = new GlobalRoutingLSA();
-    lsa0->SetLSType(GlobalRoutingLSA::RouterLSA);
-    lsa0->SetStatus(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED);
+    auto lsa0 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa0->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
+    lsa0->SetStatus(GlobalRoutingLSA<Ipv4Manager>::LSA_SPF_NOT_EXPLORED);
     lsa0->SetLinkStateId("0.0.0.0");
     lsa0->SetAdvertisingRouter("0.0.0.0");
     lsa0->SetNode(nodes.Get(0));
@@ -722,27 +741,31 @@ RandomEcmpTestCase::BuildLsa()
     m_lsas.push_back(lsa0);
 
     // router 1
-    auto lr4 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.0",
-                                           "10.1.1.2",
-                                           1);
-    auto lr5 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.1.1",
-                                           "255.255.255.252",
-                                           1);
+    auto lr4 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.0",
+                                                 "10.1.1.2",
+                                                 1);
+    auto lr5 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.1.1",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lr6 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.3",
-                                           "10.1.3.1",
-                                           1);
-    auto lr7 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.3.2",
-                                           "255.255.255.252",
-                                           1);
+    auto lr6 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.3",
+                                                 "10.1.3.1",
+                                                 1);
+    auto lr7 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.3.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa1 = new GlobalRoutingLSA();
-    lsa1->SetLSType(GlobalRoutingLSA::RouterLSA);
-    lsa1->SetStatus(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED);
+    auto lsa1 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa1->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
+    lsa1->SetStatus(GlobalRoutingLSA<Ipv4Manager>::LSA_SPF_NOT_EXPLORED);
     lsa1->SetLinkStateId("0.0.0.1");
     lsa1->SetAdvertisingRouter("0.0.0.1");
     lsa1->SetNode(nodes.Get(1));
@@ -753,26 +776,30 @@ RandomEcmpTestCase::BuildLsa()
     m_lsas.push_back(lsa1);
 
     // router 2
-    auto lr8 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                           "0.0.0.0",
-                                           "10.1.2.2",
-                                           1);
-    auto lr9 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                           "10.1.2.1",
-                                           "255.255.255.252",
-                                           1);
-    auto lr10 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                            "0.0.0.3",
-                                            "10.1.4.1",
-                                            1);
-    auto lr11 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                            "10.1.4.2",
-                                            "255.255.255.252",
-                                            1);
+    auto lr8 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.0",
+                                                 "10.1.2.2",
+                                                 1);
+    auto lr9 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.2.1",
+                                                 "255.255.255.252",
+                                                 1);
+    auto lr10 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.3",
+                                                 "10.1.4.1",
+                                                 1);
+    auto lr11 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.4.2",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa2 = new GlobalRoutingLSA();
-    lsa2->SetLSType(GlobalRoutingLSA::RouterLSA);
-    lsa2->SetStatus(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED);
+    auto lsa2 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa2->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
+    lsa2->SetStatus(GlobalRoutingLSA<Ipv4Manager>::LSA_SPF_NOT_EXPLORED);
     lsa2->SetLinkStateId("0.0.0.2");
     lsa2->SetAdvertisingRouter("0.0.0.2");
     lsa2->SetNode(nodes.Get(2));
@@ -783,26 +810,30 @@ RandomEcmpTestCase::BuildLsa()
     m_lsas.push_back(lsa2);
 
     // router 3
-    auto lr12 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                            "0.0.0.1",
-                                            "10.1.3.2",
-                                            1);
-    auto lr13 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                            "10.1.3.1",
-                                            "255.255.255.252",
-                                            1);
-    auto lr14 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::PointToPoint,
-                                            "0.0.0.2",
-                                            "10.1.4.2",
-                                            1);
-    auto lr15 = new GlobalRoutingLinkRecord(GlobalRoutingLinkRecord::StubNetwork,
-                                            "10.1.4.1",
-                                            "255.255.255.252",
-                                            1);
+    auto lr12 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.1",
+                                                 "10.1.3.2",
+                                                 1);
+    auto lr13 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.3.1",
+                                                 "255.255.255.252",
+                                                 1);
+    auto lr14 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::PointToPoint,
+                                                 "0.0.0.2",
+                                                 "10.1.4.2",
+                                                 1);
+    auto lr15 =
+        new GlobalRoutingLinkRecord<Ipv4Manager>(GlobalRoutingLinkRecord<Ipv4Manager>::StubNetwork,
+                                                 "10.1.4.1",
+                                                 "255.255.255.252",
+                                                 1);
 
-    auto lsa3 = new GlobalRoutingLSA();
-    lsa3->SetLSType(GlobalRoutingLSA::RouterLSA);
-    lsa3->SetStatus(GlobalRoutingLSA::LSA_SPF_NOT_EXPLORED);
+    auto lsa3 = new GlobalRoutingLSA<Ipv4Manager>();
+    lsa3->SetLSType(GlobalRoutingLSA<Ipv4Manager>::RouterLSA);
+    lsa3->SetStatus(GlobalRoutingLSA<Ipv4Manager>::LSA_SPF_NOT_EXPLORED);
     lsa3->SetLinkStateId("0.0.0.3");
     lsa3->SetAdvertisingRouter("0.0.0.3");
     lsa3->SetNode(nodes.Get(3));
@@ -826,14 +857,14 @@ RandomEcmpTestCase::DoRun()
     BuildLsa();
 
     // insert the LSAs into the GlobalRouteManagerLSDB
-    auto srmlsdb = new GlobalRouteManagerLSDB();
+    auto srmlsdb = new GlobalRouteManagerLSDB<Ipv4Manager>();
     srmlsdb->Insert(m_lsas[0]->GetLinkStateId(), m_lsas[0]);
     srmlsdb->Insert(m_lsas[1]->GetLinkStateId(), m_lsas[1]);
     srmlsdb->Insert(m_lsas[2]->GetLinkStateId(), m_lsas[2]);
     srmlsdb->Insert(m_lsas[3]->GetLinkStateId(), m_lsas[3]);
 
     // create the GlobalRouteManagerImpl
-    auto srm = new GlobalRouteManagerImpl();
+    auto srm = new GlobalRouteManagerImpl<Ipv4Manager>();
     srm->DebugUseLsdb(srmlsdb);
 
     // we manually call the DebugSPFCalculate to fill the routing tables for node 0

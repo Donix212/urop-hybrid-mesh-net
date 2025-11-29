@@ -19,8 +19,8 @@
 #include "ns3/callback.h"
 #include "ns3/config.h"
 #include "ns3/global-router-interface.h"
+#include "ns3/global-routing.h"
 #include "ns3/icmpv6-l4-protocol.h"
-#include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4.h"
 #include "ns3/ipv6-extension-demux.h"
 #include "ns3/ipv6-extension-header.h"
@@ -215,7 +215,7 @@ InternetStackHelper::AssignStreams(NodeContainer c, int64_t stream)
     for (auto i = c.Begin(); i != c.End(); ++i)
     {
         Ptr<Node> node = *i;
-        Ptr<GlobalRouter> router = node->GetObject<GlobalRouter>();
+        Ptr<Ipv4GlobalRouter> router = node->GetObject<Ipv4GlobalRouter>();
         if (router)
         {
             Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();

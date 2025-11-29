@@ -6,11 +6,11 @@
 #include "ns3/bridge-helper.h"
 #include "ns3/config.h"
 #include "ns3/global-route-manager.h"
+#include "ns3/global-routing.h"
 #include "ns3/inet-socket-address.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
-#include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "ns3/ipv4-packet-info-tag.h"
@@ -1679,7 +1679,7 @@ GlobalRoutingProtocolTestCase::DoRun()
 {
     // Create router nodes, initialize routing database and set up the routing
     // tables in the nodes.
-    GlobalRouteManager::ResetRouterId();
+    GlobalRouteManager<Ipv4Manager>::ResetRouterId();
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 

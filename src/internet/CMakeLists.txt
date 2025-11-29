@@ -31,7 +31,7 @@ set(source_files
     model/ipv4-address-generator.cc
     model/ipv4-end-point-demux.cc
     model/ipv4-end-point.cc
-    model/ipv4-global-routing.cc
+    model/global-routing.cc
     model/ipv4-header.cc
     model/ipv4-interface-address.cc
     model/ipv4-interface.cc
@@ -161,7 +161,7 @@ set(header_files
     model/ipv4-address-generator.h
     model/ipv4-end-point-demux.h
     model/ipv4-end-point.h
-    model/ipv4-global-routing.h
+    model/global-routing.h
     model/ipv4-header.h
     model/ipv4-interface-address.h
     model/ipv4-interface.h
