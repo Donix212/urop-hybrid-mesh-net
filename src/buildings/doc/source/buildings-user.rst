@@ -145,24 +145,24 @@ Building-specific positioning methods
 The following position allocator classes are available to place node
 in special positions with respect to buildings:
 
- - ``RandomBuildingPositionAllocator``: Allocate each position by
-   randomly choosing a building from the list of all buildings, and
-   then randomly choosing a position inside the building.
+- ``RandomBuildingPositionAllocator``: Allocate each position by
+  randomly choosing a building from the list of all buildings, and
+  then randomly choosing a position inside the building.
 
- - ``RandomRoomPositionAllocator``: Allocate each position by randomly
-   choosing a room from the list of rooms in all buildings, and then
-   randomly choosing a position inside the room.
+- ``RandomRoomPositionAllocator``: Allocate each position by randomly
+  choosing a room from the list of rooms in all buildings, and then
+  randomly choosing a position inside the room.
 
- - ``SameRoomPositionAllocator``: Walks a given NodeContainer
-   sequentially, and for each node allocate a new position randomly in
-   the same room of that node.
+- ``SameRoomPositionAllocator``: Walks a given NodeContainer
+  sequentially, and for each node allocate a new position randomly in
+  the same room of that node.
 
- - ``FixedRoomPositionAllocator``: Generate a random position
-   uniformly distributed in the volume of a chosen room inside a
-   chosen building.
+- ``FixedRoomPositionAllocator``: Generate a random position
+  uniformly distributed in the volume of a chosen room inside a
+  chosen building.
 
- - ``OutdoorPositionAllocator``: Allocate positions outside of existing
-   buildings using rejection sampling.
+- ``OutdoorPositionAllocator``: Allocate positions outside of existing
+  buildings using rejection sampling.
 
 
 
