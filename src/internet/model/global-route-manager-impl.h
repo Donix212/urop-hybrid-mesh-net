@@ -88,9 +88,6 @@ class SPFVertex
     /// Alias for Ipv4Route and Ipv6Route classes
     using IpRoute = typename std::conditional_t<IsIpv4, Ipv4Route, Ipv6Route>;
 
-    /// Alias for Ipv4AddressHash and Ipv6AddressHash classes
-    using IpAddressHash = typename std::conditional_t<IsIpv4, Ipv4AddressHash, Ipv6AddressHash>;
-
     /// Alias for Ipv4Header and Ipv6Header classes
     using IpHeader = typename std::conditional_t<IsIpv4, Ipv4Header, Ipv6Header>;
 
@@ -651,9 +648,6 @@ class GlobalRouteManagerLSDB
     /// Alias for Ipv4Route and Ipv6Route classes
     using IpRoute = typename std::conditional_t<IsIpv4, Ipv4Route, Ipv6Route>;
 
-    /// Alias for Ipv4AddressHash and Ipv6AddressHash classes
-    using IpAddressHash = typename std::conditional_t<IsIpv4, Ipv4AddressHash, Ipv6AddressHash>;
-
     /// Alias for Ipv4Header and Ipv6Header classes
     using IpHeader = typename std::conditional_t<IsIpv4, Ipv4Header, Ipv6Header>;
 
@@ -809,9 +803,6 @@ class GlobalRouteManagerImpl
 
     /// Alias for Ipv4Route and Ipv6Route classes
     using IpRoute = typename std::conditional_t<IsIpv4, Ipv4Route, Ipv6Route>;
-
-    /// Alias for Ipv4AddressHash and Ipv6AddressHash classes
-    using IpAddressHash = typename std::conditional_t<IsIpv4, Ipv4AddressHash, Ipv6AddressHash>;
 
     /// Alias for Ipv4Header and Ipv6Header classes
     using IpHeader = typename std::conditional_t<IsIpv4, Ipv4Header, Ipv6Header>;
