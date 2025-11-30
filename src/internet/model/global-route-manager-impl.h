@@ -956,7 +956,7 @@ class GlobalRouteManagerImpl
     Ptr<Node> GetNodeByIp(const Ipv4Address& source);
 
     /**
-     * @brief Is used by PrintRoute() to get  the global routing protocol associated with it or
+     * @brief Is used by PrintRoute() to get the global routing protocol associated with it or
      * returns nullptr if not found.
      * @param node the node pointer
      * @returns the global routing protocol associated with the node
