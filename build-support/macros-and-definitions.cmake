@@ -256,7 +256,7 @@ macro(process_options)
     endif()
   endif()
 
-  if(${NS3_CLANG_TIDY})
+  if(${NS3_CLANG_TIDY} OR ${NS3_CLANG_TIDY_FIX})
     find_program(
       CLANG_TIDY
       NAMES clang-tidy-20
@@ -270,9 +270,25 @@ macro(process_options)
     if("${CLANG_TIDY}" STREQUAL "CLANG_TIDY-NOTFOUND")
       message(FATAL_ERROR "Clang-tidy was not found")
     else()
-      set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY}
-                               -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
-      ) # --fix)
+      if(${NS3_CLANG_TIDY})
+        set(CMAKE_CXX_CLANG_TIDY
+            ${CLANG_TIDY} --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+            --format-style=file -p ${CMAKE_BINARY_DIR}
+        )
+      else()
+        set(CMAKE_CXX_CLANG_TIDY
+            ${CLANG_TIDY}
+            --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+            --fix
+            --fix-errors
+            --fix-notes
+            --format-style=file
+            --warnings-as-errors=*
+            --quiet
+            -p
+            ${CMAKE_BINARY_DIR}
+        )
+      endif()
     endif()
   else()
     unset(CMAKE_CXX_CLANG_TIDY)
@@ -558,7 +574,7 @@ macro(process_options)
       set(ENABLE_SQLITE True)
       add_definitions(-DHAVE_SQLITE3)
       if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-        include_directories(${SQLite3_INCLUDE_DIRS})
+        include_directories(SYSTEM ${SQLite3_INCLUDE_DIRS})
       endif()
     endif()
   endif()
@@ -574,7 +590,7 @@ macro(process_options)
       add_definitions(-DHAVE_EIGEN3)
       add_definitions(-DEIGEN_MPL2_ONLY)
       if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-        include_directories(${EIGEN3_INCLUDE_DIR})
+        include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
       endif()
     else()
       set(ENABLE_EIGEN_REASON "Eigen was not found")
@@ -604,7 +620,9 @@ macro(process_options)
           )
         else()
           if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-            include_directories(${GTK3_INCLUDE_DIRS} ${HarfBuzz_INCLUDE_DIRS})
+            include_directories(
+              SYSTEM ${GTK3_INCLUDE_DIRS} ${HarfBuzz_INCLUDE_DIRS}
+            )
           endif()
         endif()
       endif()
@@ -633,7 +651,7 @@ macro(process_options)
     else()
       add_definitions(-DHAVE_LIBXML2)
       if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-        include_directories(${LIBXML2_INCLUDE_DIR})
+        include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
       endif()
     endif()
   endif()
@@ -678,7 +696,7 @@ macro(process_options)
         endif()
       endif()
       if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-        include_directories(${Python3_INCLUDE_DIRS})
+        include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
       endif()
     else()
       message(${HIGHLIGHTED_STATUS}
@@ -865,7 +883,7 @@ macro(process_options)
   find_package(Boost QUIET)
   if(${Boost_FOUND})
     if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-      include_directories(${Boost_INCLUDE_DIRS})
+      include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
     endif()
     set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
   else()
@@ -881,7 +899,7 @@ macro(process_options)
       message(STATUS "GSL was found.")
       add_definitions(-DHAVE_GSL)
       if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
-        include_directories(${GSL_INCLUDE_DIRS})
+        include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
       endif()
     endif()
   endif()
