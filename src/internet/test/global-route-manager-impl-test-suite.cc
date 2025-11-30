@@ -346,7 +346,7 @@ LinkRoutesTestCase::BuildLsav6()
 
     // only need to do this once for prefix of 64 bits
     uint8_t buf[16];
-    Ipv6Prefix prefix = Ipv6Prefix(64);
+    auto prefix = Ipv6Prefix(64);
     prefix.GetBytes(buf); // frown
 
     auto lr1 = new GlobalRoutingLinkRecord<Ipv6Manager>(
@@ -849,7 +849,7 @@ LanRoutesTestCase::BuildLsav6()
     lsa2->SetLSType(GlobalRoutingLSA<Ipv6Manager>::RouterLSA);
     lsa2->AddLinkRecord(lr2);
     lsa2->SetLinkStateId("::ffff:0.0.0.2");
-    lsa2->SetAdvertisingRouter(":ffff:0.0.0.2");
+    lsa2->SetAdvertisingRouter("::ffff:0.0.0.2");
     lsa2->SetNode(nodes.Get(2));
     m_lsasv6.push_back(lsa2);
 
@@ -1319,7 +1319,7 @@ RandomEcmpTestCase::BuildLsav6()
                                                  1);
     // only need to do this once for prefix of 64 bits
     uint8_t buf[16];
-    Ipv6Prefix prefix = Ipv6Prefix(64);
+    auto prefix = Ipv6Prefix(64);
     prefix.GetBytes(buf); // frown
 
     auto lr1 =

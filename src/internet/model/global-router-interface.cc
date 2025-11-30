@@ -966,7 +966,23 @@ GlobalRouter<T>::ProcessSingleBroadcastLink(Ptr<NetDevice> nd,
         // Let's double-check that any designated router we find out on our
         // network is really on our network.
         //
-        if (designatedRtr != "255.255.255.255")
+        bool isRtrAllOnes = false;
+        if constexpr (IsIpv4)
+        {
+            if (designatedRtr.IsBroadcast())
+            {
+                isRtrAllOnes = true;
+            }
+        }
+        else
+        {
+            if (designatedRtr == Ipv6Address::GetOnes())
+            {
+                isRtrAllOnes = true;
+            }
+        }
+
+        if (!isRtrAllOnes)
         {
             IpAddress networkHere;
             IpAddress networkThere;
@@ -1594,11 +1610,11 @@ GlobalRouter<T>::FindDesignatedRouterForLink(Ptr<NetDevice> ndLocal) const
     IpAddress designatedRtr;
     if constexpr (IsIpv4)
     {
-        designatedRtr = Ipv4Address("255.255.255.255");
+        designatedRtr = Ipv4Address::GetBroadcast();
     }
     else
     {
-        designatedRtr = Ipv6Address("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+        designatedRtr = Ipv6Address::GetOnes();
     }
 
     //
