@@ -11,9 +11,7 @@
 
 #include "local-clock.h"
 
-#include "ns3/nstime.h"
-#include "ns3/object.h"
-#include "ns3/type-id.h"
+#include "ns3/core-module.h"
 
 namespace ns3
 {
@@ -43,9 +41,19 @@ class UnboundedSkewClock : public LocalClock
      * @param u_maxSkew The maximum skew value (e.g., 1.01).
      * @param u_numSkews The number of random skew values to generate.
      */
-    UnboundedSkewClock(_Float32 u_minSkew, _Float32 u_maxSkew, uint32_t u_numSkews);
+    UnboundedSkewClock(double u_minSkew, double u_maxSkew, uint32_t u_numSkews);
 
     ~UnboundedSkewClock() override;
+
+    /**
+     * Set the stream numbers to the integers starting with the offset
+     * 'stream'. Return the number of streams (possibly zero) that
+     * have been assigned. 
+     *
+     * @param stream the stream index offset start
+     * @return the number of stream indices assigned by this model
+     */
+    int64_t AssignStreams(int64_t stream);
 
     /**
      * @brief Get the current time from the local clock.
@@ -69,11 +77,23 @@ class UnboundedSkewClock : public LocalClock
      */
     void SetSkewValues(const std::vector<double>& values);
 
+  protected:
+
+    /**
+     * Assign a fixed random variable stream number to the random variables used by this model.
+     *
+     * @param stream first stream index to use
+     * @return the number of stream indices assigned by this model
+     */
+    int64_t DoAssignStreams(int64_t stream);
+
   private:
     Time m_ptime;                        ///< Current time
     Time m_lastreadptime;                ///< Last read time
-    std::vector<_Float32> m_skew_values; ///< Vector to store skew values
+    std::vector<double> m_skew_values;   ///< Vector to store skew values
     uint32_t m_index;                    ///< Index to track current position in skew values vector
+    Ptr<UniformRandomVariable> m_skewVariable;   //!< Gamma random variable
+
 };
 
 } // namespace ns3
