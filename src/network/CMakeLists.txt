@@ -44,6 +44,7 @@ set(source_files
     utils/ipv4-address.cc
     utils/ipv6-address.cc
     utils/llc-snap-header.cc
+    utils/local-clock.cc
     utils/mac16-address.cc
     utils/mac48-address.cc
     utils/mac64-address.cc
@@ -70,6 +71,7 @@ set(source_files
     utils/simple-net-device.cc
     utils/sll-header.cc
     utils/timestamp-tag.cc
+    utils/unbounded-skew-clock.cc
 )
 
 set(header_files
@@ -121,6 +123,7 @@ set(header_files
     utils/ipv6-address.h
     utils/llc-snap-header.h
     utils/lollipop-counter.h
+    utils/local-clock.h
     utils/mac16-address.h
     utils/mac48-address.h
     utils/mac64-address.h
@@ -150,6 +153,7 @@ set(header_files
     utils/simple-net-device.h
     utils/sll-header.h
     utils/timestamp-tag.h
+    utils/unbounded-skew-clock.h
 )
 
 build_lib(
@@ -161,6 +165,7 @@ build_lib(
     test/address-test.cc
     test/bit-serializer-test.cc
     test/buffer-test.cc
+    test/clock-model-test-suite.cc
     test/drop-tail-queue-test-suite.cc
     test/error-model-test-suite.cc
     test/ipv6-address-test-suite.cc
