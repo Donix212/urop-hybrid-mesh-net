@@ -9,6 +9,7 @@ build_lib(
     helper/udp-echo-helper.cc
     model/application-packet-probe.cc
     model/bulk-send-application.cc
+    model/mobile-gaming.cc
     model/onoff-application.cc
     model/packet-loss-counter.cc
     model/packet-sink.cc
@@ -26,6 +27,9 @@ build_lib(
     model/udp-echo-server.cc
     model/udp-server.cc
     model/udp-trace-client.cc
+    model/video-traffic.cc
+    model/virtual-desktop.cc
+    model/voip-traffic.cc
   HEADER_FILES
     helper/bulk-send-helper.h
     helper/on-off-helper.h
@@ -35,6 +39,7 @@ build_lib(
     helper/udp-echo-helper.h
     model/application-packet-probe.h
     model/bulk-send-application.h
+    model/mobile-gaming.h
     model/onoff-application.h
     model/packet-loss-counter.h
     model/packet-sink.h
@@ -52,9 +57,16 @@ build_lib(
     model/udp-echo-server.h
     model/udp-server.h
     model/udp-trace-client.h
+    model/video-traffic.h
+    model/virtual-desktop.h
+    model/voip-traffic.h
   LIBRARIES_TO_LINK ${libinternet}
   TEST_SOURCES
     test/three-gpp-http-client-server-test.cc
     test/bulk-send-application-test-suite.cc
     test/udp-client-server-test.cc
+    test/video-traffic-test-suite.cc
+    test/voip-traffic-test-suite.cc
+    test/mobile-gaming-test-suite.cc
+    test/virtual-desktop-test-suite.cc
 )
