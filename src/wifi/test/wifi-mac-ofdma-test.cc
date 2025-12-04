@@ -340,7 +340,8 @@ TestMultiUserScheduler::ComputeWifiTxVector()
     }
     case 320: {
         ruType = RuType::RU_996_TONE;
-        NS_ASSERT(IsEht(m_txVector.GetPreambleType()));
+        NS_ASSERT_MSG(IsEht(m_txVector.GetPreambleType()),
+                      "320 MHz bandwidth is only supported with EHT preamble");
         m_txVector.SetRuAllocation({80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80},
                                    0);
         break;

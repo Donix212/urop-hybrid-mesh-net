@@ -243,9 +243,9 @@ WifiStaticInfraBssTest::DoSetup()
                              {WIFI_PHY_BAND_6GHZ, CreateObject<MultiModelSpectrumChannel>()}};
 
     m_apDev = GetWifiNetDevice(true, channelMap); // AP
-    NS_ASSERT(m_apDev);
+    NS_ASSERT_MSG(m_apDev, "Failed to create AP Wi-Fi device");
     m_clientDev = GetWifiNetDevice(false, channelMap); // Client
-    NS_ASSERT(m_clientDev);
+    NS_ASSERT_MSG(m_clientDev, "Failed to create Client Wi-Fi device");
 
     WifiStaticSetupHelper::SetStaticAssociation(m_apDev, m_clientDev);
     if (auto multicastIp = m_testVec.apMulticastIp)
@@ -382,9 +382,9 @@ void
 WifiStaticInfraBssTest::ValidateAssoc()
 {
     auto apMac = DynamicCast<ApWifiMac>(m_apDev->GetMac());
-    NS_ASSERT(apMac);
+    NS_ASSERT_MSG(apMac, "Failed to cast AP mac to ApWifiMac");
     auto clientMac = DynamicCast<StaWifiMac>(m_clientDev->GetMac());
-    NS_ASSERT(clientMac);
+    NS_ASSERT_MSG(clientMac, "Failed to cast client mac to StaWifiMac");
 
     NS_TEST_ASSERT_MSG_EQ(clientMac->IsAssociated(), true, "Expected the STA to be associated");
     const auto nClientLinks = m_testVec.clientChs.size();

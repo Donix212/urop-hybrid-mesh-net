@@ -2118,7 +2118,10 @@ MuSigDurationTest::BuildTxVector() const
         staIds.push_back(staId++);
     }
     txVector.SetSigBMode(m_sigBMode);
-    NS_ASSERT(m_expectedMuType == OFDMA ? txVector.IsDlOfdma() : txVector.IsDlMuMimo());
+    NS_ASSERT_MSG((txVector.IsDlOfdma() ? OFDMA : MU_MIMO) == m_expectedMuType,
+                  "TX vector MU type has unexpected value."
+                      << "Expected: " << (m_expectedMuType == OFDMA ? "OFDMA" : "MU_MIMO")
+                      << ", Received: " << (txVector.IsDlOfdma() ? "OFDMA" : "MU_MIMO"));
     return txVector;
 }
 

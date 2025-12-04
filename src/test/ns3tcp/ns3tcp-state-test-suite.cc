@@ -289,7 +289,9 @@ Ns3TcpStateTestCase::WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSp
             std::clog << "Submitting " << toWrite << " bytes to TCP socket" << std::endl;
         }
         int amountSent = localSocket->Send(nullptr, toWrite, 0);
-        NS_ASSERT(amountSent > 0); // Given GetTxAvailable() non-zero, amountSent should not be zero
+        NS_TEST_ASSERT_MSG_GT(amountSent,
+                              0,
+                              "TCP socket must send data when transmit buffer space is available");
         m_currentTxBytes += amountSent;
     }
     if (m_needToClose)

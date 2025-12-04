@@ -199,7 +199,10 @@ LteHandoverTargetTestCase::CellShutdownCallback()
     if (m_sourceEnbDev)
     {
         // set the Tx power to 1 dBm
-        NS_ASSERT(m_sourceEnbDev->GetCellId() == m_sourceCellId);
+        NS_TEST_ASSERT_MSG_EQ(m_sourceEnbDev->GetCellId(),
+                              m_sourceCellId,
+                              "Source Evolved Node B (eNodeB) cell identifier should match the "
+                              "expected source cell identifier.");
         NS_LOG_INFO("Shutting down cell " << m_sourceCellId);
         Ptr<LteEnbPhy> phy = m_sourceEnbDev->GetPhy();
         phy->SetTxPower(1);
@@ -343,8 +346,13 @@ LteHandoverTargetTestCase::DoRun()
     // Get the source eNodeB
     Ptr<NetDevice> sourceEnb = enbDevs.Get(m_sourceCellId - 1);
     m_sourceEnbDev = sourceEnb->GetObject<LteEnbNetDevice>();
-    NS_ASSERT(m_sourceEnbDev);
-    NS_ASSERT(m_sourceEnbDev->GetCellId() == m_sourceCellId);
+    NS_TEST_ASSERT_MSG_NE(m_sourceEnbDev,
+                          nullptr,
+                          "Failed to cast source Evolved Node B (eNodeB) to LteEnbNetDevice.");
+    NS_TEST_ASSERT_MSG_EQ(m_sourceEnbDev->GetCellId(),
+                          m_sourceCellId,
+                          "Source Evolved Node B (eNodeB) cell identifier should match the "
+                          "expected source cell identifier.");
 
     // Attach UE to the source eNodeB
     lteHelper->Attach(ueDevs.Get(0), sourceEnb);

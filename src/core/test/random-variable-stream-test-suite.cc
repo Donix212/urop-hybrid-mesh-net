@@ -210,8 +210,9 @@ class TestCaseBase : public TestCase
                       Ptr<RandomVariableStream> rng) const
     {
         NS_LOG_FUNCTION(this << h << expected.size() << rng);
-        NS_ASSERT_MSG(gsl_histogram_bins(h) == expected.size(),
-                      "Histogram and expected vector have different sizes.");
+        NS_TEST_EXPECT_MSG_EQ(gsl_histogram_bins(h),
+                              expected.size(),
+                              "Histogram and expected vector have different sizes.");
 
         // Sample the rng into the histogram
         for (std::size_t i = 0; i < N_MEASUREMENTS; ++i)

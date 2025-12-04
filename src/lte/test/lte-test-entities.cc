@@ -14,6 +14,7 @@
 #include "ns3/lte-rlc-header.h"
 #include "ns3/node.h"
 #include "ns3/simulator.h"
+#include "ns3/test.h"
 
 namespace ns3
 {

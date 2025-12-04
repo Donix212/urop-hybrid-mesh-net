@@ -1901,7 +1901,9 @@ TestSimpleFrameCaptureModel::RxSuccess(Ptr<const WifiPsdu> psdu,
                                        const std::vector<bool>& statusPerMpdu)
 {
     NS_LOG_FUNCTION(this << *psdu << rxSignalInfo << txVector);
-    NS_ASSERT(!psdu->IsAggregate() || psdu->IsSingle());
+    NS_ASSERT_MSG(
+        !psdu->IsAggregate() || psdu->IsSingle(),
+        "Invalid PSDU type for frame capture test: expected individual packet or single MPDU");
     if (psdu->GetSize() == 1030)
     {
         m_rxSuccess1000B = true;
@@ -4324,7 +4326,8 @@ void
 TestUnsupportedBandwidthReception::RxDropped(Ptr<const Packet> p, WifiPhyRxfailureReason reason)
 {
     NS_LOG_FUNCTION(this << p << reason);
-    NS_ASSERT(reason == UNSUPPORTED_SETTINGS);
+    NS_ASSERT_MSG(reason == UNSUPPORTED_SETTINGS,
+                  "Expected packet drop reason UNSUPPORTED_SETTINGS, but got: " << reason);
     m_countRxDropped++;
     m_lastRxDropped = Simulator::Now();
 }
@@ -4351,8 +4354,11 @@ TestUnsupportedBandwidthReception::CheckRx(uint32_t expectedCountRxSuccess,
 
     if (expectedCountRxSuccess > 0)
     {
-        NS_ASSERT(m_lastRxSucceeded.has_value());
-        NS_ASSERT(expectedLastRxSucceeded.has_value());
+        NS_ASSERT_MSG(m_lastRxSucceeded.has_value(),
+                      "m_lastRxSucceeded should have a value when expecting successful packets");
+        NS_ASSERT_MSG(
+            expectedLastRxSucceeded.has_value(),
+            "expectedLastRxSucceeded should have a value when expecting successful packets");
         NS_TEST_ASSERT_MSG_EQ(m_lastRxSucceeded.value(),
                               expectedLastRxSucceeded.value(),
                               "Didn't receive the last successful packet at the expected time");
@@ -4360,8 +4366,10 @@ TestUnsupportedBandwidthReception::CheckRx(uint32_t expectedCountRxSuccess,
 
     if (expectedCountRxFailure > 0)
     {
-        NS_ASSERT(m_lastRxFailed.has_value());
-        NS_ASSERT(expectedLastRxFailed.has_value());
+        NS_ASSERT_MSG(m_lastRxFailed.has_value(),
+                      "m_lastRxFailed should have a value when expecting failed packets");
+        NS_ASSERT_MSG(expectedLastRxFailed.has_value(),
+                      "expectedLastRxFailed should have a value when expecting failed packets");
         NS_TEST_ASSERT_MSG_EQ(m_lastRxFailed.value(),
                               expectedLastRxFailed.value(),
                               "Didn't receive the last unsuccessful packet at the expected time");
@@ -4369,8 +4377,10 @@ TestUnsupportedBandwidthReception::CheckRx(uint32_t expectedCountRxSuccess,
 
     if (expectedCountRxDropped > 0)
     {
-        NS_ASSERT(m_lastRxDropped.has_value());
-        NS_ASSERT(expectedLastRxDropped.has_value());
+        NS_ASSERT_MSG(m_lastRxDropped.has_value(),
+                      "m_lastRxDropped should have a value when expecting dropped packets");
+        NS_ASSERT_MSG(expectedLastRxDropped.has_value(),
+                      "expectedLastRxDropped should have a value when expecting dropped packets");
         NS_TEST_ASSERT_MSG_EQ(m_lastRxDropped.value(),
                               expectedLastRxDropped.value(),
                               "Didn't drop the last filtered packet at the expected time");

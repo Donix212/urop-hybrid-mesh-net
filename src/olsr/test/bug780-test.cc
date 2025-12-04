@@ -141,12 +141,14 @@ Bug780Test::Receive(Ptr<Socket> socket)
         Address from;
         Ptr<Packet> p = m_socket->RecvFrom(0xffffffff, 0, from);
 
-        NS_ASSERT(InetSocketAddress::IsMatchingType(from));
+        NS_TEST_EXPECT_MSG_EQ(InetSocketAddress::IsMatchingType(from),
+                              true,
+                              "Expected InetSocketAddress type for source address.");
         InetSocketAddress realFrom = InetSocketAddress::ConvertFrom(from);
-        NS_ASSERT(realFrom.GetPort() == 1); // protocol should be icmp.
+        NS_TEST_EXPECT_MSG_EQ(realFrom.GetPort(), 1, "Expected ICMP protocol port (1).");
         Ipv4Header ipv4;
         p->RemoveHeader(ipv4);
-        NS_ASSERT(ipv4.GetProtocol() == 1); // protocol should be icmp.
+        NS_TEST_ASSERT_MSG_EQ(ipv4.GetProtocol(), 1, "Expected ICMP protocol number (1).");
         Icmpv4Header icmp;
         p->RemoveHeader(icmp);
         if (icmp.GetType() == Icmpv4Header::ICMPV4_ECHO_REPLY)

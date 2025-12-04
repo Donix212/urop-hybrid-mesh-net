@@ -108,10 +108,12 @@ RandomRoomPositionAllocatorTestCase::DoRun()
     for (auto it = nodes.Begin(); it != nodes.End(); ++it)
     {
         Ptr<MobilityModel> mm = (*it)->GetObject<MobilityModel>();
-        NS_ASSERT_MSG(mm, "no mobility model aggregated to this node");
+        NS_TEST_ASSERT_MSG_NE(mm, nullptr, "no mobility model aggregated to this node");
         Ptr<MobilityBuildingInfo> bmm = mm->GetObject<MobilityBuildingInfo>();
-        NS_ASSERT_MSG(bmm,
-                      "MobilityBuildingInfo has not been aggregated to this node mobility model");
+        NS_TEST_ASSERT_MSG_NE(
+            bmm,
+            nullptr,
+            "MobilityBuildingInfo has not been aggregated to this node mobility model");
 
         NS_TEST_ASSERT_MSG_EQ(bmm->IsIndoor(), true, "node should be indoor");
         Room r(bmm->GetRoomNumberX(), bmm->GetRoomNumberY(), bmm->GetFloorNumber());
@@ -192,10 +194,12 @@ SameRoomPositionAllocatorTestCase::DoRun()
     for (auto it = copyNodes.Begin(); it != copyNodes.End(); ++it)
     {
         Ptr<MobilityModel> mm = (*it)->GetObject<MobilityModel>();
-        NS_ASSERT_MSG(mm, "no mobility model aggregated to this node");
+        NS_TEST_ASSERT_MSG_NE(mm, nullptr, "no mobility model aggregated to this node");
         Ptr<MobilityBuildingInfo> bmm = mm->GetObject<MobilityBuildingInfo>();
-        NS_ASSERT_MSG(bmm,
-                      "MobilityBuildingInfo has not been aggregated to this node mobility model");
+        NS_TEST_ASSERT_MSG_NE(
+            bmm,
+            nullptr,
+            "MobilityBuildingInfo has not been aggregated to this node mobility model");
 
         NS_TEST_ASSERT_MSG_EQ(bmm->IsIndoor(), true, "node should be indoor");
         Room r(bmm->GetRoomNumberX(), bmm->GetRoomNumberY(), bmm->GetFloorNumber());

@@ -166,7 +166,9 @@ TcFlowControlTestCase::CheckDeviceQueueStopped(Ptr<NetDevice> dev,
                                                const std::string msg)
 {
     Ptr<NetDeviceQueueInterface> ndqi = dev->GetObject<NetDeviceQueueInterface>();
-    NS_ASSERT_MSG(ndqi, "A device queue interface has not been aggregated to the device");
+    NS_TEST_ASSERT_MSG_NE(ndqi,
+                          nullptr,
+                          "A device queue interface has not been aggregated to the device");
     NS_TEST_EXPECT_MSG_EQ(ndqi->GetTxQueue(0)->IsStopped(), value, msg);
 }
 

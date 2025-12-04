@@ -92,7 +92,7 @@ class TcpSocketAdvertisedWindowProxy : public TcpSocketMsgBase
 void
 TcpSocketAdvertisedWindowProxy::SetInvalidAwndCb(InvalidAwndCallback cb)
 {
-    NS_ASSERT(!cb.IsNull());
+    NS_ASSERT_MSG(!cb.IsNull(), "SetInvalidAwnd callback must not be null.");
     m_invalidAwndCb = cb;
 }
 

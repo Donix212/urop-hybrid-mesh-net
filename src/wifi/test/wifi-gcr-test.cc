@@ -304,7 +304,10 @@ GcrTestBase::Transmit(std::string context,
                          std::back_inserter(addressedStas),
                          [](const auto& sta) { return sta.gcrCapable; });
         }
-        NS_ASSERT(!addressedStas.empty());
+        NS_TEST_ASSERT_MSG_EQ(
+            addressedStas.empty(),
+            false,
+            "Expected at least one STA to be addressed for groupcast transmission");
         const auto minStandard = std::min_element(addressedStas.cbegin(),
                                                   addressedStas.cend(),
                                                   [](const auto& sta1, const auto& sta2) {
@@ -635,7 +638,10 @@ GcrTestBase::PhyRx(std::string context,
         return;
     }
     const auto staId = ConvertContextToNodeId(context) - 1;
-    NS_ASSERT(staId <= m_params.stas.size());
+    NS_TEST_ASSERT_MSG_LT_OR_EQ(staId,
+                                m_params.stas.size(),
+                                "Station ID " << staId << " exceeds number of configured STAs ("
+                                              << m_params.stas.size() << ")");
     m_phyRxPerSta.at(staId)++;
 }
 
@@ -1097,7 +1103,9 @@ GcrUrTest::Transmit(std::string context,
         }
         else
         {
-            NS_ASSERT(m_currentMpdu);
+            NS_TEST_ASSERT_MSG_NE(m_currentMpdu,
+                                  nullptr,
+                                  "Expected m_currentMpdu to be set for groupcast retransmission");
             NS_TEST_EXPECT_MSG_EQ(m_expectGcrUsed, true, "GCR service should not be used");
             NS_LOG_INFO("AP: groupcast sollicited retry #"
                         << +m_totalTxGroupcasts.back() << " (#MPDUs=" << psdu->GetNMpdus() << ")");
@@ -1234,7 +1242,9 @@ GcrUrTest::CheckResults()
                           numNonRetryGroupcastFrames,
                           "Unexpected number of non-retransmitted groupcast frames");
 
-    NS_ASSERT(!m_totalTxGroupcasts.empty());
+    NS_TEST_ASSERT_MSG_EQ(m_totalTxGroupcasts.empty(),
+                          false,
+                          "Expected at least one groupcast transmission to have occurred");
     const auto totalTxGroupcastFrames =
         std::accumulate(m_totalTxGroupcasts.cbegin(), m_totalTxGroupcasts.cend(), 0U);
     uint8_t numRetries = m_expectGcrUsed ? m_gcrUrParams.nGcrRetries : 0;
@@ -1340,7 +1350,11 @@ GcrUrTest::CheckResults()
                                      : std::max(expectedNumAttempt, prevExpectedNumAttempt);
             prevExpectedNumAttempt = expectedNumAttempt;
             const std::size_t rxPsdus = (j - droppedPsdus);
-            NS_ASSERT(m_rxGroupcastPerSta.at(i).size() > rxPsdus);
+            NS_TEST_ASSERT_MSG_GT(m_rxGroupcastPerSta.at(i).size(),
+                                  rxPsdus,
+                                  "Expected more received groupcast packets for STA "
+                                      << i << " (have " << m_rxGroupcastPerSta.at(i).size()
+                                      << ", need > " << rxPsdus << ")");
             NS_TEST_EXPECT_MSG_EQ(+m_rxGroupcastPerSta.at(i).at(rxPsdus),
                                   +expectedNumAttempt,
                                   "Packet has not been forwarded up at the expected TX attempt");
@@ -1498,7 +1512,7 @@ GcrBaTest::Transmit(std::string context,
                 break;
             }
         }
-        NS_ASSERT(staId != 0);
+        NS_TEST_ASSERT_MSG_NE(staId, 0, "Failed to identify target STA for Block Ack Request");
         NS_LOG_INFO("AP: send " << (blockAckReq.IsGcr() ? "GCR " : "") << "BAR to STA " << +staId);
         m_nTxGcrBar++;
         m_nTxGcrBarsInCurrentTxop++;

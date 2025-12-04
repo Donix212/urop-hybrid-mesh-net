@@ -1089,8 +1089,12 @@ WifiEhtCapabilitiesIeTest::DoRun()
         HeCapabilities heCapabilities = GetHeCapabilities();
         EhtCapabilities ehtCapabilities = GetEhtCapabilities(3895, 65535, maxMcs);
 
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedRxMcs(mapType) == maxMcs);
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedTxMcs(mapType) == maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedRxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities RX MCS setup failed - expected " << maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedTxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities TX MCS setup failed - expected " << maxMcs);
 
         NS_TEST_EXPECT_MSG_EQ(ehtCapabilities.GetSerializedSize(),
                               expectedSize,
@@ -1112,8 +1116,12 @@ WifiEhtCapabilitiesIeTest::DoRun()
         HeCapabilities heCapabilities = GetHeCapabilities();
         EhtCapabilities ehtCapabilities = GetEhtCapabilities(11454, 65535, maxMcs);
 
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedRxMcs(mapType) == maxMcs);
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedTxMcs(mapType) == maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedRxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities RX MCS setup failed - expected " << maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedTxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities TX MCS setup failed - expected " << maxMcs);
 
         NS_TEST_EXPECT_MSG_EQ(ehtCapabilities.GetSerializedSize(),
                               expectedSize,
@@ -1135,8 +1143,12 @@ WifiEhtCapabilitiesIeTest::DoRun()
         HeCapabilities heCapabilities = GetHeCapabilities();
         EhtCapabilities ehtCapabilities = GetEhtCapabilities(3895, 65535, maxMcs);
 
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedRxMcs(mapType) == maxMcs);
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedTxMcs(mapType) == maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedRxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities RX MCS setup failed - expected " << maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedTxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities TX MCS setup failed - expected " << maxMcs);
 
         NS_TEST_EXPECT_MSG_EQ(ehtCapabilities.GetSerializedSize(),
                               expectedSize,
@@ -1158,8 +1170,12 @@ WifiEhtCapabilitiesIeTest::DoRun()
         HeCapabilities heCapabilities = GetHeCapabilities();
         EhtCapabilities ehtCapabilities = GetEhtCapabilities(3895, 65535, maxMcs);
 
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedRxMcs(mapType) == maxMcs);
-        NS_ASSERT(ehtCapabilities.GetHighestSupportedTxMcs(mapType) == maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedRxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities RX MCS setup failed - expected " << maxMcs);
+        NS_TEST_ASSERT_MSG_EQ(ehtCapabilities.GetHighestSupportedTxMcs(mapType),
+                              maxMcs,
+                              "EHT capabilities TX MCS setup failed - expected " << maxMcs);
 
         std::vector<std::pair<uint8_t, uint8_t>> ppeThresholds;
         ppeThresholds.emplace_back(1, 2); // NSS1 242-tones RU
