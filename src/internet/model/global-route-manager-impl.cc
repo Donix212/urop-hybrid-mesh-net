@@ -2379,14 +2379,8 @@ GlobalRouteManagerImpl::PrintRoute(Ptr<Node> sourceNode,
         }
 
         Ptr<Ipv4> ipv4CurrentNode = currentNode->GetObject<Ipv4>();
-        uint32_t currentNodeId = currentNode->GetId();
         auto router = GetGlobalRoutingForNode(currentNode);
-        // Final check: If still nullptr, GlobalRouting wasn't found anywhere
-        if (!router)
-        {
-            NS_LOG_WARN("No global router found on Node " << currentNodeId);
-            return;
-        }
+
         Ptr<Ipv4Route> gateway = router->LookupGlobal(dest);
         // check if the gateway exists
         if (!gateway)
@@ -2418,12 +2412,6 @@ GlobalRouteManagerImpl::PrintRoute(Ptr<Node> sourceNode,
         }
 
         Ptr<Node> nextNode = GetNodeByIp(gatewayAddress);
-        if (!nextNode)
-        {
-            *os << "No Node found with GatewayAddress " << gatewayAddress << std::endl << std::endl;
-            NS_LOG_WARN("Did not find the next node for the gateway address " << gatewayAddress);
-            return;
-        }
 
         if (nextNode == currentNode)
         {

@@ -140,7 +140,7 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
      * @param printTime the time at which the routing path should be printed.
      * @param nodeIdLookup print the node id
      * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ptr<Node>, Time, Ptr<OutputStreamWrapper>, bool,
+     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
      * Time::Unit)
      */
     static void PrintRouteAt(Ptr<Node> sourceNode,
