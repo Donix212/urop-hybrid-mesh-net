@@ -120,7 +120,7 @@ class MatrixBasedChannelModel : public Object
          * Cluster angle angle[direction][n], where direction = 0(AOA), 1(ZOA), 2(AOD), 3(ZOD)
          * in degree.
          */
-        Double2DVector m_angles;
+        Double2DVector m_angle;
 
         /**
          * Sin/cos of cluster angle angle[direction][n], where direction = 0(AOA), 1(ZOA), 2(AOD),

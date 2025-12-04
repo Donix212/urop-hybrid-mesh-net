@@ -220,10 +220,10 @@ ThreeGppSpectrumPropagationLossModel::CalcBeamformingGain(
     // are of the correct dimensions before using the operator [].
     NS_ASSERT(numCluster <= channelParams->m_alpha.size());
     NS_ASSERT(numCluster <= channelParams->m_D.size());
-    NS_ASSERT(numCluster <= channelParams->m_angles[MBCM::ZOA_INDEX].size());
-    NS_ASSERT(numCluster <= channelParams->m_angles[MBCM::ZOD_INDEX].size());
-    NS_ASSERT(numCluster <= channelParams->m_angles[MBCM::AOA_INDEX].size());
-    NS_ASSERT(numCluster <= channelParams->m_angles[MBCM::AOD_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::ZOA_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::ZOD_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::AOA_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::AOD_INDEX].size());
     NS_ASSERT(numCluster <= longTerm->GetNumPages());
 
     // check if channelParams structure is generated in direction s-to-u or u-to-s
