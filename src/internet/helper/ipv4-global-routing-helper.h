@@ -67,14 +67,12 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
     static void PopulateRoutingTables();
 
     /**
-     * @brief prints the routing path for a source and destination at a particular time.
-     * If the routing path does not exist, it prints that the path does not exist between
+     * @brief prints the routing path for a source and destination to the standard cout output
+     * stream. If the routing path does not exist, it prints that the path does not exist between
      * the nodes in the ostream. This is a scheduler for the PrintRoute call.
      *
      * @param sourceNode the source node
      * @param dest the IPv4 destination address
-     * @param printTime the time at which the routing path should be printed.
-     * @param stream the output stream object to use
      * @param nodeIdLookup print the node id
      * @param unit the time unit to be used in the report
      *
@@ -87,77 +85,15 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
      * If the destination node has multiple IpAddresses, the routing path will be printed for the
      * first Ip address of the destination Ipv4 Stack.
      */
-    static void PrintRouteAt(Ptr<Node> sourceNode,
-                             Ipv4Address dest,
-                             Time printTime,
-                             Ptr<OutputStreamWrapper> stream,
-                             bool nodeIdLookup = true,
-                             Time::Unit unit = Time::S);
+    static void PrintRoute(Ptr<Node> sourceNode,
+                           Ipv4Address dest,
+                           bool nodeIdLookup = true,
+                           Time::Unit unit = Time::S);
 
     /**
-     * @copybrief PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
-     * Time::Unit)
-     * @brief This defaults the output stream to standard cout.
-     * @param sourceNode the source node
-     * @param dest the IPv4 destination address
-     * @param printTime the time at which the routing path should be printed.
-     * @param nodeIdLookup print the node id
-     * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
-     * Time::Unit)
-     */
-    static void PrintRouteAt(Ptr<Node> sourceNode,
-                             Ipv4Address dest,
-                             Time printTime,
-                             bool nodeIdLookup = true,
-                             Time::Unit unit = Time::S);
-
-    /**
-     * @copybrief PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
-     * Time::Unit)
-     * @param sourceNode the source node
-     * @param dest the destination node
-     * @param printTime the time at which the routing path should be printed.
+     * @brief prints the routing path for a source and destination.
+     * @copydetails PrintRoute(Ptr<Node>, Ipv4Address, bool, Time::Unit)
      * @param stream the output stream object to use
-     * @param nodeIdLookup print the node id
-     * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
-     * Time::Unit)
-     */
-    static void PrintRouteAt(Ptr<Node> sourceNode,
-                             Ptr<Node> dest,
-                             Time printTime,
-                             Ptr<OutputStreamWrapper> stream,
-                             bool nodeIdLookup = true,
-                             Time::Unit unit = Time::S);
-
-    /**
-     * @copybrief PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
-     * Time::Unit)
-     * @brief This overload defaults the output stream to standard cout.
-     * @param sourceNode the source node
-     * @param dest the destination node
-     * @param printTime the time at which the routing path should be printed.
-     * @param nodeIdLookup print the node id
-     * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Time, Ptr<OutputStreamWrapper>, bool,
-     * Time::Unit)
-     */
-    static void PrintRouteAt(Ptr<Node> sourceNode,
-                             Ptr<Node> dest,
-                             Time printTime,
-                             bool nodeIdLookup = true,
-                             Time::Unit unit = Time::S);
-
-    /**
-     * @brief prints the routing path for the source and destination. If the routing path does not
-     * exist, it prints that the path does not exist between the nodes in the ostream.
-     * @param sourceNode the source node
-     * @param dest the IPv4 destination address
-     * @param stream the output stream object to use
-     * @param nodeIdLookup print the node id
-     * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Ptr<OutputStreamWrapper>, bool, Time::Unit)
      */
     static void PrintRoute(Ptr<Node> sourceNode,
                            Ipv4Address dest,
@@ -166,28 +102,35 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
                            Time::Unit unit = Time::S);
 
     /**
-     * @copybrief PrintRoute(Ptr<Node>, Ipv4Address, Ptr<OutputStreamWrapper>, bool, Time::Unit)
-     * @brief This overload defaults the output stream to standard cout.
+     * @copybrief PrintRoute(Ptr<Node>, Ipv4Address,  bool,
+     * Time::Unit)
+     * If the routing path does not exist, it prints that the path does not exist between
+     * the nodes in the ostream. This is a scheduler for the PrintRoute call.
+     *
      * @param sourceNode the source node
-     * @param dest the IPv4 destination address
+     * @param dest the destination node
      * @param nodeIdLookup print the node id
      * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Ptr<OutputStreamWrapper>, bool, Time::Unit)
+     *
+     * @details This method calls the PrintRoutingPath() method of the
+     * Ipv4GlobalRouting for the source and destination to provide
+     * the routing path at the specified time.
+     * Early return will be triggered if inputs are invalid. for example:
+     * if source or destination nodes do not exist, source or destination nodes lack IPv4 instances,
+     * or source node lacks a global routing instance.
+     * If the destination node has multiple IpAddresses, the routing path will be printed for the
+     * first Ip address of the destination Ipv4 Stack.
      */
     static void PrintRoute(Ptr<Node> sourceNode,
-                           Ipv4Address dest,
+                           Ptr<Node> dest,
                            bool nodeIdLookup = true,
                            Time::Unit unit = Time::S);
 
     /**
-     * @brief prints the routing path for the source and destination. If the routing path
-     * does not exist, it prints that the path does not exist between the nodes in the ostream.
-     * @param sourceNode The source node
-     * @param dest The destination node
+     * @copybrief PrintRoute(Ptr<Node>, Ipv4Address, Ptr<OutputStreamWrapper>, bool,
+     * Time::Unit)
+     * @copydetails PrintRoute(Ptr<Node>, Ptr<Node>, bool, Time::Unit)
      * @param stream the output stream object to use
-     * @param nodeIdLookup print the node id
-     * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Ptr<OutputStreamWrapper>, bool, Time::Unit)
      */
     static void PrintRoute(Ptr<Node> sourceNode,
                            Ptr<Node> dest,
@@ -196,20 +139,53 @@ class Ipv4GlobalRoutingHelper : public Ipv4RoutingHelper
                            Time::Unit unit = Time::S);
 
     /**
-     * @copybrief PrintRoute(Ptr<Node>, Ptr<Node>, Ptr<OutputStreamWrapper>, bool, Time::Unit)
-     * @brief This overload defaults the output stream to standard cout.
-     * @param sourceNode the source node
-     * @param dest the destination node
-     * @param nodeIdLookup print the node id
-     * @param unit the time unit to be used in the report
-     * @copydetails PrintRouteAt(Ptr<Node>, Ipv4Address, Ptr<OutputStreamWrapper>, bool,
-     Time::Unit)
-
+     * @brief prints the routing path for the source and destination at a particular time to the
+     * standard cout output stream.
+     * @copydetails PrintRoute(Ptr<Node>, Ipv4Address, bool, Time::Unit)
+     * @param printTime the time at which the routing path should be printed.
      */
-    static void PrintRoute(Ptr<Node> sourceNode,
-                           Ptr<Node> dest,
-                           bool nodeIdLookup = true,
-                           Time::Unit unit = Time::S);
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ipv4Address dest,
+                             Time printTime,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @brief Prints the routing path for the source and destination at a particular time.
+     * @copydetails PrintRoute(Ptr<Node>, Ipv4Address,bool, Time::Unit)
+     * @param printTime the time at which the routing path should be printed.
+     * @param stream the output stream object to use
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ipv4Address dest,
+                             Time printTime,
+                             Ptr<OutputStreamWrapper> stream,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @copybrief PrintRouteAt(Ptr<Node>, Ipv4Address, Time, bool, Time::Unit)
+     * @copydetails PrintRoute(Ptr<Node>, Ptr<Node>, bool, Time::Unit)
+     * @param printTime the time at which the routing path should be printed.
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ptr<Node> dest,
+                             Time printTime,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
+
+    /**
+     * @copybrief PrintRouteAt(Ptr<Node>, Ipv4Address, Time, bool, Time::Unit)
+     * @copydetails PrintRoute(Ptr<Node>, Ptr<Node>, bool, Time::Unit)
+     * @param printTime the time at which the routing path should be printed.
+     * @param stream the output stream object to use.
+     */
+    static void PrintRouteAt(Ptr<Node> sourceNode,
+                             Ptr<Node> dest,
+                             Time printTime,
+                             Ptr<OutputStreamWrapper> stream,
+                             bool nodeIdLookup = true,
+                             Time::Unit unit = Time::S);
 
     /**
      * @brief Remove all routes that were previously installed in a prior call
