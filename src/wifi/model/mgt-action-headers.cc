@@ -553,7 +553,7 @@ WifiActionHeader::Print(std::ostream& os) const
         {
             CASE_ACTION_VALUE(QAB_REQUEST);
             CASE_ACTION_VALUE(QAB_RESPONSE);
-            CASE_ACTION_VALUE(FILS_DISCOVERY;
+            CASE_ACTION_VALUE(FILS_DISCOVERY);
             CASE_ACTION_VALUE(FTM_RESPONSE);
             CASE_ACTION_VALUE(FTM_REQUEST);
         default:
