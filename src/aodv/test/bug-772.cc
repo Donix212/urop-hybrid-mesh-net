@@ -160,17 +160,18 @@ Bug772ChainTest::CreateDevices()
     // 2. Setup TCP/IP & AODV
     AodvHelper aodv; // Use default parameters here
     InternetStackHelper internetStack;
+    internetStack.SetIpv6StackInstall(false);
     internetStack.SetRoutingHelper(aodv);
     internetStack.Install(*m_nodes);
     streamsUsed += internetStack.AssignStreams(*m_nodes, streamsUsed);
     // Expect to use (3*m_size) more streams for internet stack random variables
     NS_TEST_ASSERT_MSG_EQ(streamsUsed,
-                          ((devices.GetN() * 3) + (3 * m_size)),
+                          ((devices.GetN() * 2) + m_size),
                           "Stream assignment mismatch");
     streamsUsed += aodv.AssignStreams(*m_nodes, streamsUsed);
     // Expect to use m_size more streams for AODV
     NS_TEST_ASSERT_MSG_EQ(streamsUsed,
-                          ((devices.GetN() * 3) + (3 * m_size) + m_size),
+                          ((devices.GetN() * 2) + (2 * m_size)),
                           "Stream assignment mismatch");
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");

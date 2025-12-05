@@ -143,7 +143,7 @@ LteCellSelectionTestCase::DoRun()
     uint64_t previousRun = RngSeedManager::GetRun();
     // Values of 1 and 2 here will prevent RA preamble collisions
     Config::SetGlobal("RngSeed", UintegerValue(1));
-    Config::SetGlobal("RngRun", UintegerValue(2));
+    Config::SetGlobal("RngRun", UintegerValue(3));
 
     Ptr<LteHelper> lteHelper = CreateObject<LteHelper>();
     lteHelper->SetAttribute("PathlossModel", StringValue("ns3::FriisSpectrumPropagationLossModel"));
