@@ -187,6 +187,12 @@ WifiActionHeader::GetAction() const
         case FILS_DISCOVERY:
             retval.publicAction = FILS_DISCOVERY;
             break;
+        case FTM_REQUEST:
+            retval.publicAction = FTM_REQUEST;
+            break;
+        case FTM_RESPONSE:
+            retval.publicAction = FTM_RESPONSE;
+            break;
         default:
             NS_FATAL_ERROR("Unknown public action code");
             retval.publicAction = QAB_REQUEST; /* quiet compiler */
@@ -547,7 +553,9 @@ WifiActionHeader::Print(std::ostream& os) const
         {
             CASE_ACTION_VALUE(QAB_REQUEST);
             CASE_ACTION_VALUE(QAB_RESPONSE);
-            CASE_ACTION_VALUE(FILS_DISCOVERY);
+            CASE_ACTION_VALUE(FILS_DISCOVERY;
+            CASE_ACTION_VALUE(FTM_RESPONSE);
+            CASE_ACTION_VALUE(FTM_REQUEST);
         default:
             NS_FATAL_ERROR("Unknown public action code");
         }
