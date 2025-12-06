@@ -1595,12 +1595,12 @@ EmpiricalRandomVariable::PreSample(double& value)
     // check extrema
     if (r <= m_empCdf.begin()->first)
     {
-        value = m_empCdf.begin()->second; // Less than first
+        value = m_empCdf.begin ()->second.GetDouble (); // Less than first
         valid = true;
     }
     else if (r >= m_empCdf.rbegin()->first)
     {
-        value = m_empCdf.rbegin()->second; // Greater than last
+        value = m_empCdf.rbegin()->second.GetDouble (); // Greater than last
         valid = true;
     }
     return valid;
@@ -1634,9 +1634,9 @@ EmpiricalRandomVariable::DoSampleCDF(double r)
     NS_LOG_FUNCTION(this << r);
 
     // Find first CDF that is greater than r
-    auto bound = m_empCdf.upper_bound(r);
+    auto bound = m_empCdf.upper_bound(int64x64_t (r));
 
-    return bound->second;
+    return bound->second.GetDouble ();
 }
 
 double
@@ -1673,10 +1673,10 @@ EmpiricalRandomVariable::DoInterpolate(double r)
     }
 
     // Interpolate random value in range [v1..v2) based on [c1 .. r .. c2)
-    double c1 = lower->first;
-    double c2 = upper->first;
-    double v1 = lower->second;
-    double v2 = upper->second;
+    double c1 = lower->first.GetDouble ();
+    double c2 = upper->first.GetDouble ();
+    double v1 = lower->second.GetDouble ();
+    double v2 = upper->second.GetDouble ();
 
     double value = (v1 + ((v2 - v1) / (c2 - c1)) * (r - c1));
     return value;
@@ -1709,12 +1709,12 @@ EmpiricalRandomVariable::Validate()
         NS_FATAL_ERROR("CDF is not initialized");
     }
 
-    double vPrev = m_empCdf.begin()->second;
+    double vPrev = m_empCdf.begin()->second.GetDouble ();
 
     // Check if values are non-decreasing
     for (const auto& cdfPair : m_empCdf)
     {
-        const auto& vCurr = cdfPair.second;
+        const auto& vCurr = cdfPair.second.GetDouble ();
 
         if (vCurr < vPrev)
         {
@@ -2052,7 +2052,7 @@ double
 LargestExtremeValueRandomVariable::GetMean(double location, double scale)
 {
     NS_LOG_FUNCTION(location << scale);
-    return (location + (scale * std::numbers::egamma));
+    return (location + (scale * 0.5772156649));
 }
 
 double
@@ -2065,7 +2065,7 @@ double
 LargestExtremeValueRandomVariable::GetVariance(double scale)
 {
     NS_LOG_FUNCTION(scale);
-    return std::pow((scale * std::numbers::pi), 2) / 6.0;
+    return std::pow((scale * M_PI), 2) / 6.0;
 }
 
 double

@@ -23,6 +23,8 @@
 #include <map>
 #include <stdint.h>
 
+#include "int64x64.h"
+
 /**
  * @file
  * @ingroup randomvariable
@@ -2099,7 +2101,7 @@ class EmpiricalRandomVariable : public RandomVariableStream
      * The CDF points are stored in the std::map in reverse order, as follows:
      * Key: CDF F(x) [0, 1] | Value: domain value (x) [-inf, inf].
      */
-    std::map<double, double> m_empCdf;
+    std::map<int64x64_t, int64x64_t> m_empCdf;
     /**
      * If \c true GetValue will interpolate,
      * otherwise treat CDF as normal histogram.
