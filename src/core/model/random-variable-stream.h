@@ -16,14 +16,13 @@
 #define RANDOM_VARIABLE_STREAM_H
 
 #include "attribute-helper.h"
+#include "int64x64.h"
 #include "object.h"
 #include "type-id.h"
 
 #include <limits>
 #include <map>
 #include <stdint.h>
-
-#include "int64x64.h"
 
 /**
  * @file
