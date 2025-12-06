@@ -36,8 +36,9 @@ class LrWpanPlmeAndPdInterfaceTestCase : public TestCase
      * @param psduLength The PSDU length.
      * @param p The packet.
      * @param lqi The LQI.
+     * @param rssi The RSSI
      */
-    void ReceivePdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi);
+    void ReceivePdDataIndication(uint32_t psduLength, Ptr<Packet> p, uint8_t lqi, int8_t rssi);
 };
 
 LrWpanPlmeAndPdInterfaceTestCase::LrWpanPlmeAndPdInterfaceTestCase()
@@ -52,7 +53,8 @@ LrWpanPlmeAndPdInterfaceTestCase::~LrWpanPlmeAndPdInterfaceTestCase()
 void
 LrWpanPlmeAndPdInterfaceTestCase::ReceivePdDataIndication(uint32_t psduLength,
                                                           Ptr<Packet> p,
-                                                          uint8_t lqi)
+                                                          uint8_t lqi,
+                                                          int8_t rssi)
 {
     NS_LOG_UNCOND("At: " << Simulator::Now() << " Received frame size: " << psduLength
                          << " LQI: " << lqi);
