@@ -615,8 +615,7 @@ The obtained results are very close to TGax curves as shown in Figure
 
 .. _default-table-based-error-model-validation:
 
-.. figure:: figures/default-table-based-error-model-validation.*
-   :scale: 75%
+.. figure:: figures/default-table-based-error-model-validation.png
 
    *Comparison of table-based OFDM Error Model with TGax results.*
 
