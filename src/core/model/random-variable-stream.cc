@@ -40,7 +40,8 @@ NS_LOG_COMPONENT_DEFINE("RandomVariableStream");
 
 NS_OBJECT_ENSURE_REGISTERED(RandomVariableStream);
 
-TypeId RandomVariableStream::GetTypeId()
+TypeId
+RandomVariableStream::GetTypeId()
 {
     static TypeId tid = TypeId("ns3::RandomVariableStream")
                             .SetParent<Object>()
@@ -75,18 +76,21 @@ RandomVariableStream::~RandomVariableStream()
     delete m_rng;
 }
 
-void RandomVariableStream::SetAntithetic(bool isAntithetic)
+void
+RandomVariableStream::SetAntithetic(bool isAntithetic)
 {
     NS_LOG_FUNCTION(this << isAntithetic);
     m_isAntithetic = isAntithetic;
 }
 
-bool RandomVariableStream::IsAntithetic() const
+bool
+RandomVariableStream::IsAntithetic() const
 {
     return m_isAntithetic;
 }
 
-uint32_t RandomVariableStream::GetInteger()
+uint32_t
+RandomVariableStream::GetInteger()
 {
     auto value = static_cast<uint32_t>(GetValue());
     NS_LOG_DEBUG(GetInstanceTypeId().GetName()
@@ -94,7 +98,8 @@ uint32_t RandomVariableStream::GetInteger()
     return value;
 }
 
-void RandomVariableStream::SetStream(int64_t stream)
+void
+RandomVariableStream::SetStream(int64_t stream)
 {
     NS_LOG_FUNCTION(this << stream);
     // negative values are not legal.
@@ -121,19 +126,22 @@ void RandomVariableStream::SetStream(int64_t stream)
     m_stream = stream;
 }
 
-int64_t RandomVariableStream::GetStream() const
+int64_t
+RandomVariableStream::GetStream() const
 {
     return m_stream;
 }
 
-RngStream* RandomVariableStream::Peek() const
+RngStream*
+RandomVariableStream::Peek() const
 {
     return m_rng;
 }
 
 NS_OBJECT_ENSURE_REGISTERED(UniformRandomVariable);
 
-TypeId UniformRandomVariable::GetTypeId()
+TypeId
+UniformRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::UniformRandomVariable")
@@ -159,17 +167,20 @@ UniformRandomVariable::UniformRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double UniformRandomVariable::GetMin() const
+double
+UniformRandomVariable::GetMin() const
 {
     return m_min;
 }
 
-double UniformRandomVariable::GetMax() const
+double
+UniformRandomVariable::GetMax() const
 {
     return m_max;
 }
 
-double UniformRandomVariable::GetValue(double min, double max)
+double
+UniformRandomVariable::GetValue(double min, double max)
 {
     double v = min + Peek()->RandU01() * (max - min);
     if (IsAntithetic())
@@ -181,7 +192,8 @@ double UniformRandomVariable::GetValue(double min, double max)
     return v;
 }
 
-uint32_t UniformRandomVariable::GetInteger(uint32_t min, uint32_t max)
+uint32_t
+UniformRandomVariable::GetInteger(uint32_t min, uint32_t max)
 {
     NS_ASSERT(min <= max);
     auto v = static_cast<uint32_t>(GetValue((double)(min), (double)(max) + 1.0));
@@ -190,12 +202,14 @@ uint32_t UniformRandomVariable::GetInteger(uint32_t min, uint32_t max)
     return v;
 }
 
-double UniformRandomVariable::GetValue()
+double
+UniformRandomVariable::GetValue()
 {
     return GetValue(m_min, m_max);
 }
 
-uint32_t UniformRandomVariable::GetInteger()
+uint32_t
+UniformRandomVariable::GetInteger()
 {
     auto v = static_cast<uint32_t>(GetValue(m_min, m_max + 1));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream());
@@ -204,7 +218,8 @@ uint32_t UniformRandomVariable::GetInteger()
 
 NS_OBJECT_ENSURE_REGISTERED(ConstantRandomVariable);
 
-TypeId ConstantRandomVariable::GetTypeId()
+TypeId
+ConstantRandomVariable::GetTypeId()
 {
     static TypeId tid = TypeId("ns3::ConstantRandomVariable")
                             .SetParent<RandomVariableStream>()
@@ -224,32 +239,37 @@ ConstantRandomVariable::ConstantRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double ConstantRandomVariable::GetConstant() const
+double
+ConstantRandomVariable::GetConstant() const
 {
     NS_LOG_FUNCTION(this);
     return m_constant;
 }
 
-double ConstantRandomVariable::GetValue(double constant)
+double
+ConstantRandomVariable::GetValue(double constant)
 {
     NS_LOG_DEBUG("value: " << constant << " stream: " << GetStream());
     return constant;
 }
 
-uint32_t ConstantRandomVariable::GetInteger(uint32_t constant)
+uint32_t
+ConstantRandomVariable::GetInteger(uint32_t constant)
 {
     NS_LOG_DEBUG("integer value: " << constant << " stream: " << GetStream());
     return constant;
 }
 
-double ConstantRandomVariable::GetValue()
+double
+ConstantRandomVariable::GetValue()
 {
     return GetValue(m_constant);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(SequentialRandomVariable);
 
-TypeId SequentialRandomVariable::GetTypeId()
+TypeId
+SequentialRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::SequentialRandomVariable")
@@ -289,27 +309,32 @@ SequentialRandomVariable::SequentialRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double SequentialRandomVariable::GetMin() const
+double
+SequentialRandomVariable::GetMin() const
 {
     return m_min;
 }
 
-double SequentialRandomVariable::GetMax() const
+double
+SequentialRandomVariable::GetMax() const
 {
     return m_max;
 }
 
-Ptr<RandomVariableStream> SequentialRandomVariable::GetIncrement() const
+Ptr<RandomVariableStream>
+SequentialRandomVariable::GetIncrement() const
 {
     return m_increment;
 }
 
-uint32_t SequentialRandomVariable::GetConsecutive() const
+uint32_t
+SequentialRandomVariable::GetConsecutive() const
 {
     return m_consecutive;
 }
 
-double SequentialRandomVariable::GetValue()
+double
+SequentialRandomVariable::GetValue()
 {
     // Set the current sequence value if it hasn't been set.
     if (!m_isCurrentSet)
@@ -336,7 +361,8 @@ double SequentialRandomVariable::GetValue()
 
 NS_OBJECT_ENSURE_REGISTERED(ExponentialRandomVariable);
 
-TypeId ExponentialRandomVariable::GetTypeId()
+TypeId
+ExponentialRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::ExponentialRandomVariable")
@@ -362,17 +388,20 @@ ExponentialRandomVariable::ExponentialRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double ExponentialRandomVariable::GetMean() const
+double
+ExponentialRandomVariable::GetMean() const
 {
     return m_mean;
 }
 
-double ExponentialRandomVariable::GetBound() const
+double
+ExponentialRandomVariable::GetBound() const
 {
     return m_bound;
 }
 
-double ExponentialRandomVariable::GetValue(double mean, double bound)
+double
+ExponentialRandomVariable::GetValue(double mean, double bound)
 {
     while (true)
     {
@@ -396,7 +425,8 @@ double ExponentialRandomVariable::GetValue(double mean, double bound)
     }
 }
 
-uint32_t ExponentialRandomVariable::GetInteger(uint32_t mean, uint32_t bound)
+uint32_t
+ExponentialRandomVariable::GetInteger(uint32_t mean, uint32_t bound)
 {
     NS_LOG_FUNCTION(this << mean << bound);
     auto v = static_cast<uint32_t>(GetValue(mean, bound));
@@ -405,14 +435,16 @@ uint32_t ExponentialRandomVariable::GetInteger(uint32_t mean, uint32_t bound)
     return v;
 }
 
-double ExponentialRandomVariable::GetValue()
+double
+ExponentialRandomVariable::GetValue()
 {
     return GetValue(m_mean, m_bound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(ParetoRandomVariable);
 
-TypeId ParetoRandomVariable::GetTypeId()
+TypeId
+ParetoRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::ParetoRandomVariable")
@@ -447,22 +479,26 @@ ParetoRandomVariable::ParetoRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double ParetoRandomVariable::GetScale() const
+double
+ParetoRandomVariable::GetScale() const
 {
     return m_scale;
 }
 
-double ParetoRandomVariable::GetShape() const
+double
+ParetoRandomVariable::GetShape() const
 {
     return m_shape;
 }
 
-double ParetoRandomVariable::GetBound() const
+double
+ParetoRandomVariable::GetBound() const
 {
     return m_bound;
 }
 
-double ParetoRandomVariable::GetValue(double scale, double shape, double bound)
+double
+ParetoRandomVariable::GetValue(double scale, double shape, double bound)
 {
     while (true)
     {
@@ -486,7 +522,8 @@ double ParetoRandomVariable::GetValue(double scale, double shape, double bound)
     }
 }
 
-uint32_t ParetoRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
+uint32_t
+ParetoRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
 {
     auto v = static_cast<uint32_t>(GetValue(scale, shape, bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " scale: " << scale
@@ -494,14 +531,16 @@ uint32_t ParetoRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32
     return v;
 }
 
-double ParetoRandomVariable::GetValue()
+double
+ParetoRandomVariable::GetValue()
 {
     return GetValue(m_scale, m_shape, m_bound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(WeibullRandomVariable);
 
-TypeId WeibullRandomVariable::GetTypeId()
+TypeId
+WeibullRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::WeibullRandomVariable")
@@ -535,34 +574,40 @@ WeibullRandomVariable::WeibullRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double WeibullRandomVariable::GetScale() const
+double
+WeibullRandomVariable::GetScale() const
 {
     return m_scale;
 }
 
-double WeibullRandomVariable::GetShape() const
+double
+WeibullRandomVariable::GetShape() const
 {
     return m_shape;
 }
 
-double WeibullRandomVariable::GetBound() const
+double
+WeibullRandomVariable::GetBound() const
 {
     return m_bound;
 }
 
-double WeibullRandomVariable::GetMean(double scale, double shape)
+double
+WeibullRandomVariable::GetMean(double scale, double shape)
 {
     NS_LOG_FUNCTION(scale << shape);
     return scale * std::tgamma(1 + (1 / shape));
 }
 
-double WeibullRandomVariable::GetMean() const
+double
+WeibullRandomVariable::GetMean() const
 {
     NS_LOG_FUNCTION(this);
     return GetMean(m_scale, m_shape);
 }
 
-double WeibullRandomVariable::GetValue(double scale, double shape, double bound)
+double
+WeibullRandomVariable::GetValue(double scale, double shape, double bound)
 {
     double exponent = 1.0 / shape;
     while (true)
@@ -587,7 +632,8 @@ double WeibullRandomVariable::GetValue(double scale, double shape, double bound)
     }
 }
 
-uint32_t WeibullRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
+uint32_t
+WeibullRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint32_t bound)
 {
     auto v = static_cast<uint32_t>(GetValue(scale, shape, bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " scale: " << scale
@@ -595,7 +641,8 @@ uint32_t WeibullRandomVariable::GetInteger(uint32_t scale, uint32_t shape, uint3
     return v;
 }
 
-double WeibullRandomVariable::GetValue()
+double
+WeibullRandomVariable::GetValue()
 {
     NS_LOG_FUNCTION(this);
     return GetValue(m_scale, m_shape, m_bound);
@@ -603,7 +650,8 @@ double WeibullRandomVariable::GetValue()
 
 NS_OBJECT_ENSURE_REGISTERED(NormalRandomVariable);
 
-TypeId NormalRandomVariable::GetTypeId()
+TypeId
+NormalRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::NormalRandomVariable")
@@ -637,32 +685,38 @@ NormalRandomVariable::NormalRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-void NormalRandomVariable::SetStdDev(double stdDev)
+void
+NormalRandomVariable::SetStdDev(double stdDev)
 {
     m_variance = stdDev * stdDev;
 }
 
-double NormalRandomVariable::GetMean() const
+double
+NormalRandomVariable::GetMean() const
 {
     return m_mean;
 }
 
-double NormalRandomVariable::GetVariance() const
+double
+NormalRandomVariable::GetVariance() const
 {
     return m_variance;
 }
 
-double NormalRandomVariable::GetStdDev() const
+double
+NormalRandomVariable::GetStdDev() const
 {
     return sqrt(m_variance);
 }
 
-double NormalRandomVariable::GetBound() const
+double
+NormalRandomVariable::GetBound() const
 {
     return m_bound;
 }
 
-double NormalRandomVariable::GetValue(double mean, double variance, double bound)
+double
+NormalRandomVariable::GetValue(double mean, double variance, double bound)
 {
     if (m_nextValid)
     { // use previously generated
@@ -717,7 +771,8 @@ double NormalRandomVariable::GetValue(double mean, double variance, double bound
     }
 }
 
-uint32_t NormalRandomVariable::GetInteger(uint32_t mean, uint32_t variance, uint32_t bound)
+uint32_t
+NormalRandomVariable::GetInteger(uint32_t mean, uint32_t variance, uint32_t bound)
 {
     auto v = static_cast<uint32_t>(GetValue(mean, variance, bound));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mean: " << mean
@@ -725,14 +780,16 @@ uint32_t NormalRandomVariable::GetInteger(uint32_t mean, uint32_t variance, uint
     return v;
 }
 
-double NormalRandomVariable::GetValue()
+double
+NormalRandomVariable::GetValue()
 {
     return GetValue(m_mean, m_variance, m_bound);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(LogNormalRandomVariable);
 
-TypeId LogNormalRandomVariable::GetTypeId()
+TypeId
+LogNormalRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::LogNormalRandomVariable")
@@ -762,12 +819,14 @@ LogNormalRandomVariable::LogNormalRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double LogNormalRandomVariable::GetMu() const
+double
+LogNormalRandomVariable::GetMu() const
 {
     return m_mu;
 }
 
-double LogNormalRandomVariable::GetSigma() const
+double
+LogNormalRandomVariable::GetSigma() const
 {
     return m_sigma;
 }
@@ -786,7 +845,8 @@ double LogNormalRandomVariable::GetSigma() const
 
    for x > 0. Lognormal random numbers are the exponentials of
    gaussian random numbers */
-double LogNormalRandomVariable::GetValue(double mu, double sigma)
+double
+LogNormalRandomVariable::GetValue(double mu, double sigma)
 {
     if (m_nextValid)
     { // use previously generated
@@ -834,7 +894,8 @@ double LogNormalRandomVariable::GetValue(double mu, double sigma)
     return x;
 }
 
-uint32_t LogNormalRandomVariable::GetInteger(uint32_t mu, uint32_t sigma)
+uint32_t
+LogNormalRandomVariable::GetInteger(uint32_t mu, uint32_t sigma)
 {
     auto v = static_cast<uint32_t>(GetValue(mu, sigma));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mu: " << mu
@@ -842,14 +903,16 @@ uint32_t LogNormalRandomVariable::GetInteger(uint32_t mu, uint32_t sigma)
     return v;
 }
 
-double LogNormalRandomVariable::GetValue()
+double
+LogNormalRandomVariable::GetValue()
 {
     return GetValue(m_mu, m_sigma);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(GammaRandomVariable);
 
-TypeId GammaRandomVariable::GetTypeId()
+TypeId
+GammaRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::GammaRandomVariable")
@@ -877,12 +940,14 @@ GammaRandomVariable::GammaRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double GammaRandomVariable::GetAlpha() const
+double
+GammaRandomVariable::GetAlpha() const
 {
     return m_alpha;
 }
 
-double GammaRandomVariable::GetBeta() const
+double
+GammaRandomVariable::GetBeta() const
 {
     return m_beta;
 }
@@ -903,7 +968,8 @@ double GammaRandomVariable::GetBeta() const
 
   for x > 0.
 */
-double GammaRandomVariable::GetValue(double alpha, double beta)
+double
+GammaRandomVariable::GetValue(double alpha, double beta)
 {
     if (alpha < 1)
     {
@@ -960,12 +1026,14 @@ double GammaRandomVariable::GetValue(double alpha, double beta)
     return value;
 }
 
-double GammaRandomVariable::GetValue()
+double
+GammaRandomVariable::GetValue()
 {
     return GetValue(m_alpha, m_beta);
 }
 
-double GammaRandomVariable::GetNormalValue(double mean, double variance, double bound)
+double
+GammaRandomVariable::GetNormalValue(double mean, double variance, double bound)
 {
     if (m_nextValid)
     { // use previously generated
@@ -1022,7 +1090,8 @@ double GammaRandomVariable::GetNormalValue(double mean, double variance, double 
 
 NS_OBJECT_ENSURE_REGISTERED(ErlangRandomVariable);
 
-TypeId ErlangRandomVariable::GetTypeId()
+TypeId
+ErlangRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::ErlangRandomVariable")
@@ -1049,12 +1118,14 @@ ErlangRandomVariable::ErlangRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-uint32_t ErlangRandomVariable::GetK() const
+uint32_t
+ErlangRandomVariable::GetK() const
 {
     return m_k;
 }
 
-double ErlangRandomVariable::GetLambda() const
+double
+ErlangRandomVariable::GetLambda() const
 {
     return m_lambda;
 }
@@ -1071,7 +1142,8 @@ double ErlangRandomVariable::GetLambda() const
 
   for x > 0.
 */
-double ErlangRandomVariable::GetValue(uint32_t k, double lambda)
+double
+ErlangRandomVariable::GetValue(uint32_t k, double lambda)
 {
     double mean = lambda;
     double bound = 0.0;
@@ -1086,7 +1158,8 @@ double ErlangRandomVariable::GetValue(uint32_t k, double lambda)
     return result;
 }
 
-uint32_t ErlangRandomVariable::GetInteger(uint32_t k, uint32_t lambda)
+uint32_t
+ErlangRandomVariable::GetInteger(uint32_t k, uint32_t lambda)
 {
     auto v = static_cast<uint32_t>(GetValue(k, lambda));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " k: " << k
@@ -1094,12 +1167,14 @@ uint32_t ErlangRandomVariable::GetInteger(uint32_t k, uint32_t lambda)
     return v;
 }
 
-double ErlangRandomVariable::GetValue()
+double
+ErlangRandomVariable::GetValue()
 {
     return GetValue(m_k, m_lambda);
 }
 
-double ErlangRandomVariable::GetExponentialValue(double mean, double bound)
+double
+ErlangRandomVariable::GetExponentialValue(double mean, double bound)
 {
     while (true)
     {
@@ -1125,7 +1200,8 @@ double ErlangRandomVariable::GetExponentialValue(double mean, double bound)
 
 NS_OBJECT_ENSURE_REGISTERED(TriangularRandomVariable);
 
-TypeId TriangularRandomVariable::GetTypeId()
+TypeId
+TriangularRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::TriangularRandomVariable")
@@ -1158,22 +1234,26 @@ TriangularRandomVariable::TriangularRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double TriangularRandomVariable::GetMean() const
+double
+TriangularRandomVariable::GetMean() const
 {
     return m_mean;
 }
 
-double TriangularRandomVariable::GetMin() const
+double
+TriangularRandomVariable::GetMin() const
 {
     return m_min;
 }
 
-double TriangularRandomVariable::GetMax() const
+double
+TriangularRandomVariable::GetMax() const
 {
     return m_max;
 }
 
-double TriangularRandomVariable::GetValue(double mean, double min, double max)
+double
+TriangularRandomVariable::GetValue(double mean, double min, double max)
 {
     // Calculate the mode.
     double mode = 3.0 * mean - min - max;
@@ -1202,7 +1282,8 @@ double TriangularRandomVariable::GetValue(double mean, double min, double max)
     }
 }
 
-uint32_t TriangularRandomVariable::GetInteger(uint32_t mean, uint32_t min, uint32_t max)
+uint32_t
+TriangularRandomVariable::GetInteger(uint32_t mean, uint32_t min, uint32_t max)
 {
     auto v = static_cast<uint32_t>(GetValue(mean, min, max));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " mean: " << mean
@@ -1210,14 +1291,16 @@ uint32_t TriangularRandomVariable::GetInteger(uint32_t mean, uint32_t min, uint3
     return v;
 }
 
-double TriangularRandomVariable::GetValue()
+double
+TriangularRandomVariable::GetValue()
 {
     return GetValue(m_mean, m_min, m_max);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(ZipfRandomVariable);
 
-TypeId ZipfRandomVariable::GetTypeId()
+TypeId
+ZipfRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::ZipfRandomVariable")
@@ -1243,17 +1326,20 @@ ZipfRandomVariable::ZipfRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-uint32_t ZipfRandomVariable::GetN() const
+uint32_t
+ZipfRandomVariable::GetN() const
 {
     return m_n;
 }
 
-double ZipfRandomVariable::GetAlpha() const
+double
+ZipfRandomVariable::GetAlpha() const
 {
     return m_alpha;
 }
 
-double ZipfRandomVariable::GetValue(uint32_t n, double alpha)
+double
+ZipfRandomVariable::GetValue(uint32_t n, double alpha)
 {
     // Calculate the normalization constant c.
     m_c = 0.0;
@@ -1286,7 +1372,8 @@ double ZipfRandomVariable::GetValue(uint32_t n, double alpha)
     return zipf_value;
 }
 
-uint32_t ZipfRandomVariable::GetInteger(uint32_t n, uint32_t alpha)
+uint32_t
+ZipfRandomVariable::GetInteger(uint32_t n, uint32_t alpha)
 {
     NS_LOG_FUNCTION(this << n << alpha);
     auto v = static_cast<uint32_t>(GetValue(n, alpha));
@@ -1295,14 +1382,16 @@ uint32_t ZipfRandomVariable::GetInteger(uint32_t n, uint32_t alpha)
     return v;
 }
 
-double ZipfRandomVariable::GetValue()
+double
+ZipfRandomVariable::GetValue()
 {
     return GetValue(m_n, m_alpha);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(ZetaRandomVariable);
 
-TypeId ZetaRandomVariable::GetTypeId()
+TypeId
+ZetaRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::ZetaRandomVariable")
@@ -1323,12 +1412,14 @@ ZetaRandomVariable::ZetaRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double ZetaRandomVariable::GetAlpha() const
+double
+ZetaRandomVariable::GetAlpha() const
 {
     return m_alpha;
 }
 
-double ZetaRandomVariable::GetValue(double alpha)
+double
+ZetaRandomVariable::GetValue(double alpha)
 {
     m_b = std::pow(2.0, alpha - 1.0);
 
@@ -1362,21 +1453,24 @@ double ZetaRandomVariable::GetValue(double alpha)
     return X;
 }
 
-uint32_t ZetaRandomVariable::GetInteger(uint32_t alpha)
+uint32_t
+ZetaRandomVariable::GetInteger(uint32_t alpha)
 {
     auto v = static_cast<uint32_t>(GetValue(alpha));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " alpha: " << alpha);
     return v;
 }
 
-double ZetaRandomVariable::GetValue()
+double
+ZetaRandomVariable::GetValue()
 {
     return GetValue(m_alpha);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(DeterministicRandomVariable);
 
-TypeId DeterministicRandomVariable::GetTypeId()
+TypeId
+DeterministicRandomVariable::GetTypeId()
 {
     static TypeId tid = TypeId("ns3::DeterministicRandomVariable")
                             .SetParent<RandomVariableStream>()
@@ -1403,12 +1497,14 @@ DeterministicRandomVariable::~DeterministicRandomVariable()
     }
 }
 
-void DeterministicRandomVariable::SetValueArray(const std::vector<double>& values)
+void
+DeterministicRandomVariable::SetValueArray(const std::vector<double>& values)
 {
     SetValueArray(values.data(), values.size());
 }
 
-void DeterministicRandomVariable::SetValueArray(const double* values, std::size_t length)
+void
+DeterministicRandomVariable::SetValueArray(const double* values, std::size_t length)
 {
     NS_LOG_FUNCTION(this << values << length);
     // Delete any values currently set.
@@ -1429,7 +1525,8 @@ void DeterministicRandomVariable::SetValueArray(const double* values, std::size_
     }
 }
 
-double DeterministicRandomVariable::GetValue()
+double
+DeterministicRandomVariable::GetValue()
 {
     // Make sure the array has been set.
     NS_ASSERT(m_count > 0);
@@ -1445,7 +1542,8 @@ double DeterministicRandomVariable::GetValue()
 
 NS_OBJECT_ENSURE_REGISTERED(EmpiricalRandomVariable);
 
-TypeId EmpiricalRandomVariable::GetTypeId()
+TypeId
+EmpiricalRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::EmpiricalRandomVariable")
@@ -1467,7 +1565,8 @@ EmpiricalRandomVariable::EmpiricalRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-bool EmpiricalRandomVariable::SetInterpolate(bool interpolate)
+bool
+EmpiricalRandomVariable::SetInterpolate(bool interpolate)
 {
     NS_LOG_FUNCTION(this << interpolate);
     bool prev = m_interpolate;
@@ -1475,7 +1574,8 @@ bool EmpiricalRandomVariable::SetInterpolate(bool interpolate)
     return prev;
 }
 
-bool EmpiricalRandomVariable::PreSample(double& value)
+bool
+EmpiricalRandomVariable::PreSample(double& value)
 {
     NS_LOG_FUNCTION(this << value);
     if (!m_validated)
@@ -1506,7 +1606,8 @@ bool EmpiricalRandomVariable::PreSample(double& value)
     return valid;
 }
 
-double EmpiricalRandomVariable::GetValue()
+double
+EmpiricalRandomVariable::GetValue()
 {
     double value;
     if (PreSample(value))
@@ -1527,7 +1628,8 @@ double EmpiricalRandomVariable::GetValue()
     return value;
 }
 
-double EmpiricalRandomVariable::DoSampleCDF(double r)
+double
+EmpiricalRandomVariable::DoSampleCDF(double r)
 {
     NS_LOG_FUNCTION(this << r);
 
@@ -1537,7 +1639,8 @@ double EmpiricalRandomVariable::DoSampleCDF(double r)
     return bound->second.GetDouble();
 }
 
-double EmpiricalRandomVariable::Interpolate()
+double
+EmpiricalRandomVariable::Interpolate()
 {
     NS_LOG_FUNCTION(this);
 
@@ -1552,7 +1655,8 @@ double EmpiricalRandomVariable::Interpolate()
     return value;
 }
 
-double EmpiricalRandomVariable::DoInterpolate(double r)
+double
+EmpiricalRandomVariable::DoInterpolate(double r)
 {
     NS_LOG_FUNCTION(this << r);
 
@@ -1578,7 +1682,8 @@ double EmpiricalRandomVariable::DoInterpolate(double r)
     return value;
 }
 
-void EmpiricalRandomVariable::CDF(double v, double c)
+void
+EmpiricalRandomVariable::CDF(double v, double c)
 {
     NS_LOG_FUNCTION(this << v << c);
 
@@ -1594,7 +1699,8 @@ void EmpiricalRandomVariable::CDF(double v, double c)
     m_empCdf[c] = v;
 }
 
-void EmpiricalRandomVariable::Validate()
+void
+EmpiricalRandomVariable::Validate()
 {
     NS_LOG_FUNCTION(this);
 
@@ -1640,7 +1746,8 @@ void EmpiricalRandomVariable::Validate()
 
 NS_OBJECT_ENSURE_REGISTERED(BinomialRandomVariable);
 
-TypeId BinomialRandomVariable::GetTypeId()
+TypeId
+BinomialRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::BinomialRandomVariable")
@@ -1666,7 +1773,8 @@ BinomialRandomVariable::BinomialRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double BinomialRandomVariable::GetValue(uint32_t trials, double probability)
+double
+BinomialRandomVariable::GetValue(uint32_t trials, double probability)
 {
     double successes = 0;
 
@@ -1688,7 +1796,8 @@ double BinomialRandomVariable::GetValue(uint32_t trials, double probability)
     return successes;
 }
 
-uint32_t BinomialRandomVariable::GetInteger(uint32_t trials, uint32_t probability)
+uint32_t
+BinomialRandomVariable::GetInteger(uint32_t trials, uint32_t probability)
 {
     auto v = static_cast<uint32_t>(GetValue(trials, probability));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream() << " trials: " << trials
@@ -1696,14 +1805,16 @@ uint32_t BinomialRandomVariable::GetInteger(uint32_t trials, uint32_t probabilit
     return v;
 }
 
-double BinomialRandomVariable::GetValue()
+double
+BinomialRandomVariable::GetValue()
 {
     return GetValue(m_trials, m_probability);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(BernoulliRandomVariable);
 
-TypeId BernoulliRandomVariable::GetTypeId()
+TypeId
+BernoulliRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::BernoulliRandomVariable")
@@ -1724,7 +1835,8 @@ BernoulliRandomVariable::BernoulliRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double BernoulliRandomVariable::GetValue(double probability)
+double
+BernoulliRandomVariable::GetValue(double probability)
 {
     double v = Peek()->RandU01();
     if (IsAntithetic())
@@ -1738,7 +1850,8 @@ double BernoulliRandomVariable::GetValue(double probability)
     return value;
 }
 
-uint32_t BernoulliRandomVariable::GetInteger(uint32_t probability)
+uint32_t
+BernoulliRandomVariable::GetInteger(uint32_t probability)
 {
     auto v = static_cast<uint32_t>(GetValue(probability));
     NS_LOG_DEBUG("integer value: " << v << " stream: " << GetStream()
@@ -1746,14 +1859,16 @@ uint32_t BernoulliRandomVariable::GetInteger(uint32_t probability)
     return v;
 }
 
-double BernoulliRandomVariable::GetValue()
+double
+BernoulliRandomVariable::GetValue()
 {
     return GetValue(m_probability);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(LaplacianRandomVariable);
 
-TypeId LaplacianRandomVariable::GetTypeId()
+TypeId
+LaplacianRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::LaplacianRandomVariable")
@@ -1785,22 +1900,26 @@ LaplacianRandomVariable::LaplacianRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double LaplacianRandomVariable::GetLocation() const
+double
+LaplacianRandomVariable::GetLocation() const
 {
     return m_location;
 }
 
-double LaplacianRandomVariable::GetScale() const
+double
+LaplacianRandomVariable::GetScale() const
 {
     return m_scale;
 }
 
-double LaplacianRandomVariable::GetBound() const
+double
+LaplacianRandomVariable::GetBound() const
 {
     return m_bound;
 }
 
-double LaplacianRandomVariable::GetValue(double location, double scale, double bound)
+double
+LaplacianRandomVariable::GetValue(double location, double scale, double bound)
 {
     NS_LOG_FUNCTION(this << location << scale << bound);
     NS_ABORT_MSG_IF(scale <= 0, "Scale parameter should be larger than 0");
@@ -1826,32 +1945,37 @@ double LaplacianRandomVariable::GetValue(double location, double scale, double b
     }
 }
 
-uint32_t LaplacianRandomVariable::GetInteger(uint32_t location, uint32_t scale, uint32_t bound)
+uint32_t
+LaplacianRandomVariable::GetInteger(uint32_t location, uint32_t scale, uint32_t bound)
 {
     NS_LOG_FUNCTION(this << location << scale << bound);
     return static_cast<uint32_t>(GetValue(location, scale, bound));
 }
 
-double LaplacianRandomVariable::GetValue()
+double
+LaplacianRandomVariable::GetValue()
 {
     NS_LOG_FUNCTION(this);
     return GetValue(m_location, m_scale, m_bound);
 }
 
-double LaplacianRandomVariable::GetVariance(double scale)
+double
+LaplacianRandomVariable::GetVariance(double scale)
 {
     NS_LOG_FUNCTION(scale);
     return 2.0 * std::pow(scale, 2.0);
 }
 
-double LaplacianRandomVariable::GetVariance() const
+double
+LaplacianRandomVariable::GetVariance() const
 {
     return GetVariance(m_scale);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(LargestExtremeValueRandomVariable);
 
-TypeId LargestExtremeValueRandomVariable::GetTypeId()
+TypeId
+LargestExtremeValueRandomVariable::GetTypeId()
 {
     static TypeId tid =
         TypeId("ns3::LargestExtremeValueRandomVariable")
@@ -1878,17 +2002,20 @@ LargestExtremeValueRandomVariable::LargestExtremeValueRandomVariable()
     NS_LOG_FUNCTION(this);
 }
 
-double LargestExtremeValueRandomVariable::GetLocation() const
+double
+LargestExtremeValueRandomVariable::GetLocation() const
 {
     return m_location;
 }
 
-double LargestExtremeValueRandomVariable::GetScale() const
+double
+LargestExtremeValueRandomVariable::GetScale() const
 {
     return m_scale;
 }
 
-double LargestExtremeValueRandomVariable::GetValue(double location, double scale)
+double
+LargestExtremeValueRandomVariable::GetValue(double location, double scale)
 {
     NS_LOG_FUNCTION(this << location << scale);
     NS_ABORT_MSG_IF(scale <= 0, "Scale parameter should be larger than 0");
@@ -1907,36 +2034,42 @@ double LargestExtremeValueRandomVariable::GetValue(double location, double scale
     return r;
 }
 
-uint32_t LargestExtremeValueRandomVariable::GetInteger(uint32_t location, uint32_t scale)
+uint32_t
+LargestExtremeValueRandomVariable::GetInteger(uint32_t location, uint32_t scale)
 {
     NS_LOG_FUNCTION(this << location << scale);
     return static_cast<uint32_t>(GetValue(location, scale));
 }
 
-double LargestExtremeValueRandomVariable::GetValue()
+double
+LargestExtremeValueRandomVariable::GetValue()
 {
     NS_LOG_FUNCTION(this);
     return GetValue(m_location, m_scale);
 }
 
-double LargestExtremeValueRandomVariable::GetMean(double location, double scale)
+double
+LargestExtremeValueRandomVariable::GetMean(double location, double scale)
 {
     NS_LOG_FUNCTION(location << scale);
     return (location + (scale * 0.5772156649));
 }
 
-double LargestExtremeValueRandomVariable::GetMean() const
+double
+LargestExtremeValueRandomVariable::GetMean() const
 {
     return GetMean(m_location, m_scale);
 }
 
-double LargestExtremeValueRandomVariable::GetVariance(double scale)
+double
+LargestExtremeValueRandomVariable::GetVariance(double scale)
 {
     NS_LOG_FUNCTION(scale);
     return std::pow((scale * M_PI), 2) / 6.0;
 }
 
-double LargestExtremeValueRandomVariable::GetVariance() const
+double
+LargestExtremeValueRandomVariable::GetVariance() const
 {
     return GetVariance(m_scale);
 }
