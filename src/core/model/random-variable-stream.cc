@@ -2052,7 +2052,7 @@ double
 LargestExtremeValueRandomVariable::GetMean(double location, double scale)
 {
     NS_LOG_FUNCTION(location << scale);
-    return (location + (scale * 0.5772156649));
+    return (location + (scale * std::numbers::egamma));
 }
 
 double
@@ -2065,7 +2065,7 @@ double
 LargestExtremeValueRandomVariable::GetVariance(double scale)
 {
     NS_LOG_FUNCTION(scale);
-    return std::pow((scale * M_PI), 2) / 6.0;
+    return std::pow((scale * std::numbers::pi), 2) / 6.0;
 }
 
 double
