@@ -30,11 +30,11 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("WifiErrorRateModelsTest");
 
 static double
-FromRss(dBW_u rss)
+FromRss(dBm_u rss)
 {
     // SINR is based on receiver noise figure of 7 dB and thermal noise
     // of -100.5522786 dBm in this 22 MHz bandwidth at 290K
-    dBW_u noisePower = -100.5522786 + 7;
+    dBm_u noisePower = -100.5522786 + 7;
 
     dB_u sinr = rss - noisePower;
     // return SINR expressed as ratio
@@ -653,6 +653,47 @@ WifiErrorRateModelsTestCaseMimo::DoRun()
 }
 
 /**
+ * Helper function to avoid tolerance issue with floating-point keys in std::map
+ *
+ * @param m the map to search
+ * @param key the key to find
+ * @param tolerance the tolerance for equality (default 1e-9)
+ * @return iterator to the matching element, or m.end() if not found
+ */
+template <typename MapType>
+typename MapType::const_iterator
+FindWithTolerance(const MapType& m, double key, double tolerance = 1e-9)
+{
+    // Define a small absolute tolerance for near-zero comparisons
+    const double absTol = std::numeric_limits<double>::epsilon() * 10;
+
+    // Calculate the absolute bounds needed for the initial O(log N) search.
+    // This requires absolute bounds for map::lower_bound to work correctly.
+    double searchLowerBound = key - std::abs(key * tolerance) - absTol;
+    double searchUpperBound = key + std::abs(key * tolerance) + absTol;
+
+    auto it = m.lower_bound(searchLowerBound);
+
+    // Iterate through the range using relative comparison logic for the final check
+    while (it != m.end() && it->first <= searchUpperBound)
+    {
+        double mapKey = it->first;
+
+        // Use a robust mixed relative/absolute comparison function
+        bool withinTolerance = std::abs(mapKey - key) <=
+                                   tolerance * std::max({std::abs(mapKey), std::abs(key), 1.0}) ||
+                               std::abs(mapKey - key) <= absTol;
+
+        if (withinTolerance)
+        {
+            return it; // Found a match
+        }
+        ++it;
+    }
+    return m.end();
+}
+
+/**
  * map of PER values that have been manually computed for a given MCS, size (in bytes) and SNR (in
  * dB) in order to verify against the PER calculated by the model
  */
@@ -1078,7 +1119,7 @@ TableBasedErrorRateTestCase::DoRun()
             auto it = expectedTableValues.find(std::make_pair(m_mode.GetMcsValue(), m_size));
             if (it != expectedTableValues.end())
             {
-                auto itValue = it->second.find(snr);
+                auto itValue = FindWithTolerance(it->second, snr);
                 if (itValue != it->second.end())
                 {
                     expectedValue = itValue->second;
