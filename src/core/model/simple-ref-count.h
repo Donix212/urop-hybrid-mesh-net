@@ -17,6 +17,35 @@
 #include <stdint.h>
 
 /**
+ * @brief Forces an immediate, unrecoverable program termination in a portable way.
+ *
+ * This function triggers a low-level trap or abort that halts program execution,
+ * typically used in fatal error paths, assertions, or conditions that must not continue.
+ *
+ * On compilers that support it, this uses an intrinsic or built-in mechanism to generate
+ * a trap instruction (such as `ud2` on x86), which is typically faster and more direct
+ * than calling `std::abort()`.
+ *
+ * - GCC / Clang: Uses `__builtin_trap()` which emits a trap instruction.
+ * - MSVC: Uses `__fastfail(1)` to terminate execution with a fast-fail condition.
+ * - Other platforms: Falls back to `std::abort()` which raises SIGABRT.
+ *
+ * @note This function does not return. It is intended for unrecoverable errors and
+ *       is usually treated as `[[noreturn]]` by the compiler (even if not explicitly marked).
+ */
+[[noreturn]] static inline void
+portable_trap()
+{
+#if defined(__GNUC__) || defined(__clang__)
+    __builtin_trap();
+#elif defined(_MSC_VER)
+    __fastfail(1); // or use __debugbreak() for debugging
+#else
+    std::abort(); // Fallback
+#endif
+}
+
+/**
  * @file
  * @ingroup ptr
  * ns3::SimpleRefCount declaration and template implementation.
@@ -108,8 +137,15 @@ class SimpleRefCount : public PARENT
      */
     inline void Ref() const
     {
-        NS_ASSERT(m_count < std::numeric_limits<uint32_t>::max());
         m_count++;
+        /* Check for m_count wrap-around and abort with trap.
+         * Use of NS_ASSERT here is discouraged because it will prevent
+         * inlining in debug build and there will be no check in release build.
+         */
+        if (m_count == 0)
+        {
+            portable_trap();
+        }
     }
 
     /**
