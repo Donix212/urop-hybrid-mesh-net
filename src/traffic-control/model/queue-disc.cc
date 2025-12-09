@@ -440,23 +440,28 @@ QueueDisc::GetMaxSize() const
     {
     case QueueDiscSizePolicy::NO_LIMITS:
         NS_FATAL_ERROR("The size of this queue disc is not limited");
+        break;
 
     case QueueDiscSizePolicy::SINGLE_INTERNAL_QUEUE:
         if (GetNInternalQueues())
         {
             return GetInternalQueue(0)->GetMaxSize();
         }
+        break;
 
     case QueueDiscSizePolicy::SINGLE_CHILD_QUEUE_DISC:
         if (GetNQueueDiscClasses())
         {
             return GetQueueDiscClass(0)->GetQueueDisc()->GetMaxSize();
         }
+        break;
 
     case QueueDiscSizePolicy::MULTIPLE_QUEUES:
     default:
-        return m_maxSize;
+        break;
     }
+
+    return m_maxSize;
 }
 
 bool
@@ -480,22 +485,28 @@ QueueDisc::SetMaxSize(QueueSize size)
     {
     case QueueDiscSizePolicy::NO_LIMITS:
         NS_FATAL_ERROR("The size of this queue disc is not limited");
+        return false;
 
     case QueueDiscSizePolicy::SINGLE_INTERNAL_QUEUE:
-        if (GetNInternalQueues())
+        if (GetNInternalQueues() == 0)
         {
-            GetInternalQueue(0)->SetMaxSize(size);
+            return false;
         }
+        GetInternalQueue(0)->SetMaxSize(size);
+        break;
 
     case QueueDiscSizePolicy::SINGLE_CHILD_QUEUE_DISC:
-        if (GetNQueueDiscClasses())
+        if (GetNQueueDiscClasses() == 0)
         {
-            GetQueueDiscClass(0)->GetQueueDisc()->SetMaxSize(size);
+            return false;
         }
+        GetQueueDiscClass(0)->GetQueueDisc()->SetMaxSize(size);
+        break;
 
     case QueueDiscSizePolicy::MULTIPLE_QUEUES:
     default:
         m_maxSize = size;
+        break;
     }
     return true;
 }
