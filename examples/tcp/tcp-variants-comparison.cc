@@ -24,20 +24,17 @@
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
-#include "ns3/enum.h"
-#include "ns3/error-model.h"
-#include "ns3/event-id.h"
 #include "ns3/flow-monitor-helper.h"
+#include "ns3/gnuplot-helper.h"
+#include "ns3/gnuplot.h"
 #include "ns3/internet-module.h"
-#include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
-#include "ns3/point-to-point-module.h"
-#include "ns3/tcp-header.h"
+#include "ns3/point-to-point-helper.h"
 #include "ns3/traffic-control-module.h"
-#include "ns3/udp-header.h"
 
 #include <fstream>
-#include <iostream>
+#include <ostream>
+#include <stdint.h>
 #include <string>
 
 using namespace ns3;
@@ -48,16 +45,20 @@ static std::map<uint32_t, bool> firstCwnd;                      //!< First conge
 static std::map<uint32_t, bool> firstSshThr;                    //!< First SlowStart threshold.
 static std::map<uint32_t, bool> firstRtt;                       //!< First RTT.
 static std::map<uint32_t, bool> firstRto;                       //!< First RTO.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> cWndStream; //!< Congstion window output stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> cWndStream; //!< Congestion window out stream.
 static std::map<uint32_t, Ptr<OutputStreamWrapper>>
-    ssThreshStream; //!< SlowStart threshold output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> rttStream;      //!< RTT output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> rtoStream;      //!< RTO output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextTxStream;   //!< Next TX output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextRxStream;   //!< Next RX output stream.
-static std::map<uint32_t, Ptr<OutputStreamWrapper>> inFlightStream; //!< In flight output stream.
+    ssThreshStream;                                            //!< SlowStart threshold out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> rttStream; //!< RTT out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> rtoStream; //!< RTO out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextTxStream;   //!< Next TX out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> nextRxStream;   //!< Next RX out stream.
+static std::map<uint32_t, Ptr<OutputStreamWrapper>> inFlightStream; //!< In flight out stream.
 static std::map<uint32_t, uint32_t> cWndValue;                      //!< congestion window value.
 static std::map<uint32_t, uint32_t> ssThreshValue;                  //!< SlowStart threshold value.
+
+// GnuPlot data structures
+static GnuplotHelper gnuplotHelper; //!< GnuPlot helper for automatic plot generation
+static bool enableGnuplot = false;  //!< Flag to enable/disable GnuPlot generation
 
 /**
  * Get the Node Id From Context.
@@ -371,6 +372,7 @@ main(int argc, char* argv[])
     cmd.AddValue("run", "Run index (for setting repeatable seeds)", run);
     cmd.AddValue("flow_monitor", "Enable flow monitor", flow_monitor);
     cmd.AddValue("pcap_tracing", "Enable or disable PCAP tracing", pcap);
+    cmd.AddValue("gnuplot", "Enable GnuPlot generation", enableGnuplot);
     cmd.AddValue("queue_disc_type",
                  "Queue disc type for gateway (e.g. ns3::CoDelQueueDisc)",
                  queue_disc_type);
@@ -382,6 +384,18 @@ main(int argc, char* argv[])
 
     SeedManager::SetSeed(1);
     SeedManager::SetRun(run);
+
+    // Configure GnuPlot helper if enabled
+    if (enableGnuplot)
+    {
+        gnuplotHelper.ConfigurePlot(prefix_file_name + "-tcp-comparison",
+                                    "TCP Variants Performance Comparison",
+                                    "Time (Seconds)",
+                                    "Value",
+                                    "png");
+        std::cout << "GnuPlot generation enabled. Plots will be generated for TCP metrics."
+                  << std::endl;
+    }
 
     // User may find it convenient to enable logging
     // LogComponentEnable("TcpVariantsComparison", LOG_LEVEL_ALL);
@@ -401,8 +415,8 @@ main(int argc, char* argv[])
     NS_LOG_LOGIC("TCP ADU size is: " << tcp_adu_size);
 
     // Set the simulation start and stop time
-    double start_time = 0.1;
-    double stop_time = start_time + duration;
+    Time start_time = Seconds(0.1);
+    Time stop_time = start_time + Seconds(duration);
 
     // 2 MB of TCP buffer
     Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue(1 << 21));
@@ -517,13 +531,13 @@ main(int argc, char* argv[])
         ftp.SetAttribute("MaxBytes", UintegerValue(data_mbytes * 1000000));
 
         ApplicationContainer sourceApp = ftp.Install(sources.Get(i));
-        sourceApp.Start(Seconds(start_time * i));
-        sourceApp.Stop(Seconds(stop_time - 3));
+        sourceApp.Start(start_time * i);
+        sourceApp.Stop(stop_time - Seconds(3));
 
         sinkHelper.SetAttribute("Protocol", TypeIdValue(TcpSocketFactory::GetTypeId()));
         ApplicationContainer sinkApp = sinkHelper.Install(sinks.Get(i));
-        sinkApp.Start(Seconds(start_time * i));
-        sinkApp.Stop(Seconds(stop_time));
+        sinkApp.Start(start_time * i);
+        sinkApp.Stop(stop_time);
     }
 
     // Set up tracing if enabled
@@ -548,34 +562,60 @@ main(int argc, char* argv[])
             firstRtt[index + 1] = true;
             firstRto[index + 1] = true;
 
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Time trace_time = start_time * index + MilliSeconds(10);
+            Simulator::Schedule(trace_time,
                                 &TraceCwnd,
                                 prefix_file_name + flowString + "-cwnd.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceSsThresh,
                                 prefix_file_name + flowString + "-ssth.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceRtt,
                                 prefix_file_name + flowString + "-rtt.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceRto,
                                 prefix_file_name + flowString + "-rto.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceNextTx,
                                 prefix_file_name + flowString + "-next-tx.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.00001),
+            Simulator::Schedule(trace_time,
                                 &TraceInFlight,
                                 prefix_file_name + flowString + "-inflight.data",
                                 index + 1);
-            Simulator::Schedule(Seconds(start_time * index + 0.1),
+            Simulator::Schedule(trace_time,
                                 &TraceNextRx,
                                 prefix_file_name + flowString + "-next-rx.data",
-                                num_flows + index + 1);
+                                index + 1);
+
+            // Configure GnuPlot probes if enabled
+            if (enableGnuplot)
+            {
+                // Configure probes for congestion window monitoring
+                gnuplotHelper.PlotProbe("ns3::Uinteger32Probe",
+                                        "/NodeList/" + std::to_string(index + 1) +
+                                            "/$ns3::TcpL4Protocol/SocketList/0/CongestionWindow",
+                                        "Output",
+                                        "Congestion Window Flow " + std::to_string(index + 1));
+
+                // Configure probes for slow start threshold monitoring
+                gnuplotHelper.PlotProbe("ns3::Uinteger32Probe",
+                                        "/NodeList/" + std::to_string(index + 1) +
+                                            "/$ns3::TcpL4Protocol/SocketList/0/SlowStartThreshold",
+                                        "Output",
+                                        "Slow Start Threshold Flow " + std::to_string(index + 1));
+
+                // Configure probes for RTT monitoring
+                gnuplotHelper.PlotProbe("ns3::TimeProbe",
+                                        "/NodeList/" + std::to_string(index + 1) +
+                                            "/$ns3::TcpL4Protocol/SocketList/0/RTT",
+                                        "Output",
+                                        "RTT Flow " + std::to_string(index + 1));
+            }
         }
     }
 
@@ -592,7 +632,7 @@ main(int argc, char* argv[])
         flowHelper.InstallAll();
     }
 
-    Simulator::Stop(Seconds(stop_time));
+    Simulator::Stop(stop_time);
     Simulator::Run();
 
     if (flow_monitor)

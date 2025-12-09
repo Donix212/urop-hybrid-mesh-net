@@ -20,22 +20,35 @@
  * of TCP i.e. congestion control algorithm to use.
  */
 
+#include "ns3/applications-module.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
+#include "ns3/core-module.h"
+#include "ns3/gnuplot-helper.h"
+#include "ns3/gnuplot.h"
+#include "ns3/internet-module.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/log.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/mobility-model.h"
+#include "ns3/network-module.h"
 #include "ns3/on-off-helper.h"
 #include "ns3/packet-sink-helper.h"
 #include "ns3/packet-sink.h"
 #include "ns3/ssid.h"
 #include "ns3/string.h"
 #include "ns3/tcp-westwood-plus.h"
+#include "ns3/traffic-control-module.h"
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/yans-wifi-helper.h"
+
+#include <fstream>
+#include <ostream>
+#include <stdint.h>
+#include <string>
+#include <sys/stat.h>
 
 NS_LOG_COMPONENT_DEFINE("wifi-tcp");
 
@@ -43,6 +56,10 @@ using namespace ns3;
 
 Ptr<PacketSink> sink;     //!< Pointer to the packet sink application
 uint64_t lastTotalRx = 0; //!< The value of the last total received bytes
+
+// GnuPlot variables for throughput tracking
+static Gnuplot2dDataset throughputDataset; //!< Dataset for throughput over time
+static bool enableGnuplot = false;         //!< Flag to enable GnuPlot generation
 
 /**
  * Calculate the throughput
@@ -54,6 +71,13 @@ CalculateThroughput()
     double cur = (sink->GetTotalRx() - lastTotalRx) * 8.0 /
                  1e5; /* Convert Application RX Packets to MBits. */
     std::cout << now.GetSeconds() << "s: \t" << cur << " Mbit/s" << std::endl;
+
+    // Add data point to GnuPlot dataset if enabled
+    if (enableGnuplot)
+    {
+        throughputDataset.Add(now.GetSeconds(), cur);
+    }
+
     lastTotalRx = sink->GetTotalRx();
     Simulator::Schedule(MilliSeconds(100), &CalculateThroughput);
 }
@@ -67,6 +91,7 @@ main(int argc, char* argv[])
     std::string phyRate{"HtMcs7"};        /* Physical layer bitrate. */
     Time simulationTime{"10s"};           /* Simulation time. */
     bool pcapTracing{false};              /* PCAP Tracing is enabled or not. */
+    std::string outputPrefix{"wifi-tcp"}; /* Output file prefix for plots. */
 
     /* Command line argument parser setup. */
     CommandLine cmd(__FILE__);
@@ -80,7 +105,18 @@ main(int argc, char* argv[])
     cmd.AddValue("phyRate", "Physical layer bitrate", phyRate);
     cmd.AddValue("simulationTime", "Simulation time in seconds", simulationTime);
     cmd.AddValue("pcap", "Enable/disable PCAP Tracing", pcapTracing);
+    cmd.AddValue("gnuplot", "Enable/disable GnuPlot generation", enableGnuplot);
+    cmd.AddValue("outputPrefix", "Prefix for output files", outputPrefix);
     cmd.Parse(argc, argv);
+
+    // Configure GnuPlot dataset if enabled
+    if (enableGnuplot)
+    {
+        throughputDataset.SetTitle("TCP Throughput over Time");
+        throughputDataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
+        std::cout << "GnuPlot generation enabled. Plot will be generated for TCP throughput."
+                  << std::endl;
+    }
 
     tcpVariant = std::string("ns3::") + tcpVariant;
     // Select TCP variant
@@ -197,5 +233,46 @@ main(int argc, char* argv[])
         exit(1);
     }
     std::cout << "\nAverage throughput: " << averageThroughput << " Mbit/s" << std::endl;
+
+    // Generate GnuPlot output if enabled
+    if (enableGnuplot)
+    {
+        Gnuplot plot(outputPrefix + "-throughput.png");
+        plot.SetTitle("TCP Throughput over Time (" + tcpVariant + ")");
+        plot.SetTerminal("png");
+        plot.SetLegend("Time (Seconds)", "Throughput (Mbit/s)");
+        plot.AppendExtra("set grid");
+        plot.AddDataset(throughputDataset);
+
+        std::ofstream plotFile(outputPrefix + "-throughput.plt");
+        plot.GenerateOutput(plotFile);
+        plotFile.close();
+
+        std::ofstream scriptFile(outputPrefix + "-throughput.sh");
+        scriptFile << "#!/bin/bash" << std::endl;
+        scriptFile << "gnuplot " << outputPrefix << "-throughput.plt" << std::endl;
+        scriptFile.close();
+        chmod((outputPrefix + "-throughput.sh").c_str(), 0755);
+
+        std::cout << "GnuPlot files generated:" << std::endl;
+        std::cout << "  Plot file: " << outputPrefix << "-throughput.plt" << std::endl;
+        std::cout << "  Script file: " << outputPrefix << "-throughput.sh" << std::endl;
+        std::cout << "  Image will be: " << outputPrefix << "-throughput.png" << std::endl;
+    }
+
+    // Write out the simulation configuration to a file
+    {
+        std::ofstream configFile(outputPrefix + "-config.txt");
+        configFile << "payloadSize: " << payloadSize << std::endl;
+        configFile << "dataRate: " << dataRate << std::endl;
+        configFile << "tcpVariant: " << tcpVariant << std::endl;
+        configFile << "phyRate: " << phyRate << std::endl;
+        configFile << "simulationTime: " << simulationTime.GetSeconds() << "s" << std::endl;
+        configFile << "pcapTracing: " << (pcapTracing ? "true" : "false") << std::endl;
+        configFile << "enableGnuplot: " << (enableGnuplot ? "true" : "false") << std::endl;
+        configFile << "outputPrefix: " << outputPrefix << std::endl;
+        configFile.close();
+    };
+
     return 0;
 }

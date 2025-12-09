@@ -15,6 +15,8 @@
 #include "ns3/command-line.h"
 #include "ns3/config.h"
 #include "ns3/double.h"
+#include "ns3/gnuplot-helper.h"
+#include "ns3/gnuplot.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
@@ -35,6 +37,7 @@
 #include "ns3/yans-wifi-helper.h"
 
 #include <iomanip>
+#include <sys/stat.h>
 
 // This is a simple example of an IEEE 802.11n Wi-Fi network.
 //
@@ -124,6 +127,8 @@ main(int argc, char* argv[])
     std::string wifiType{"ns3::SpectrumWifiPhy"};
     std::string errorModelType{"ns3::NistErrorRateModel"};
     bool enablePcap{false};
+    bool enableGnuplot{true};
+    std::string outputPrefix{"wifi-spectrum-per"};
     const uint32_t tcpPacketSize{1448};
 
     CommandLine cmd(__FILE__);
@@ -136,6 +141,8 @@ main(int argc, char* argv[])
                  "select ns3::NistErrorRateModel or ns3::YansErrorRateModel",
                  errorModelType);
     cmd.AddValue("enablePcap", "enable pcap output", enablePcap);
+    cmd.AddValue("enableGnuplot", "enable gnuplot generation", enableGnuplot);
+    cmd.AddValue("outputPrefix", "prefix for output files", outputPrefix);
     cmd.Parse(argc, argv);
 
     uint16_t startIndex = 0;
@@ -148,6 +155,53 @@ main(int argc, char* argv[])
 
     std::cout << "wifiType: " << wifiType << " distance: " << distance
               << "m; time: " << simulationTime << "; TxPower: 1 dBm (1.3 mW)" << std::endl;
+    std::cout << "GnuPlot generation: " << (enableGnuplot ? "enabled" : "disabled") << std::endl;
+
+    // Create Gnuplot datasets for collecting results
+    Gnuplot throughputPlot;
+    Gnuplot signalPlot;
+    Gnuplot snrPlot;
+    Gnuplot2dDataset throughputDataset;
+    Gnuplot2dDataset signalDataset;
+    Gnuplot2dDataset noiseDataset;
+    Gnuplot2dDataset snrDataset;
+
+    if (enableGnuplot)
+    {
+        // Configure throughput plot
+        throughputPlot = Gnuplot(outputPrefix + "-throughput.png");
+        throughputPlot.SetTitle("WiFi Throughput vs MCS Index");
+        throughputPlot.SetTerminal("png");
+        throughputPlot.SetLegend("MCS Index", "Throughput (Mbit/s)");
+        throughputPlot.AppendExtra("set grid");
+
+        throughputDataset.SetTitle("Measured Throughput");
+        throughputDataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
+
+        // Configure signal quality plot
+        signalPlot = Gnuplot(outputPrefix + "-signal-quality.png");
+        signalPlot.SetTitle("WiFi Signal Quality vs MCS Index");
+        signalPlot.SetTerminal("png");
+        signalPlot.SetLegend("MCS Index", "Signal Level (dBm)");
+        signalPlot.AppendExtra("set grid");
+
+        signalDataset.SetTitle("Signal Level");
+        signalDataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
+
+        noiseDataset.SetTitle("Noise Level");
+        noiseDataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
+
+        // Configure SNR plot
+        snrPlot = Gnuplot(outputPrefix + "-snr.png");
+        snrPlot.SetTitle("WiFi SNR vs MCS Index");
+        snrPlot.SetTerminal("png");
+        snrPlot.SetLegend("MCS Index", "SNR (dB)");
+        snrPlot.AppendExtra("set grid");
+
+        snrDataset.SetTitle("Signal-to-Noise Ratio");
+        snrDataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
+    }
+
     std::cout << std::setw(5) << "index" << std::setw(6) << "MCS" << std::setw(13) << "Rate (Mb/s)"
               << std::setw(12) << "Tput (Mb/s)" << std::setw(10) << "Received " << std::setw(12)
               << "Signal (dBm)" << std::setw(12) << "Noise (dBm)" << std::setw(9) << "SNR (dB)"
@@ -519,8 +573,18 @@ main(int argc, char* argv[])
                   << std::setw(8) << totalPacketsThrough;
         if (totalPacketsThrough > 0)
         {
+            double snr = g_signalDbmAvg - g_noiseDbmAvg;
             std::cout << std::setw(12) << g_signalDbmAvg << std::setw(12) << g_noiseDbmAvg
-                      << std::setw(12) << (g_signalDbmAvg - g_noiseDbmAvg) << std::endl;
+                      << std::setw(12) << snr << std::endl;
+
+            // Add data points to GnuPlot datasets if enabled
+            if (enableGnuplot)
+            {
+                throughputDataset.Add(i, throughput);
+                signalDataset.Add(i, g_signalDbmAvg);
+                noiseDataset.Add(i, g_noiseDbmAvg);
+                snrDataset.Add(i, snr);
+            }
         }
         else
         {
@@ -529,5 +593,58 @@ main(int argc, char* argv[])
         }
         Simulator::Destroy();
     }
+
+    // Generate GnuPlot output files if enabled
+    if (enableGnuplot)
+    {
+        // Add datasets to plots
+        throughputPlot.AddDataset(throughputDataset);
+
+        signalPlot.AddDataset(signalDataset);
+        signalPlot.AddDataset(noiseDataset);
+
+        snrPlot.AddDataset(snrDataset);
+
+        // Generate plot files
+        std::ofstream throughputFile(outputPrefix + "-throughput.plt");
+        throughputPlot.GenerateOutput(throughputFile);
+        throughputFile.close();
+
+        std::ofstream signalFile(outputPrefix + "-signal-quality.plt");
+        signalPlot.GenerateOutput(signalFile);
+        signalFile.close();
+
+        std::ofstream snrFile(outputPrefix + "-snr.plt");
+        snrPlot.GenerateOutput(snrFile);
+        snrFile.close();
+
+        // Generate shell scripts to run gnuplot
+        std::ofstream throughputScript(outputPrefix + "-throughput.sh");
+        throughputScript << "#!/bin/bash" << std::endl;
+        throughputScript << "gnuplot " << outputPrefix << "-throughput.plt" << std::endl;
+        throughputScript.close();
+        chmod((outputPrefix + "-throughput.sh").c_str(), 0755);
+
+        std::ofstream signalScript(outputPrefix + "-signal-quality.sh");
+        signalScript << "#!/bin/bash" << std::endl;
+        signalScript << "gnuplot " << outputPrefix << "-signal-quality.plt" << std::endl;
+        signalScript.close();
+        chmod((outputPrefix + "-signal-quality.sh").c_str(), 0755);
+
+        std::ofstream snrScript(outputPrefix + "-snr.sh");
+        snrScript << "#!/bin/bash" << std::endl;
+        snrScript << "gnuplot " << outputPrefix << "-snr.plt" << std::endl;
+        snrScript.close();
+        chmod((outputPrefix + "-snr.sh").c_str(), 0755);
+
+        std::cout << "\nGnuPlot files generated:" << std::endl;
+        std::cout << "  Throughput: " << outputPrefix << "-throughput.plt (run " << outputPrefix
+                  << "-throughput.sh)" << std::endl;
+        std::cout << "  Signal Quality: " << outputPrefix << "-signal-quality.plt (run "
+                  << outputPrefix << "-signal-quality.sh)" << std::endl;
+        std::cout << "  SNR: " << outputPrefix << "-snr.plt (run " << outputPrefix << "-snr.sh)"
+                  << std::endl;
+    }
+
     return 0;
 }

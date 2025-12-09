@@ -51,6 +51,7 @@ SOURCES = \
 	${SRC}/stats/doc/data-collection.rst \
 	${SRC}/stats/doc/data-collection-overview.rst \
 	${SRC}/stats/doc/statistics.rst \
+	${SRC}/stats/doc/stats-example-gnuplot-helper.rst \
 	${SRC}/stats/doc/data-collection-helpers.rst \
 	${SRC}/stats/doc/probe.rst \
 	${SRC}/stats/doc/collector.rst \
