@@ -8,6 +8,12 @@
 #ifndef BYTE_TAG_LIST_H
 #define BYTE_TAG_LIST_H
 
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::ByteTagList declaration.
+ */
+
 #define __STDC_LIMIT_MACROS
 #include "tag-buffer.h"
 
@@ -252,6 +258,12 @@ class ByteTagList
     uint32_t Deserialize(const uint32_t* buffer, uint32_t size);
 
   private:
+    /** Size of byte tag list free list, if enabled. */
+    static constexpr std::size_t FREE_LIST_SIZE{1000};
+
+    /** Maximum offset in a Buffer. */
+    static constexpr auto OFFSET_MAX = std::numeric_limits<int32_t>::max();
+
     /**
      * @brief Returns an iterator pointing to the very first tag in this list.
      *

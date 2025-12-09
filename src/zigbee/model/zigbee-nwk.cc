@@ -20,6 +20,7 @@
 using namespace ns3::lrwpan;
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     std::clog << "[" << m_nwkNetworkAddress << " | " << m_nwkIeeeAddress << "] ";
 

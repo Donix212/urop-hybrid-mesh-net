@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2022 Universita' degli Studi di Napoli Federico II
-
  *
  * SPDX-License-Identifier: GPL-2.0-only
  *

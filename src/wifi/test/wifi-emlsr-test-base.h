@@ -9,6 +9,11 @@
 #ifndef WIFI_EMLSR_TEST_H
 #define WIFI_EMLSR_TEST_H
 
+/**
+ * @file
+ * @ingroup wifi-test
+ */
+
 #include "ns3/adhoc-wifi-mac.h"
 #include "ns3/ap-wifi-mac.h"
 #include "ns3/error-model.h"
@@ -30,7 +35,10 @@
 #include <vector>
 
 using namespace ns3;
+/** @cond */ // Doxygen mysteriously doesn't know about this
 using namespace std::string_literals;
+
+/** @endcond */
 
 // forward declaration
 namespace ns3

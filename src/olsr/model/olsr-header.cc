@@ -5,6 +5,11 @@
  *
  * Author: Gustavo J. A. M. Carneiro  <gjc@inescporto.pt>
  */
+/**
+ * @file
+ * @ingroup olsr
+ * Class ns3::olsr::PacketHeader and ns3::olsr::MessageHeader implementations.
+ */
 
 #include "olsr-header.h"
 
@@ -12,10 +17,6 @@
 #include "ns3/log.h"
 
 #include <cmath>
-
-#define IPV4_ADDRESS_SIZE 4
-#define OLSR_MSG_HEADER_SIZE 12
-#define OLSR_PKT_HEADER_SIZE 4
 
 namespace ns3
 {
@@ -25,15 +26,9 @@ NS_LOG_COMPONENT_DEFINE("OlsrHeader");
 namespace olsr
 {
 
-/// Scaling factor used in RFC 3626.
-#define OLSR_C 0.0625
+/** Scaling factor used in @RFC{3626}. */
+constexpr double OLSR_C{0.0625};
 
-///
-/// @brief Converts a decimal number of seconds to the mantissa/exponent format.
-///
-/// @param seconds decimal number of seconds we want to convert.
-/// @return the number of seconds in mantissa/exponent format.
-///
 uint8_t
 SecondsToEmf(double seconds)
 {
@@ -71,12 +66,6 @@ SecondsToEmf(double seconds)
     return (uint8_t)((a << 4) | b);
 }
 
-///
-/// @brief Converts a number of seconds in the mantissa/exponent format to a decimal number.
-///
-/// @param olsrFormat number of seconds in mantissa/exponent format.
-/// @return the decimal number of seconds.
-///
 double
 EmfToSeconds(uint8_t olsrFormat)
 {
@@ -277,7 +266,7 @@ MessageHeader::Serialize(Buffer::Iterator start) const
 uint32_t
 MessageHeader::Deserialize(Buffer::Iterator start)
 {
-    uint32_t size;
+    uint32_t size = OLSR_MSG_HEADER_SIZE;
     Buffer::Iterator i = start;
     m_messageType = (MessageType)i.ReadU8();
     NS_ASSERT(m_messageType >= HELLO_MESSAGE && m_messageType <= HNA_MESSAGE);
@@ -287,20 +276,20 @@ MessageHeader::Deserialize(Buffer::Iterator start)
     m_timeToLive = i.ReadU8();
     m_hopCount = i.ReadU8();
     m_messageSequenceNumber = i.ReadNtohU16();
-    size = OLSR_MSG_HEADER_SIZE;
+    uint32_t msgPayloadSize = m_messageSize - OLSR_MSG_HEADER_SIZE;
     switch (m_messageType)
     {
     case MID_MESSAGE:
-        size += m_message.mid.Deserialize(i, m_messageSize - OLSR_MSG_HEADER_SIZE);
+        size += m_message.mid.Deserialize(i, msgPayloadSize);
         break;
     case HELLO_MESSAGE:
-        size += m_message.hello.Deserialize(i, m_messageSize - OLSR_MSG_HEADER_SIZE);
+        size += m_message.hello.Deserialize(i, msgPayloadSize);
         break;
     case TC_MESSAGE:
-        size += m_message.tc.Deserialize(i, m_messageSize - OLSR_MSG_HEADER_SIZE);
+        size += m_message.tc.Deserialize(i, msgPayloadSize);
         break;
     case HNA_MESSAGE:
-        size += m_message.hna.Deserialize(i, m_messageSize - OLSR_MSG_HEADER_SIZE);
+        size += m_message.hna.Deserialize(i, msgPayloadSize);
         break;
     default:
         NS_ASSERT(false);

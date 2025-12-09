@@ -9,6 +9,12 @@
 #ifndef WIFI_TIMING_ELEMENT_H
 #define WIFI_TIMING_ELEMENT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::IeBeaconTimingUnit and ns3::dot11s::IeBeaconTiming declarations.
+ */
+
 #include "ns3/mesh-information-element-vector.h"
 #include "ns3/nstime.h"
 
@@ -157,7 +163,17 @@ class IeBeaconTiming : public WifiInformationElement
 };
 
 bool operator==(const IeBeaconTimingUnit& a, const IeBeaconTimingUnit& b);
+
+/**
+ * @ingroup dot11s
+ * Stream insertion operator for IeBeaconTiming.
+ *
+ * @param os Output stream.
+ * @param beaconTiming The IeBeaconTiming
+ * @return A reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IeBeaconTiming& beaconTiming);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

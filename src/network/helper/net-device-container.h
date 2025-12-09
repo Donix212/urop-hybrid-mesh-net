@@ -8,6 +8,12 @@
 #ifndef NET_DEVICE_CONTAINER_H
 #define NET_DEVICE_CONTAINER_H
 
+/**
+ * @file
+ * @ingroup netdevice
+ * Class ns3::NetDeviceContainer declaration.
+ */
+
 #include "ns3/net-device.h"
 
 #include <stdint.h>

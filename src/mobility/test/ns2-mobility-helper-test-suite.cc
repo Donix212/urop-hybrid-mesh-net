@@ -7,22 +7,26 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  * Contributors: Thomas Waldecker <twaldecker@rocketmail.com>
  *               Martín Giachino <martin.giachino@gmail.com>
+ */
+
+/**
+ * @file
+ * @ingroup mobility
  *
- * Brief description: Implementation of a ns2 movement trace file reader.
+ * Brief description: test of a ns2 movement trace file reader.
  *
  * This implementation is based on the ns2 movement documentation of ns2
  * as described in http://www.isi.edu/nsnam/ns/doc/node174.html
  *
  * Valid trace files use the following ns2 statements:
  *
- * $node set X_ x1
- * $node set Y_ y1
- * $node set Z_ z1
- * $ns at $time $node setdest x2 y2 speed
- * $ns at $time $node set X_ x1
- * $ns at $time $node set Y_ Y1
- * $ns at $time $node set Z_ Z1
- *
+ *     $node set X_ x1
+ *     $node set Y_ y1
+ *     $node set Z_ z1
+ *     $ns at $time $node setdest x2 y2 speed
+ *     $ns at $time $node set X_ x1
+ *     $ns at $time $node set Y_ Y1
+ *     $ns at $time $node set Z_ Z1
  */
 
 #include "ns3/config.h"
@@ -45,6 +49,14 @@ NS_LOG_COMPONENT_DEFINE("ns2-mobility-helper-test-suite");
 // -----------------------------------------------------------------------------
 // Testing
 // -----------------------------------------------------------------------------
+
+/**
+ * Compare two Vector's up to a tolerance
+ * @param actual The actual position
+ * @param limit The expected position
+ * @param tol The absolute tolerance on each coordinate
+ * @return @c if the vectors are equal to within the tolerance
+ */
 bool
 AreVectorsEqual(const Vector& actual, const Vector& limit, double tol)
 {

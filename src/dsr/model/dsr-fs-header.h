@@ -20,6 +20,12 @@
 #ifndef DSR_FS_HEADER_H
 #define DSR_FS_HEADER_H
 
+/**
+ * @file
+ * @ingroup dsr
+ * Class ns3::dsr::DsrFsHeader, ns3::dsr::DsrOptionField, ns3::dsr::DsrRoutingHeader declarations.
+ */
+
 #include "dsr-option-header.h"
 
 #include "ns3/header.h"

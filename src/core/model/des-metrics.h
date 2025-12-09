@@ -44,14 +44,14 @@ namespace ns3
  * parse arguments, which will open the JSON file with the same name
  * as the script, and write the JSON header.  Failure to use CommandLine when
  * DES Metrics is enabled will put the trace data in the file
- * \c desTraceFile.json instead. All examples accessible from \c test.py
+ * @c desTraceFile.json instead. All examples accessible from @c test.py
  * use CommandLine, and so generate JSON files.
  *
  * Output from scripts ends up in the current working directory (normally the
- * top level directory). When \c test.py is used to run tests or examples
+ * top level directory). When @c test.py is used to run tests or examples
  * the trace files are generated in a time-stamped subdirectory of
- * \c testpy-output/,  which \c test.py normally deletes.
- * To keep the output of examples, use the \c --retain argument to \c test.py.
+ * @c testpy-output/,  which @c test.py normally deletes.
+ * To keep the output of examples, use the @c --retain argument to @c test.py.
  *
  * The output file has the following form:
  * @verbatim
@@ -68,8 +68,8 @@ namespace ns3
   ...
   ["0",0,"0",0]
  ]
-} \endverbatim
- * The first few fields are self-explanatory. The \c event record consists of
+} @endverbatim
+ * The first few fields are self-explanatory. The @c event record consists of
  * the source context, the event send time, the destination context,
  * and the event execution time.  Times are given in the
  * current Time resolution.
@@ -78,21 +78,21 @@ namespace ns3
  *
  * Enable DES Metrics at configure time with
  * @verbatim
-   $ ns3 configure ... --enable-des-metrics \endverbatim
+   $ ns3 configure ... --enable-des-metrics @endverbatim
  *
  * <b> Working with DES Metrics </b>
  *
  * Some useful shell pipelines:
  *
- * \li Run everything, retaining the results directory: <br/>
- *   @code  ./test.py --nobuild --retain \endcode
- * \li Example traces end up in \c testpy-output/, so move there: <br/>
- *   @code cd testpy-output/$(date +"%F")*_/  \endcode
- *   (Remove the `_', which is to work around a Doxygen limitation.)
- * \li Remove the traces with less than 10 events: <br/>
- *   @code wc -l *.json | sort -nr | grep "^ *[789] " | cut -d ' ' -f 9 | xargs rm -f \endcode
- * \li Show the largest file, and total number of trace files: <br/>
- *   @code wc -l *.json | sort -n | tail -2 \endcode
+ * @li Run everything, retaining the results directory: <br/>
+ *   @code  ./test.py --nobuild --retain @endcode
+ * @li Example traces end up in @c testpy-output/, so move there: <br/>
+ *   @code cd testpy-output/$(date +"%F")*_/  @endcode
+ *   (Remove the `_`, which is to work around a Doxygen limitation.)
+ * @li Remove the traces with less than 10 events: <br/>
+ *   @code wc -l *.json | sort -nr | grep "^ *[789] " | cut -d ' ' -f 9 | xargs rm -f @endcode
+ * @li Show the largest file, and total number of trace files: <br/>
+ *   @code wc -l *.json | sort -n | tail -2 @endcode
  *
  */
 class DesMetrics : public Singleton<DesMetrics>
@@ -139,7 +139,7 @@ class DesMetrics : public Singleton<DesMetrics>
      * Cache the last-used output directory.
      *
      * This is enables repeated/re-entrant use of CommandLine, for example
-     * in \c command-line-test-suite.cc
+     * in @c command-line-test-suite.cc
      */
     static std::string m_outputDir;
 

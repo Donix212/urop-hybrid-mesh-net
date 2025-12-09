@@ -5,6 +5,10 @@
  *
  * Author: Lauri Sormunen <lauri.sormunen@magister.fi>
  */
+/**
+ * @file
+ * @ingroup http
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -16,36 +20,59 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("ThreeGppHttpExample");
 
+/**
+ * Log connection establishment
+ */
 void
 ServerConnectionEstablished(Ptr<const ThreeGppHttpServer>, Ptr<Socket>)
 {
     NS_LOG_INFO("Client has established a connection to the server.");
 }
 
+/**
+ * Log generation of main object on server.
+ * @param size The size of the object.
+ */
 void
 MainObjectGenerated(uint32_t size)
 {
     NS_LOG_INFO("Server generated a main object of " << size << " bytes.");
 }
 
+/**
+ * Log generation of an embedded object on the server.
+ * @param size The size of the object.
+ */
 void
 EmbeddedObjectGenerated(uint32_t size)
 {
     NS_LOG_INFO("Server generated an embedded object of " << size << " bytes.");
 }
 
+/**
+ * Log transmission of a packet by the server.
+ * @param packet The Packet
+ */
 void
 ServerTx(Ptr<const Packet> packet)
 {
     NS_LOG_INFO("Server sent a packet of " << packet->GetSize() << " bytes.");
 }
 
+/**
+ * Log receipt of a packet by the client.
+ * @param packet The Packet.
+ * @param address The sender address.
+ */
 void
 ClientRx(Ptr<const Packet> packet, const Address& address)
 {
     NS_LOG_INFO("Client received a packet of " << packet->GetSize() << " bytes from " << address);
 }
 
+/** Log receipt of a main object by the client.
+ * @param packet The Packet.
+ */
 void
 ClientMainObjectReceived(Ptr<const ThreeGppHttpClient>, Ptr<const Packet> packet)
 {
@@ -64,6 +91,10 @@ ClientMainObjectReceived(Ptr<const ThreeGppHttpClient>, Ptr<const Packet> packet
     }
 }
 
+/**
+ * Log receipt of an embedded object by the client.
+ * @param packet The Packet.
+ */
 void
 ClientEmbeddedObjectReceived(Ptr<const ThreeGppHttpClient>, Ptr<const Packet> packet)
 {
@@ -82,6 +113,13 @@ ClientEmbeddedObjectReceived(Ptr<const ThreeGppHttpClient>, Ptr<const Packet> pa
     }
 }
 
+/**
+ * Log receipt of a page by the client.
+ * @param client The client.
+ * @param time Time required to receive the page
+ * @param numObjects The number of objects making up the page
+ * @param numBytes The total number of bytes.
+ */
 void
 ClientPageReceived(Ptr<const ThreeGppHttpClient> client,
                    const Time& time,

@@ -9,6 +9,12 @@
 #ifndef ATTRIBUTE_CONTAINER_H
 #define ATTRIBUTE_CONTAINER_H
 
+/**
+ * @file
+ * @ingroup attributes
+ * Class ns3::AttributeContainerValue and ns3::AttributeContainerChecker declarations.
+ */
+
 #include "attribute-helper.h"
 #include "string.h"
 

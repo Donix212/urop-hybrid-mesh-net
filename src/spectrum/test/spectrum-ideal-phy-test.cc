@@ -5,6 +5,10 @@
  *
  * Author: Nicola Baldo <nbaldo@cttc.es>
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/adhoc-aloha-noack-ideal-phy-helper.h"
 #include "ns3/config.h"
@@ -42,14 +46,8 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("SpectrumIdealPhyTest");
 
-static uint64_t g_rxBytes;
-static double g_bandwidth = 20e6; // Hz
-
-void
-PhyRxEndOkTrace(std::string context, Ptr<const Packet> p)
-{
-    g_rxBytes += p->GetSize();
-}
+/** Test bandwidth, 20 MHz */
+static double g_bandwidth = 20e6;
 
 /**
  * @ingroup spectrum-tests
@@ -83,10 +81,18 @@ class SpectrumIdealPhyTestCase : public TestCase
      */
     static std::string Name(std::string channelType, double snrLinear, uint64_t phyRate);
 
+    /**
+     * Packet receive callback
+     * @param context The receiving node id
+     * @param p The packet
+     */
+    void PhyRxEndOkTrace(std::string context, Ptr<const Packet> p);
+
     double m_snrLinear;        //!< SNR (linear)
     uint64_t m_phyRate;        //!< PHY rate (bps)
     bool m_rateIsAchievable;   //!< Check if the rate is achievable
     std::string m_channelType; //!< Channel type
+    uint64_t m_rxBytes;        //!< Received byte counter
 };
 
 std::string
@@ -96,6 +102,12 @@ SpectrumIdealPhyTestCase::Name(std::string channelType, double snrLinear, uint64
     oss << channelType << " snr = " << snrLinear << " (linear), "
         << " phyRate = " << phyRate << " bps";
     return oss.str();
+}
+
+void
+SpectrumIdealPhyTestCase::PhyRxEndOkTrace(std::string context, Ptr<const Packet> p)
+{
+    m_rxBytes += p->GetSize();
 }
 
 SpectrumIdealPhyTestCase::SpectrumIdealPhyTestCase(double snrLinear,
@@ -191,12 +203,13 @@ SpectrumIdealPhyTestCase::DoRun()
     client->SetStopTime(Seconds(testDuration));
     c.Get(0)->AddApplication(client);
 
-    Config::Connect("/NodeList/*/DeviceList/*/Phy/RxEndOk", MakeCallback(&PhyRxEndOkTrace));
+    Config::Connect("/NodeList/*/DeviceList/*/Phy/RxEndOk",
+                    MakeCallback(&SpectrumIdealPhyTestCase::PhyRxEndOkTrace, this));
 
-    g_rxBytes = 0;
+    m_rxBytes = 0;
     Simulator::Stop(Seconds(testDuration + 0.000000001));
     Simulator::Run();
-    double throughputBps = (g_rxBytes * 8.0) / testDuration;
+    double throughputBps = (m_rxBytes * 8.0) / testDuration;
 
     std::clog.unsetf(std::ios_base::floatfield);
 

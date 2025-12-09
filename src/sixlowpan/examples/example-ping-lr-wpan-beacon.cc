@@ -5,6 +5,10 @@
  *
  * Author: Alberto Gallegos Ramonet <ramonet@fc.ritsumei.ac.jp>
  */
+/**
+ * @file
+ * @ingroup lr-wpan
+ */
 
 #include "ns3/core-module.h"
 #include "ns3/internet-apps-module.h"
@@ -20,6 +24,11 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
+/**
+ * Log successful MCPS-DATA.confirm (ACK'd) transmissions.
+ * @param device The device
+ * @param params The confirmation parameters
+ */
 static void
 DataSentMacConfirm(Ptr<LrWpanNetDevice> device, McpsDataConfirmParams params)
 {

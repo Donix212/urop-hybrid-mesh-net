@@ -7,6 +7,16 @@
  *         Jendaipou Palmei <jendaipoupalmei@gmail.com>
  *         Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ *
+ * Dumbbell topology with 7 senders and 1 receiver
+ * is used for this example. On successful completion,
+ * the Congestion window and Queue size traces get stored
+ * in MixTraffic/ directory, inside cwndTraces and
+ * queueTraces sub-directories, respectively.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -21,16 +31,18 @@
 #include <fstream>
 #include <string>
 
-// Dumbbell topology with 7 senders and 1 receiver
-// is used for this example. On successful completion,
-// the Congestion window and Queue size traces get stored
-// in MixTraffic/ directory, inside cwndTraces and
-// queueTraces sub-directories, respectively.
-
 using namespace ns3;
 
+/** Output directory. */
 std::string dir = "MixTraffic/";
 
+/**
+ * Periodically log the queue size.
+ * @param queue The queue
+ * @param queue_disc_type The queue discipline type, used to construct the output file
+ * @todo This would be much faster if the output file was created once, and just the stream
+ *       was passed around.  See CwndTrace for an example
+ */
 void
 CheckQueueSize(Ptr<QueueDisc> queue, std::string queue_disc_type)
 {
@@ -44,12 +56,21 @@ CheckQueueSize(Ptr<QueueDisc> queue, std::string queue_disc_type)
     fPlotQueue.close();
 }
 
+/**
+ * Log changes to the congestion window
+ * @param stream The output stream
+ * @param newCwnd The new congestion window value
+ */
 static void
-CwndTrace(Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
+CwndTrace(Ptr<OutputStreamWrapper> stream, uint32_t, uint32_t newCwnd)
 {
     *stream->GetStream() << Simulator::Now().GetSeconds() << " " << newCwnd / 1446.0 << std::endl;
 }
 
+/**
+ * Create output streams for logging the congestion window from each Node
+ * @param queue_disc_type The queue discipline
+ */
 static void
 TraceCwnd(std::string queue_disc_type)
 {
@@ -64,6 +85,10 @@ TraceCwnd(std::string queue_disc_type)
     }
 }
 
+/**
+ * Execute one simulation for the @c queue_disc_type
+ * @param queue_disc_type The queueing discipline
+ */
 void
 experiment(std::string queue_disc_type)
 {

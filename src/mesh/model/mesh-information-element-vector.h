@@ -9,15 +9,22 @@
 
 #ifndef MESH_INFORMATION_ELEMENT_VECTOR_H
 #define MESH_INFORMATION_ELEMENT_VECTOR_H
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::MeshInformationElementVector declaration.
+ */
 
 #include "ns3/wifi-information-element.h"
 
 namespace ns3
 {
 
-#define IE11S_MESH_PEERING_PROTOCOL_VERSION                                                        \
-    ((WifiInformationElementId)74) // to be removed (Protocol ID should be part of the Mesh Peering
-                                   // Management IE)
+/**
+ * Mesh peering protocol version.
+ * To be removed (Protocol ID should be part of the Mesh Peering Management IE
+ */
+constexpr WifiInformationElementId IE11S_MESH_PEERING_PROTOCOL_VERSION{74};
 
 /**
  * @brief Information element vector

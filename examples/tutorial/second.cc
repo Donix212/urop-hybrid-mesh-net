@@ -1,6 +1,20 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup tutorial
+ * This script builds on the first.cc script and adds a CSMA network to the point-to-point
+ * simulation.
+ *
+ * Default Network Topology
+ *
+ *           10.1.1.0
+ *     n0 -------------- n1   n2   n3   n4
+ *        point-to-point  |    |    |    |
+ *                        ================
+ *                          LAN 10.1.2.0
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -9,14 +23,6 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
-
-// Default Network Topology
-//
-//       10.1.1.0
-// n0 -------------- n1   n2   n3   n4
-//    point-to-point  |    |    |    |
-//                    ================
-//                      LAN 10.1.2.0
 
 using namespace ns3;
 

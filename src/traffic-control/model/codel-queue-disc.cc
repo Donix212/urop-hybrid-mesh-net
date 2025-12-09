@@ -13,6 +13,11 @@
  *
  * Ported to ns-3 by: Andrew McGregor <andrewmcgr@gmail.com>
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ * Class ns3::CoDelQueueDisc implementation.
+ */
 
 #include "codel-queue-disc.h"
 
@@ -54,7 +59,7 @@ CoDelGetTime()
     Time time = Simulator::Now();
     uint64_t ns = time.GetNanoSeconds();
 
-    return static_cast<uint32_t>(ns >> CODEL_SHIFT);
+    return static_cast<uint32_t>(ns >> CoDelQueueDisc::CODEL_SHIFT);
 }
 
 NS_OBJECT_ENSURE_REGISTERED(CoDelQueueDisc);

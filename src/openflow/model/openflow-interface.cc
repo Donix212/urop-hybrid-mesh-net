@@ -4,6 +4,22 @@
  * Author: Blake Hurd  <naimorai@gmail.com>
  */
 
+/**
+ * @file
+ * @ingroup openflow
+ * Implementations of the following classes/structs:
+ * * ns3::ofi::Port,
+ * * ns3::ofi::Stats,
+ * * ns3::ofi::Action,
+ * * ns3::ofi::VPortAction,
+ * * ns3::ofi::EricssonAction,
+ * * ns3::ofi::StatsDumpCallback,
+ * * ns3::ofi::SwitchPacketMetadata,
+ * * ns3::ofi::Controller,
+ * * ns3::ofi::DropController,
+ * * ns3::ofi::LearningController
+ */
+
 #include "openflow-interface.h"
 
 #include "openflow-switch-net-device.h"
@@ -141,8 +157,6 @@ Stats::DescStatsDump(void* state, ofpbuf* buffer)
     return 0;
 }
 
-#define MAX_FLOW_STATS_BYTES 4096
-
 int
 Stats::FlowStatsInit(const void* body, int body_len, void** state)
 {
@@ -157,7 +171,7 @@ Stats::FlowStatsInit(const void* body, int body_len, void** state)
 }
 
 int
-Stats_FlowDumpCallback(sw_flow* flow, void* state)
+Stats::ExampleFlowDumpCallback(sw_flow* flow, void* state)
 {
     auto s = (Stats::FlowStatsState*)state;
 
@@ -219,6 +233,7 @@ Stats::FlowStatsDump(Ptr<OpenFlowSwitchNetDevice> swtch, FlowStatsState* s, ofpb
     return s->buffer->size >= MAX_FLOW_STATS_BYTES;
 }
 
+/* static */
 int
 Stats::AggregateStatsInit(const void* body, int body_len, void** state)
 {
@@ -227,8 +242,9 @@ Stats::AggregateStatsInit(const void* body, int body_len, void** state)
     return 0;
 }
 
+/* static */
 int
-Stats_AggregateDumpCallback(sw_flow* flow, void* state)
+Stats::ExampleAggregateDumpCallback(sw_flow* flow, void* state)
 {
     ofp_aggregate_stats_reply* s = (ofp_aggregate_stats_reply*)state;
     s->packet_count += flow->packet_count;

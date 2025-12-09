@@ -5,6 +5,10 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@cutebugs.net>
  */
+/**
+ * @file
+ * @ingroup packet
+ */
 
 #include "ns3/buffer.h"
 #include "ns3/double.h"
@@ -30,10 +34,9 @@ class BufferTest : public TestCase
     /**
      * Checks the buffer content
      * @param b The buffer to check
-     * @param n The number of bytes to check
-     * @param array The array of bytes that should be in the buffer
+     * @param byteSeq The array of bytes that should be in the buffer
      */
-    void EnsureWrittenBytes(Buffer b, uint32_t n, uint8_t array[]);
+    void EnsureWrittenBytes(const Buffer& b, std::vector<uint8_t> byteSeq);
 
   public:
     void DoRun() override;
@@ -46,13 +49,11 @@ BufferTest::BufferTest()
 }
 
 void
-BufferTest::EnsureWrittenBytes(Buffer b, uint32_t n, uint8_t array[])
+BufferTest::EnsureWrittenBytes(const Buffer& b, std::vector<uint8_t> expected)
 {
     bool success = true;
-    uint8_t* expected = array;
-    const uint8_t* got;
-    got = b.PeekData();
-    for (uint32_t j = 0; j < n; j++)
+    const uint8_t* got = b.PeekData();
+    for (uint32_t j = 0; j < expected.size(); j++)
     {
         if (got[j] != expected[j])
         {
@@ -64,16 +65,16 @@ BufferTest::EnsureWrittenBytes(Buffer b, uint32_t n, uint8_t array[])
         std::ostringstream failure;
         failure << "Buffer -- ";
         failure << "expected: n=";
-        failure << n << ", ";
+        failure << expected.size() << ", ";
         failure.setf(std::ios::hex, std::ios::basefield);
-        for (uint32_t j = 0; j < n; j++)
+        for (uint32_t j = 0; j < expected.size(); j++)
         {
             failure << (uint16_t)expected[j] << " ";
         }
         failure.setf(std::ios::dec, std::ios::basefield);
         failure << "got: ";
         failure.setf(std::ios::hex, std::ios::basefield);
-        for (uint32_t j = 0; j < n; j++)
+        for (uint32_t j = 0; j < expected.size(); j++)
         {
             failure << (uint16_t)got[j] << " ";
         }
@@ -81,16 +82,6 @@ BufferTest::EnsureWrittenBytes(Buffer b, uint32_t n, uint8_t array[])
         NS_TEST_ASSERT_MSG_EQ(true, false, failure.str());
     }
 }
-
-/*
- * Works only when variadic macros are
- * available which is the case for gcc.
- */
-#define ENSURE_WRITTEN_BYTES(buffer, n, ...)                                                       \
-    {                                                                                              \
-        uint8_t bytes[] = {__VA_ARGS__};                                                           \
-        EnsureWrittenBytes(buffer, n, bytes);                                                      \
-    }
 
 void
 BufferTest::DoRun()
@@ -100,36 +91,36 @@ BufferTest::DoRun()
     buffer.AddAtStart(6);
     i = buffer.Begin();
     i.WriteU8(0x66);
-    ENSURE_WRITTEN_BYTES(buffer, 1, 0x66);
+    EnsureWrittenBytes(buffer, {0x66});
     i = buffer.Begin();
     i.WriteU8(0x67);
-    ENSURE_WRITTEN_BYTES(buffer, 1, 0x67);
+    EnsureWrittenBytes(buffer, {0x67});
     i.WriteHtonU16(0x6568);
     i = buffer.Begin();
-    ENSURE_WRITTEN_BYTES(buffer, 3, 0x67, 0x65, 0x68);
+    EnsureWrittenBytes(buffer, {0x67, 0x65, 0x68});
     i.WriteHtonU16(0x6369);
-    ENSURE_WRITTEN_BYTES(buffer, 3, 0x63, 0x69, 0x68);
+    EnsureWrittenBytes(buffer, {0x63, 0x69, 0x68});
     i.WriteHtonU32(0xdeadbeaf);
-    ENSURE_WRITTEN_BYTES(buffer, 6, 0x63, 0x69, 0xde, 0xad, 0xbe, 0xaf);
+    EnsureWrittenBytes(buffer, {0x63, 0x69, 0xde, 0xad, 0xbe, 0xaf});
     buffer.AddAtStart(2);
     i = buffer.Begin();
     i.WriteU16(0);
-    ENSURE_WRITTEN_BYTES(buffer, 8, 0, 0, 0x63, 0x69, 0xde, 0xad, 0xbe, 0xaf);
+    EnsureWrittenBytes(buffer, {0, 0, 0x63, 0x69, 0xde, 0xad, 0xbe, 0xaf});
     buffer.AddAtEnd(2);
     i = buffer.Begin();
     i.Next(8);
     i.WriteU16(0);
-    ENSURE_WRITTEN_BYTES(buffer, 10, 0, 0, 0x63, 0x69, 0xde, 0xad, 0xbe, 0xaf, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0, 0x63, 0x69, 0xde, 0xad, 0xbe, 0xaf, 0, 0});
     buffer.RemoveAtStart(3);
     i = buffer.Begin();
-    ENSURE_WRITTEN_BYTES(buffer, 7, 0x69, 0xde, 0xad, 0xbe, 0xaf, 0, 0);
+    EnsureWrittenBytes(buffer, {0x69, 0xde, 0xad, 0xbe, 0xaf, 0, 0});
     buffer.RemoveAtEnd(4);
     i = buffer.Begin();
-    ENSURE_WRITTEN_BYTES(buffer, 3, 0x69, 0xde, 0xad);
+    EnsureWrittenBytes(buffer, {0x69, 0xde, 0xad});
     buffer.AddAtStart(1);
     i = buffer.Begin();
     i.WriteU8(0xff);
-    ENSURE_WRITTEN_BYTES(buffer, 4, 0xff, 0x69, 0xde, 0xad);
+    EnsureWrittenBytes(buffer, {0xff, 0x69, 0xde, 0xad});
     buffer.AddAtEnd(1);
     i = buffer.Begin();
     i.Next(4);
@@ -142,19 +133,19 @@ BufferTest::DoRun()
     NS_TEST_ASSERT_MSG_EQ(i.ReadNtohU16(), 0xff00, "Could not read expected value");
     i.Prev(2);
     i.WriteU16(saved);
-    ENSURE_WRITTEN_BYTES(buffer, 5, 0xff, 0x69, 0xde, 0xad, 0xff);
+    EnsureWrittenBytes(buffer, {0xff, 0x69, 0xde, 0xad, 0xff});
     Buffer o = buffer;
-    ENSURE_WRITTEN_BYTES(o, 5, 0xff, 0x69, 0xde, 0xad, 0xff);
+    EnsureWrittenBytes(o, {0xff, 0x69, 0xde, 0xad, 0xff});
     o.AddAtStart(1);
     i = o.Begin();
     i.WriteU8(0xfe);
-    ENSURE_WRITTEN_BYTES(o, 6, 0xfe, 0xff, 0x69, 0xde, 0xad, 0xff);
+    EnsureWrittenBytes(o, {0xfe, 0xff, 0x69, 0xde, 0xad, 0xff});
     buffer.AddAtStart(2);
     i = buffer.Begin();
     i.WriteU8(0xfd);
     i.WriteU8(0xfd);
-    ENSURE_WRITTEN_BYTES(o, 6, 0xfe, 0xff, 0x69, 0xde, 0xad, 0xff);
-    ENSURE_WRITTEN_BYTES(buffer, 7, 0xfd, 0xfd, 0xff, 0x69, 0xde, 0xad, 0xff);
+    EnsureWrittenBytes(o, {0xfe, 0xff, 0x69, 0xde, 0xad, 0xff});
+    EnsureWrittenBytes(buffer, {0xfd, 0xfd, 0xff, 0x69, 0xde, 0xad, 0xff});
 
     // test 64-bit read/write
     Buffer buff64;
@@ -165,14 +156,14 @@ BufferTest::DoRun()
     NS_TEST_ASSERT_MSG_EQ(i.ReadU64(), 0x0123456789abcdefLLU, "Could not read expected value");
     i = buff64.Begin();
     i.WriteHtolsbU64(0x0123456789ABCDEFLLU);
-    ENSURE_WRITTEN_BYTES(buff64, 8, 0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0x01);
+    EnsureWrittenBytes(buff64, {0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0x01});
     i = buff64.Begin();
     NS_TEST_ASSERT_MSG_EQ(i.ReadLsbtohU64(),
                           0x0123456789abcdefLLU,
                           "Could not read expected value");
     i = buff64.Begin();
     i.WriteHtonU64(0x0123456789ABCDEFLLU);
-    ENSURE_WRITTEN_BYTES(buff64, 8, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef);
+    EnsureWrittenBytes(buff64, {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef});
     i = buff64.Begin();
     NS_TEST_ASSERT_MSG_EQ(i.ReadNtohU64(), 0x0123456789abcdefLLU, "could not read expected value");
 
@@ -195,41 +186,41 @@ BufferTest::DoRun()
 
     // test Remove start.
     buffer = Buffer(5);
-    ENSURE_WRITTEN_BYTES(buffer, 5, 0, 0, 0, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0, 0, 0, 0});
     buffer.RemoveAtStart(1);
-    ENSURE_WRITTEN_BYTES(buffer, 4, 0, 0, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0, 0, 0});
     buffer.AddAtStart(1);
     buffer.Begin().WriteU8(0xff);
-    ENSURE_WRITTEN_BYTES(buffer, 5, 0xff, 0, 0, 0, 0);
+    EnsureWrittenBytes(buffer, {0xff, 0, 0, 0, 0});
     buffer.RemoveAtStart(3);
-    ENSURE_WRITTEN_BYTES(buffer, 2, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0});
     buffer.AddAtStart(4);
     buffer.Begin().WriteHtonU32(0xdeadbeaf);
-    ENSURE_WRITTEN_BYTES(buffer, 6, 0xde, 0xad, 0xbe, 0xaf, 0, 0);
+    EnsureWrittenBytes(buffer, {0xde, 0xad, 0xbe, 0xaf, 0, 0});
     buffer.RemoveAtStart(2);
-    ENSURE_WRITTEN_BYTES(buffer, 4, 0xbe, 0xaf, 0, 0);
+    EnsureWrittenBytes(buffer, {0xbe, 0xaf, 0, 0});
     buffer.AddAtEnd(4);
     i = buffer.Begin();
     i.Next(4);
     i.WriteHtonU32(0xdeadbeaf);
-    ENSURE_WRITTEN_BYTES(buffer, 8, 0xbe, 0xaf, 0, 0, 0xde, 0xad, 0xbe, 0xaf);
+    EnsureWrittenBytes(buffer, {0xbe, 0xaf, 0, 0, 0xde, 0xad, 0xbe, 0xaf});
     buffer.RemoveAtStart(5);
-    ENSURE_WRITTEN_BYTES(buffer, 3, 0xad, 0xbe, 0xaf);
+    EnsureWrittenBytes(buffer, {0xad, 0xbe, 0xaf});
     // test Remove end
     buffer = Buffer(5);
-    ENSURE_WRITTEN_BYTES(buffer, 5, 0, 0, 0, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0, 0, 0, 0});
     buffer.RemoveAtEnd(1);
-    ENSURE_WRITTEN_BYTES(buffer, 4, 0, 0, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0, 0, 0});
     buffer.AddAtEnd(2);
     i = buffer.Begin();
     i.Next(4);
     i.WriteU8(0xab);
     i.WriteU8(0xac);
-    ENSURE_WRITTEN_BYTES(buffer, 6, 0, 0, 0, 0, 0xab, 0xac);
+    EnsureWrittenBytes(buffer, {0, 0, 0, 0, 0xab, 0xac});
     buffer.RemoveAtEnd(1);
-    ENSURE_WRITTEN_BYTES(buffer, 5, 0, 0, 0, 0, 0xab);
+    EnsureWrittenBytes(buffer, {0, 0, 0, 0, 0xab});
     buffer.RemoveAtEnd(3);
-    ENSURE_WRITTEN_BYTES(buffer, 2, 0, 0);
+    EnsureWrittenBytes(buffer, {0, 0});
     buffer.AddAtEnd(6);
     i = buffer.Begin();
     i.Next(2);
@@ -239,15 +230,15 @@ BufferTest::DoRun()
     i.WriteU8(0xaf);
     i.WriteU8(0xba);
     i.WriteU8(0xbb);
-    ENSURE_WRITTEN_BYTES(buffer, 8, 0, 0, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb);
+    EnsureWrittenBytes(buffer, {0, 0, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb});
     buffer.AddAtStart(3);
     i = buffer.Begin();
     i.WriteU8(0x30);
     i.WriteU8(0x31);
     i.WriteU8(0x32);
-    ENSURE_WRITTEN_BYTES(buffer, 11, 0x30, 0x31, 0x32, 0, 0, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb);
+    EnsureWrittenBytes(buffer, {0x30, 0x31, 0x32, 0, 0, 0xac, 0xad, 0xae, 0xaf, 0xba, 0xbb});
     buffer.RemoveAtEnd(9);
-    ENSURE_WRITTEN_BYTES(buffer, 2, 0x30, 0x31);
+    EnsureWrittenBytes(buffer, {0x30, 0x31});
     buffer = Buffer(3);
     buffer.AddAtEnd(2);
     i = buffer.Begin();
@@ -255,7 +246,7 @@ BufferTest::DoRun()
     i.WriteHtonU16(0xabcd);
     buffer.AddAtStart(1);
     buffer.Begin().WriteU8(0x21);
-    ENSURE_WRITTEN_BYTES(buffer, 6, 0x21, 0, 0, 0, 0xab, 0xcd);
+    EnsureWrittenBytes(buffer, {0x21, 0, 0, 0, 0xab, 0xcd});
     buffer.RemoveAtEnd(8);
     NS_TEST_ASSERT_MSG_EQ(buffer.GetSize(), 0, "Buffer size not zero");
 
@@ -316,14 +307,14 @@ BufferTest::DoRun()
     i.Prev(2);
     i.WriteU8(0);
     i.WriteU8(0x66);
-    ENSURE_WRITTEN_BYTES(buffer, 7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66);
+    EnsureWrittenBytes(buffer, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66});
     Buffer frag0 = buffer.CreateFragment(0, 2);
-    ENSURE_WRITTEN_BYTES(frag0, 2, 0x00, 0x00);
+    EnsureWrittenBytes(frag0, {0x00, 0x00});
     Buffer frag1 = buffer.CreateFragment(2, 5);
-    ENSURE_WRITTEN_BYTES(frag1, 5, 0x00, 0x00, 0x00, 0x00, 0x66);
+    EnsureWrittenBytes(frag1, {0x00, 0x00, 0x00, 0x00, 0x66});
     frag0.AddAtEnd(frag1);
-    ENSURE_WRITTEN_BYTES(buffer, 7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66);
-    ENSURE_WRITTEN_BYTES(frag0, 7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66);
+    EnsureWrittenBytes(buffer, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66});
+    EnsureWrittenBytes(frag0, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66});
 
     buffer = Buffer(5);
     buffer.AddAtStart(2);
@@ -335,12 +326,12 @@ BufferTest::DoRun()
     i.Prev(2);
     i.WriteU8(0x3);
     i.WriteU8(0x4);
-    ENSURE_WRITTEN_BYTES(buffer, 9, 0x1, 0x2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3, 0x4);
+    EnsureWrittenBytes(buffer, {0x1, 0x2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3, 0x4});
     Buffer other;
     other.AddAtStart(9);
     i = other.Begin();
     i.Write(buffer.Begin(), buffer.End());
-    ENSURE_WRITTEN_BYTES(other, 9, 0x1, 0x2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3, 0x4);
+    EnsureWrittenBytes(other, {0x1, 0x2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3, 0x4});
 
     // See \bugid{1001}
     std::string ct("This is the next content of the buffer.");
@@ -371,7 +362,7 @@ BufferTest::DoRun()
     i.Next(1);
     i.WriteU8(0x77);
     i.WriteU8(0x66);
-    ENSURE_WRITTEN_BYTES(buffer, 3, 0x00, 0x77, 0x66);
+    EnsureWrittenBytes(buffer, {0x00, 0x77, 0x66});
     i = buffer.Begin();
     i.ReadU8();
     uint16_t val1 = i.ReadNtohU16();

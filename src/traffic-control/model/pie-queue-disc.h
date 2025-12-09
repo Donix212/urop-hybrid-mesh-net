@@ -8,13 +8,17 @@
  *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
 
-/*
- * PORT NOTE: This code was ported from ns-2.36rc1 (queue/pie.h).
- * Most of the comments are also ported from the same.
- */
-
 #ifndef PIE_QUEUE_DISC_H
 #define PIE_QUEUE_DISC_H
+
+/**
+ * @file
+ * @ingroup traffic-control
+ * Class ns3::PieQueueDisc declaration.
+ *
+ * @note This code was ported from ns-2.36rc1 (queue/pie.h).
+ * Most of the comments are also ported from the same.
+ */
 
 #include "queue-disc.h"
 
@@ -24,8 +28,6 @@
 #include "ns3/nstime.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/timer.h"
-
-#define BURST_RESET_TIMEOUT 1.5
 
 class PieQueueDiscTestCase; // Forward declaration for unit test
 
@@ -39,6 +41,8 @@ class UniformRandomVariable;
  * @ingroup traffic-control
  *
  * @brief Implements PIE Active Queue Management discipline
+ * @note This code was ported from ns-2.36rc1 (queue/pie.h).
+ * Most of the comments are also ported from the same.
  */
 class PieQueueDisc : public QueueDisc
 {
@@ -58,6 +62,12 @@ class PieQueueDisc : public QueueDisc
      * @brief PieQueueDisc Destructor
      */
     ~PieQueueDisc() override;
+
+    /**
+     * Max duration of a burst reset period, in seconds.
+     * @todo Refactor this to a Time.
+     */
+    static constexpr double BURST_RESET_TIMEOUT = 1.5;
 
     /**
      * @brief Burst types
@@ -168,6 +178,13 @@ class PieQueueDisc : public QueueDisc
     double m_accuProb;               //!< Accumulated drop probability
     bool m_active;                   //!< Indicates whether PIE is in active state or not
 };
+
+// clang-format off
+/** @copydoc ns3::PieQueueDisc::BURST_RESET_TIMEOUT */
+constexpr double BURST_RESET_TIMEOUT
+    NS_DEPRECATED_3_47("Use PieQueueDisc::BURST_RESET_TIMEOUT instead.") =
+    PieQueueDisc::BURST_RESET_TIMEOUT;
+// clang-format on
 
 }; // namespace ns3
 

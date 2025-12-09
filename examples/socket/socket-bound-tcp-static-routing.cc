@@ -2,21 +2,25 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
-
-/* Test program for multi-interface host, static routing
-
-         Destination host (10.20.1.2)
-                 |
-                 | 10.20.1.0/24
-              DSTRTR
-  10.10.1.0/24 /   \  10.10.2.0/24
-              / \
-           Rtr1    Rtr2
- 10.1.1.0/24 |      | 10.1.2.0/24
-             |      /
-              \    /
-             Source
-*/
+/**
+ * @file
+ * @ingroup ipv4Routing
+ *
+ * Test program for multi-interface host, static routing
+ *
+ *         Destination host (10.20.1.2)
+ *                      |
+ *                      | 10.20.1.0/24
+ *                    DSTRTR
+ *                     / \
+ *      10.10.1.0/24  /   \  10.10.2.0/24
+ *                   /     \
+ *               Rtr1       Rtr2
+ *     10.1.1.0/24  |       | 10.1.2.0/24
+ *                   \     /
+ *                    \   /
+ *                   Source
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -35,18 +39,39 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("SocketBoundTcpRoutingExample");
 
+/** Flow byte counter and maximum. @{ */
 static const uint32_t totalTxBytes = 20000;
 static uint32_t currentTxBytes = 0;
+
+/** @} */
+
+/** Data buffer to send from @{ */
 static const uint32_t writeSize = 1040;
 uint8_t data[writeSize];
 
-void StartFlow(Ptr<Socket>, Ipv4Address, uint16_t);
-void WriteUntilBufferFull(Ptr<Socket>, uint32_t);
+/** @} */
 
-void SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
+/**
+ * Start a flow from @c localSocket to @c servAddress @c servPort
+ * The local buffer will be kept full by WriteUntilBufferFull
+ * @param localSocket The local socket to send from
+ * @param servAddress The address to send to
+ * @param servPort The port to send to
+ */
+void StartFlow(Ptr<Socket> localSocket, Ipv4Address servAddress, uint16_t servPort);
+/**
+ * Keep a socket buffer full, until @c totalTxBytes have been sent
+ * @param localSocket The local socket to send from
+ * @param bytesAvail The number of bytes available to send
+ */
+void WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t bytesAvail);
+
+/**
+ * Bind the @c sock to the @c netdev
+ * @param sock The Socket
+ * @param netdev The NetDevice
+ */
 void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
-void srcSocketRecv(Ptr<Socket> socket);
-void dstSocketRecv(Ptr<Socket> socket);
 
 int
 main(int argc, char* argv[])
@@ -200,15 +225,15 @@ StartFlow(Ptr<Socket> localSocket, Ipv4Address servAddress, uint16_t servPort)
 }
 
 void
-WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t txSpace)
+WriteUntilBufferFull(Ptr<Socket> localSocket, uint32_t bytesAvail)
 {
-    while (currentTxBytes < totalTxBytes && localSocket->GetTxAvailable() > 0)
+    while (currentTxBytes < totalTxBytes && bytesAvail > 0)
     {
         uint32_t left = totalTxBytes - currentTxBytes;
         uint32_t dataOffset = currentTxBytes % writeSize;
         uint32_t toWrite = writeSize - dataOffset;
         toWrite = std::min(toWrite, left);
-        toWrite = std::min(toWrite, localSocket->GetTxAvailable());
+        toWrite = std::min(toWrite, bytesAvail);
         int amountSent = localSocket->Send(&data[dataOffset], toWrite, 0);
         if (amountSent < 0)
         {

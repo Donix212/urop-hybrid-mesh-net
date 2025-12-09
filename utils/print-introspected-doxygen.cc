@@ -1405,6 +1405,11 @@ PrintAttributeValueWithName(std::ostream& os,
     // @class ns3::<name>Value "header"
     std::string valClass = name + "Value";
     std::string qualClass = " ns3::" + valClass;
+    std::string argType = type;
+    if (name == type)
+    {
+        argType = "ns3::" + type;
+    }
 
     os << commentStart << sectAttr << "\n"
        << classStart << qualClass << " \"" << header << "\"\n"
@@ -1416,7 +1421,7 @@ PrintAttributeValueWithName(std::ostream& os,
     // Ctor: <name>Value::<name>Value
     os << commentStart << functionStart << qualClass << "::" << valClass;
     // Constructors
-    os << "(const " << type << " & value)\n"
+    os << "(const " << argType << " & value)\n"
        << "Constructor.\n"
        << argument << "[in] value The " << name << " value to use.\n";
     os << commentStop;
@@ -1437,7 +1442,7 @@ PrintAttributeValueWithName(std::ostream& os,
     // <name>Value::Set(const name & value)
     if (type != "Callback") // Yuck
     {
-        os << commentStart << functionStart << "void" << qualClass << "::Set(const " << type
+        os << commentStart << functionStart << "void" << qualClass << "::Set(const " << argType
            << " & value)\n"
            << "Set the value.\n"
            << argument << "[in] value The value to adopt.\n"

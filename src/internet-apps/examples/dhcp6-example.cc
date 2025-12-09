@@ -6,27 +6,31 @@
  * Author: Kavya Bhat <kavyabhat@gmail.com>
  *
  */
-
-/*
+/**
+ * @file
+ * @ingroup dhcp
+ *
  * Network layout:
  * The following devices have one CSMA interface each -
- * S0 - DHCPv6 server
- * N0, N1 - DHCPv6 clients
- * R0 - router
- *                ┌-------------------------------------------------┐
- *                | DHCPv6 Clients                                  |
- *                |                                                 |
- *                |                                Static address   |
- *                |                                2001:cafe::42:2  |
- *                |   ┌──────┐       ┌──────┐        ┌──────┐       |
- *                |   │  N0  │       │  N1  │        │  N2  │       |
- *                |   └──────┘       └──────┘        └──────┘       |
- *                |       │              │               │          |
- *                └-------│--------------│---------------│----------┘
- *  DHCPv6 Server         │              │               │
- *        ┌──────┐        │              │               │      ┌──────┐
- *        │  S0  │────────┴──────────────┴───────────────┴──────│  R0  │Router
- *        └──────┘                                              └──────┘
+ * * S0 - DHCPv6 server
+ * * N0, N1 - DHCPv6 clients
+ * * R0 - router
+ *
+ *                   ┌-------------------------------------------------┐
+ *                   | DHCPv6 Clients                                  |
+ *                   |                                                 |
+ *                   |                                Static address   |
+ *                   |                                2001:cafe::42:2  |
+ *                   |   ┌──────┐       ┌──────┐        ┌──────┐       |
+ *                   |   │  N0  │       │  N1  │        │  N2  │       |
+ *                   |   └──────┘       └──────┘        └──────┘       |
+ *                   |       │              │               │          |
+ *                   └-------│--------------│---------------│----------┘
+ *     DHCPv6 Server         │              │               │
+ *           ┌──────┐        │              │               │      ┌──────┐
+ *           │  S0  │────────┴──────────────┴───────────────┴──────│  R0  │Router
+ *           └──────┘                                              └──────┘
+ *
  * Notes:
  * 1. The DHCPv6 server is not assigned any static address as it operates only
  *    in the link-local domain.
@@ -63,7 +67,6 @@
  * 1. Solicit - Advertise - Request - Reply
  * 2. Solicit - Advertise - Request - Reply - Decline
  * 3. Renew - Reply
- *
  */
 
 #include "ns3/applications-module.h"
@@ -82,12 +85,18 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Dhcp6Example");
 
+/**
+ * Set interfaces up/down
+ * @param node The Node
+ * @param interface The IPv6 interface
+ */
 void
 SetInterfaceDown(Ptr<Node> node, uint32_t interface)
 {
     node->GetObject<Ipv6>()->SetDown(interface);
 }
 
+/** @copydoc SetInterfaceDown() */
 void
 SetInterfaceUp(Ptr<Node> node, uint32_t interface)
 {

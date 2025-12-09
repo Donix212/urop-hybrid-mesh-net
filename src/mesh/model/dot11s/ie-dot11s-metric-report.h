@@ -9,6 +9,12 @@
 #ifndef METRIC_REPORT_H
 #define METRIC_REPORT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3:dot11s::IeLinkMetricReport declaration.
+ */
+
 #include "ns3/buffer.h"
 #include "ns3/mesh-information-element-vector.h"
 
@@ -81,7 +87,16 @@ class IeLinkMetricReport : public WifiInformationElement
 bool operator==(const IeLinkMetricReport& a, const IeLinkMetricReport& b);
 bool operator>(const IeLinkMetricReport& a, const IeLinkMetricReport& b);
 bool operator<(const IeLinkMetricReport& a, const IeLinkMetricReport& b);
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] linkMetricReport The IeLinkMetricReport object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IeLinkMetricReport& linkMetricReport);
+
 } // namespace dot11s
 } // namespace ns3
 #endif /* METRIC_REPORT_H */

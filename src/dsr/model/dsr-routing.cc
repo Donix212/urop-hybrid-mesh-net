@@ -17,6 +17,7 @@
  * US Department of Defense (DoD), and ITTC at The University of Kansas.
  */
 
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     if (GetObject<Node>())                                                                         \
     {                                                                                              \

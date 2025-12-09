@@ -27,6 +27,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("BuildingsPenetrationLossesTest");
 
+/** Shorthand for the low to high penetration loss condition. */
 using O2ILH = ChannelCondition::O2iLowHighConditionValue;
 
 /**

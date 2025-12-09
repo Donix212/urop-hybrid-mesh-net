@@ -20,6 +20,7 @@
 #include "ns3/log.h"
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT WIFI_FEM_NS_LOG_APPEND_CONTEXT
 
 // Time (in nanoseconds) to be added to the PSDU duration to yield the duration

@@ -5,7 +5,10 @@
  *
  */
 
-/*
+/**
+ * @file
+ * @ingroup mobility
+ *
  * Example program using a ns-2-formatted mobility trace generated
  * by the BonnMotion mobility framework.
  *
@@ -33,8 +36,13 @@
 
 using namespace ns3;
 
+/**
+ * Print a node position and speed at the current time.
+ * @param node The Node to print.
+ * @param deltaTime The time interval to repeat printing.
+ */
 void
-showPosition(Ptr<Node> node, double deltaTime)
+showPosition(Ptr<Node> node, Time deltaTime)
 {
     uint32_t nodeId = node->GetId();
     Ptr<MobilityModel> mobModel = node->GetObject<MobilityModel>();
@@ -44,7 +52,7 @@ showPosition(Ptr<Node> node, double deltaTime)
               << pos.x << ", " << pos.y << ", " << pos.z << ");   Speed(" << speed.x << ", "
               << speed.y << ", " << speed.z << ")" << std::endl;
 
-    Simulator::Schedule(Seconds(deltaTime), &showPosition, node, deltaTime);
+    Simulator::Schedule(deltaTime, &showPosition, node, deltaTime);
 }
 
 int
@@ -53,12 +61,12 @@ main(int argc, char* argv[])
     std::cout.precision(2);
     std::cout.setf(std::ios::fixed);
 
-    double deltaTime = 100;
+    Time deltaTime = Seconds(100);
     std::string traceFile = "src/mobility/examples/bonnmotion.ns_movements";
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("traceFile", "Ns2 movement trace file", traceFile);
-    cmd.AddValue("deltaTime", "time interval (s) between updates (default 100)", deltaTime);
+    cmd.AddValue("deltaTime", "time interval between updates", deltaTime);
     cmd.Parse(argc, argv);
 
     Ptr<Node> n0 = CreateObject<Node>();

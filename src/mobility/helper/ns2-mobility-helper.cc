@@ -7,22 +7,12 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  * Contributors: Thomas Waldecker <twaldecker@rocketmail.com>
  *               Martín Giachino <martin.giachino@gmail.com>
+ */
+/**
+ * @file
+ * @ingroup mobility
  *
- * Brief description: Implementation of a ns2 movement trace file reader.
- *
- * This implementation is based on the ns2 movement documentation of ns2
- * as described in http://www.isi.edu/nsnam/ns/doc/node172.html
- *
- * Valid trace files use the following ns2 statements:
- *
- * $node set X_ x1
- * $node set Y_ y1
- * $node set Z_ z1
- * $ns at $time $node setdest x2 y2 speed
- * $ns at $time $node set X_ x1
- * $ns at $time $node set Y_ Y1
- * $ns at $time $node set Z_ Z1
- *
+ * Implementation of a ns2 movement trace file reader and class ns3::Ns2MobilityHelper.
  */
 
 #include "ns2-mobility-helper.h"
@@ -37,19 +27,25 @@
 #include <map>
 #include <sstream>
 
-namespace ns3
-{
+using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("Ns2MobilityHelper");
+/**
+ * @name ns2 Mobility Traces
+ * ns2 movement trace file string labels.
+ * @see ns3::Ns2MobilityHelper for examples of the ns2 mobility trace file format to which these
+ * correspond.
+ * @{
+ */
+/** ns2 movement trace file symbol. */
+constexpr char NS2_AT[] = "at";
+constexpr char NS2_X_COORD[] = "X_";
+constexpr char NS2_Y_COORD[] = "Y_";
+constexpr char NS2_Z_COORD[] = "Z_";
+constexpr char NS2_SETDEST[] = "setdest";
+constexpr char NS2_SET[] = "set";
+constexpr char NS2_NS_SCH[] = "$ns_";
 
-// Constants definitions
-#define NS2_AT "at"
-#define NS2_X_COORD "X_"
-#define NS2_Y_COORD "Y_"
-#define NS2_Z_COORD "Z_"
-#define NS2_SETDEST "setdest"
-#define NS2_SET "set"
-#define NS2_NS_SCH "$ns_"
+/** @} */
 
 /**
  * Type to maintain line parsed and its values
@@ -220,6 +216,11 @@ static Vector SetSchedPosition(Ptr<ConstantVelocityMobilityModel> model,
                                double at,
                                std::string coord,
                                double coordVal);
+
+namespace ns3
+{
+
+NS_LOG_COMPONENT_DEFINE("Ns2MobilityHelper");
 
 Ns2MobilityHelper::Ns2MobilityHelper(std::string filename)
     : m_filename(filename)
@@ -480,6 +481,14 @@ Ns2MobilityHelper::ConfigNodesMovements(const ObjectStore& store) const
         file.close();
     }
 }
+
+void
+Ns2MobilityHelper::Install() const
+{
+    Install(NodeList::Begin(), NodeList::End());
+}
+
+} // namespace ns3
 
 ParseResult
 ParseNs2Line(const std::string& str)
@@ -848,11 +857,3 @@ SetSchedPosition(Ptr<ConstantVelocityMobilityModel> model,
 
     return position;
 }
-
-void
-Ns2MobilityHelper::Install() const
-{
-    Install(NodeList::Begin(), NodeList::End());
-}
-
-} // namespace ns3

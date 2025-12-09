@@ -9,6 +9,12 @@
 #ifndef MESH_ID_H
 #define MESH_ID_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::IeMeshId declaration.
+ */
+
 #include "ns3/buffer.h"
 #include "ns3/mesh-information-element-vector.h"
 
@@ -79,6 +85,15 @@ class IeMeshId : public WifiInformationElement
  * @returns The reference to the output stream.
  */
 std::ostream& operator<<(std::ostream& os, const IeMeshId& meshId);
+
+/**
+ * @brief Stream extraction operator.
+ *
+ * @param [in] is The reference to the input stream.
+ * @param [in] a The IeMeshId object.
+ * @returns The reference to the input stream.
+ */
+std::istream& operator>>(std::istream& is, IeMeshId& a);
 
 } // namespace dot11s
 } // namespace ns3

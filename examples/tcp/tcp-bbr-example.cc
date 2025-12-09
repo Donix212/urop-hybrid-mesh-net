@@ -7,39 +7,43 @@
  *          Vivek Jain <jain.vivek.anand@gmail.com>
  *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
-
-// This program simulates the following topology:
-//
-//           1000 Mbps           10Mbps          1000 Mbps
-//  Sender -------------- R1 -------------- R2 -------------- Receiver
-//              5ms               10ms               5ms
-//
-// The link between R1 and R2 is a bottleneck link with 10 Mbps. All other
-// links are 1000 Mbps.
-//
-// This program runs by default for 100 seconds and creates a new directory
-// called 'bbr-results' in the ns-3 root directory. The program creates one
-// sub-directory called 'pcap' in 'bbr-results' directory (if pcap generation
-// is enabled) and three .dat files.
-//
-// (1) 'pcap' sub-directory contains six PCAP files:
-//     * bbr-0-0.pcap for the interface on Sender
-//     * bbr-1-0.pcap for the interface on Receiver
-//     * bbr-2-0.pcap for the first interface on R1
-//     * bbr-2-1.pcap for the second interface on R1
-//     * bbr-3-0.pcap for the first interface on R2
-//     * bbr-3-1.pcap for the second interface on R2
-// (2) cwnd.dat file contains congestion window trace for the sender node
-// (3) throughput.dat file contains sender side throughput trace (throughput is in Mbit/s)
-// (4) queueSize.dat file contains queue length trace from the bottleneck link
-//
-// BBR algorithm enters PROBE_RTT phase in every 10 seconds. The congestion
-// window is fixed to 4 segments in this phase with a goal to achieve a better
-// estimate of minimum RTT (because queue at the bottleneck link tends to drain
-// when the congestion window is reduced to 4 segments).
-//
-// The congestion window and queue occupancy traces output by this program show
-// periodic drops every 10 seconds when BBR algorithm is in PROBE_RTT phase.
+/**
+ * @file
+ * @ingroup tcp
+ *
+ * This program simulates the following topology:
+ *
+ *              1000 Mbps           10Mbps          1000 Mbps
+ *     Sender -------------- R1 -------------- R2 -------------- Receiver
+ *                 5ms               10ms               5ms
+ *
+ * The link between R1 and R2 is a bottleneck link with 10 Mbps. All other
+ * links are 1000 Mbps.
+ *
+ * This program runs by default for 100 seconds and creates a new directory
+ * called 'bbr-results' in the ns-3 root directory. The program creates one
+ * sub-directory called 'pcap' in 'bbr-results' directory (if pcap generation
+ * is enabled) and three .dat files.
+ *
+ * (1) 'pcap' sub-directory contains six PCAP files:
+ *     * bbr-0-0.pcap for the interface on Sender
+ *     * bbr-1-0.pcap for the interface on Receiver
+ *     * bbr-2-0.pcap for the first interface on R1
+ *     * bbr-2-1.pcap for the second interface on R1
+ *     * bbr-3-0.pcap for the first interface on R2
+ *     * bbr-3-1.pcap for the second interface on R2
+ * (2) cwnd.dat file contains congestion window trace for the sender node
+ * (3) throughput.dat file contains sender side throughput trace (throughput is in Mbit/s)
+ * (4) queueSize.dat file contains queue length trace from the bottleneck link
+ *
+ * BBR algorithm enters PROBE_RTT phase in every 10 seconds. The congestion
+ * window is fixed to 4 segments in this phase with a goal to achieve a better
+ * estimate of minimum RTT (because queue at the bottleneck link tends to drain
+ * when the congestion window is reduced to 4 segments).
+ *
+ * The congestion window and queue occupancy traces output by this program show
+ * periodic drops every 10 seconds when BBR algorithm is in PROBE_RTT phase.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -54,14 +58,22 @@
 using namespace ns3;
 using namespace ns3::SystemPath;
 
+/** Output directory path. */
 std::string dir;
+/** Throughput output stream. */
 std::ofstream throughput;
+/** Queue size output stream. */
 std::ofstream queueSize;
 
+/** Transmitted bytes last iteration. */
 uint32_t prev = 0;
+/** Time of last iteration. */
 Time prevTime;
 
-// Calculate throughput
+/**
+ * Calculate throughput
+ * @param monitor The FlowMonitor stats
+ */
 static void
 TraceThroughput(Ptr<FlowMonitor> monitor)
 {
@@ -82,7 +94,10 @@ TraceThroughput(Ptr<FlowMonitor> monitor)
     Simulator::Schedule(Seconds(0.2), &TraceThroughput, monitor);
 }
 
-// Check the queue size
+/**
+ * Check the queue size
+ * @param qd The queue discipline
+ */
 void
 CheckQueueSize(Ptr<QueueDisc> qd)
 {
@@ -91,13 +106,22 @@ CheckQueueSize(Ptr<QueueDisc> qd)
     queueSize << Simulator::Now().GetSeconds() << " " << qsize << std::endl;
 }
 
-// Trace congestion window
+/**
+ * Trace congestion window
+ * @param stream The output stream to write to
+ * @param newval The new value
+ */
 static void
-CwndTracer(Ptr<OutputStreamWrapper> stream, uint32_t oldval, uint32_t newval)
+CwndTracer(Ptr<OutputStreamWrapper> stream, uint32_t, uint32_t newval)
 {
     *stream->GetStream() << Simulator::Now().GetSeconds() << " " << newval / 1448.0 << std::endl;
 }
 
+/**
+ * Connect the TCP @c CongestionWindow on the @c nodeId to the CwndTracer
+ * @param nodeId The Node
+ * @param socketId The Socket
+ */
 void
 TraceCwnd(uint32_t nodeId, uint32_t socketId)
 {

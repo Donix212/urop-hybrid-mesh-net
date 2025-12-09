@@ -11,6 +11,13 @@
  *  Erwan Livolant <erwan.livolant@inria.fr>
  *  Alberto Gallegos Ramonet <ramonet@fc.ritsumei.ac.jp>
  */
+
+/**
+ * @file
+ * @ingroup lr-wpan
+ * Class ns3::lrwpan::LrWpanMac implementation.
+ */
+
 #include "lr-wpan-mac.h"
 
 #include "lr-wpan-constants.h"
@@ -27,6 +34,7 @@
 #include "ns3/uinteger.h"
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     std::clog << "[" << m_shortAddress << " | " << m_macExtendedAddress << "] ";
 

@@ -5,10 +5,16 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-
-// This program can be used to benchmark packet serialization/deserialization
-// operations using Headers and Tags, for various numbers of packets 'n'
-// Sample usage:  ./ns3 run 'bench-packets --n=10000'
+/**
+ * @file
+ * @ingroup packetperf
+ *
+ * This program can be used to benchmark packet serialization/deserialization
+ * operations using Headers and Tags, for various numbers of packets 'n'
+ *
+ * Sample usage:
+ *    ./ns3 run 'bench-packets --n=10000'
+ */
 
 #include "ns3/command-line.h"
 #include "ns3/packet-metadata.h"
@@ -203,6 +209,101 @@ class BenchTag : public Tag
     }
 };
 
+/**
+ * @name Simple benchmark kernels
+ * @{
+ */
+
+/**
+ * Benchmark kernel copy packet, remove headers
+ * @param n The number of packets
+ */
+static void
+benchA(uint32_t n)
+{
+    BenchHeader<25> ipv4;
+    BenchHeader<8> udp;
+
+    // The original version of this program did not use BenchHeader::IsOK ()
+    // Below are two asserts that suggest how it can be used.
+    NS_ASSERT_MSG(ipv4.IsOk() == false, "IsOk() should be false before deserialization");
+    for (uint32_t i = 0; i < n; i++)
+    {
+        Ptr<Packet> p = Create<Packet>(2000);
+        p->AddHeader(udp);
+        p->AddHeader(ipv4);
+        Ptr<Packet> o = p->Copy();
+        o->RemoveHeader(ipv4);
+        o->RemoveHeader(udp);
+    }
+    NS_ASSERT_MSG(ipv4.IsOk() == true, "IsOk() should be true after deserialization");
+}
+
+/**
+ * Benchmark kernel just adding headers
+ * @param n The number of packets
+ */
+static void
+benchB(uint32_t n)
+{
+    BenchHeader<25> ipv4;
+    BenchHeader<8> udp;
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        Ptr<Packet> p = Create<Packet>(2000);
+        p->AddHeader(udp);
+        p->AddHeader(ipv4);
+    }
+}
+
+/**
+ * Benchmark kernel step removing a header
+ * @param p The packet
+ */
+static void
+C2(Ptr<Packet> p)
+{
+    BenchHeader<8> udp;
+
+    p->RemoveHeader(udp);
+}
+
+/**
+ * Benchmark kernel step removing a header, then calling a function to remove another
+ * @param p The packet
+ */
+static void
+C1(Ptr<Packet> p)
+{
+    BenchHeader<25> ipv4;
+    p->RemoveHeader(ipv4);
+    C2(p);
+}
+
+/**
+ * Benchmark kernel adding/removing headers by function call
+ * @param n The number of packets
+ */
+static void
+benchC(uint32_t n)
+{
+    BenchHeader<25> ipv4;
+    BenchHeader<8> udp;
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        Ptr<Packet> p = Create<Packet>(2000);
+        p->AddHeader(udp);
+        p->AddHeader(ipv4);
+        C1(p);
+    }
+}
+
+/**
+ * Benchmark kernel intermix adding/removing headers and tags
+ * @param n The number of packets
+ */
 static void
 benchD(uint32_t n)
 {
@@ -226,72 +327,10 @@ benchD(uint32_t n)
     }
 }
 
-static void
-benchA(uint32_t n)
-{
-    BenchHeader<25> ipv4;
-    BenchHeader<8> udp;
-
-    // The original version of this program did not use BenchHeader::IsOK ()
-    // Below are two asserts that suggest how it can be used.
-    NS_ASSERT_MSG(ipv4.IsOk() == false, "IsOk() should be false before deserialization");
-    for (uint32_t i = 0; i < n; i++)
-    {
-        Ptr<Packet> p = Create<Packet>(2000);
-        p->AddHeader(udp);
-        p->AddHeader(ipv4);
-        Ptr<Packet> o = p->Copy();
-        o->RemoveHeader(ipv4);
-        o->RemoveHeader(udp);
-    }
-    NS_ASSERT_MSG(ipv4.IsOk() == true, "IsOk() should be true after deserialization");
-}
-
-static void
-benchB(uint32_t n)
-{
-    BenchHeader<25> ipv4;
-    BenchHeader<8> udp;
-
-    for (uint32_t i = 0; i < n; i++)
-    {
-        Ptr<Packet> p = Create<Packet>(2000);
-        p->AddHeader(udp);
-        p->AddHeader(ipv4);
-    }
-}
-
-static void
-C2(Ptr<Packet> p)
-{
-    BenchHeader<8> udp;
-
-    p->RemoveHeader(udp);
-}
-
-static void
-C1(Ptr<Packet> p)
-{
-    BenchHeader<25> ipv4;
-    p->RemoveHeader(ipv4);
-    C2(p);
-}
-
-static void
-benchC(uint32_t n)
-{
-    BenchHeader<25> ipv4;
-    BenchHeader<8> udp;
-
-    for (uint32_t i = 0; i < n; i++)
-    {
-        Ptr<Packet> p = Create<Packet>(2000);
-        p->AddHeader(udp);
-        p->AddHeader(ipv4);
-        C1(p);
-    }
-}
-
+/**
+ * Benchmark kernel fragmentation and concatenation
+ * @param n The number of packets
+ */
 static void
 benchFragment(uint32_t n)
 {
@@ -321,6 +360,10 @@ benchFragment(uint32_t n)
     }
 }
 
+/**
+ * Benchmark kernel byte tags
+ * @param n The number of packets
+ */
 static void
 benchByteTags(uint32_t n)
 {
@@ -339,6 +382,14 @@ benchByteTags(uint32_t n)
     }
 }
 
+/** @} */
+
+/**
+ * Run one iteration of a benchmark
+ * @param bench The benchmark
+ * @param n The number of iterations
+ * @return the elapsed time in ms
+ */
 static uint64_t
 runBenchOneIteration(void (*bench)(uint32_t), uint32_t n)
 {
@@ -349,6 +400,14 @@ runBenchOneIteration(void (*bench)(uint32_t), uint32_t n)
     return deltaMs;
 }
 
+/**
+ * Run a benchmark multiple times.
+ * Report the maximum packet processing rate and the minimum packet processing time.
+ * @param bench The benchmark
+ * @param n The number of iterations in an iteration
+ * @param minIterations The number of iterations to find the minimum
+ * @param name The benchmark name
+ */
 static void
 runBench(void (*bench)(uint32_t), uint32_t n, uint32_t minIterations, const char* name)
 {

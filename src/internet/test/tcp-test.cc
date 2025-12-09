@@ -7,6 +7,10 @@
  * Authors: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  *          Raj Bhattacharjea <raj.b@gatech.edu>
  */
+/**
+ * @file
+ * @ingroup internet-test
+ */
 
 #include "ns3/arp-l3-protocol.h"
 #include "ns3/config.h"
@@ -151,6 +155,17 @@ class TcpTestCase : public TestCase
     bool m_useIpv6; //!< Use IPv6 instead of IPv4.
 };
 
+/**
+ * Construct a test name string
+ * @param str The base name
+ * @param totalStreamSize The total stream size
+ * @param sourceWriteSize The source write size
+ * @param serverReadSize The server read size
+ * @param serverWriteSize The server write size
+ * @param sourceReadSize The source read size
+ * @param useIpv6 Use IPv6 if @c true.
+ * @return The test name string
+ */
 static std::string
 Name(std::string str,
      uint32_t totalStreamSize,
@@ -167,6 +182,11 @@ Name(std::string str,
     return oss.str();
 }
 
+/**
+ * Get a string from a packet
+ * @param p The packet
+ * @return The string
+ */
 static inline std::string
 GetString(Ptr<Packet> p)
 {

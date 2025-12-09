@@ -10,6 +10,12 @@
 #ifndef IE_DOT11S_PEER_MANAGEMENT_H
 #define IE_DOT11S_PEER_MANAGEMENT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::IePeerManagement declaration.
+ */
+
 #include "ns3/mesh-information-element-vector.h"
 
 namespace ns3
@@ -134,7 +140,16 @@ class IePeerManagement : public WifiInformationElement
 };
 
 bool operator==(const IePeerManagement& a, const IePeerManagement& b);
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] peerMan The IePeerManagement object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePeerManagement& peerMan);
+
 } // namespace dot11s
 } // namespace ns3
 

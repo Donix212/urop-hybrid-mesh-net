@@ -35,7 +35,7 @@ using namespace ns3;
  * 1. Through explicit call of SeedManager::SetSeed () and
  *    SeedManager::SetRun () (commented out below)
  * 2. Through the passing of command line arguments such as:
- *    ./ns3 run program-name --command-template="%s --RngRun=<value>"`
+ *    `./ns3 run program-name --command-template="%s --RngRun=<value>"`
  * 3. Through the use of the NS_GLOBAL_VALUE environment variable, such as:
  *    `$ NS_GLOBAL_VALUE="RngRun=<value>" ./ns3 run program-name`
  *

@@ -3,15 +3,18 @@
  *
  * Authors: Lalith Suresh <suresh.lalith@gmail.com>
  */
-
-// Scenario: node A (using Click) sends packets to node B (not using
-// Click)
-//
-//  (Click)             (non-Click)
-//    A )))     WLAN      ((( B
-// (172.16.1.1)         (172.16.1.2)
-//    (eth0)
-//
+/**
+ * @file
+ * @ingroup click
+ *
+ * Scenario: node A (using Click) sends packets to node B (not using
+ * Click)
+ *
+ *      (Click)             (non-Click)
+ *        A )))     WLAN      ((( B
+ *     (172.16.1.1)         (172.16.1.2)
+ *        (eth0)
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/click-internet-stack-helper.h"
@@ -24,6 +27,10 @@
 
 using namespace ns3;
 
+/**
+ * Log receipt of a packet on a socket
+ * @param socket The socket
+ */
 void
 ReceivePacket(Ptr<Socket> socket)
 {

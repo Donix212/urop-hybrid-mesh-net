@@ -20,6 +20,12 @@
 #ifndef DSR_NETWORK_QUEUE_H
 #define DSR_NETWORK_QUEUE_H
 
+/**
+ * @file
+ * @ingroup dsr
+ * Class ns3::dsr::DsrNetworkQueueEntry, ns3::dsr::DsrNetworkQueue declarations.
+ */
+
 #include "dsr-option-header.h"
 
 #include "ns3/ipv4-header.h"

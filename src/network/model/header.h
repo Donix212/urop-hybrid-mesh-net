@@ -9,6 +9,12 @@
 #ifndef HEADER_H
 #define HEADER_H
 
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::Header declaration.
+ */
+
 #include "buffer.h"
 #include "chunk.h"
 

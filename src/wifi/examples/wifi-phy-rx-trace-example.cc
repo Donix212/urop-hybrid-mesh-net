@@ -5,47 +5,52 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
+/**
+ * @file
+ * @ingroup wifi
+ *
 
-// The purpose of this example is to illustrate basic use of the
-// WifiPhyRxTraceHelper on a simple example program.
-//
-// This script configures two 802.11ax Wi-Fi nodes on a YansWifiChannel,
-// with devices in infrastructure mode, and by default, the station sends
-// one packet of 1000 (application) bytes to the access point.  A simple
-// free-space path loss (Friis) propagation loss model is configured.
-// The lowest MCS ("HeMcs0") value is configured.
-//
-// The first packet is sent at time 1 sec.  If more packets are configured
-// to be sent, they are separated in time by the 'interval' parameter, which
-// defaults to 1 sec.  The simulation ends 1 sec. after the last packet is sent.
-//
-// This script can also be used to put the Wifi layer into full logging mode
-// at the LOG_LEVEL_INFO level; this command will turn on all logging in the
-// wifi module:
-//
-// ./ns3 run "wifi-phy-rx-trace-example --logging=1"
-//
-// Logging of the example program itself is enabled by default in this program;
-// to turn off the printing of packet send and receive events, disable the verbose mode:
-//
-// ./ns3 run "wifi-phy-rx-trace-example --verbose=0"
-//
-// When you are done, you will notice two pcap trace files in your directory.
-// If you have tcpdump installed, you can try this:
-//
-// tcpdump -r wifi-phy-rx-trace-example-0-0.pcap -nn -tt
-//
-// The STA is indexed as node 0, the AP is indexed as node 1
-//
-// Additionally, an ASCII trace file is created (wifi-phy-rx-trace-example.tr)
-//
-// Finally, the example demonstrates that two independent BSS can exist on the
-// same channel, with the trace helper configured to log rxs only on one
-// of the BSS.  The outside BSS (OBSS) will send packets that are picked up
-// by the trace helper on the primary BSS's devices.  The distance to the OBSS
-// can be configured to place the OBSS within or outside of carrier sense range.
-// The command-line options 'enableTwoBss' and 'distanceTwoBss' can be used
-// to optionally enable and configure the second BSS.
+ * The purpose of this example is to illustrate basic use of the
+ * WifiPhyRxTraceHelper on a simple example program.
+ *
+ * This script configures two 802.11ax Wi-Fi nodes on a YansWifiChannel,
+ * with devices in infrastructure mode, and by default, the station sends
+ * one packet of 1000 (application) bytes to the access point.  A simple
+ * free-space path loss (Friis) propagation loss model is configured.
+ * The lowest MCS ("HeMcs0") value is configured.
+ *
+ * The first packet is sent at time 1 sec.  If more packets are configured
+ * to be sent, they are separated in time by the 'interval' parameter, which
+ * defaults to 1 sec.  The simulation ends 1 sec. after the last packet is sent.
+ *
+ * This script can also be used to put the Wifi layer into full logging mode
+ * at the LOG_LEVEL_INFO level; this command will turn on all logging in the
+ * wifi module:
+ *
+ *     ./ns3 run "wifi-phy-rx-trace-example --logging=1"
+ *
+ * Logging of the example program itself is enabled by default in this program;
+ * to turn off the printing of packet send and receive events, disable the verbose mode:
+ *
+ *     ./ns3 run "wifi-phy-rx-trace-example --verbose=0"
+ *
+ * When you are done, you will notice two pcap trace files in your directory.
+ * If you have tcpdump installed, you can try this:
+ *
+ *     tcpdump -r wifi-phy-rx-trace-example-0-0.pcap -nn -tt
+ *
+ * The STA is indexed as node 0, the AP is indexed as node 1
+ *
+ * Additionally, an ASCII trace file is created (wifi-phy-rx-trace-example.tr)
+ *
+ * Finally, the example demonstrates that two independent BSS can exist on the
+ * same channel, with the trace helper configured to log rxs only on one
+ * of the BSS.  The outside BSS (OBSS) will send packets that are picked up
+ * by the trace helper on the primary BSS's devices.  The distance to the OBSS
+ * can be configured to place the OBSS within or outside of carrier sense range.
+ * The command-line options 'enableTwoBss' and 'distanceTwoBss' can be used
+ * to optionally enable and configure the second BSS.
+ */
 
 #include "ns3/command-line.h"
 #include "ns3/config.h"
@@ -81,6 +86,11 @@ ReceivePacket(Ptr<Socket> socket)
     }
 }
 
+/**
+ * Function called when a packet is received on the OBSS network.
+ *
+ * @param socket The receiving socket.
+ */
 void
 ReceiveObssPacket(Ptr<Socket> socket)
 {
@@ -119,6 +129,9 @@ GeneratePacket(Ptr<Socket> socket, uint32_t pktSize, uint32_t pktCount, Time pkt
     }
 }
 
+/**
+ * Populate the NeighborCache.
+ */
 void
 PopulateNeighborCache()
 {

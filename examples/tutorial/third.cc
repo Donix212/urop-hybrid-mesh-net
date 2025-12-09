@@ -1,6 +1,22 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup tutorial
+ * This script builds on the second.cc script and adds a Wi-Fi network.
+ *
+ * Default Network Topology
+ *
+ *     Wifi 10.1.3.0
+ *                     AP
+ *      *    *    *    *
+ *      |    |    |    |    10.1.1.0
+ *     n5   n6   n7   n0 -------------- n1   n2   n3   n4
+ *                       point-to-point  |    |    |    |
+ *                                       ================
+ *                                         LAN 10.1.2.0
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -11,17 +27,6 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/ssid.h"
 #include "ns3/yans-wifi-helper.h"
-
-// Default Network Topology
-//
-//   Wifi 10.1.3.0
-//                 AP
-//  *    *    *    *
-//  |    |    |    |    10.1.1.0
-// n5   n6   n7   n0 -------------- n1   n2   n3   n4
-//                   point-to-point  |    |    |    |
-//                                   ================
-//                                     LAN 10.1.2.0
 
 using namespace ns3;
 

@@ -93,7 +93,7 @@ build_example(
 
 build_example(
   NAME tcp-linux-reno
-  SOURCE_FILES tcp-linux-reno.cc
+  SOURCE_FILES tcp-linux-reno-example.cc
   LIBRARIES_TO_LINK
     ${libpoint-to-point}
     ${libinternet}

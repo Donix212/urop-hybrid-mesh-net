@@ -9,6 +9,27 @@
  * Author: Surya Seetharaman <suryaseetharaman.9@gmail.com> - ported from ns-3
  *         RedQueueDisc traffic-control example to accommodate TbfQueueDisc example.
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ *
+ * This simple example shows how to use TrafficControlHelper to install a
+ * QueueDisc on a device.
+ *
+ * Network topology
+ *
+ *           10.1.1.0
+ *     n0 -------------- n1
+ *        point-to-point
+ *
+ * The output will consist of all the traced changes in
+ * the number of tokens in TBF's first and second buckets:
+ *
+ *     FirstBucketTokens 0 to x
+ *     SecondBucketTokens 0 to x
+ *     FirstBucketTokens x to 0
+ *     SecondBucketTokens x to 0
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -17,34 +38,22 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/traffic-control-module.h"
 
-// This simple example shows how to use TrafficControlHelper to install a
-// QueueDisc on a device.
-//
-// Network topology
-//
-//       10.1.1.0
-// n0 -------------- n1
-//    point-to-point
-//
-// The output will consist of all the traced changes in
-// the number of tokens in TBF's first and second buckets:
-//
-//    FirstBucketTokens 0 to x
-//    SecondBucketTokens 0 to x
-//    FirstBucketTokens x to 0
-//    SecondBucketTokens x to 0
-//
-
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("TbfExample");
 
+/**
+ * Log changes in the queue buckets.
+ * @param oldValue The old bucket value
+ * @param newValue The new bucket value
+ */
 void
 FirstBucketTokensTrace(uint32_t oldValue, uint32_t newValue)
 {
     std::cout << "FirstBucketTokens " << oldValue << " to " << newValue << std::endl;
 }
 
+/** @copydoc FirstBucketTokensTrace() */
 void
 SecondBucketTokensTrace(uint32_t oldValue, uint32_t newValue)
 {

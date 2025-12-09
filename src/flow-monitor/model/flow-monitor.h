@@ -9,6 +9,12 @@
 #ifndef FLOW_MONITOR_H
 #define FLOW_MONITOR_H
 
+/**
+ * @file
+ * @ingroup flow-monitor
+ * Class ns3::FlowMonitor declaration.
+ */
+
 #include "flow-classifier.h"
 #include "flow-probe.h"
 
@@ -274,6 +280,9 @@ class FlowMonitor : public Object
     void DoDispose() override;
 
   private:
+    /// Interval on which to check for lost packets
+    static const Time PERIODIC_CHECK_INTERVAL;
+
     /// Structure to represent a single tracked packet data
     struct TrackedPacket
     {

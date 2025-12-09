@@ -17,8 +17,11 @@
 #include <string>
 #include <vector>
 
-// These are in #include <Brite.h>,
-// here we just need a forward declaration.
+/**
+ * @ingroup brite
+ * Forward declarations from
+ * [Brite.h](https://github.com/nsol-nmsu/brite-patch/blob/master/C%2B%2B/Brite.h)
+ */
 namespace brite
 {
 class Topology;

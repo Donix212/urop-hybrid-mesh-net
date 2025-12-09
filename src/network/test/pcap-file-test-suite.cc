@@ -3,6 +3,10 @@
  *
  * Author:  Craig Dowell (craigdo@ee.washington.edu)
  */
+/**
+ * @file
+ * @ingroup network-test
+ */
 
 #include "ns3/log.h"
 #include "ns3/pcap-file.h"
@@ -11,10 +15,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 
 using namespace ns3;
+namespace fs = std::filesystem;
 
 NS_LOG_COMPONENT_DEFINE("pcap-file-test-suite");
 
@@ -22,6 +28,15 @@ NS_LOG_COMPONENT_DEFINE("pcap-file-test-suite");
 // Some utility functions for the tests.
 // ===========================================================================
 
+/**
+ * @name
+ * Reverse (swap) bytes on a value.
+ * @{
+ */
+/**
+ * @param val The value to swap bytes on.
+ * @return The byte-swapped value.
+ */
 static uint16_t
 Swap(uint16_t val)
 {
@@ -35,34 +50,23 @@ Swap(uint32_t val)
            ((val << 24) & 0xff000000);
 }
 
+/** @} */
+
+/**
+ * Test that a file has the expected size.
+ * @param filename The file.
+ * @param sizeExpected The expected size.
+ * @returns @c true if the file has the expected size
+ */
 static bool
-CheckFileExists(std::string filename)
+CheckFileLength(std::string filename, unsigned sizeExpected)
 {
-    FILE* p = std::fopen(filename.c_str(), "rb");
-    if (p == nullptr)
+    if (!fs::exists(filename))
     {
         return false;
     }
 
-    std::fclose(p);
-    return true;
-}
-
-static bool
-CheckFileLength(std::string filename, long sizeExpected)
-{
-    FILE* p = std::fopen(filename.c_str(), "rb");
-    if (p == nullptr)
-    {
-        return false;
-    }
-
-    std::fseek(p, 0, SEEK_END);
-
-    auto sizeActual = std::ftell(p);
-    std::fclose(p);
-
-    return sizeActual == sizeExpected;
+    return fs::file_size(filename) == sizeExpected;
 }
 
 /**
@@ -127,7 +131,7 @@ WriteModeCreateTestCase::DoRun()
     NS_TEST_ASSERT_MSG_EQ(f.Fail(), false, "Open (" << m_testFilename << ", \"w\") returns error");
     f.Close();
 
-    NS_TEST_ASSERT_MSG_EQ(CheckFileExists(m_testFilename),
+    NS_TEST_ASSERT_MSG_EQ(fs::exists(m_testFilename),
                           true,
                           "Open (" << m_testFilename
                                    << ", \"std::ios::out\") does not create file");
@@ -255,7 +259,7 @@ ReadModeCreateTestCase::DoRun()
                               << m_testFilename << ", \"std::ios::in\") does not return error");
     f.Close();
     f.Clear();
-    NS_TEST_ASSERT_MSG_EQ(CheckFileExists(m_testFilename),
+    NS_TEST_ASSERT_MSG_EQ(fs::exists(m_testFilename),
                           false,
                           "Open (" << m_testFilename
                                    << ", \"std::ios::in\") unexpectedly created a file");
@@ -373,7 +377,7 @@ AppendModeCreateTestCase::DoRun ()
   f.Close ();
   f.Clear ();
 
-  NS_TEST_ASSERT_MSG_EQ (CheckFileExists (m_testFilename), false,
+  NS_TEST_ASSERT_MSG_EQ (fs::exists(m_testFilename), false,
                          "Open (" << m_testFilename << ", \"std::ios::app\") unexpectedly created a file");
 
   //
@@ -1099,7 +1103,7 @@ ReadFileTestCase::DoTeardown()
 {
 }
 
-static const uint32_t N_KNOWN_PACKETS = 6;
+/** Length of each @c knownPackets */
 static const uint32_t N_PACKET_BYTES = 16;
 
 /**
@@ -1114,128 +1118,29 @@ struct PacketEntry
     uint16_t data[N_PACKET_BYTES]; //!< Packet data
 };
 
+/** Test case packets. */
+// clang-format off
 static const PacketEntry knownPackets[] = {
-    {2,
-     3696,
-     46,
-     46,
-     {0x0001,
-      0x0800,
-      0x0604,
-      0x0001,
-      0x0000,
-      0x0000,
-      0x0003,
-      0x0a01,
-      0x0201,
-      0xffff,
-      0xffff,
-      0xffff,
-      0x0a01,
-      0x0204,
-      0x0000,
-      0x0000}},
-    {2,
-     3707,
-     46,
-     46,
-     {0x0001,
-      0x0800,
-      0x0604,
-      0x0002,
-      0x0000,
-      0x0000,
-      0x0006,
-      0x0a01,
-      0x0204,
-      0x0000,
-      0x0000,
-      0x0003,
-      0x0a01,
-      0x0201,
-      0x0000,
-      0x0000}},
-    {2,
-     3801,
-     1070,
-     1070,
-     {0x4500,
-      0x041c,
-      0x0000,
-      0x0000,
-      0x3f11,
-      0x0000,
-      0x0a01,
-      0x0101,
-      0x0a01,
-      0x0204,
-      0xc001,
-      0x0009,
-      0x0408,
-      0x0000,
-      0x0000,
-      0x0000}},
-    {2,
-     3811,
-     46,
-     46,
-     {0x0001,
-      0x0800,
-      0x0604,
-      0x0001,
-      0x0000,
-      0x0000,
-      0x0006,
-      0x0a01,
-      0x0204,
-      0xffff,
-      0xffff,
-      0xffff,
-      0x0a01,
-      0x0201,
-      0x0000,
-      0x0000}},
-    {2,
-     3822,
-     46,
-     46,
-     {0x0001,
-      0x0800,
-      0x0604,
-      0x0002,
-      0x0000,
-      0x0000,
-      0x0003,
-      0x0a01,
-      0x0201,
-      0x0000,
-      0x0000,
-      0x0006,
-      0x0a01,
-      0x0204,
-      0x0000,
-      0x0000}},
-    {2,
-     3915,
-     1070,
-     1070,
-     {0x4500,
-      0x041c,
-      0x0000,
-      0x0000,
-      0x4011,
-      0x0000,
-      0x0a01,
-      0x0204,
-      0x0a01,
-      0x0101,
-      0x0009,
-      0xc001,
-      0x0408,
-      0x0000,
-      0x0000,
-      0x0000}},
+    {2,       3696,   46,     46,
+     {0x0001, 0x0800, 0x0604, 0x0001, 0x0000, 0x0000, 0x0003, 0x0a01,
+      0x0201, 0xffff, 0xffff, 0xffff, 0x0a01, 0x0204, 0x0000, 0x0000}},
+    {2,       3707,   46,     46,
+     {0x0001, 0x0800, 0x0604, 0x0002, 0x0000, 0x0000, 0x0006, 0x0a01,
+      0x0204, 0x0000, 0x0000, 0x0003, 0x0a01, 0x0201, 0x0000, 0x0000}},
+    {2,       3801,   1070,   1070,
+     {0x4500, 0x041c, 0x0000, 0x0000, 0x3f11, 0x0000, 0x0a01, 0x0101,
+      0x0a01, 0x0204, 0xc001, 0x0009, 0x0408, 0x0000, 0x0000, 0x0000}},
+    {2,       3811,   46,     46,
+     {0x0001, 0x0800, 0x0604, 0x0001, 0x0000, 0x0000, 0x0006, 0x0a01,
+      0x0204, 0xffff, 0xffff, 0xffff, 0x0a01, 0x0201, 0x0000, 0x0000}},
+    {2,       3822,   46,     46,
+     {0x0001, 0x0800, 0x0604, 0x0002, 0x0000, 0x0000, 0x0003, 0x0a01,
+      0x0201, 0x0000, 0x0000, 0x0006, 0x0a01, 0x0204, 0x0000, 0x0000}},
+    {2,       3915,   1070,   1070,
+     {0x4500, 0x041c, 0x0000, 0x0000, 0x4011, 0x0000, 0x0a01, 0x0204,
+      0x0a01, 0x0101, 0x0009, 0xc001, 0x0408, 0x0000, 0x0000, 0x0000}},
 };
+// clang-format on
 
 void
 ReadFileTestCase::DoRun()
@@ -1265,10 +1170,8 @@ ReadFileTestCase::DoRun()
     uint32_t origLen;
     uint32_t readLen;
 
-    for (uint32_t i = 0; i < N_KNOWN_PACKETS; ++i)
+    for (const auto p : knownPackets)
     {
-        const PacketEntry& p = knownPackets[i];
-
         f.Read(data, sizeof(data), tsSec, tsUsec, inclLen, origLen, readLen);
         NS_TEST_ASSERT_MSG_EQ(f.Fail(), false, "Read() of known good pcap file returns error");
         NS_TEST_ASSERT_MSG_EQ(tsSec,
@@ -1348,10 +1251,8 @@ DiffTestCase::DoRun()
     f.Init(1, N_PACKET_BYTES);
     NS_TEST_ASSERT_MSG_EQ(f.Fail(), false, "Init (1, " << N_PACKET_BYTES << ") returns error");
 
-    for (uint32_t i = 0; i < N_KNOWN_PACKETS; ++i)
+    for (const auto p : knownPackets)
     {
-        const PacketEntry& p = knownPackets[i];
-
         f.Write(p.tsSec, p.tsUsec, (const uint8_t*)p.data, p.origLen);
         NS_TEST_EXPECT_MSG_EQ(f.Fail(), false, "Write must not fail");
     }

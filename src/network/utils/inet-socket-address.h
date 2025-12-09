@@ -9,6 +9,12 @@
 #ifndef INET_SOCKET_ADDRESS_H
 #define INET_SOCKET_ADDRESS_H
 
+/**
+ * @file
+ * @ingroup socket
+ * Class ns3::InetSocketAddress declaration.
+ */
+
 #include "ipv4-address.h"
 
 #include "ns3/address.h"

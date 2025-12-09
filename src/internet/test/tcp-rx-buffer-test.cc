@@ -2,6 +2,10 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
+/**
+ * @file
+ * @ingroup internet-test
+ */
 
 #include "ns3/log.h"
 #include "ns3/packet.h"
@@ -297,4 +301,5 @@ class TcpRxBufferTestSuite : public TestSuite
     }
 };
 
+/** Test suite instance variable. */
 static TcpRxBufferTestSuite g_tcpRxBufferTestSuite;

@@ -3,6 +3,10 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/abort.h"
 #include "ns3/config.h"
@@ -828,5 +832,5 @@ TwoRaySplmTestSuite::TwoRaySplmTestSuite()
                 TestCase::Duration::EXTENSIVE);
 }
 
-// Static variable for test initialization
+/** Static variable for test initialization */
 static TwoRaySplmTestSuite myTestSuite;
