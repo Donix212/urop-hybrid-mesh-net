@@ -58,7 +58,6 @@ set(source_files
     utils/packet-socket-factory.cc
     utils/packet-socket-server.cc
     utils/packet-socket.cc
-    utils/packetbb.cc
     utils/pcap-file-wrapper.cc
     utils/pcap-file.cc
     utils/queue-item.cc
@@ -135,7 +134,6 @@ set(header_files
     utils/packet-socket-factory.h
     utils/packet-socket-server.h
     utils/packet-socket.h
-    utils/packetbb.h
     utils/pcap-file-wrapper.h
     utils/pcap-file.h
     utils/pcap-test.h
@@ -168,7 +166,6 @@ build_lib(
     test/packet-metadata-test.cc
     test/packet-socket-apps-test-suite.cc
     test/packet-test-suite.cc
-    test/packetbb-test-suite.cc
     test/pcap-file-test-suite.cc
     test/sequence-number-test-suite.cc
     test/test-data-rate.cc

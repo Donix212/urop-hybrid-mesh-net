@@ -175,7 +175,45 @@ class Ipv6InterfaceAddress
   void StopDadTimer ();
 #endif
 
+    /**
+     * @param address an address to compare type with
+     *
+     * @return true if the type of the address stored internally
+     * is compatible with the type of the input address, false otherwise.
+     */
+    static bool IsMatchingType(const Address& address);
+
+    /**
+     * Convert an instance of this class to a polymorphic Address instance.
+     *
+     * @return a new Address instance
+     */
+    operator Address() const;
+
+    /**
+     * @param address a polymorphic address
+     * @return a new Ipv6InterfaceAddress from the polymorphic address
+     *
+     * This function performs a type check and asserts if the
+     * type of the input address is not compatible with an
+     * Ipv6InterfaceAddress.
+     */
+    static Ipv6InterfaceAddress ConvertFrom(const Address& address);
+
+    /**
+     * @brief Convert to an Address type
+     * @return the Address corresponding to this object.
+     */
+    Address ConvertTo() const;
+
   private:
+    /**
+     * @brief Get the underlying address type (automatically assigned).
+     *
+     * @returns the address type
+     */
+    static uint8_t GetType();
+
     /**
      * @brief The IPv6 address.
      */

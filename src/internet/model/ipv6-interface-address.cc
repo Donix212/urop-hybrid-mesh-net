@@ -220,6 +220,48 @@ Ipv6InterfaceAddress::SetOnLink(bool onLink)
     m_onLink = onLink;
 }
 
+bool
+Ipv6InterfaceAddress::IsMatchingType(const Address& address)
+{
+    NS_LOG_FUNCTION(&address);
+    return address.CheckCompatible(GetType(), 17);
+}
+
+Ipv6InterfaceAddress::operator Address() const
+{
+    return ConvertTo();
+}
+
+Ipv6InterfaceAddress
+Ipv6InterfaceAddress::ConvertFrom(const Address& address)
+{
+    NS_LOG_FUNCTION(&address);
+    NS_ASSERT(address.CheckCompatible(GetType(), 17));
+    uint8_t buf[17];
+    address.CopyTo(buf);
+    Ipv6Address addr = Ipv6Address::Deserialize(buf);
+    Ipv6Prefix prefix(buf[16]);
+    return Ipv6InterfaceAddress(addr, prefix);
+}
+
+Address
+Ipv6InterfaceAddress::ConvertTo() const
+{
+    NS_LOG_FUNCTION(this);
+    uint8_t buf[17];
+    m_address.Serialize(buf);
+    buf[16] = m_prefix.GetPrefixLength();
+    return Address(GetType(), buf, 17);
+}
+
+uint8_t
+Ipv6InterfaceAddress::GetType()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    static uint8_t type = Address::Register();
+    return type;
+}
+
 #if 0
 void Ipv6InterfaceAddress::StartDadTimer (Ptr<Ipv6Interface> interface)
 {

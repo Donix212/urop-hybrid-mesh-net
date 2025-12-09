@@ -1580,11 +1580,6 @@ class PbbAddressBlock : public SimpleRefCount<PbbAddressBlock>
 
   private:
     /**
-     * @brief Get the prefix flags
-     * @return the prefix flags
-     */
-    uint8_t GetPrefixFlags() const;
-    /**
      * @brief Get head and tail
      * @param head the head
      * @param headlen the head length

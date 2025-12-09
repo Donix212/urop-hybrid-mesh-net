@@ -138,6 +138,49 @@ Ipv4InterfaceAddress::SetPrimary()
     m_secondary = false;
 }
 
+bool
+Ipv4InterfaceAddress::IsMatchingType(const Address& address)
+{
+    NS_LOG_FUNCTION(&address);
+    return address.CheckCompatible(GetType(), 5);
+}
+
+Ipv4InterfaceAddress::operator Address() const
+{
+    return ConvertTo();
+}
+
+Ipv4InterfaceAddress
+Ipv4InterfaceAddress::ConvertFrom(const Address& address)
+{
+    NS_LOG_FUNCTION(&address);
+    NS_ASSERT(address.CheckCompatible(GetType(), 5));
+    uint8_t buf[5];
+    address.CopyTo(buf);
+    Ipv4Address addr = Ipv4Address::Deserialize(buf);
+    uint32_t maskVal = 0xffffffff - (1 << (32 - buf[4])) + 1;
+    Ipv4Mask mask(maskVal);
+    return Ipv4InterfaceAddress(addr, mask);
+}
+
+Address
+Ipv4InterfaceAddress::ConvertTo() const
+{
+    NS_LOG_FUNCTION(this);
+    uint8_t buf[5];
+    m_local.Serialize(buf);
+    buf[4] = m_mask.GetPrefixLength();
+    return Address(GetType(), buf, 5);
+}
+
+uint8_t
+Ipv4InterfaceAddress::GetType()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    static uint8_t type = Address::Register();
+    return type;
+}
+
 std::ostream&
 operator<<(std::ostream& os, const Ipv4InterfaceAddress& addr)
 {
