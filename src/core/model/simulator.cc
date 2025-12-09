@@ -192,8 +192,14 @@ Simulator::Now()
 {
     /* Please, don't include any calls to logging macros in this function
      * or pay the price, that is, stack explosions.
+     *
+     * Now() is frequenly used, store pointer to implementation pointer
+     * to bypass the overhead of GetImpl() call when the implementation
+     * has already been initialized.
      */
-    return GetImpl()->Now();
+    SimulatorImpl** pimpl = PeekImpl();
+    const auto impl = *pimpl;
+    return impl ? impl->Now() : GetImpl()->Now();
 }
 
 Time
