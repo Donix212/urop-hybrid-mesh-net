@@ -22,7 +22,7 @@ UdpSocketFactoryImpl::UdpSocketFactoryImpl()
 
 UdpSocketFactoryImpl::~UdpSocketFactoryImpl()
 {
-    NS_ASSERT(!m_udp);
+    NS_ABORT_UNLESS(!m_udp);
 }
 
 void

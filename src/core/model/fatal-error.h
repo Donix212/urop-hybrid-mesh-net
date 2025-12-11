@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <sstream>
 #include <string_view>
 
 // If stacktrace is available, print it on fatal errors
@@ -26,12 +27,12 @@
  * This macro is defined only if the stacktrace library is linked.
  */
 
-#define PRINT_STACKTRACE std::cerr << std::stacktrace::current() << std::endl
+#define NS_GET_STACKTRACE std::stacktrace::current()
 #else
 /**
  * @brief Macro does nothing if stacktrace library is not available.
  */
-#define PRINT_STACKTRACE
+#define NS_GET_STACKTRACE ""
 #endif
 
 /**
@@ -77,6 +78,47 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
 /**
  * @ingroup fatal
  *
+ * @brief Fatal error reporting with a message, implementation.
+ *
+ * When this macro is hit at runtime the error details will
+ * printed to \c stderr, including the message, file name and line number.
+ * Optionally, if \c fatal is true, the macro
+ * will invoke \c std::terminate().  If \c fatal is false,
+ * the invoking function should return an error code to its caller,
+ * which is expected to call NS_FATAL_ERROR to cause termination.
+ *
+ * @param [in] pre Preamble of error message, typically used by asserts.
+ * @param [in] msg The error message to print, if not empty.
+ * @param [in] fatal Call \c std::terminate() if true.
+ *
+ * This macro is enabled unconditionally in all builds,
+ * including debug and optimized builds.
+ */
+#define NS_FATAL_ERROR_IMPL(pre, msg, fatal)                                                       \
+    do                                                                                             \
+    {                                                                                              \
+        std::stringstream fatalErrorStream;                                                        \
+        fatalErrorStream << pre << "msg=\"" << msg << "\", ";                                      \
+        NS_LOG_APPEND_TIME_PREFIX_IMPL(fatalErrorStream);                                          \
+        NS_LOG_APPEND_NODE_PREFIX_IMPL(fatalErrorStream);                                          \
+        fatalErrorStream << "file=" << std::string(__FILE__) << ", line=" << __LINE__;             \
+        fatalErrorStream << "\n" << NS_GET_STACKTRACE;                                             \
+        ::ns3::FatalImpl::FlushStreams();                                                          \
+        if constexpr (fatal)                                                                       \
+        {                                                                                          \
+            std::cerr << fatalErrorStream.str() << std::endl;                                      \
+            std::cerr << ns3::NS_FATAL_MSG << std::endl;                                           \
+            std::terminate();                                                                      \
+        }                                                                                          \
+        else                                                                                       \
+        {                                                                                          \
+            throw std::runtime_error(fatalErrorStream.str());                                      \
+        }                                                                                          \
+    } while (false)
+
+/**
+ * @ingroup fatal
+ *
  * @brief Fatal error reporting with no message, implementation.
  *
  * When this macro is hit at runtime the error details will
@@ -92,44 +134,7 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
  * including debug and optimized builds.
  */
 #define NS_FATAL_ERROR_IMPL_NO_MSG(fatal)                                                          \
-    do                                                                                             \
-    {                                                                                              \
-        NS_LOG_APPEND_TIME_PREFIX_IMPL;                                                            \
-        NS_LOG_APPEND_NODE_PREFIX_IMPL;                                                            \
-        std::cerr << "file=" << __FILE__ << ", line=" << __LINE__ << std::endl;                    \
-        ::ns3::FatalImpl::FlushStreams();                                                          \
-        if (fatal)                                                                                 \
-        {                                                                                          \
-            std::cerr << ns3::NS_FATAL_MSG << std::endl;                                           \
-            PRINT_STACKTRACE;                                                                      \
-            std::terminate();                                                                      \
-        }                                                                                          \
-    } while (false)
-
-/**
- * @ingroup fatal
- *
- * @brief Fatal error reporting with a message, implementation.
- *
- * When this macro is hit at runtime the error details will
- * printed to \c stderr, including the message, file name and line number.
- * Optionally, if \c fatal is true, the macro
- * will invoke \c std::terminate().  If \c fatal is false,
- * the invoking function should return an error code to its caller,
- * which is expected to call NS_FATAL_ERROR to cause termination.
- *
- * @param [in] msg The error message to print, if not empty.
- * @param [in] fatal Call \c std::terminate() if true.
- *
- * This macro is enabled unconditionally in all builds,
- * including debug and optimized builds.
- */
-#define NS_FATAL_ERROR_IMPL(msg, fatal)                                                            \
-    do                                                                                             \
-    {                                                                                              \
-        std::cerr << "msg=\"" << msg << "\", ";                                                    \
-        NS_FATAL_ERROR_IMPL_NO_MSG(fatal);                                                         \
-    } while (false)
+    NS_FATAL_ERROR_IMPL(std::string(""), std::string(""), fatal)
 
 /**
  * @ingroup fatal
@@ -183,7 +188,7 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
  * This macro is enabled unconditionally in all builds,
  * including debug and optimized builds.
  */
-#define NS_FATAL_ERROR(msg) NS_FATAL_ERROR_IMPL(msg, true)
+#define NS_FATAL_ERROR(msg) NS_FATAL_ERROR_IMPL(std::string(""), msg, true)
 
 /**
  * @ingroup fatal
@@ -199,6 +204,24 @@ constexpr std::string_view NS_FATAL_MSG{"NS_FATAL, terminating"};
  * This macro is enabled unconditionally in all builds,
  * including debug and optimized builds.
  */
-#define NS_FATAL_ERROR_CONT(msg) NS_FATAL_ERROR_IMPL(msg, false)
+#define NS_FATAL_ERROR_CONT(msg) NS_FATAL_ERROR_IMPL(std::string(""), msg, false)
+
+/**
+ * @ingroup fatal
+ *
+ * @brief Report a fatal error with a message, deferring termination.
+ *
+ * When this macro is hit at runtime, details of filename
+ * and line number are printed to \c stderr, however the program
+ * is _not_ halted.  It is expected that the function using this
+ * macro will return an error code, and its caller will
+ * invoke NS_FATAL_ERROR(msg) triggering \c std::terminate().
+ *
+ * This macro is enabled unconditionally in all builds,
+ * including debug and optimized builds.
+ *
+ * In addition to a message, it also receives a preamble message, used for asserts.
+ */
+#define NS_FATAL_ERROR_CONT_PRE(pre, msg) NS_FATAL_ERROR_IMPL(pre, msg, false)
 
 #endif /* FATAL_ERROR_H */

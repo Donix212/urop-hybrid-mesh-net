@@ -47,7 +47,7 @@ Icmpv4L4Protocol::Icmpv4L4Protocol()
 Icmpv4L4Protocol::~Icmpv4L4Protocol()
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(!m_node);
+    NS_ABORT_UNLESS(!m_node);
 }
 
 void

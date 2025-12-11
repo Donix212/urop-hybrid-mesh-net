@@ -57,8 +57,7 @@
     {                                                                                              \
         if (!(condition))                                                                          \
         {                                                                                          \
-            std::cerr << "NS_ASSERT failed, cond=\"" << #condition << "\", ";                      \
-            NS_FATAL_ERROR_NO_MSG();                                                               \
+            NS_FATAL_ERROR_CONT_PRE("NS_ASSERT failed, cond=\"" << #condition << "\", ", "");      \
         }                                                                                          \
     } while (false)
 
@@ -77,8 +76,7 @@
     {                                                                                              \
         if (!(condition))                                                                          \
         {                                                                                          \
-            std::cerr << "NS_ASSERT failed, cond=\"" << #condition << "\", ";                      \
-            NS_FATAL_ERROR(message);                                                               \
+            NS_FATAL_ERROR_CONT_PRE("NS_ASSERT failed, cond=\"" << #condition << "\", ", message); \
         }                                                                                          \
     } while (false)
 

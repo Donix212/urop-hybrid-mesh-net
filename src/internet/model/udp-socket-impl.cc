@@ -96,7 +96,7 @@ UdpSocketImpl::~UdpSocketImpl()
      */
     if (m_endPoint != nullptr)
     {
-        NS_ASSERT(m_udp);
+        NS_ABORT_UNLESS(m_udp);
         /**
          * Note that this piece of code is a bit tricky:
          * when DeAllocate is called, it will call into
@@ -105,13 +105,13 @@ UdpSocketImpl::~UdpSocketImpl()
          * in turn a call to the method UdpSocketImpl::Destroy below
          * will will zero the m_endPoint field.
          */
-        NS_ASSERT(m_endPoint != nullptr);
+        NS_ABORT_UNLESS(m_endPoint != nullptr);
         m_udp->DeAllocate(m_endPoint);
-        NS_ASSERT(m_endPoint == nullptr);
+        NS_ABORT_UNLESS(m_endPoint == nullptr);
     }
     if (m_endPoint6 != nullptr)
     {
-        NS_ASSERT(m_udp);
+        NS_ABORT_UNLESS(m_udp);
         /**
          * Note that this piece of code is a bit tricky:
          * when DeAllocate is called, it will call into
@@ -120,9 +120,9 @@ UdpSocketImpl::~UdpSocketImpl()
          * in turn a call to the method UdpSocketImpl::Destroy below
          * will will zero the m_endPoint field.
          */
-        NS_ASSERT(m_endPoint6 != nullptr);
+        NS_ABORT_UNLESS(m_endPoint6 != nullptr);
         m_udp->DeAllocate(m_endPoint6);
-        NS_ASSERT(m_endPoint6 == nullptr);
+        NS_ABORT_UNLESS(m_endPoint6 == nullptr);
     }
     m_udp = nullptr;
 }

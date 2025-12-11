@@ -7,6 +7,7 @@
  */
 #include "buffer.h"
 
+#include "ns3/abort.h"
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
@@ -276,7 +277,7 @@ Buffer::operator=(const Buffer& o)
 Buffer::~Buffer()
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(CheckInternalState());
+    NS_ABORT_UNLESS(CheckInternalState());
     g_recommendedStart = std::max(g_recommendedStart, m_maxZeroAreaStart);
     m_data->m_count--;
     if (m_data->m_count == 0)

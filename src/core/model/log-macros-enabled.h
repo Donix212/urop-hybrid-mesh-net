@@ -16,8 +16,8 @@
  */
 
 // These two implementation macros
-//   NS_LOG_APPEND_TIME_PREFIX_IMPL
-//   NS_LOG_APPEND_NODE_PREFIX_IMPL
+//   NS_LOG_APPEND_TIME_PREFIX_IMPL(stream)
+//   NS_LOG_APPEND_NODE_PREFIX_IMPL(stream)
 // need to be defined in all configurations (debug, release, optimized)
 // for use by NS_FATAL_...
 
@@ -28,15 +28,16 @@
  * Logging implementation macro; should not be called directly.
  * We define this separately so we can reuse the definition
  * in NS_FATAL.
+ * @param [in] stream Stream to log time.
  */
-#define NS_LOG_APPEND_TIME_PREFIX_IMPL                                                             \
+#define NS_LOG_APPEND_TIME_PREFIX_IMPL(stream)                                                     \
     do                                                                                             \
     {                                                                                              \
         ns3::TimePrinter printer = ns3::LogGetTimePrinter();                                       \
         if (printer != 0)                                                                          \
         {                                                                                          \
-            (*printer)(std::clog);                                                                 \
-            std::clog << " ";                                                                      \
+            (*printer)(stream);                                                                    \
+            stream << " ";                                                                         \
         }                                                                                          \
     } while (false)
 
@@ -47,15 +48,16 @@
  * Logging implementation macro; should not be called directly.
  * We define this separately so we can reuse the definition
  * in NS_FATAL.
+ * @param [in] stream Stream to log node.
  */
-#define NS_LOG_APPEND_NODE_PREFIX_IMPL                                                             \
+#define NS_LOG_APPEND_NODE_PREFIX_IMPL(stream)                                                     \
     do                                                                                             \
     {                                                                                              \
         ns3::NodePrinter printer = ns3::LogGetNodePrinter();                                       \
         if (printer != 0)                                                                          \
         {                                                                                          \
-            (*printer)(std::clog);                                                                 \
-            std::clog << " ";                                                                      \
+            (*printer)(stream);                                                                    \
+            stream << " ";                                                                         \
         }                                                                                          \
     } while (false)
 
@@ -70,7 +72,7 @@
 #define NS_LOG_APPEND_TIME_PREFIX                                                                  \
     if (g_log.IsEnabled(ns3::LOG_PREFIX_TIME))                                                     \
     {                                                                                              \
-        NS_LOG_APPEND_TIME_PREFIX_IMPL;                                                            \
+        NS_LOG_APPEND_TIME_PREFIX_IMPL(std::clog);                                                 \
     }
 
 /**
@@ -82,7 +84,7 @@
 #define NS_LOG_APPEND_NODE_PREFIX                                                                  \
     if (g_log.IsEnabled(ns3::LOG_PREFIX_NODE))                                                     \
     {                                                                                              \
-        NS_LOG_APPEND_NODE_PREFIX_IMPL;                                                            \
+        NS_LOG_APPEND_NODE_PREFIX_IMPL(std::clog);                                                 \
     }
 
 /**

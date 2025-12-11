@@ -23,6 +23,7 @@
 #include <cstring>
 #include <list>
 #include <map>
+#include <numeric>
 #include <vector>
 
 /**
@@ -166,6 +167,32 @@ class TestRunnerImpl : public Singleton<TestRunnerImpl>
     std::string GetTempDir() const;
     /** @copydoc TestRunner::Run() */
     int Run(int argc, char* argv[]);
+    /**
+     * Configure whether the test runner should assert on failure.
+     *
+     * This function sets the internal flag controlling the behavior of the
+     * test runner when a failure occurs. If the `assertOnFailure` parameter
+     * is set to `true`, the test runner will trigger an assertion upon encountering
+     * a failure. If set to `false`, the test runner will not assert on failures
+     * and will continue its execution.
+     *
+     * @param [in] assertOnFailure A boolean value indicating whether to assert on failure.
+     */
+    void SetAssertOnFailure(bool assertOnFailure);
+
+    /**
+     * Configure whether the test runner should continue execution on test failure.
+     *
+     * This function modifies the internal state of the test runner to determine if
+     * the execution should proceed when a failure occurs. If the `continueOnFailure`
+     * parameter is set to `true`, the test runner will continue executing subsequent
+     * tests even if a failure is encountered. If set to `false`, the execution may halt
+     * upon encountering a failure, depending on the test runner's configuration.
+     *
+     * @param [in] continueOnFailure A boolean value indicating whether to continue
+     * on test failures.
+     */
+    void SetContinueOnFailure(bool continueOnFailure);
 
   private:
     /**
@@ -282,7 +309,7 @@ TestCase::TestCase(std::string name)
 TestCase::~TestCase()
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_runner == nullptr);
+    NS_ABORT_UNLESS(m_runner == nullptr);
     m_parent = nullptr;
     delete m_result;
     for (auto i = m_children.begin(); i != m_children.end(); ++i)
@@ -395,6 +422,38 @@ TestCase::ReportTestFailure(std::string cond,
     while (current != nullptr)
     {
         current->m_result->childrenFailed = true;
+        current = current->m_parent;
+    }
+}
+
+void
+TestCase::SetAssertOnFailure(bool assertOnFailure)
+{
+    m_runner->SetAssertOnFailure(assertOnFailure);
+}
+
+void
+TestCase::SetContinueOnFailure(bool continueOnFailure)
+{
+    m_runner->SetContinueOnFailure(continueOnFailure);
+}
+
+void
+TestCase::UndoLastTestFailureReport()
+{
+    // In case we are testing things negatively (whether they fail when we expect),
+    // we must be able to rollback failures
+    if (!m_result->failure.empty())
+    {
+        m_result->failure.pop_back();
+    }
+    TestCase* current = m_parent;
+    while (current != nullptr)
+    {
+        if (current->m_result->failure.empty())
+        {
+            current->m_result->childrenFailed = false;
+        }
         current = current->m_parent;
     }
 }
@@ -1167,6 +1226,18 @@ TestRunnerImpl::Run(int argc, char* argv[])
     }
 
     return failed ? 1 : 0;
+}
+
+void
+TestRunnerImpl::SetAssertOnFailure(bool assertOnFailure)
+{
+    m_assertOnFailure = assertOnFailure;
+}
+
+void
+TestRunnerImpl::SetContinueOnFailure(bool continueOnFailure)
+{
+    m_continueOnFailure = continueOnFailure;
 }
 
 int

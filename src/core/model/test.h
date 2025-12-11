@@ -1159,6 +1159,37 @@ class TestCase
                            std::string file,
                            int32_t line);
     /**
+     * @brief Configures whether the test framework should assert on failure.
+     *
+     * This method sets the behavior of the test framework when a test failure occurs.
+     * If the parameter `assertOnFailure` is set to `true`, the test framework will
+     * assert on failures (e.g., halt execution depending on how assertions are configured).
+     * If it is set to `false`, the framework will not assert on failure, and execution
+     * will continue as configured.
+     *
+     * @param [in] assertOnFailure A boolean value indicating whether the framework should
+     * assert when a test failure occurs.
+     */
+    void SetAssertOnFailure(bool assertOnFailure);
+
+    /**
+     * @brief Configures whether the test framework should continue execution after a failure.
+     *
+     * This method defines whether the test framework should proceed with executing
+     * additional tests even if a failure occurs in the current test. When the
+     * `continueOnFailure` parameter is set to `true`, the framework skips asserting on
+     * failure and continues testing; otherwise, it stops further execution on failure.
+     *
+     * @param [in] continueOnFailure A boolean value indicating whether the test framework
+     * should continue execution after encountering a test failure.
+     */
+    void SetContinueOnFailure(bool continueOnFailure);
+
+    /**
+     * @brief Undoes previous failure of this TestCase.
+     */
+    void UndoLastTestFailureReport();
+    /**
      * @brief Check if this run should assert on failure.
      *
      * @return \c true if we should assert on failure.
