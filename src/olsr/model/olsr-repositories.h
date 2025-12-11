@@ -11,6 +11,21 @@
 #ifndef OLSR_REPOSITORIES_H
 #define OLSR_REPOSITORIES_H
 
+/**
+ * @file
+ * @ingroup olsr
+ * Class/struct declarations/implementations for
+ * * ns3::olsr::IfaceAssocTuple,
+ * * ns3::olsr::LinkTuple,
+ * * ns3::olsr::NeighborTuple,
+ * * ns3::olsr::TwoHopNeighborTuple,
+ * * ns3::olsr::MprSelectorTuple,
+ * * ns3::olsr::DuplicateTuple,
+ * * ns3::olsr::TopologyTuple,
+ * * ns3::olsr::Association,
+ * * ns3::olsr::AssociationTuple,
+ */
+
 #include "ns3/ipv4-address.h"
 #include "ns3/nstime.h"
 
@@ -42,6 +57,7 @@ enum Willingness : uint8_t
 };
 
 /**
+ * @ingroup olsr
  * Stream insertion operator for OLSR willingness.
  *
  * @param os Output stream.
@@ -81,12 +97,28 @@ struct IfaceAssocTuple
     Time time;
 };
 
+/**
+ * IfaceAssocTuple equality operator.
+ * IfaceAssocTuple are considered equal if the @c ifaceAddr and @c mainAddress are equal/ the @c
+ * time is not considered.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const IfaceAssocTuple& a, const IfaceAssocTuple& b)
 {
     return (a.ifaceAddr == b.ifaceAddr && a.mainAddr == b.mainAddr);
 }
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR IfaceAssocTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The IfaceAssocTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const IfaceAssocTuple& tuple)
 {
@@ -111,12 +143,28 @@ struct LinkTuple
     Time time;
 };
 
+/**
+ * LinkTuple equality operator.
+ * LinkTuple are considered equal if the @c localIfaceAddr and @c neighborIfacAddr are equal;
+ * other fields are not considered.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const LinkTuple& a, const LinkTuple& b)
 {
     return (a.localIfaceAddr == b.localIfaceAddr && a.neighborIfaceAddr == b.neighborIfaceAddr);
 }
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR LinkTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The LinkTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const LinkTuple& tuple)
 {
@@ -136,8 +184,8 @@ struct NeighborTuple
     /// Status of the link (Symmetric or not Symmetric).
     enum Status
     {
-        STATUS_NOT_SYM = 0, // "not symmetric"
-        STATUS_SYM = 1,     // "symmetric"
+        STATUS_NOT_SYM = 0, //!< not symmetric
+        STATUS_SYM = 1,     //!< symmetric
     };
 
     /// Status of the link.
@@ -148,6 +196,13 @@ struct NeighborTuple
     Willingness willingness;
 };
 
+/**
+ * NeighborTuple equality operator.
+ * All fields must be equal.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const NeighborTuple& a, const NeighborTuple& b)
 {
@@ -155,6 +210,14 @@ operator==(const NeighborTuple& a, const NeighborTuple& b)
             a.willingness == b.willingness);
 }
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR NeighborTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The NeighborTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const NeighborTuple& tuple)
 {
@@ -176,6 +239,14 @@ struct TwoHopNeighborTuple
     Time expirationTime; // previously called 'time_'
 };
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR TwoHopNeighborTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The TwoHopNeighborTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const TwoHopNeighborTuple& tuple)
 {
@@ -185,6 +256,14 @@ operator<<(std::ostream& os, const TwoHopNeighborTuple& tuple)
     return os;
 }
 
+/**
+ * TwoHopNeighborTuple equality operator.
+ * TwoHopNeighborTuple are considered equal if the @c neighborMainAddr and @c twoHopNeighbor are
+ *  equal; the @c expirationTime field is not considered.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const TwoHopNeighborTuple& a, const TwoHopNeighborTuple& b)
 {
@@ -202,6 +281,14 @@ struct MprSelectorTuple
     Time expirationTime; // previously called 'time_'
 };
 
+/**
+ * MprSelectorTuple equality operator.
+ * MprSelectorTuple are considered equal if the @c mainAddr are equal; the @c expirationTime is not
+ * considered
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const MprSelectorTuple& a, const MprSelectorTuple& b)
 {
@@ -227,6 +314,14 @@ struct DuplicateTuple
     Time expirationTime;
 };
 
+/**
+ * DuplicateTuple equality operator.
+ * DuplicateTuple are considered equal if the @c address and @c sequenceNumber are equal; other
+ * fields are not considered.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const DuplicateTuple& a, const DuplicateTuple& b)
 {
@@ -247,6 +342,14 @@ struct TopologyTuple
     Time expirationTime;
 };
 
+/**
+ * TopologyTuple equality operator.
+ * TopologyTuple are considered equal if the @c destAddr, @c lastAddr and @c sequenceNumber are
+ * equal; the @c expirationTime is not considered.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const TopologyTuple& a, const TopologyTuple& b)
 {
@@ -254,6 +357,14 @@ operator==(const TopologyTuple& a, const TopologyTuple& b)
             a.sequenceNumber == b.sequenceNumber);
 }
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR TopologyTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The TopologyTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const TopologyTuple& tuple)
 {
@@ -271,12 +382,27 @@ struct Association
     Ipv4Mask netmask;        //!< IPv4 Network mask.
 };
 
+/**
+ * Association equality operator.
+ * Association are considered equal if the @c networkAddr and @c netmask are equal
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const Association& a, const Association& b)
 {
     return (a.networkAddr == b.networkAddr && a.netmask == b.netmask);
 }
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR Association.
+ *
+ * @param os Output stream.
+ * @param tuple The Association
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const Association& tuple)
 {
@@ -298,6 +424,14 @@ struct AssociationTuple
     Time expirationTime;
 };
 
+/**
+ * AssociationTuple equality operator.
+ * AssociationTuple are considered equal if the @c gatewayAddr, @c networkAddr and @c netmask are
+ * equal; the @c expirationTime is not considered.
+ * @param a The first argument
+ * @param b The second argument
+ * @return @c true if the arguments are equal
+ */
 inline bool
 operator==(const AssociationTuple& a, const AssociationTuple& b)
 {
@@ -305,6 +439,14 @@ operator==(const AssociationTuple& a, const AssociationTuple& b)
             a.netmask == b.netmask);
 }
 
+/**
+ * @ingroup olsr
+ * Stream insertion operator for OLSR AssociationTuple.
+ *
+ * @param os Output stream.
+ * @param tuple The AssociationTuple
+ * @return A reference to the output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream& os, const AssociationTuple& tuple)
 {

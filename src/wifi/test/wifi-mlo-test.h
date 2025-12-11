@@ -272,8 +272,8 @@ class MultiLinkOperationsTestBase : public TestCase
      */
     enum Direction
     {
-        DL = 0,
-        UL
+        DL = 0, ///< Downlink direction
+        UL      ///< Uplink direction
     };
 
     /**

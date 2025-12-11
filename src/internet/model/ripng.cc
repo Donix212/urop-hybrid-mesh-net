@@ -5,6 +5,11 @@
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  */
+/**
+ * @file
+ * @ingroup ipv6Routing
+ * Class ns3::RipNg and ns3::RipNgRoutingTableEntry implementations.
+ */
 
 #include "ripng.h"
 
@@ -24,9 +29,6 @@
 #include "ns3/uinteger.h"
 
 #include <iomanip>
-
-#define RIPNG_ALL_NODE "ff02::9"
-#define RIPNG_PORT 521
 
 namespace ns3
 {

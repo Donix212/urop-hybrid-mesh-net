@@ -216,11 +216,11 @@ class PyViz
     /// PacketCaptureMode enumeration
     enum PacketCaptureMode
     {
-        PACKET_CAPTURE_DISABLED = 1,       // packet capture is disabled
-        PACKET_CAPTURE_FILTER_HEADERS_OR,  // packet capture if any of the indicated headers is
-                                           // present
-        PACKET_CAPTURE_FILTER_HEADERS_AND, // packet capture if all of the indicated headers are
-                                           // present
+        PACKET_CAPTURE_DISABLED = 1,       ///< packet capture is disabled
+        PACKET_CAPTURE_FILTER_HEADERS_OR,  ///< packet capture if any of the indicated headers is
+                                           ///< present
+        PACKET_CAPTURE_FILTER_HEADERS_AND, ///< packet capture if all of the indicated headers are
+                                           ///< present
     };
 
     /// PacketCaptureOptions structure
@@ -320,7 +320,25 @@ class PyViz
         uint32_t bytes; ///< bytes
     };
 
+    /**
+     * PyVizPacketTag structure
+     */
+    struct PyVizPacketTag : public Tag
+    {
+        static TypeId GetTypeId();
+        TypeId GetInstanceTypeId() const override;
+        uint32_t GetSerializedSize() const override;
+        void Serialize(TagBuffer buf) const override;
+        void Deserialize(TagBuffer buf) override;
+        void Print(std::ostream& os) const override;
+        PyVizPacketTag();
+
+        uint32_t m_packetId; ///< packet id
+    };
+
     // Data
+    static PyViz* g_visualizer; ///< the visualizer
+
     std::map<uint32_t, PacketCaptureOptions> m_packetCaptureOptions; ///< packet capture options
     std::vector<std::string> m_pauseMessages;                        ///< pause message
     std::map<TxRecordKey, TxRecordValue> m_txRecords;                ///< transmit records

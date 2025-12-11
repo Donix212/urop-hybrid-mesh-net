@@ -6,6 +6,12 @@
 // Author: Pedro Fortuna  <pedro.fortuna@inescporto.pt> <pedro.fortuna@gmail.com>
 //
 
+/**
+ * @file
+ * @ingroup stats
+ * Class ns3::Histogram implementation.
+ */
+
 #include "histogram.h"
 
 #include "ns3/log.h"
@@ -13,7 +19,8 @@
 
 #include <cmath>
 
-#define DEFAULT_BIN_WIDTH 1
+/** Default histogram bin width. */
+static constexpr double DEFAULT_BIN_WIDTH = 1.0;
 
 // #define RESERVED_BINS_INC 10
 

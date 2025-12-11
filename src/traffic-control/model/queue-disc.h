@@ -490,8 +490,8 @@ class QueueDisc : public Object
      */
     enum WakeMode
     {
-        WAKE_ROOT = 0x00,
-        WAKE_CHILD = 0x01
+        WAKE_ROOT = 0x00, //!< Wake self
+        WAKE_CHILD = 0x01 //!< Wake children
     };
 
     /**

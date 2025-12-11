@@ -6,6 +6,22 @@
 #ifndef OPENFLOW_INTERFACE_H
 #define OPENFLOW_INTERFACE_H
 
+/**
+ * @file
+ * @ingroup openflow
+ * Declarations of the following classes/structs:
+ * * ns3::ofi::Port,
+ * * ns3::ofi::Stats,
+ * * ns3::ofi::Action,
+ * * ns3::ofi::VPortAction,
+ * * ns3::ofi::EricssonAction,
+ * * ns3::ofi::StatsDumpCallback,
+ * * ns3::ofi::SwitchPacketMetadata,
+ * * ns3::ofi::Controller,
+ * * ns3::ofi::DropController,
+ * * ns3::ofi::LearningController
+ */
+
 #include <assert.h>
 #include <errno.h>
 
@@ -29,10 +45,16 @@
 
 extern "C"
 {
-// Inexplicably, the OpenFlow implementation uses these two reserved words as member names.
+/**
+ * @ingroup openflow
+ * Inexplicably, the OpenFlow implementation uses these two reserved words as member names.
+ * @{
+ */
 #define private _private
 #define delete _delete
 #define list List
+
+/** @} */
 
 // Include OFSI Library files
 #include "openflow/private/csum.h"
@@ -46,10 +68,13 @@ extern "C"
 #include "openflow/private/chain.h"
 #include "openflow/private/datapath.h" // The functions below are defined in datapath.c
 #include "openflow/private/table.h"
+
+    /** @cond */ // hide from Doxygen
     uint32_t save_buffer(ofpbuf*);
     ofpbuf* retrieve_buffer(uint32_t id);
     void discard_buffer(uint32_t id);
-#include "openflow/private/dp_act.h" // The functions below are defined in dp_act.c
+#include "openflow/private/dp_act.h"
+    // The functions below are defined in dp_act.c
     void set_vlan_vid(ofpbuf* buffer, sw_flow_key* key, const ofp_action_header* ah);
     void set_vlan_pcp(ofpbuf* buffer, sw_flow_key* key, const ofp_action_header* ah);
     void strip_vlan(ofpbuf* buffer, sw_flow_key* key, const ofp_action_header* ah);
@@ -58,6 +83,8 @@ extern "C"
     void set_tp_port(ofpbuf* buffer, sw_flow_key* key, const ofp_action_header* ah);
     void set_mpls_label(ofpbuf* buffer, sw_flow_key* key, const ofp_action_header* ah);
     void set_mpls_exp(ofpbuf* buffer, sw_flow_key* key, const ofp_action_header* ah);
+    /** @endcond */
+
 #include "openflow/private/pt_act.h"
 
 #undef list
@@ -65,14 +92,20 @@ extern "C"
 #undef delete
 }
 
-// Capabilities supported by this implementation.
 #ifndef OFP_SUPPORTED_CAPABILITIES
+/**
+ * @ingroup openflow
+ * Capabilities supported by this implementation.
+ */
 #define OFP_SUPPORTED_CAPABILITIES                                                                 \
     (OFPC_FLOW_STATS | OFPC_TABLE_STATS | OFPC_PORT_STATS | OFPC_MULTI_PHY_TX | OFPC_VPORT_TABLE)
 #endif
 
-// Actions supported by this implementation.
 #ifndef OFP_SUPPORTED_ACTIONS
+/**
+ * @ingroup openflow
+ * Actions supported by this implementation.
+ */
 #define OFP_SUPPORTED_ACTIONS                                                                      \
     ((1 << OFPAT_OUTPUT) | (1 << OFPAT_SET_VLAN_VID) | (1 << OFPAT_SET_VLAN_PCP) |                 \
      (1 << OFPAT_STRIP_VLAN) | (1 << OFPAT_SET_DL_SRC) | (1 << OFPAT_SET_DL_DST) |                 \
@@ -81,6 +114,10 @@ extern "C"
 #endif
 
 #ifndef OFP_SUPPORTED_VPORT_TABLE_ACTIONS
+/**
+ * @ingroup openflow
+ * Vport table actions supported by this implementation.
+ */
 #define OFP_SUPPORTED_VPORT_TABLE_ACTIONS                                                          \
     ((1 << OFPPAT_OUTPUT) | (1 << OFPPAT_POP_MPLS) | (1 << OFPPAT_PUSH_MPLS) |                     \
      (1 << OFPPAT_SET_MPLS_LABEL) | (1 << OFPPAT_SET_MPLS_EXP))
@@ -198,6 +235,9 @@ class Stats
 
     ofp_stats_types type; //!< Status type
   private:
+    /** Maximum flow bytes to consider. */
+    static constexpr std::size_t MAX_FLOW_STATS_BYTES{4096};
+
     /**
      * Dumps the stats description
      * @param [in] state The state.
@@ -219,10 +259,33 @@ class Stats
     int PortStatsInit(const void* body, int body_len, void** state);
     /** @} */
 
-    /// Flow dump callback functor
+    /**
+     * Flow dump callback functor
+     * @see ExampleFlowDumpCallback for a possible implementation.
+     * @param flow The data flow
+     * @param state The FlowStatsState to dump
+     * @return @c 1 if the state buffer exceeds MAX_FLOW_STATS_BYTES
+     */
     int (*FlowDumpCallback)(sw_flow* flow, void* state);
-    /// Aggregate dump callback functor
+    /**
+     * Example FlowDumpCallback implementation.
+     * @copydetails FlowDumpCallback
+     */
+    static int ExampleFlowDumpCallback(sw_flow* flow, void* state);
+
+    /**
+     * Aggregate dump callback functor
+     * @see ExampleAggregateDumpCallback for a possible implementation.
+     * @param flow The data flow
+     * @param state The FlowStatsState to dump
+     * @return @c 1 if the state buffer exceeds MAX_FLOW_STATS_BYTES
+     */
     int (*AggregateDumpCallback)(sw_flow* flow, void* state);
+    /**
+     * Example AggregateDumpCallback implementation.
+     * @copydetails AggregateDumpCallback
+     */
+    static int ExampleAggregateDumpCallback(sw_flow* flow, void* state);
 
     /**
      * @{
@@ -617,18 +680,22 @@ void ExecuteVendor(ofpbuf* buffer, const sw_flow_key* key, const ofp_action_head
  */
 uint16_t ValidateVendor(const sw_flow_key* key, const ofp_action_header* ah, uint16_t len);
 
-/*
- * From datapath.c
+/**
+ * @ingroup openflow
+ * Buffer id field specifiers, from datapath.c.
  * Buffers are identified to userspace by a 31-bit opaque ID.  We divide the ID
  * into a buffer number (low bits) and a cookie (high bits).  The buffer number
  * is an index into an array of buffers.  The cookie distinguishes between
  * different packets that have occupied a single buffer.  Thus, the more
  * buffers we have, the lower-quality the cookie...
+ * @{
  */
-#define PKT_BUFFER_BITS 8
-#define N_PKT_BUFFERS (1 << PKT_BUFFER_BITS)
-#define PKT_BUFFER_MASK (N_PKT_BUFFERS - 1)
-#define PKT_COOKIE_BITS (32 - PKT_BUFFER_BITS)
+constexpruint32_t PKT_BUFFER_BITS{8};
+constexpruint32_t N_PKT_BUFFERS{1 << PKT_BUFFER_BITS};
+constexpruint32_t PKT_BUFFER_MASK{N_PKT_BUFFERS - 1};
+constexpruint32_t PKT_COOKIE_BITS{32 - PKT_BUFFER_BITS};
+
+/** @} */
 
 } // namespace ofi
 

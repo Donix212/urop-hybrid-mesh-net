@@ -8,6 +8,12 @@
 #ifndef MAC48_ADDRESS_H
 #define MAC48_ADDRESS_H
 
+/**
+ * @file
+ * @ingroup address
+ * Class ns3::Mac48Address declaration.
+ */
+
 #include "ipv4-address.h"
 #include "ipv6-address.h"
 

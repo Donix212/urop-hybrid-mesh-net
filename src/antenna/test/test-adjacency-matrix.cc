@@ -5,6 +5,10 @@
  *
  * Author: Gabriel Ferreira <gabrielcarvfer@gmail.com>
  */
+/**
+ * @file
+ * @ingroup antenna-tests
+ */
 
 #include "ns3/symmetric-adjacency-matrix.h"
 #include "ns3/test.h"
@@ -12,8 +16,6 @@
 using namespace ns3;
 
 /**
- * @ingroup antenna-tests
- *
  * @brief SymmetricAdjacencyMatrix Test Case
  */
 class SymmetricAdjacencyMatrixTestCase : public TestCase
@@ -113,8 +115,6 @@ SymmetricAdjacencyMatrixTestCase::DoRun()
 }
 
 /**
- * @ingroup core-tests
- *
  * @brief AdjacencyMatrix Test Suite
  */
 class AdjacencyMatrixTestSuite : public TestSuite
@@ -129,4 +129,5 @@ AdjacencyMatrixTestSuite::AdjacencyMatrixTestSuite()
     AddTestCase(new SymmetricAdjacencyMatrixTestCase(), TestCase::Duration::QUICK);
 }
 
+/** Test suite instance variable. */
 static AdjacencyMatrixTestSuite adjacencyMatrixTestSuiteInstance;

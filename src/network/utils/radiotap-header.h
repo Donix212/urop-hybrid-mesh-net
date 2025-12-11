@@ -274,13 +274,13 @@ class RadiotapHeader : public Header
     {
         VHT_KNOWN_NONE = 0x0000, /**< No flags set */
         VHT_KNOWN_STBC = 0x0001, /**< Space-time block coding (1 if all spatial streams of all users
-                                    have STBC, 0 otherwise). */
+                                      have STBC, 0 otherwise). */
         VHT_KNOWN_TXOP_PS_NOT_ALLOWED = 0x0002,          /**< TXOP_PS_NOT_ALLOWED known */
         VHT_KNOWN_GUARD_INTERVAL = 0x0004,               /**< Guard interval */
         VHT_KNOWN_SHORT_GI_NSYM_DISAMBIGUATION = 0x0008, /**< Short GI NSYM disambiguation known */
         VHT_KNOWN_LDPC_EXTRA_OFDM_SYMBOL = 0x0010,       /**< LDPC extra OFDM symbol known */
         VHT_KNOWN_BEAMFORMED = 0x0020,  /**< Beamformed known/applicable (this flag should be set to
-                                           zero for MU PPDUs). */
+                                             zero for MU PPDUs). */
         VHT_KNOWN_BANDWIDTH = 0x0040,   /**< Bandwidth known */
         VHT_KNOWN_GROUP_ID = 0x0080,    /**< Group ID known */
         VHT_KNOWN_PARTIAL_AID = 0x0100, /**< Partial AID known/applicable */

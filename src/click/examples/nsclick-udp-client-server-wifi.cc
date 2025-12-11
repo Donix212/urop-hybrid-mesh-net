@@ -1,28 +1,31 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
  */
-
-// Adaptation of examples/udp/udp-client-server.cc for
-// Click based nodes running wifi.
-//
-// Network topology:
-//
-//               (1.4)
-//             (( n4 ))
-//
-//          172.16.1.0/24
-//
-//   (1.1)      (1.2)       (1.3)
-//     n0 ))   (( n1 ))   (( n2
-//               WLAN
-//
-// - UDP flows from n0 to n1 and n2 to n1.
-// - All nodes are Click based.
-// - The single ethernet interface that each node
-//   uses is named 'eth0' in the Click file.
-// - Node 4 is running in promiscuous mode and can listen in on
-//   the packets being exchanged between n0-n1 and n2-n1.
-//
+/**
+ * @file
+ * @ingroup click
+ *
+ * Adaptation of examples/udp/udp-client-server.cc for
+ * Click based nodes running wifi.
+ *
+ * Network topology:
+ *
+ *                 (1.4)
+ *               (( n4 ))
+ *
+ *            172.16.1.0/24
+ *
+ *     (1.1)      (1.2)       (1.3)
+ *       n0 ))   (( n1 ))   (( n2
+ *                 WLAN
+ *
+ * - UDP flows from n0 to n1 and n2 to n1.
+ * - All nodes are Click based.
+ * - The single ethernet interface that each node
+ *   uses is named 'eth0' in the Click file.
+ * - Node 4 is running in promiscuous mode and can listen in on
+ *   the packets being exchanged between n0-n1 and n2-n1.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/click-internet-stack-helper.h"
@@ -39,6 +42,10 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("NsclickUdpClientServerWifi");
 
+/**
+ * Log the ARP querier handlers table and stats
+ * @param clickRouter The router
+ */
 void
 ReadArp(Ptr<Ipv4ClickRouting> clickRouter)
 {
@@ -47,6 +54,10 @@ ReadArp(Ptr<Ipv4ClickRouting> clickRouter)
     NS_LOG_INFO(clickRouter->ReadHandler("wifi/arpquerier", "stats"));
 }
 
+/**
+ * Write ("insert") to the ARP querier
+ * @param clickRouter The router
+ */
 void
 WriteArp(Ptr<Ipv4ClickRouting> clickRouter)
 {

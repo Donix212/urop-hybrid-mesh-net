@@ -54,6 +54,7 @@ function usage
     -b  Omit the blacklist filter of files whose warnings we ignore
     -e  Filter out warnings from */examples/*
     -t  Filter out warnings from */test/*
+    -E  Show warnings from undocumented `enum member`
     -m  Only include files matching src/<module>
     -f  Only include files matching the <regex>
     -F  Exclude files matching the <regex>
@@ -186,16 +187,20 @@ filter_test=0
 explicit_m_option=0
 filter_module=""
 explicit_f_option=0
+# Filter out "enum member" by default, since there are so many of them.
+filter_enum=1
 filter_in=""
 filter_out=""
 
 # Summary only
 summary_only=0
 
-while getopts :bef:F:hilm:Ss:tvw option ; do
+while getopts :bEef:F:hilm:Ss:tvw option ; do
 
     case $option in
     (b)  filter_blacklist=0       ;;
+
+    (E)  filter_enum=0            ;;
 
     (e)  filter_examples=1        ;;
 
@@ -306,6 +311,9 @@ REappend filter_blacklistRE "return type .*NS_DEPRECATED_3_"
 #          but they are now (2025) generating warnings
 REappend filter_blacklistRE "\.py"
 
+#   enum member
+[[ $filter_enum -eq 1 ]] && REappend filter_blacklistRE "enum member"
+
 #
 # Filter out regular expression for black list, -e, -t and -F
 filter_outRE=""
@@ -350,6 +358,7 @@ if [ $verbosity -eq 1 ]; then
     echo "    Module filter:    $(on_off filter_module)  $filter_module"
     echo "    Examples filter:  $(on_off filter_examples)"
     echo "    Tests filter:     $(on_off filter_test)"
+    echo "    Enum mem. filter: $(on_off filter_enum)"
     echo "    Blacklist filter: $(on_off filter_blacklist)"
     echo "    Filter in:        $(on_off filter_in)  $filter_in"
     echo "    Filter out:       $(on_off filter_out)  $filter_out"
@@ -386,7 +395,7 @@ else
 
     # doxygen.warnings.report.sh:
     EXTRACT_ALL = no
-    WARNINGS = no
+    WARNINGS = yes
     WARN_LOGFILE = $WARNINGSLOGFILE
     SOURCE_BROWSER = no
     HTML_OUTPUT = html-warn
@@ -442,6 +451,12 @@ function filter_log
     echo "$flog"
 }
 
+# Filter the log -----------------------
+verbose -n "Filtering the Doxygen log $LOG"
+
+filter_log_results=$(filter_log)
+
+
 # Analyze the log ----------------------
 #
 #  Show the resulting filters, if not already shown by verbose
@@ -449,9 +464,6 @@ if [[ $verbosity -ne 1 && ! -z "$filter_log_results" ]]; then
     show_filters
 fi
 
-verbose -n "Filtering the Doxygen log $LOG"
-
-filter_log_results=$(filter_log)
 
 # List of module directories (e.g, "src/core/model")
 if [ ! -z "$filter_log_results" ]

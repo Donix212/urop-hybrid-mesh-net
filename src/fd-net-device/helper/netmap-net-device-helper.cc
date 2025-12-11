@@ -5,6 +5,11 @@
  *
  * Author: Pasquale Imputato <p.imputato@gmail.com>
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ * Class ns3::NetmapNetDeviceHelper implementation.
+ */
 
 #include "netmap-net-device-helper.h"
 
@@ -48,8 +53,6 @@ namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("NetmapNetDeviceHelper");
-
-#define EMU_MAGIC 65867
 
 NetmapNetDeviceHelper::NetmapNetDeviceHelper()
 {

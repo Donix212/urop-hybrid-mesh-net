@@ -10,6 +10,12 @@
 #ifndef WIFI_MODE_H
 #define WIFI_MODE_H
 
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::WifiMode and ns3::WifiModeFactory declarations.
+ */
+
 #include "wifi-phy-common.h"
 #include "wifi-standard-constants.h"
 

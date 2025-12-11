@@ -5,6 +5,10 @@
  *
  * Author: Nicola Baldo <nbaldo@cttc.es>
  */
+/**
+ * @file
+ * @ingroup antenna-tests
+ */
 
 #include "ns3/antenna-model.h"
 #include "ns3/log.h"
@@ -18,8 +22,6 @@
 using namespace ns3;
 
 /**
- * @ingroup tests
- *
  * @brief Angles Test using one vector for initialization
  */
 class OneVectorConstructorTestCase : public TestCase
@@ -69,8 +71,6 @@ OneVectorConstructorTestCase::DoRun()
 }
 
 /**
- * @ingroup tests
- *
  * @brief Angles Test using two vectors for initialization
  */
 class TwoVectorsConstructorTestCase : public TestCase
@@ -123,11 +123,10 @@ TwoVectorsConstructorTestCase::DoRun()
     NS_TEST_EXPECT_MSG_EQ_TOL(a.GetInclination(), m_a.GetInclination(), 1e-10, "incorrect theta");
 }
 
+/** Convenience declaration */
 using WrapToRangeFunction = std::function<double(double)>;
 
 /**
- * @ingroup tests
- *
  * @brief  Test bounds for various WrapTo... methods (WrapTo180, WrapTo360, WrapToPi, and WrapTo2Pi)
  * by using a std::function wrapper
  */
@@ -215,8 +214,6 @@ WrapToRangeTestCase::CheckWrappingPoint(double wrapPoint)
 }
 
 /**
- * @ingroup tests
- *
  * @brief Test the output for WrapToRangeFunction
  */
 class WrapToRangeFunctionalTestCase : public TestCase
@@ -274,8 +271,6 @@ WrapToRangeFunctionalTestCase::DoRun()
 }
 
 /**
- * @ingroup tests
- *
  * @brief Angles TestSuite
  */
 class AnglesTestSuite : public TestSuite

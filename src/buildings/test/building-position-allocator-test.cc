@@ -5,6 +5,10 @@
  *
  * Author: Nicola Baldo <nbaldo@cttc.es>
  */
+/**
+ * @file
+ * @ingroup buildings
+ */
 
 #include "ns3/building-position-allocator.h"
 #include "ns3/building.h"
@@ -30,8 +34,6 @@ NS_LOG_COMPONENT_DEFINE("BuildingPositionAllocatorTest");
  */
 
 /**
- * @ingroup building-test
- *
  * Room coordinates
  */
 struct Room
@@ -55,6 +57,12 @@ Room::Room(uint32_t xx, uint32_t yy, uint32_t zz)
 {
 }
 
+/**
+ * Compare Room by coordinates: x, y then z
+ * @param a The first Room
+ * @param b The second Room
+ * @return @c true if @c is "less" than @c b
+ */
 bool
 operator<(const Room& a, const Room& b)
 {
@@ -63,8 +71,6 @@ operator<(const Room& a, const Room& b)
 }
 
 /**
- * @ingroup building-test
- *
  * RandomRoomPositionAllocator test
  */
 class RandomRoomPositionAllocatorTestCase : public TestCase

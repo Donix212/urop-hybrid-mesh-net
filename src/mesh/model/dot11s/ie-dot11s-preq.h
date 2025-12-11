@@ -9,6 +9,12 @@
 #ifndef WIFI_PREQ_INFORMATION_ELEMENT_H
 #define WIFI_PREQ_INFORMATION_ELEMENT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::DestinationAddressUnit and ns3::dot11s::IePreq declarations.
+ */
+
 #include "ns3/mac48-address.h"
 #include "ns3/mesh-information-element-vector.h"
 
@@ -280,6 +286,14 @@ class IePreq : public WifiInformationElement
 
 bool operator==(const DestinationAddressUnit& a, const DestinationAddressUnit& b);
 bool operator==(const IePreq& a, const IePreq& b);
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] preq The IePreq object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePreq& preq);
 
 } // namespace dot11s

@@ -186,9 +186,9 @@ class RateErrorModel : public ErrorModel
      */
     enum ErrorUnit
     {
-        ERROR_UNIT_BIT,
-        ERROR_UNIT_BYTE,
-        ERROR_UNIT_PACKET
+        ERROR_UNIT_BIT,   //!< Error rate is per bit.
+        ERROR_UNIT_BYTE,  //!< Error rate is per byte.
+        ERROR_UNIT_PACKET //!< Error rate is per packet.
     };
 
     /**

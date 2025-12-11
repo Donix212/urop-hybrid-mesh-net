@@ -13,6 +13,11 @@
  *
  * Ported to ns-3 by: Andrew McGregor <andrewmcgr@gmail.com>
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ * Class ns3::CoDelQueueDisc declaration.
+ */
 
 #ifndef CODEL_H
 #define CODEL_H
@@ -30,16 +35,6 @@ class CoDelQueueDiscControlLawTest; // Forward declaration for unit test
 
 namespace ns3
 {
-
-/**
- * Number of bits discarded from the time representation.
- * The time is assumed to be in nanoseconds.
- */
-static const int CODEL_SHIFT = 10;
-
-#define DEFAULT_CODEL_LIMIT 1000
-#define REC_INV_SQRT_BITS (8 * sizeof(uint16_t))
-#define REC_INV_SQRT_SHIFT (32 - REC_INV_SQRT_BITS)
 
 class TraceContainer;
 
@@ -67,6 +62,16 @@ class CoDelQueueDisc : public QueueDisc
     CoDelQueueDisc();
 
     ~CoDelQueueDisc() override;
+
+    /** Number of bits discarded from the time representation in ns. */
+    static constexpr uint32_t CODEL_SHIFT{10};
+
+    /** Default queue size limit, in packets. */
+    static constexpr uint32_t DEFAULT_CODEL_LIMIT{1000};
+    /** Number of bits to mask off. */
+    static constexpr uint32_t REC_INV_SQRT_BITS{8 * sizeof(uint16_t)};
+    /** Shift factor to clear bits. */
+    static constexpr uint32_t REC_INV_SQRT_SHIFT{32 - REC_INV_SQRT_BITS};
 
     /**
      * @brief Get the target queue delay
@@ -209,6 +214,35 @@ class CoDelQueueDisc : public QueueDisc
     uint32_t m_firstAboveTime;         //!< Time to declare sojourn time above target
     TracedValue<uint32_t> m_dropNext;  //!< Time to drop next packet
 };
+
+/**
+ * @ingroup traffic-control
+ * @{
+ */
+
+// clang-format off
+/** @copydoc CoDelQueueDisc::CODEL_SHIFT */
+constexpr uint32_t CODEL_SHIFT
+    NS_DEPRECATED_3_47("Use CoDelQueueDisc::CODEL_SHIFT") =
+    CoDelQueueDisc::CODEL_SHIFT;
+
+/** @copydoc CoDelQueueDisc::DEFAULT_CODEL_LIMIT */
+constexpr uint32_t DEFAULT_CODEL_LIMIT
+    NS_DEPRECATED_3_47("Use CoDelQueueDisc::DEFAULT_CODEL_LIMIT") =
+    CoDelQueueDisc::DEFAULT_CODEL_LIMIT;
+
+/** @copydoc CoDelQueueDisc::REC_INV_SQRT_BITS */
+constexpr uint32_t REC_INV_SQRT_BITS
+    NS_DEPRECATED_3_47("Use CoDelQueueDisc::REC_INV_SQRT_BITS") =
+    CoDelQueueDisc::REC_INV_SQRT_BITS;
+
+/** @copydoc CoDelQueueDisc::REC_INV_SQRT_SHIFT */
+constexpr uint32_t REC_INV_SQRT_SHIFT
+    NS_DEPRECATED_3_47("Use CoDelQueueDisc::REC_INV_SQRT_SHIFT") =
+    CoDelQueueDisc::REC_INV_SQRT_SHIFT;
+// clang-format on
+
+/** @} */
 
 } // namespace ns3
 

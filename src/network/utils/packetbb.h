@@ -32,8 +32,8 @@ class PbbAddressTlv;
 /** Used in Messages to determine whether it contains IPv4 or IPv6 addresses */
 enum PbbAddressLength
 {
-    IPV4 = 3,
-    IPV6 = 15,
+    IPV4 = 3,  //!< IPv4 address length.
+    IPV6 = 15, //!< IPv6 address length.
 };
 
 /**

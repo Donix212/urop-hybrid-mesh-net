@@ -5,6 +5,10 @@
  *
  * Author: Stefano Avallone <stavallo@unina.it>
  */
+/**
+ * @file
+ * @ingroup wifi-test
+ */
 
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
@@ -330,4 +334,5 @@ WifiAcMappingTestSuite::WifiAcMappingTestSuite()
     AddTestCase(new WifiAcMappingTest(0xc0, 3), TestCase::Duration::QUICK); // CS7 in AC_VO
 }
 
+/** Test suite instance variable. */
 static WifiAcMappingTestSuite wifiAcMappingTestSuite;

@@ -13,9 +13,12 @@
 
 using namespace ns3;
 
-// Note, the rationale for this particular value of TOLERANCE is not
-// documented.  Current value is sufficient for all test platforms.
-const double TOLERANCE = 2e-14;
+/**
+ * Tolerance value for test results.
+ * @note The rationale for this particular value of TOLERANCE is not
+ * documented.  Current value is sufficient for all test platforms.
+ */
+constexpr double TOLERANCE{2e-14};
 
 /**
  * @ingroup stats-tests

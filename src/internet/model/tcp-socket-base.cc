@@ -7,6 +7,7 @@
  * Author: Adrian Sai-wah Tam <adrian.sw.tam@gmail.com>
  */
 
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     if (m_node)                                                                                    \
     {                                                                                              \

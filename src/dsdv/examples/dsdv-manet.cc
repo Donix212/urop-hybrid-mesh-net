@@ -16,6 +16,11 @@
  * NSF grant CNS-1050226 (Multilayer Network Resilience Analysis and Experimentation on GENI),
  * US Department of Defense (DoD), and ITTC at The University of Kansas.
  */
+/**
+ * @file
+ * @ingroup dsdv-examples
+ * DSDV Manet example
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -29,8 +34,6 @@
 #include <iostream>
 
 using namespace ns3;
-
-uint16_t port = 9;
 
 NS_LOG_COMPONENT_DEFINE("DsdvManetExample");
 
@@ -76,6 +79,8 @@ class DsdvManetExample
                  std::string CSVfileName);
 
   private:
+    static constexpr uint16_t port{9}; ///< port number
+
     uint32_t m_nWifis;                 ///< total number of nodes
     uint32_t m_nSinks;                 ///< number of receiver nodes
     double m_totalTime;                ///< total simulation time (in seconds)

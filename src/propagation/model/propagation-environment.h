@@ -22,9 +22,9 @@ namespace ns3
  */
 enum EnvironmentType
 {
-    UrbanEnvironment,
-    SubUrbanEnvironment,
-    OpenAreasEnvironment
+    UrbanEnvironment,    //!< Urban environment.
+    SubUrbanEnvironment, //!< Suburban environment.
+    OpenAreasEnvironment //!< Open (rural) environment.
 };
 
 /**
@@ -35,9 +35,9 @@ enum EnvironmentType
  */
 enum CitySize
 {
-    SmallCity,
-    MediumCity,
-    LargeCity
+    SmallCity,  //!< Small city environment.
+    MediumCity, //!< Medium city environment.
+    LargeCity   //!< Large city environment.
 };
 
 } // namespace ns3

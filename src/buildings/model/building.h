@@ -44,9 +44,9 @@ class Building : public Object
      */
     enum BuildingType_t
     {
-        Residential,
-        Office,
-        Commercial
+        Residential, //!< Residential building.
+        Office,      //!< Office building.
+        Commercial   //!< Commercial building.
     };
 
     /**
@@ -54,10 +54,10 @@ class Building : public Object
      */
     enum ExtWallsType_t
     {
-        Wood,
-        ConcreteWithWindows,
-        ConcreteWithoutWindows,
-        StoneBlocks
+        Wood,                   //!< Wood frame walls
+        ConcreteWithWindows,    //!< Concrete walls with windows.
+        ConcreteWithoutWindows, //!< Concrete walls without windows.
+        StoneBlocks             //!< Stone walls.
     };
 
     /**

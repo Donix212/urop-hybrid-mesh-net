@@ -5,69 +5,72 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
-
-// Allow ns-3 to ping a real host somewhere, using emulation mode
-//
-//   +--------------------------+
-//   |           host           |
-//   +--------------------------+
-//   |      ns-3 simulation     |
-//   +--------------------------+
-//   |         ns-3 Node        |
-//   |  +--------------------+  |
-//   |  |      ns-3 TCP      |  |
-//   |  +--------------------+  |
-//   |  |      ns-3 IPv4     |  |
-//   |  +--------------------+  |
-//   |  |   FdNetDevice or   |  |
-//   |  | NetmapNetDevice or |  |
-//   |  |    DpdkNetDevice   |  |
-//   |--+--------------------+--+
-//   |         | eth0 |         |
-//   |         +------+         |
-//   |            |             |
-//   +------------|-------------+
-//                |
-//                |       +---------+
-//                .-------| GW host |--- (Internet) -----
-//                        +---------+
-//
-/// To use this example:
-//  1) You need to decide on a physical device on your real system, and either
-//     overwrite the hard-configured device name below (eth0) or pass this
-//     device name in as a command-line argument
-//  1') If you run emulation in dpdk mode, use device address (eg. 0000:00.1f.6)
-//      as device name. This address can be obtained by running `lspci`
-//  2) The host device must be set to promiscuous mode
-//     (e.g. "sudo ip link set eth0 promisc on")
-//  2') If you run emulation in netmap or dpdk mode, you need before to load
-//      the netmap.ko or dpdk modules. The user is in charge to configure and
-//      build netmap/dpdk separately.
-//  3) Be aware that ns-3 will generate a fake mac address, and that in
-//     some enterprise networks, this may be considered bad form to be
-//     sending packets out of your device with "unauthorized" mac addresses
-//  4) You will need to assign an IP address to the ns-3 simulation node that
-//     is consistent with the subnet that is active on the host device's link.
-//     That is, you will have to assign an IP address to the ns-3 node as if
-//     it were on your real subnet.  Search for "Ipv4Address localIp" and
-//     replace the string "1.2.3.4" with a valid IP address.
-//  5) You will need to configure a default route in the ns-3 node to tell it
-//     how to get off of your subnet. One thing you could do is a
-//     'netstat -rn' command and find the IP address of the default gateway
-//     on your host.  Search for "Ipv4Address gateway" and replace the string
-//     "1.2.3.4" string with the gateway IP address.
-//  6) Give root suid to the raw or netmap socket creator binary.
-//     If the --enable-sudo option was used to configure ns-3 with ns3, then the following
-//     step will not be necessary.
-//
-//     $ sudo chown root.root build/src/fd-net-device/ns3-dev-raw-sock-creator
-//     $ sudo chmod 4755 build/src/fd-net-device/ns3-dev-raw-sock-creator
-//
-//     or (if you run emulation in netmap mode):
-//     $ sudo chown root.root build/src/fd-net-device/ns3-dev-netmap-device-creator
-//     $ sudo chmod 4755 build/src/fd-net-device/ns3-dev-netmap-device-creator
-//  6') If you run emulation in dpdk mode, you will need to run example as root.
-//
+/**
+ * @file
+ * @ingroup fd-net-device
+ *
+ * Allow ns-3 to ping a real host somewhere, using emulation mode
+ *
+ *     +--------------------------+
+ *     |           host           |
+ *     +--------------------------+
+ *     |      ns-3 simulation     |
+ *     +--------------------------+
+ *     |         ns-3 Node        |
+ *     |  +--------------------+  |
+ *     |  |      ns-3 TCP      |  |
+ *     |  +--------------------+  |
+ *     |  |      ns-3 IPv4     |  |
+ *     |  +--------------------+  |
+ *     |  |   FdNetDevice or   |  |
+ *     |  | NetmapNetDevice or |  |
+ *     |  |    DpdkNetDevice   |  |
+ *     |--+--------------------+--+
+ *     |         | eth0 |         |
+ *     |         +------+         |
+ *     |            |             |
+ *     +------------|-------------+
+ *                  |
+ *                  |       +---------+
+ *                  .-------| GW host |--- (Internet) -----
+ *                          +---------+
+ *
+ * To use this example:
+ * 1) You need to decide on a physical device on your real system, and either
+ *    overwrite the hard-configured device name below (eth0) or pass this
+ *    device name in as a command-line argument
+ * 1') If you run emulation in dpdk mode, use device address (eg. 0000:00.1f.6)
+ *     as device name. This address can be obtained by running `lspci`
+ * 2) The host device must be set to promiscuous mode
+ *    (e.g. "sudo ip link set eth0 promisc on")
+ * 2') If you run emulation in netmap or dpdk mode, you need before to load
+ *     the netmap.ko or dpdk modules. The user is in charge to configure and
+ *     build netmap/dpdk separately.
+ * 3) Be aware that ns-3 will generate a fake mac address, and that in
+ *    some enterprise networks, this may be considered bad form to be
+ *    sending packets out of your device with "unauthorized" mac addresses
+ * 4) You will need to assign an IP address to the ns-3 simulation node that
+ *    is consistent with the subnet that is active on the host device's link.
+ *    That is, you will have to assign an IP address to the ns-3 node as if
+ *    it were on your real subnet.  Search for "Ipv4Address localIp" and
+ *    replace the string "1.2.3.4" with a valid IP address.
+ * 5) You will need to configure a default route in the ns-3 node to tell it
+ *    how to get off of your subnet. One thing you could do is a
+ *    'netstat -rn' command and find the IP address of the default gateway
+ *    on your host.  Search for "Ipv4Address gateway" and replace the string
+ *    "1.2.3.4" string with the gateway IP address.
+ * 6) Give root suid to the raw or netmap socket creator binary.
+ *    If the --enable-sudo option was used to configure ns-3 with ns3, then the following
+ *    step will not be necessary.
+ *
+ *      $ sudo chown root.root build/src/fd-net-device/ns3-dev-raw-sock-creator
+ *      $ sudo chmod 4755 build/src/fd-net-device/ns3-dev-raw-sock-creator
+ *
+ *    or (if you run emulation in netmap mode):
+ *      $ sudo chown root.root build/src/fd-net-device/ns3-dev-netmap-device-creator
+ *      $ sudo chmod 4755 build/src/fd-net-device/ns3-dev-netmap-device-creator
+ * 6') If you run emulation in dpdk mode, you will need to run example as root.
+ */
 
 #include "ns3/abort.h"
 #include "ns3/core-module.h"
@@ -82,8 +85,13 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("PingEmulationExample");
 
+/**
+ * Log response to a ping
+ * @param seqNo the packet sequence number
+ * @param rtt The round trip time
+ */
 static void
-PingRtt(std::string context, uint16_t seqNo, Time rtt)
+PingRtt(std::string, uint16_t seqNo, Time rtt)
 {
     NS_LOG_UNCOND("Received " << seqNo << " Response with RTT = " << rtt);
 }

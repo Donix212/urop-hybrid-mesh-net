@@ -8,6 +8,12 @@
 #ifndef NET_DEVICE_QUEUE_INTERFACE_H
 #define NET_DEVICE_QUEUE_INTERFACE_H
 
+/**
+ * @file
+ * @ingroup netdevice
+ * Class ns3::NetDeviceQueue and ns3::NetDeviceQueueInterface declarations.
+ */
+
 #include "ns3/callback.h"
 #include "ns3/log.h"
 #include "ns3/net-device.h"
@@ -25,11 +31,6 @@ namespace ns3
 class QueueLimits;
 class NetDeviceQueueInterface;
 class QueueItem;
-
-/**
- * @ingroup network
- * @defgroup netdevice Network Device
- */
 
 /**
  * @ingroup netdevice

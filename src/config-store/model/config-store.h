@@ -55,9 +55,9 @@ class ConfigStore : public ObjectBase
      */
     enum Mode
     {
-        LOAD,
-        SAVE,
-        NONE
+        LOAD, //!< Load configuration.
+        SAVE, //!< Save configuration.
+        NONE  //!< Unset mode.
     };
 
     /**
@@ -67,8 +67,8 @@ class ConfigStore : public ObjectBase
     /// store format
     enum FileFormat
     {
-        XML,
-        RAW_TEXT
+        XML,     //!< XML file format.
+        RAW_TEXT //!< Raw text file format.
     };
 
     /**

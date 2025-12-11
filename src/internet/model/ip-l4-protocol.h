@@ -45,10 +45,10 @@ class IpL4Protocol : public Object
      */
     enum RxStatus
     {
-        RX_OK,
-        RX_CSUM_FAILED,
-        RX_ENDPOINT_CLOSED,
-        RX_ENDPOINT_UNREACH
+        RX_OK,              //!< Receive ok.
+        RX_CSUM_FAILED,     //!< Checksum failed.
+        RX_ENDPOINT_CLOSED, //!< Endpoint closed connection.
+        RX_ENDPOINT_UNREACH //!< Endpoint unreachable.
     };
 
     /**

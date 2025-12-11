@@ -5,6 +5,7 @@
  *
  */
 
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     {                                                                                              \
         std::clog << Simulator::Now().GetSeconds() << " ";                                         \

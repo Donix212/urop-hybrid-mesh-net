@@ -31,10 +31,10 @@ class GnuplotAggregator : public DataCollectionObject
     /// The location of the key in the plot.
     enum KeyLocation
     {
-        NO_KEY,
-        KEY_INSIDE,
-        KEY_ABOVE,
-        KEY_BELOW
+        NO_KEY,     //!< Do not show legend key
+        KEY_INSIDE, //!< Show legend key inside plot area.
+        KEY_ABOVE,  //!< Show legend key above plot area.
+        KEY_BELOW   //!< Show legend key below plot area.
     };
 
     /**

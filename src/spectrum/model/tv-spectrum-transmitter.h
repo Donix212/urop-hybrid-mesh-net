@@ -39,9 +39,9 @@ class TvSpectrumTransmitter : public SpectrumPhy
      */
     enum TvType
     {
-        TVTYPE_ANALOG,
-        TVTYPE_8VSB,
-        TVTYPE_COFDM
+        TVTYPE_ANALOG, //!< Model analog TV transmitter PSD.
+        TVTYPE_8VSB,   //!< Model 8-VSB TV transmitter PSD.
+        TVTYPE_COFDM   //!< Model COFDM TV transmitter PSD.
     };
 
     TvSpectrumTransmitter();

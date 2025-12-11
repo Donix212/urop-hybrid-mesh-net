@@ -7,6 +7,12 @@
 #ifndef TAP_BRIDGE_H
 #define TAP_BRIDGE_H
 
+/**
+ * @file
+ * @ingroup tap-bridge
+ * Class ns3::TapBridge and ns3::TapBridgeFdReader declarations.
+ */
+
 #include "ns3/address.h"
 #include "ns3/callback.h"
 #include "ns3/data-rate.h"
@@ -102,6 +108,14 @@ class TapBridge : public NetDevice
      * @return the object TypeId
      */
     static TypeId GetTypeId();
+
+    /**
+     * Magic number used as a consistency/sanity check on
+     * the socket creator process.
+     * This has to be public for use by stand-along programs, such as tap-creator.cc
+     * @todo Reference the magic symbols in src/fd-net-device/helper/creator-utils.h
+     */
+    static constexpr uint32_t TAP_MAGIC{95549};
 
     /**
      * Enumeration of the operating modes supported in the class.

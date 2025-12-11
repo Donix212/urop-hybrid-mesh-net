@@ -9,6 +9,12 @@
 #ifndef WIFI_PREP_INFORMATION_ELEMENT_H
 #define WIFI_PREP_INFORMATION_ELEMENT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::IePrep declaration.
+ */
+
 #include "ns3/mac48-address.h"
 #include "ns3/mesh-information-element-vector.h"
 
@@ -153,7 +159,15 @@ class IePrep : public WifiInformationElement
 };
 
 bool operator==(const IePrep& a, const IePrep& b);
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] prep The IePrep object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePrep& prep);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

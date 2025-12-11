@@ -20,6 +20,12 @@
 #ifndef DSR_OPTION_HEADER_H
 #define DSR_OPTION_HEADER_H
 
+/**
+ * @file
+ * @ingroup dsr
+ * Declaration of the various DSR Option Header classes.
+ */
+
 #include "ns3/header.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/simulator.h"
@@ -680,9 +686,9 @@ class DsrOptionSRHeader : public DsrOptionHeader
  */
 enum ErrorType
 {
-    NODE_UNREACHABLE = 1,         // !< NODE_UNREACHABLE
-    FLOW_STATE_NOT_SUPPORTED = 2, // !< FLOW_STATE_NOT_SUPPORTED
-    OPTION_NOT_SUPPORTED = 3,     // !< OPTION_NOT_SUPPORTED
+    NODE_UNREACHABLE = 1,         //!< NODE_UNREACHABLE
+    FLOW_STATE_NOT_SUPPORTED = 2, //!< FLOW_STATE_NOT_SUPPORTED
+    OPTION_NOT_SUPPORTED = 3,     //!< OPTION_NOT_SUPPORTED
 };
 
 /**

@@ -5,6 +5,10 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/command-line.h"
 #include "ns3/core-module.h"
@@ -26,27 +30,43 @@ NS_LOG_COMPONENT_DEFINE("ThreeGppTwoRayChannelCalibration");
 
 using namespace ns3;
 
-// Calibration results actually show a weak dependence with respect to the carrier frequency
+/**
+ * Center frequency step size.
+ * Calibration results actually show a weak dependence with respect to the carrier frequency
+ */
 constexpr double FC_STEP = 5e9;
 
-// 500 MHz, as to provide a fit for the whole frequency range supported by the TR 38.901 model
+/**
+ * Minimum center frequency.
+ * 500 MHz, as to provide a fit for the whole frequency range supported by the TR 38.901 model
+ */
 constexpr double MIN_FC = 500e6;
 
-// 100 GHz, as to provide a fit for the whole frequency range supported by the TR 38.901 model
+/**
+ * Maximum center frequency.
+ * 100 GHz, as to provide a fit for the whole frequency range supported by the TR 38.901 model
+ */
 constexpr double MAX_FC = 100e9;
 
-// Results are independent from this
+/**
+ * Bandwidth. Results are independent from this
+ */
 constexpr double BW = 200e6;
 
-// Results are independent from this, it dictate sonly the resolution of the PSD.
-// This value corresponds to numerology index 2 of the 5G NR specifications
+/**
+ * Resource block width.
+ * Results are independent from this, it dictates only the resolution of the PSD.
+ * This value corresponds to numerology index 2 of the 5G NR specifications
+ */
 constexpr double RB_WIDTH = 60e3;
 
+/** Line of sight conditions */
 const std::vector<std::string> LOS_CONDITIONS{
     "LOS",
     "NLOS",
 };
 
+/** 3GPP Scenarios */
 const std::vector<std::string> THREE_GPP_SCENARIOS{
     "RMa",
     "UMa",
@@ -55,9 +75,18 @@ const std::vector<std::string> THREE_GPP_SCENARIOS{
     "InH-OfficeMixed",
 };
 
+/** Output file stream to log to. */
 const Ptr<OutputStreamWrapper> g_outStream =
     Create<OutputStreamWrapper>("two-ray-to-three-gpp-calibration.csv", std::ios::out);
 
+/**
+ * Log end-to-end gain
+ * @param cond The LOS condition
+ * @param scen The 3GPP scenario
+ * @param fc The center frequency
+ * @param seed The run index
+ * @param gain The end-to-end gain
+ */
 void
 LogEndToEndGain(std::string cond, std::string scen, double fc, long int seed, double gain)
 {
@@ -65,12 +94,22 @@ LogEndToEndGain(std::string cond, std::string scen, double fc, long int seed, do
                               << "\n";
 }
 
+/**
+ * Compute the integral power
+ * @param psd The spectral power density
+ * @return The integral power
+ */
 double
 ComputePowerSpectralDensityOverallPower(Ptr<const SpectrumValue> psd)
 {
     return Integral(*psd);
 }
 
+/**
+ * Create a flat power spectral density over the band centered at @c fc
+ * @param fc The center frequency
+ * @return The PSD.
+ */
 Ptr<SpectrumValue>
 CreateTxPowerSpectralDensity(double fc)
 {
@@ -108,6 +147,17 @@ CreateTxPowerSpectralDensity(double fc)
     return txPsd;
 }
 
+/**
+ * Compute the end-to-end gain
+ * @param cond The LOS condition
+ * @param scen The 3GPP scenario
+ * @param fc The center frequency
+ * @param a The transmitting node
+ * @param b The receiving node
+ * @param aArray The sending node antenna model
+ * @param bArray The receiving node antenna model
+ * @return The end-to-end gain.
+ */
 double
 ComputeEndToEndGain(std::string cond,
                     std::string scen,

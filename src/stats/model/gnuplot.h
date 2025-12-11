@@ -109,14 +109,14 @@ class Gnuplot2dDataset : public GnuplotDataset
      */
     enum Style
     {
-        LINES,
-        POINTS,
-        LINES_POINTS,
-        DOTS,
-        IMPULSES,
-        STEPS,
-        FSTEPS,
-        HISTEPS,
+        LINES,        //!< Plot lines.
+        POINTS,       //!< Plot points.
+        LINES_POINTS, //!< Plot lines and points.
+        DOTS,         //!< Plot dots.
+        IMPULSES,     //!< Plot dots with leader line from horizontal axis.
+        STEPS,        //!< Plot steps rising at the next data point
+        FSTEPS,       //!< Plot steps rising at the first data point
+        HISTEPS,      //!< Flexible step.
     };
 
     /**
@@ -124,10 +124,10 @@ class Gnuplot2dDataset : public GnuplotDataset
      */
     enum ErrorBars
     {
-        NONE,
-        X,
-        Y,
-        XY
+        NONE, //!< No error bars.
+        X,    //!< X error bars only.
+        Y,    //!< Y error bars only.
+        XY    //!< X and Y error bars.
     };
 
     /**

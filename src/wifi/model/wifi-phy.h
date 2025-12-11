@@ -10,6 +10,12 @@
 #ifndef WIFI_PHY_H
 #define WIFI_PHY_H
 
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::WifiPhy declaration.
+ */
+
 #include "frame-capture-model.h"
 #include "interference-helper.h"
 #include "preamble-detection-model.h"
@@ -29,6 +35,10 @@
 
 #include <limits>
 
+/**
+ * @ingroup wifi
+ * Wifi local context
+ */
 #define WIFI_PHY_NS_LOG_APPEND_CONTEXT(phy)                                                        \
     {                                                                                              \
         if (DynamicCast<const WifiPhy>(phy))                                                       \

@@ -15,10 +15,11 @@
 namespace ns3
 {
 
+/** GTK column numbers. */
 enum
 {
-    COL_NODE = 0,
-    COL_LAST
+    COL_NODE = 0, //!< TypeId column number.
+    COL_LAST      //!< Last ID column number.
 };
 
 /**
@@ -32,15 +33,15 @@ struct ModelNode
      */
     enum
     {
-        // store object + attribute name
+        /// store object + attribute name
         NODE_ATTRIBUTE,
-        // store object + attribute name
+        /// store object + attribute name
         NODE_POINTER,
-        // store object + attribute name
+        /// store object + attribute name
         NODE_VECTOR,
-        // store index + value (object)
+        /// store index + value (object)
         NODE_VECTOR_ITEM,
-        // store object
+        /// store object
         NODE_OBJECT
     } type; ///< node type
 

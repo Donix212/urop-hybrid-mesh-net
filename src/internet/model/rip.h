@@ -9,6 +9,12 @@
 #ifndef RIP_H
 #define RIP_H
 
+/**
+ * @file
+ * @ingroup rip
+ * Class ns3::Rip and ns3::RipRoutingTableEntry declarations.
+ */
+
 #include "ipv4-interface.h"
 #include "ipv4-l3-protocol.h"
 #include "ipv4-routing-protocol.h"
@@ -263,6 +269,11 @@ class Rip : public Ipv4RoutingProtocol
     void DoInitialize() override;
 
   private:
+    /** RIP broadcast address. */
+    static constexpr char RIP_ALL_NODE[] = "224.0.0.9";
+    /** RIP port. */
+    static constexpr uint16_t RIP_PORT{520};
+
     /// Container for the network routes - pair RipRoutingTableEntry *, EventId (update event)
     typedef std::list<std::pair<RipRoutingTableEntry*, EventId>> Routes;
 

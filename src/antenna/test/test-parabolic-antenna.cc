@@ -28,8 +28,8 @@ NS_LOG_COMPONENT_DEFINE("TestParabolicAntennaModel");
  */
 enum ParabolicAntennaModelGainTestCondition
 {
-    EQUAL = 0,
-    LESSTHAN = 1
+    EQUAL = 0,   //!< Actual gain must equal expected (within tolerance).
+    LESSTHAN = 1 //!< Actual gain must be less than expected.
 };
 
 /**

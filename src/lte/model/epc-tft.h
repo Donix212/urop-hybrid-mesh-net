@@ -38,9 +38,9 @@ class EpcTft : public SimpleRefCount<EpcTft>
      */
     enum Direction
     {
-        DOWNLINK = 1,
-        UPLINK = 2,
-        BIDIRECTIONAL = 3
+        DOWNLINK = 1,     //!< Classify downlink traffic only.
+        UPLINK = 2,       //!< Classify uplink traffic only.
+        BIDIRECTIONAL = 3 //!< Classify uplink and downlink traffic.
     };
 
     /**

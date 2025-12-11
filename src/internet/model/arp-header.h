@@ -30,8 +30,8 @@ class ArpHeader : public Header
      */
     enum ArpType_e : uint16_t
     {
-        ARP_TYPE_REQUEST = 1,
-        ARP_TYPE_REPLY = 2
+        ARP_TYPE_REQUEST = 1, //!< ARP request.
+        ARP_TYPE_REPLY = 2    //!< ARP reply.
     };
 
     /**
@@ -44,9 +44,9 @@ class ArpHeader : public Header
      */
     enum class HardwareType : uint16_t
     {
-        UNKNOWN = 0,
-        ETHERNET = 1,
-        EUI_64 = 27,
+        UNKNOWN = 0,  //!< Reserved/unknown hardware type.
+        ETHERNET = 1, //!< Ethernet (10 Mb, CSMA) hardware.
+        EUI_64 = 27,  //!< 64-bit Extended Unique Identifier.
     };
 
     /**

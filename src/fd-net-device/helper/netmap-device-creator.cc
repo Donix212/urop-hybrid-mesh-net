@@ -3,6 +3,10 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup fd-net-device
+ */
 
 #include "creator-utils.h"
 
@@ -21,10 +25,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-
-#define EMU_MAGIC 65867
-
-using namespace ns3;
 
 int
 main(int argc, char* argv[])

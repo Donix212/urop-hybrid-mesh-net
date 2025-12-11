@@ -18,11 +18,6 @@
 #include "ns3/string.h"
 #include "ns3/uinteger.h"
 
-// Set some static maximums
-static const uint32_t UINTMAX = std::numeric_limits<uint32_t>::max();
-static const uint32_t DQL_MAX_OBJECT = UINTMAX / 16;
-static const uint32_t DQL_MAX_LIMIT = (UINTMAX / 2) - DQL_MAX_OBJECT;
-
 namespace ns3
 {
 
@@ -83,7 +78,7 @@ DynamicQueueLimits::Reset()
     m_prevNumQueued = 0;
     m_prevLastObjCnt = 0;
     m_prevOvlimit = 0;
-    m_lowestSlack = UINTMAX;
+    m_lowestSlack = DQL_MAX_SLACK;
     m_slackStartTime = Simulator::Now();
 }
 
@@ -131,7 +126,7 @@ DynamicQueueLimits::Completed(uint32_t count)
          */
         limit += Posdiff(completed, m_prevNumQueued) + m_prevOvlimit;
         m_slackStartTime = Simulator::Now();
-        m_lowestSlack = UINTMAX;
+        m_lowestSlack = DQL_MAX_SLACK;
     }
     else if (inprogress && prevInprogress && !allPrevCompleted)
     {
@@ -175,7 +170,7 @@ DynamicQueueLimits::Completed(uint32_t count)
         {
             limit = Posdiff(limit, m_lowestSlack);
             m_slackStartTime = Simulator::Now();
-            m_lowestSlack = UINTMAX;
+            m_lowestSlack = DQL_MAX_SLACK;
         }
     }
 

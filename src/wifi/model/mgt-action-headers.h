@@ -41,30 +41,33 @@ class WifiActionHeader : public Header
     WifiActionHeader();
     ~WifiActionHeader() override;
 
-    /*
+    /**
+     * CategoryValue enumeration
      * Compatible with table 8-38 IEEE 802.11, Part11, (Year 2012)
      * Category values - see 802.11-2012 Table 8-38
+     * and Table 9-51 of IEEE 802.11-2020
+     *
+     * @note Values 128 to 255 are illegal
      */
-
-    /// CategoryValue enumeration
-    enum CategoryValue : uint8_t // table 9-51 of IEEE 802.11-2020
+    enum CategoryValue : uint8_t
     {
-        SPECTRUM_MANAGEMENT = 0,
-        QOS = 1,
-        BLOCK_ACK = 3,
-        PUBLIC = 4,
-        RADIO_MEASUREMENT = 5, // Category: Radio Measurement
-        MESH = 13,             // Category: Mesh
-        MULTIHOP = 14,         // not used so far
-        SELF_PROTECTED = 15,   // Category: Self Protected
-        DMG = 16,              // Category: DMG
-        FST = 18,              // Category: Fast Session Transfer
-        UNPROTECTED_DMG = 20,  // Category: Unprotected DMG
-        PROTECTED_EHT = 37,    // Category: Protected EHT
-        // Since vendor specific action has no stationary Action value,the parse process is not
-        // here. Refer to vendor-specific-action in wave module.
+        SPECTRUM_MANAGEMENT = 0, ///< Spectrum management.
+        QOS = 1,                 ///< Quality of service.
+        BLOCK_ACK = 3,           ///< Block acknowledgement.
+        PUBLIC = 4,              ///< Public.
+        RADIO_MEASUREMENT = 5,   ///< Category: Radio Measurement
+        MESH = 13,               ///< Category: Mesh
+        MULTIHOP = 14,           ///< not used so far
+        SELF_PROTECTED = 15,     ///< Category: Self Protected
+        DMG = 16,                ///< Category: DMG
+        FST = 18,                ///< Category: Fast Session Transfer
+        UNPROTECTED_DMG = 20,    ///< Category: Unprotected DMG
+        PROTECTED_EHT = 37,      ///< Category: Protected EHT
+        /**
+         * Vendor specific. Since vendor specific action has no stationary Action value,the parse
+         * process is not here. Refer to vendor-specific-action in wave module.
+         */
         VENDOR_SPECIFIC_ACTION = 127,
-        // values 128 to 255 are illegal
     };
 
     /// QosActionValue enumeration
@@ -110,37 +113,37 @@ class WifiActionHeader : public Header
     /// MeshActionValue enumeration
     enum MeshActionValue : uint8_t
     {
-        LINK_METRIC_REPORT = 0,              // Action Value:0 in Category 13: Mesh
-        PATH_SELECTION = 1,                  // Action Value:1 in Category 13: Mesh
-        PORTAL_ANNOUNCEMENT = 2,             // Action Value:2 in Category 13: Mesh
-        CONGESTION_CONTROL_NOTIFICATION = 3, // Action Value:3 in Category 13: Mesh
+        LINK_METRIC_REPORT = 0,              ///< Action Value:0 in Category 13: Mesh
+        PATH_SELECTION = 1,                  ///< Action Value:1 in Category 13: Mesh
+        PORTAL_ANNOUNCEMENT = 2,             ///< Action Value:2 in Category 13: Mesh
+        CONGESTION_CONTROL_NOTIFICATION = 3, ///< Action Value:3 in Category 13: Mesh
         MDA_SETUP_REQUEST =
-            4, // Action Value:4 in Category 13: Mesh MCCA-Setup-Request (not used so far)
+            4, ///< Action Value:4 in Category 13: Mesh MCCA-Setup-Request (not used so far)
         MDA_SETUP_REPLY =
-            5, // Action Value:5 in Category 13: Mesh MCCA-Setup-Reply (not used so far)
+            5, ///< Action Value:5 in Category 13: Mesh MCCA-Setup-Reply (not used so far)
         MDAOP_ADVERTISEMENT_REQUEST =
-            6, // Action Value:6 in Category 13: Mesh MCCA-Advertisement-Request (not used so far)
-        MDAOP_ADVERTISEMENTS = 7,      // Action Value:7 in Category 13: Mesh (not used so far)
-        MDAOP_SET_TEARDOWN = 8,        // Action Value:8 in Category 13: Mesh (not used so far)
-        TBTT_ADJUSTMENT_REQUEST = 9,   // Action Value:9 in Category 13: Mesh (not used so far)
-        TBTT_ADJUSTMENT_RESPONSE = 10, // Action Value:10 in Category 13: Mesh (not used so far)
+            6, ///< Action Value:6 in Category 13: Mesh MCCA-Advertisement-Request (not used so far)
+        MDAOP_ADVERTISEMENTS = 7,      ///< Action Value:7 in Category 13: Mesh (not used so far)
+        MDAOP_SET_TEARDOWN = 8,        ///< Action Value:8 in Category 13: Mesh (not used so far)
+        TBTT_ADJUSTMENT_REQUEST = 9,   ///< Action Value:9 in Category 13: Mesh (not used so far)
+        TBTT_ADJUSTMENT_RESPONSE = 10, ///< Action Value:10 in Category 13: Mesh (not used so far)
     };
 
     /// MultihopActionValue enumeration
     enum MultihopActionValue : uint8_t
     {
-        PROXY_UPDATE = 0,              // not used so far
-        PROXY_UPDATE_CONFIRMATION = 1, // not used so far
+        PROXY_UPDATE = 0,              ///< Proxy update, not used so far
+        PROXY_UPDATE_CONFIRMATION = 1, ///< Proxy update confirmation, not used so far
     };
 
     /// SelfProtectedActionValue enumeration
     enum SelfProtectedActionValue : uint8_t // Category: 15 (Self Protected)
     {
-        PEER_LINK_OPEN = 1,    // Mesh Peering Open
-        PEER_LINK_CONFIRM = 2, // Mesh Peering Confirm
-        PEER_LINK_CLOSE = 3,   // Mesh Peering Close
-        GROUP_KEY_INFORM = 4,  // Mesh Group Key Inform
-        GROUP_KEY_ACK = 5,     // Mesh Group Key Acknowledge
+        PEER_LINK_OPEN = 1,    ///< Mesh Peering Open
+        PEER_LINK_CONFIRM = 2, ///< Mesh Peering Confirm
+        PEER_LINK_CLOSE = 3,   ///< Mesh Peering Close
+        GROUP_KEY_INFORM = 4,  ///< Mesh Group Key Inform
+        GROUP_KEY_ACK = 5,     ///< Mesh Group Key Acknowledge
     };
 
     /**
@@ -286,8 +289,8 @@ class WifiActionHeader : public Header
     uint32_t Deserialize(Buffer::Iterator start) override;
 
   private:
-    uint8_t m_category;    //!< Category of the action
-    uint8_t m_actionValue; //!< Action value
+    uint8_t m_category;    ///< Category of the action
+    uint8_t m_actionValue; ///< Action value
 };
 
 /**
@@ -420,14 +423,14 @@ class MgtAddBaRequestHeader : public Header
      */
     void SetStartingSequenceControl(uint16_t seqControl);
 
-    uint8_t m_dialogToken{1};                      //!< Not used for now
-    bool m_amsduSupport{true};                     //!< Flag if A-MSDU is supported
-    uint8_t m_policy{1};                           //!< Block Ack policy
-    uint8_t m_tid{0};                              //!< Traffic ID
-    uint16_t m_bufferSize{0};                      //!< Buffer size
-    uint16_t m_timeoutValue{0};                    //!< Timeout
-    uint16_t m_startingSeq{0};                     //!< Starting sequence number
-    std::optional<Mac48Address> m_gcrGroupAddress; //!< GCR Group Address (optional)
+    uint8_t m_dialogToken{1};                      ///< Not used for now
+    bool m_amsduSupport{true};                     ///< Flag if A-MSDU is supported
+    uint8_t m_policy{1};                           ///< Block Ack policy
+    uint8_t m_tid{0};                              ///< Traffic ID
+    uint16_t m_bufferSize{0};                      ///< Buffer size
+    uint16_t m_timeoutValue{0};                    ///< Timeout
+    uint16_t m_startingSeq{0};                     ///< Starting sequence number
+    std::optional<Mac48Address> m_gcrGroupAddress; ///< GCR Group Address (optional)
 };
 
 /**
@@ -548,14 +551,14 @@ class MgtAddBaResponseHeader : public Header
      */
     void SetParameterSet(uint16_t params);
 
-    uint8_t m_dialogToken{1};                      //!< Not used for now
-    StatusCode m_code{};                           //!< Status code
-    bool m_amsduSupport{true};                     //!< Flag if A-MSDU is supported
-    uint8_t m_policy{1};                           //!< Block ACK policy
-    uint8_t m_tid{0};                              //!< Traffic ID
-    uint16_t m_bufferSize{0};                      //!< Buffer size
-    uint16_t m_timeoutValue{0};                    //!< Timeout
-    std::optional<Mac48Address> m_gcrGroupAddress; //!< GCR Group Address (optional)
+    uint8_t m_dialogToken{1};                      ///< Not used for now
+    StatusCode m_code{};                           ///< Status code
+    bool m_amsduSupport{true};                     ///< Flag if A-MSDU is supported
+    uint8_t m_policy{1};                           ///< Block ACK policy
+    uint8_t m_tid{0};                              ///< Traffic ID
+    uint16_t m_bufferSize{0};                      ///< Buffer size
+    uint16_t m_timeoutValue{0};                    ///< Timeout
+    std::optional<Mac48Address> m_gcrGroupAddress; ///< GCR Group Address (optional)
 };
 
 /**
@@ -629,10 +632,10 @@ class MgtDelBaHeader : public Header
      */
     void SetParameterSet(uint16_t params);
 
-    uint16_t m_initiator{0};  //!< initiator
-    uint16_t m_tid{0};        //!< Traffic ID
-    uint16_t m_reasonCode{1}; //!< Not used for now. Always set to 1: "Unspecified reason"
-    std::optional<Mac48Address> m_gcrGroupAddress; //!< GCR Group Address (optional)
+    uint16_t m_initiator{0};  ///< initiator
+    uint16_t m_tid{0};        ///< Traffic ID
+    uint16_t m_reasonCode{1}; ///< Not used for now. Always set to 1: "Unspecified reason"
+    std::optional<Mac48Address> m_gcrGroupAddress; ///< GCR Group Address (optional)
 };
 
 /**
@@ -660,12 +663,12 @@ class MgtEmlOmn : public Header
      */
     struct EmlControl
     {
-        uint8_t emlsrMode : 1;                  //!< EMLSR Mode
-        uint8_t emlmrMode : 1;                  //!< EMLMR Mode
-        uint8_t emlsrParamUpdateCtrl : 1;       //!< EMLSR Parameter Update Control
-        uint8_t : 5;                            //!< reserved
-        std::optional<uint16_t> linkBitmap;     //!< EMLSR/EMLMR Link Bitmap
-        std::optional<uint8_t> mcsMapCountCtrl; //!< MCS Map Count Control
+        uint8_t emlsrMode : 1;                  ///< EMLSR Mode
+        uint8_t emlmrMode : 1;                  ///< EMLMR Mode
+        uint8_t emlsrParamUpdateCtrl : 1;       ///< EMLSR Parameter Update Control
+        uint8_t : 5;                            ///< reserved
+        std::optional<uint16_t> linkBitmap;     ///< EMLSR/EMLMR Link Bitmap
+        std::optional<uint8_t> mcsMapCountCtrl; ///< MCS Map Count Control
         // TODO Add EMLMR Supported MCS And NSS Set subfield when EMLMR is supported
     };
 
@@ -674,8 +677,8 @@ class MgtEmlOmn : public Header
      */
     struct EmlsrParamUpdate
     {
-        uint8_t paddingDelay : 3;    //!< EMLSR Padding Delay
-        uint8_t transitionDelay : 3; //!< EMLSR Transition Delay
+        uint8_t paddingDelay : 3;    ///< EMLSR Padding Delay
+        uint8_t transitionDelay : 3; ///< EMLSR Transition Delay
     };
 
     /**
@@ -689,9 +692,9 @@ class MgtEmlOmn : public Header
      */
     std::list<uint8_t> GetLinkBitmap() const;
 
-    uint8_t m_dialogToken{0};                             //!< Dialog Token
-    EmlControl m_emlControl{};                            //!< EML Control field
-    std::optional<EmlsrParamUpdate> m_emlsrParamUpdate{}; //!< EMLSR Parameter Update field
+    uint8_t m_dialogToken{0};                             ///< Dialog Token
+    EmlControl m_emlControl{};                            ///< EML Control field
+    std::optional<EmlsrParamUpdate> m_emlsrParamUpdate{}; ///< EMLSR Parameter Update field
 };
 
 /**

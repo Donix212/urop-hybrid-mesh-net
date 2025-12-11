@@ -5,24 +5,28 @@
  *
  * Authors: Apoorva Bhargava <apoorvabhargava13@gmail.com>
  */
-
-// Network topology
-//
-//       n0 ---------- n1 ---------- n2 ---------- n3
-//            10 Mbps       1 Mbps        10 Mbps
-//             1 ms         10 ms          1 ms
-//
-// - TCP flow from n0 to n3 using BulkSendApplication.
-// - The following simulation output is stored in results/ in ns-3 top-level directory:
-//   - cwnd traces are stored in cwndTraces folder
-//   - queue length statistics are stored in queue-size.dat file
-//   - pcaps are stored in pcap folder
-//   - queueTraces folder contain the drop statistics at queue
-//   - queueStats.txt file contains the queue stats and config.txt file contains
-//     the simulation configuration.
-// - The cwnd and queue length traces obtained from this example were tested against
-//   the respective traces obtained from Linux Reno by using ns-3 Direct Code Execution.
-//   See internet/doc/tcp.rst for more details.
+/**
+ * @file
+ * @ingroup tcp
+ *
+ * Network topology
+ *
+ *     n0 ---------- n1 ---------- n2 ---------- n3
+ *          10 Mbps       1 Mbps        10 Mbps
+ *           1 ms         10 ms          1 ms
+ *
+ * - TCP flow from n0 to n3 using BulkSendApplication.
+ * - The following simulation output is stored in results/ in ns-3 top-level directory:
+ *   - cwnd traces are stored in cwndTraces folder
+ *   - queue length statistics are stored in queue-size.dat file
+ *   - pcaps are stored in pcap folder
+ *   - queueTraces folder contain the drop statistics at queue
+ *   - queueStats.txt file contains the queue stats and config.txt file contains
+ *     the simulation configuration.
+ * - The cwnd and queue length traces obtained from this example were tested against
+ *   the respective traces obtained from Linux Reno by using ns-3 Direct Code Execution.
+ *   See internet/doc/tcp.rst for more details.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -37,14 +41,27 @@
 #include <sys/stat.h>
 
 using namespace ns3;
+
+/**
+ * The directory to hold output files.
+ * @todo Refactor the file path code to use ns3::SystemPath (or @c \<filesystem>)l
+ */
 std::string dir = "results/";
+/** Stop time for applications / simulation, set on the command line. */
 Time stopTime = Seconds(60);
+/** TCP segment size (bytes), set on the command line. */
 uint32_t segmentSize = 524;
 
+/** Output file streams. @{ */
 std::ofstream fPlotQueue;
 std::ofstream fPlotCwnd;
 
-// Function to check queue length of Router 1
+/** @} */
+
+/**
+ * Periodically log the check queue length of Router 1
+ * @param queue The QueueDisc to read.
+ */
 void
 CheckQueueSize(Ptr<QueueDisc> queue)
 {
@@ -55,21 +72,32 @@ CheckQueueSize(Ptr<QueueDisc> queue)
     fPlotQueue << Simulator::Now().GetSeconds() << " " << qSize << std::endl;
 }
 
-// Function to trace change in cwnd at n0
+/**
+ * Function to trace change in cwnd at n0
+ * @param newCwnd The new CWND value.
+ */
 static void
-CwndChange(uint32_t oldCwnd, uint32_t newCwnd)
+CwndChange(uint32_t, uint32_t newCwnd)
 {
     fPlotCwnd << Simulator::Now().GetSeconds() << " " << newCwnd / segmentSize << std::endl;
 }
 
-// Function to calculate drops in a particular Queue
+/**
+ * Function to log drops.
+ * @param stream The output stream to log to.
+ */
 static void
-DropAtQueue(Ptr<OutputStreamWrapper> stream, Ptr<const QueueDiscItem> item)
+DropAtQueue(Ptr<OutputStreamWrapper> stream, Ptr<const QueueDiscItem>)
 {
     *stream->GetStream() << Simulator::Now().GetSeconds() << " 1" << std::endl;
 }
 
-// Trace Function for cwnd
+/**
+ * Connect the CWND trace.
+ * @param node The node to monitor.
+ * @param cwndWindow The specific CWND window.
+ * @param CwndTrace The trace callback function to invoke.
+ */
 void
 TraceCwnd(uint32_t node, uint32_t cwndWindow, Callback<void, uint32_t, uint32_t> CwndTrace)
 {
@@ -79,7 +107,16 @@ TraceCwnd(uint32_t node, uint32_t cwndWindow, Callback<void, uint32_t, uint32_t>
                                   CwndTrace);
 }
 
-// Function to install BulkSend application
+/**
+ * Function to install BulkSend application
+ * @param node The node to install to.
+ * @param address The address to send to.
+ * @param port The port to send to.
+ * @param socketFactory The factory to create the Socket.
+ * @param nodeId The NodeId to pass to the TraceCwnd callback.
+ * @param cwndWindow The specific CWND window to pass to the callback.
+ * @param CwndTrace The TracedCallback function.
+ */
 void
 InstallBulkSend(Ptr<Node> node,
                 Ipv4Address address,
@@ -97,7 +134,12 @@ InstallBulkSend(Ptr<Node> node,
     sourceApps.Stop(stopTime);
 }
 
-// Function to install sink application
+/**
+ * Function to install sink application
+ * @param node The node to install to.
+ * @param port The port to listen on.
+ * @param socketFactory The factory to create the Socket.
+ */
 void
 InstallPacketSink(Ptr<Node> node, uint16_t port, std::string socketFactory)
 {

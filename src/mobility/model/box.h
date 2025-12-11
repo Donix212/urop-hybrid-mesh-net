@@ -28,12 +28,12 @@ class Box
      */
     enum Side
     {
-        RIGHT,
-        LEFT,
-        TOP,
-        BOTTOM,
-        UP,
-        DOWN
+        RIGHT,  //!< High x side.
+        LEFT,   //!< Low x side.
+        TOP,    //!< High y side.
+        BOTTOM, //!< Low y side.
+        UP,     //!< High z side.
+        DOWN    //!< Low z side.
     };
 
     /**

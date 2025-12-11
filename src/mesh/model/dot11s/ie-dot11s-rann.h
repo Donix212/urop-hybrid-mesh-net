@@ -9,6 +9,12 @@
 #ifndef RANN_INFORMATION_ELEMENT_H
 #define RANN_INFORMATION_ELEMENT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::IeRann declaration.
+ */
+
 #include "ns3/mac48-address.h"
 #include "ns3/mesh-information-element-vector.h"
 
@@ -121,7 +127,16 @@ class IeRann : public WifiInformationElement
 };
 
 bool operator==(const IeRann& a, const IeRann& b);
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] rann The IeRann object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IeRann& rann);
+
 } // namespace dot11s
 } // namespace ns3
 

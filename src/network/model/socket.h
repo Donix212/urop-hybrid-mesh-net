@@ -11,6 +11,12 @@
 #ifndef NS3_SOCKET_H
 #define NS3_SOCKET_H
 
+/**
+ * @file
+ * @ingroup socket
+ * Class ns3::Socket and various Socket tag declarations.
+ */
+
 #include "address.h"
 #include "net-device.h"
 #include "tag.h"

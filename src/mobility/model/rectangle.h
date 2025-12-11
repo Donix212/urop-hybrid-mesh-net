@@ -28,14 +28,14 @@ class Rectangle
      */
     enum Side
     {
-        RIGHTSIDE = 0,
-        LEFTSIDE,
-        TOPSIDE,
-        BOTTOMSIDE,
-        TOPRIGHTCORNER,
-        TOPLEFTCORNER,
-        BOTTOMRIGHTCORNER,
-        BOTTOMLEFTCORNER
+        RIGHTSIDE = 0,     //!< High x side.
+        LEFTSIDE,          //!< Low x side.
+        TOPSIDE,           //!< High y side.
+        BOTTOMSIDE,        //!< Low y side.
+        TOPRIGHTCORNER,    //!< High x, high y corner.
+        TOPLEFTCORNER,     //!< Low x, high y corner.
+        BOTTOMRIGHTCORNER, //!< High x, low y corner.
+        BOTTOMLEFTCORNER   //!< Low x, low y corner.
     };
 
     /**

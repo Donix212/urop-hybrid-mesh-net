@@ -5,6 +5,11 @@
  *
  * Author: Joe Kopena (tjkopena@cs.drexel.edu)
  */
+/**
+ * @file
+ * @ingroup stats
+ * Class OmnetDataOutput implementation
+ */
 
 #include "omnet-data-output.h"
 
@@ -14,6 +19,7 @@
 #include "ns3/log.h"
 #include "ns3/nstime.h"
 
+#include <charconv>
 #include <cstdlib>
 #include <fstream>
 
@@ -57,33 +63,16 @@ OmnetDataOutput::DoDispose()
 
 //----------------------------------------------
 
+/**
+ * Test if a string is a numeric
+ * @param s The string
+ * @return @c true if the string is a number
+ */
 inline bool
 isNumeric(const std::string& s)
 {
-    bool decimalPtSeen = false;
-    bool exponentSeen = false;
-    char last = '\0';
-
-    for (auto it = s.begin(); it != s.end(); it++)
-    {
-        if ((*it == '.' && decimalPtSeen) || (*it == 'e' && exponentSeen) ||
-            (*it == '-' && it != s.begin() && last != 'e'))
-        {
-            return false;
-        }
-        else if (*it == '.')
-        {
-            decimalPtSeen = true;
-        }
-        else if (*it == 'e')
-        {
-            exponentSeen = true;
-            decimalPtSeen = false;
-        }
-
-        last = *it;
-    }
-    return true;
+    double result;
+    return (std::from_chars(s.data(), s.data() + s.size(), result).ec == std::errc{});
 }
 
 void

@@ -67,9 +67,9 @@ class GeographicPositions
     /// The possible Earth spheroid models.  .
     enum EarthSpheroidType
     {
-        SPHERE,
-        GRS80,
-        WGS84
+        SPHERE, //!< Ideal (sphere) ellipsoid.
+        GRS80,  //!< GRS80 ellipsoid.
+        WGS84   //!< WGS84 ellipsoid.
     };
 
     /**

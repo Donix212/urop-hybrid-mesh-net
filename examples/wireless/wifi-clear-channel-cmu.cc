@@ -5,6 +5,10 @@
  *
  * Author: Guangyu Pei <guangyu.pei@boeing.com>
  */
+/**
+ * @file
+ * @ingroup wifi
+ */
 
 #include "ns3/command-line.h"
 #include "ns3/config.h"

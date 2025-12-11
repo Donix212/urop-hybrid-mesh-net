@@ -13,7 +13,7 @@
  * Example program illustrating the various logging functions.
  */
 
-/** File-local context string */
+/** File-local log context string */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     {                                                                                              \
         std::clog << "(local context) ";                                                           \

@@ -117,8 +117,8 @@ class WifiTxopTest : public TestCase
     /// Enumeration for traffic directions
     enum TrafficDirection : uint8_t
     {
-        DOWNLINK = 0,
-        UPLINK
+        DOWNLINK = 0, ///< Downlink direction
+        UPLINK        ///< Uplink direction
     };
 
     /**

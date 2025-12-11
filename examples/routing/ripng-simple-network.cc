@@ -5,38 +5,43 @@
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  */
-
-// Network topology
-//
-//    SRC
-//     |<=== source network
-//     A-----B
-//      \   / \   all networks have cost 1, except
-//       \ /  |   for the direct link from C to D, which
-//        C  /    has cost 10
-//        | /
-//        |/
-//        D
-//        |<=== target network
-//       DST
-//
-//
-// A, B, C and D are RIPng routers.
-// A and D are configured with static addresses.
-// SRC and DST will exchange packets.
-//
-// After about 3 seconds, the topology is built, and Echo Reply will be received.
-// After 40 seconds, the link between B and D will break, causing a route failure.
-// After 44 seconds from the failure, the routers will recovery from the failure.
-// Split Horizoning should affect the recovery time, but it is not. See the manual
-// for an explanation of this effect.
-//
-// If "showPings" is enabled, the user will see:
-// 1) if the ping has been acknowledged
-// 2) if a Destination Unreachable has been received by the sender
-// 3) nothing, when the Echo Request has been received by the destination but
-//    the Echo Reply is unable to reach the sender.
-// Examining the .pcap files with Wireshark can confirm this effect.
+/**
+ * @file
+ * @ingroup ripng
+ *
+ * Network topology
+ *
+ *     SRC
+ *      |<=== source network
+ *      A-----B
+ *       \   / \   all networks have cost 1, except
+ *        \ /  |   for the direct link from C to D, which
+ *         C  /    has cost 10
+ *         | /
+ *         |/
+ *         D
+ *         |<=== target network
+ *        DST
+ *
+ * A, B, C and D are RIPng routers.
+ *
+ * A and D are configured with static addresses.
+ *
+ * SRC and DST will exchange packets.
+ *
+ * After about 3 seconds, the topology is built, and Echo Reply will be received.
+ * After 40 seconds, the link between B and D will break, causing a route failure.
+ * After 44 seconds from the failure, the routers will recovery from the failure.
+ * Split Horizoning should affect the recovery time, but it is not. See the manual
+ * for an explanation of this effect.
+ *
+ * If "showPings" is enabled, the user will see:
+ * 1) if the ping has been acknowledged
+ * 2) if a Destination Unreachable has been received by the sender
+ * 3) nothing, when the Echo Request has been received by the destination but
+ *    the Echo Reply is unable to reach the sender.
+ * Examining the .pcap files with Wireshark can confirm this effect.
+ */
 
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
@@ -51,6 +56,13 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("RipNgSimpleRouting");
 
+/**
+ * Set interfaces down
+ * @param nodeA The first node
+ * @param nodeB The second node
+ * @param interfaceA The first interface
+ * @param interfaceB The second interface
+ */
 void
 TearDownLink(Ptr<Node> nodeA, Ptr<Node> nodeB, uint32_t interfaceA, uint32_t interfaceB)
 {

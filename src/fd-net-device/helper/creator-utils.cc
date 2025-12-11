@@ -24,9 +24,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-namespace ns3
-{
-
 /// Flag to enable / disable verbose log mode
 bool gVerbose = false;
 
@@ -162,5 +159,3 @@ SendSocket(const char* path, int fd, const int magic_number)
 
     LOG("sendmsg complete");
 }
-
-} // namespace ns3

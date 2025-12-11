@@ -16,4 +16,8 @@
  *
  * @defgroup tests Test suites
  * @brief All test suites
+ *  
+ * @defgroup tutorial Tutorial
+ * @brief The ns-3 Tutorial
+ *
  */

@@ -400,9 +400,9 @@ TestMultiUserScheduler::ComputeUlMuInfo()
  */
 enum class WifiOfdmaScenario : uint8_t
 {
-    HE = 0, // HE AP and HE non-AP STAs
-    HE_EHT, // EHT AP, some EHT non-AP STAs and some non-EHT HE non-AP STAs
-    EHT     // EHT AP and EHT non-AP STAs
+    HE = 0, //!< HE AP and HE non-AP STAs
+    HE_EHT, //!< EHT AP, some EHT non-AP STAs and some non-EHT HE non-AP STAs
+    EHT     //!< EHT AP and EHT non-AP STAs
 };
 
 /**

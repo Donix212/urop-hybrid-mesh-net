@@ -7,10 +7,13 @@
  * http://wiki.osll.ru/doku.php/start)
  */
 
-// Interface between ns3 and the network animator
-
 #ifndef ANIMATION_INTERFACE__H
 #define ANIMATION_INTERFACE__H
+/**
+ * @file
+ * @ingroup netanim
+ * Interface between ns3 and the network animator
+ */
 
 #include "ns3/config.h"
 #include "ns3/ipv4-l3-protocol.h"
@@ -36,24 +39,6 @@
 
 namespace ns3
 {
-
-#define MAX_PKTS_PER_TRACE_FILE 100000
-#define PURGE_INTERVAL 5
-#define NETANIM_VERSION "netanim-3.109"
-#define CHECK_STARTED_INTIMEWINDOW                                                                 \
-    {                                                                                              \
-        if (!m_started || !IsInTimeWindow())                                                       \
-        {                                                                                          \
-            return;                                                                                \
-        }                                                                                          \
-    }
-#define CHECK_STARTED_INTIMEWINDOW_TRACKPACKETS                                                    \
-    {                                                                                              \
-        if (!m_started || !IsInTimeWindow() || !m_trackPackets)                                    \
-        {                                                                                          \
-            return;                                                                                \
-        }                                                                                          \
-    }
 
 struct NodeSize;
 class WifiPsdu;
@@ -83,14 +68,36 @@ class AnimationInterface
      */
     AnimationInterface(const std::string filename);
 
+    /** Maximum number of packets in a trace file. */
+    static constexpr uint64_t MAX_PKTS_PER_TRACE_FILE{100000};
+    /** Packets older than this time (in seconds) will be moved to the purge list. */
+    static constexpr double PURGE_INTERVAL{5};
+    /** The NetAnim version. */
+    static constexpr std::string_view NETANIM_VERSION = "netanim-3.109";
+
     /**
      * Counter Types
      */
     enum CounterType
     {
-        UINT32_COUNTER,
-        DOUBLE_COUNTER
+        UINT32_COUNTER, //!< Use `uint32_t` counter.
+        DOUBLE_COUNTER  //!< Use `double` counter.
     };
+
+    /** RGB triplet structure. */
+    struct Rgb
+    {
+        uint8_t r; ///< Red
+        uint8_t g; ///< Green
+        uint8_t b; ///< Blue
+    };
+
+    /** Primary colors red, green and blue. */
+    static constexpr std::array<Rgb, 3> PrimaryColors = {{
+        {255, 0, 0}, ///< Red
+        {0, 255, 0}, ///< Blue
+        {0, 0, 255}  ///< Green
+    }};
 
     /**
      * @brief typedef for WriteCallBack used for listening to AnimationInterface
@@ -462,14 +469,6 @@ class AnimationInterface
         void ProcessRxBegin(Ptr<const NetDevice> nd, const double fbRx);
     };
 
-    /// RGB structure
-    struct Rgb
-    {
-        uint8_t r; ///< r
-        uint8_t g; ///< g
-        uint8_t b; ///< b
-    };
-
     /// P2pLinkNodeIdPair structure
     struct P2pLinkNodeIdPair
     {
@@ -528,11 +527,11 @@ class AnimationInterface
     /// ProtocolType enumeration
     enum ProtocolType
     {
-        UAN,
-        LTE,
-        WIFI,
-        CSMA,
-        LRWPAN
+        UAN,   //!< UAN protocol.
+        LTE,   //!< LTE protocol.
+        WIFI,  //!< Wifi (802.11...) protocol.
+        CSMA,  //!< CSMA (ethernet) protocol.
+        LRWPAN //!< LR-WPAN protocol.
     };
 
     /// NodeSize structure
@@ -1515,6 +1514,21 @@ class AnimByteTag : public Tag
   private:
     uint64_t m_AnimUid; ///< the UID
 };
+
+// clang-format off
+/** @copydoc AnimationInterface::MAX_PKTS_PER_TRACE_FILE */
+constexpr uint64_t MAX_PKTS_PER_TRACE_FILE
+    NS_DEPRECATED_3_47("Use AnimationInterface::MAX_PKTS_PER_TRACE_FILE") =
+        AnimationInterface::MAX_PKTS_PER_TRACE_FILE;
+
+/** @copydoc AnimationInterface::PURGE_INTERVAL */
+constexpr double PURGE_INTERVAL NS_DEPRECATED_3_47("Use AnimationInterface::PURGE_INTERVAL") =
+    AnimationInterface::PURGE_INTERVAL;
+
+/** @copydoc AnimationInterface::NETANIM_VERSION */
+constexpr std::string_view NETANIM_VERSION NS_DEPRECATED_3_47(
+    "Use AnimationInterface::NETANIM_VERSION") = AnimationInterface::NETANIM_VERSION;
+// clang-format on
 
 } // namespace ns3
 #endif

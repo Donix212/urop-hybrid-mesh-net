@@ -57,11 +57,11 @@ using RuAllocation = std::vector<uint16_t>;
  */
 enum Center26ToneRuIndication : uint8_t
 {
-    CENTER_26_TONE_RU_UNALLOCATED = 0,
-    CENTER_26_TONE_RU_LOW_80_MHZ_ALLOCATED,          /* also used if BW == 80 MHz */
-    CENTER_26_TONE_RU_HIGH_80_MHZ_ALLOCATED,         /* unused if BW < 160 MHz */
-    CENTER_26_TONE_RU_LOW_AND_HIGH_80_MHZ_ALLOCATED, /* unused if BW < 160 MHz */
-    CENTER_26_TONE_RU_INDICATION_MAX                 /* last value */
+    CENTER_26_TONE_RU_UNALLOCATED = 0,       //!< unallocated
+    CENTER_26_TONE_RU_LOW_80_MHZ_ALLOCATED,  //!< primary allocated, also used if BW == 80 MHz
+    CENTER_26_TONE_RU_HIGH_80_MHZ_ALLOCATED, //!< primary not allocated, unused if BW < 160 MHz
+    CENTER_26_TONE_RU_LOW_AND_HIGH_80_MHZ_ALLOCATED, //!< both allocated, unused if BW < 160 MHz
+    CENTER_26_TONE_RU_INDICATION_MAX                 //!< last value
 };
 
 /**

@@ -17,7 +17,10 @@
  * US Department of Defense (DoD), and ITTC at The University of Kansas.
  */
 
-/*
+/**
+ * @file
+ * @ingroup examples
+ *
  * This example program allows one to run ns-3 DSDV, DSR, AODV, or OLSR under
  * a typical random waypoint mobility model.
  *
@@ -34,8 +37,8 @@
  * the transmit power (as power increases, the impact of mobility
  * decreases and the effective density increases).
  *
- * By default, AODV is used, but specifying a string of 'OLSR', 'DSDV', or
- * 'DSR' to the protocol command-line argument will change the protocol.
+ * By default, AODV is used, but specifying a string of `OLSR`, `DSDV`, or
+ * `DSR` to the protocol command-line argument will change the protocol.
  *
  * By default, there are 10 source/sink data pairs sending UDP data
  * at an application rate of 2.048 Kb/s each.    This is typically done
@@ -45,10 +48,10 @@
  *
  * The program outputs a few items:
  * - packet receptions are notified to stdout such as:
- *   <timestamp> <node-id> received one packet from <src-address>
+ *   `<timestamp> <node-id> received one packet from <src-address>`
  * - each second, the data reception statistics are tabulated and output
  *   to a comma-separated value (csv) file
- * - mobility traces of the nodes are printed to 'manet-routing-compare.mob';
+ * - mobility traces of the nodes are printed to `manet-routing-compare.mob`;
  *   this trace can be disabled using a command-line argument
  * - some tracing and flow monitor configuration that used to work is
  *   left commented inline in the program
@@ -129,6 +132,13 @@ RoutingExperiment::RoutingExperiment()
 {
 }
 
+/**
+ * Summarize a received packet
+ * @param socket The receiving socket.
+ * @param packet The packet
+ * @param senderAddress Then sender
+ * @return a formatted string describing the reception
+ */
 static inline std::string
 PrintReceivedPacket(Ptr<Socket> socket, Ptr<Packet> packet, Address senderAddress)
 {

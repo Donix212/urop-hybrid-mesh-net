@@ -6,6 +6,12 @@
 // Author: Gustavo J. A. M. Carneiro  <gjc@inescporto.pt> <gjcarneiro@gmail.com>
 //
 
+/**
+ * @file
+ * @ingroup flow-monitor
+ * Class ns3::FlowMonitor implementation.
+ */
+
 #include "flow-monitor.h"
 
 #include "ns3/double.h"
@@ -15,14 +21,15 @@
 #include <fstream>
 #include <sstream>
 
-#define PERIODIC_CHECK_INTERVAL (Seconds(1))
-
 namespace ns3
 {
 
 NS_LOG_COMPONENT_DEFINE("FlowMonitor");
 
 NS_OBJECT_ENSURE_REGISTERED(FlowMonitor);
+
+/* static */
+const Time FlowMonitor::PERIODIC_CHECK_INTERVAL = Seconds(1);
 
 TypeId
 FlowMonitor::GetTypeId()
@@ -420,6 +427,14 @@ FlowMonitor::AddFlowClassifier(Ptr<FlowClassifier> classifier)
     m_classifiers.push_back(classifier);
 }
 
+/// FlowMonitor::SerializeToXmlStream helper to print FlowStats fields
+/// @param name The FlowStats field name
+#define ATTRIB(name) " " #name "=\"" << flowStats.name << "\""
+
+/// FlowMonitor::SerializeToXmlStream helper to print FlowStats Time fields
+/// @param name The FlowStats field name
+#define ATTRIB_TIME(name) " " #name "=\"" << flowStats.name.As(Time::NS) << "\""
+
 void
 FlowMonitor::SerializeToXmlStream(std::ostream& os,
                                   uint16_t indent,
@@ -436,8 +451,7 @@ FlowMonitor::SerializeToXmlStream(std::ostream& os,
     for (const auto& [flowId, flowStats] : m_flowStats)
     {
         os << std::string(indent, ' ');
-#define ATTRIB(name) " " #name "=\"" << flowStats.name << "\""
-#define ATTRIB_TIME(name) " " #name "=\"" << flowStats.name.As(Time::NS) << "\""
+
         os << "<Flow";
         os << " flowId=\"" << flowId << "\"";
         os << ATTRIB_TIME(timeFirstTxPacket);

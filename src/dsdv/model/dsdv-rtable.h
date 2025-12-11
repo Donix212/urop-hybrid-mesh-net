@@ -20,6 +20,13 @@
 #ifndef DSDV_RTABLE_H
 #define DSDV_RTABLE_H
 
+/**
+ * @file
+ * @ingroup dsdv
+ * Classes ns3::dsdv::RoutingTable, ns3::dsdv::RoutingTableEntry and ns3::dsdv::RouteFlags
+ * declarations
+ */
+
 #include "ns3/ipv4-route.h"
 #include "ns3/ipv4.h"
 #include "ns3/net-device.h"
@@ -34,10 +41,15 @@ namespace ns3
 {
 namespace dsdv
 {
+
+/**
+ * @ingroup dsdv
+ * Route flag values.
+ */
 enum RouteFlags
 {
-    VALID = 0,   // !< VALID
-    INVALID = 1, // !< INVALID
+    VALID = 0,   //!< VALID
+    INVALID = 1, //!< INVALID
 };
 
 /**
