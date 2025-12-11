@@ -3798,18 +3798,11 @@ ThreeGppChannelModel::UpdateChannelParameters(Ptr<ThreeGppChannelParams> channel
 
     // draw random signs from cluster angles +1,-1 and save them to reuse them for the channel
     // update
-    if (channelParams->m_clusterXnNlosSign.empty())
+    if (channelParams->m_losCondition == ChannelCondition::NLOS && channelParams->
+                                                                   m_clusterXnNlosSign.empty())
     {
-        if (channelCondition->GetLosCondition() == ChannelCondition::NLOS)
-        {
-            GenerateClusterXnNLos(channelParams->m_reducedClusterNumber,
-                                  &channelParams->m_clusterXnNlosSign);
-        }
-        else
-        {
-            channelParams->m_clusterXnNlosSign =
-                std::vector<int>(channelParams->m_reducedClusterNumber, 1);
-        }
+        GenerateClusterXnNLos(channelParams->m_reducedClusterNumber,
+                              &channelParams->m_clusterXnNlosSign);
     }
 
     // Update cluster departure and arrival angles
