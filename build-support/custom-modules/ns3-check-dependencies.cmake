@@ -38,7 +38,10 @@ function(check_deps missing_deps)
       set(LD_LIBRARY_PATH)
     endif()
     execute_process(
-      COMMAND ${Python3_EXECUTABLE} -c "import ${package}"
+      COMMAND
+        LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
+        DYLD_LIBRAY_PATH=$ENV{LD_LIBRARY_PATH} ${Python3_EXECUTABLE} -c
+        "import ${package}"
       RESULT_VARIABLE return_code
       OUTPUT_VARIABLE py_stdouterr
       ERROR_VARIABLE py_stdouterr
