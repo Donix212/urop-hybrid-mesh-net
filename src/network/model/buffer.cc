@@ -5,38 +5,24 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::Buffer implementation.
+ */
+
 #include "buffer.h"
 
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
-#define LOG_INTERNAL_STATE(y)                                                                      \
-    NS_LOG_LOGIC(y << "start=" << m_start << ", end=" << m_end                                     \
-                   << ", zero start=" << m_zeroAreaStart << ", zero end=" << m_zeroAreaEnd         \
-                   << ", count=" << m_data->m_count << ", size=" << m_data->m_size                 \
-                   << ", dirty start=" << m_data->m_dirtyStart                                     \
-                   << ", dirty end=" << m_data->m_dirtyEnd)
-
-namespace
-{
+#include <sstream>
 
 /**
- * @ingroup packet
- * @brief Zero-filled buffer.
+ * Log internal state at key points in the logic.
+ * @param msg The location message.
  */
-struct Zeroes
-{
-    Zeroes()
-        : size(1000)
-    {
-        memset(buffer, 0, size);
-    }
-
-    char buffer[1000];   //!< buffer containing zero values
-    const uint32_t size; //!< buffer size
-} g_zeroes;              //!< Zero-filled buffer
-
-} // namespace
+#define LOG_INTERNAL_STATE(msg) NS_LOG_LOGIC(msg << LogInternalState())
 
 namespace ns3
 {
@@ -44,30 +30,11 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("Buffer");
 
 uint32_t Buffer::g_recommendedStart = 0;
+
 #ifdef BUFFER_FREE_LIST
-/* The following macros are pretty evil but they are needed to allow us to
- * keep track of 3 possible states for the g_freeList variable:
- *  - uninitialized means that no one has created a buffer yet
- *    so no one has created the associated free list (it is created
- *    on-demand when the first buffer is created)
- *  - initialized means that the free list exists and is valid
- *  - destroyed means that the static destructors of this compilation unit
- *    have run so, the free list has been cleared from its content
- * The key is that in destroyed state, we are careful not re-create it
- * which is a typical weakness of lazy evaluation schemes which use
- * '0' as a special value to indicate both un-initialized and destroyed.
- * Note that it is important to use '0' as the marker for un-initialized state
- * because the variable holding this state information is initialized to zero
- * which the compiler assigns to zero-memory which is initialized to _zero_
- * before the constructors run so this ensures perfect handling of crazy
- * constructor orderings.
- */
-#define MAGIC_DESTROYED (~(long)0)
-#define IS_UNINITIALIZED(x) (x == (Buffer::FreeList*)0)
-#define IS_DESTROYED(x) (x == (Buffer::FreeList*)MAGIC_DESTROYED)
-#define IS_INITIALIZED(x) (!IS_UNINITIALIZED(x) && !IS_DESTROYED(x))
-#define DESTROYED ((Buffer::FreeList*)MAGIC_DESTROYED)
-#define UNINITIALIZED ((Buffer::FreeList*)0)
+
+const Buffer::FreeList* Buffer::DESTROYED =
+    reinterpret_cast<const Buffer::FreeList*>(Buffer::MAGIC_DESTROYED);
 uint32_t Buffer::g_maxSize = 0;
 Buffer::FreeList* Buffer::g_freeList = nullptr;
 Buffer::LocalStaticDestructor Buffer::g_localStaticDestructor;
@@ -75,14 +42,14 @@ Buffer::LocalStaticDestructor Buffer::g_localStaticDestructor;
 Buffer::LocalStaticDestructor::~LocalStaticDestructor()
 {
     NS_LOG_FUNCTION(this);
-    if (IS_INITIALIZED(g_freeList))
+    if (IsInitialized(g_freeList))
     {
         for (auto i = g_freeList->begin(); i != g_freeList->end(); i++)
         {
             Buffer::Deallocate(*i);
         }
         delete g_freeList;
-        g_freeList = DESTROYED;
+        g_freeList = const_cast<FreeList*>(DESTROYED);
     }
 }
 
@@ -91,16 +58,16 @@ Buffer::Recycle(Buffer::Data* data)
 {
     NS_LOG_FUNCTION(data);
     NS_ASSERT(data->m_count == 0);
-    NS_ASSERT(!IS_UNINITIALIZED(g_freeList));
+    NS_ASSERT(!IsUninitialized(g_freeList));
     g_maxSize = std::max(g_maxSize, data->m_size);
     /* feed into free list */
-    if (data->m_size < g_maxSize || IS_DESTROYED(g_freeList) || g_freeList->size() > 1000)
+    if (data->m_size < g_maxSize || IsDestroyed(g_freeList) || g_freeList->size() > FREE_LIST_SIZE)
     {
         Buffer::Deallocate(data);
     }
     else
     {
-        NS_ASSERT(IS_INITIALIZED(g_freeList));
+        NS_ASSERT(IsInitialized(g_freeList));
         g_freeList->push_back(data);
     }
 }
@@ -110,11 +77,11 @@ Buffer::Create(uint32_t dataSize)
 {
     NS_LOG_FUNCTION(dataSize);
     /* try to find a buffer correctly sized. */
-    if (IS_UNINITIALIZED(g_freeList))
+    if (IsUninitialized(g_freeList))
     {
         g_freeList = new Buffer::FreeList();
     }
-    else if (IS_INITIALIZED(g_freeList))
+    else if (IsInitialized(g_freeList))
     {
         while (!g_freeList->empty())
         {
@@ -231,6 +198,20 @@ Buffer::CheckInternalState() const
 #else
     return true;
 #endif
+}
+
+/**
+ * Internal state logger.
+ */
+std::string
+Buffer::LogInternalState() const
+{
+    std::stringstream state;
+    state << "start=" << m_start << ", end=" << m_end << ", zero start=" << m_zeroAreaStart
+          << ", zero end=" << m_zeroAreaEnd << ", count=" << m_data->m_count
+          << ", size=" << m_data->m_size << ", dirty start=" << m_data->m_dirtyStart
+          << ", dirty end=" << m_data->m_dirtyEnd;
+    return state.str();
 }
 
 void
@@ -713,8 +694,8 @@ Buffer::CopyData(std::ostream* os, uint32_t size) const
             uint32_t left = tmpsize;
             while (left > 0)
             {
-                uint32_t toWrite = std::min(left, g_zeroes.size);
-                os->write(g_zeroes.buffer, toWrite);
+                uint32_t toWrite = std::min(left, FREE_LIST_SIZE);
+                os->write(ZEROS.data(), toWrite);
                 left -= toWrite;
             }
             if (size > tmpsize)
@@ -744,8 +725,8 @@ Buffer::CopyData(uint8_t* buffer, uint32_t size) const
             uint32_t left = tmpsize;
             while (left > 0)
             {
-                uint32_t toWrite = std::min(left, g_zeroes.size);
-                memcpy(buffer, g_zeroes.buffer, toWrite);
+                uint32_t toWrite = std::min(left, FREE_LIST_SIZE);
+                memcpy(buffer, ZEROS.data(), toWrite);
                 left -= toWrite;
                 buffer += toWrite;
             }

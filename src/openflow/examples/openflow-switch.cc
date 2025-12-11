@@ -5,24 +5,28 @@
  * Author: Blake Hurd <naimorai@gmail.com>
  * Modified by: Josh Pelkey <joshpelkey@gmail.com>
  */
-
-// Network topology
-//
-//        n0     n1
-//        |      |
-//       ----------
-//       | Switch |
-//       ----------
-//        |      |
-//        n2     n3
-//
-//
-// - CBR/UDP flows from n0 to n1 and from n3 to n0
-// - DropTail queues
-// - Tracing of queues and packet receptions to file "openflow-switch.tr"
-// - If order of adding nodes and netdevices is kept:
-//      n0 = 00:00:00;00:00:01, n1 = 00:00:00:00:00:03, n3 = 00:00:00:00:00:07
-//      and port number corresponds to node number, so port 0 is connected to n0, for example.
+/**
+ * @file
+ * @ingroup openflow
+ *
+ * Network topology
+ *
+ *        n0     n1
+ *        |      |
+ *       ----------
+ *       | Switch |
+ *       ----------
+ *        |      |
+ *        n2     n3
+ *
+ *
+ * - CBR/UDP flows from n0 to n1 and from n3 to n0
+ * - DropTail queues
+ * - Tracing of queues and packet receptions to file "openflow-switch.tr"
+ * - If order of adding nodes and netdevices is kept:
+ *      n0 = 00:00:00;00:00:01, n1 = 00:00:00:00:00:03, n3 = 00:00:00:00:00:07
+ *      and port number corresponds to node number, so port 0 is connected to n0, for example.
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -39,59 +43,28 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("OpenFlowCsmaSwitchExample");
 
-bool verbose = false;
-bool use_drop = false;
-ns3::Time timeout;
-
-bool
-SetVerbose(const std::string& value)
-{
-    verbose = true;
-    return true;
-}
-
-bool
-SetDrop(const std::string& value)
-{
-    use_drop = true;
-    return true;
-}
-
-bool
-SetTimeout(const std::string& value)
-{
-    try
-    {
-        timeout = ns3::Seconds(std::stof(value));
-        return true;
-    }
-    catch (...)
-    {
-        return false;
-    }
-    return false;
-}
-
 int
 main(int argc, char* argv[])
 {
+    bool verbose = false;
+    bool use_drop = false;
+    Time timeout;
+
     //
     // Allow the user to override any of the defaults and the above Bind() at
     // run-time, via command-line arguments
     //
     CommandLine cmd(__FILE__);
-    cmd.AddValue("v", "Verbose (turns on logging).", MakeCallback(&SetVerbose));
-    cmd.AddValue("verbose", "Verbose (turns on logging).", MakeCallback(&SetVerbose));
-    cmd.AddValue("d", "Use Drop Controller (Learning if not specified).", MakeCallback(&SetDrop));
-    cmd.AddValue("drop",
-                 "Use Drop Controller (Learning if not specified).",
-                 MakeCallback(&SetDrop));
+    cmd.AddValue("v", "Verbose (turns on logging).", verbose);
+    cmd.AddValue("verbose", "Verbose (turns on logging).", verbose);
+    cmd.AddValue("d", "Use Drop Controller (Learning if not specified).", use_drop);
+    cmd.AddValue("drop", "Use Drop Controller (Learning if not specified).", use_drop);
     cmd.AddValue("t",
                  "Learning Controller Timeout (has no effect if drop controller is specified).",
-                 MakeCallback(&SetTimeout));
+                 timeout);
     cmd.AddValue("timeout",
                  "Learning Controller Timeout (has no effect if drop controller is specified).",
-                 MakeCallback(&SetTimeout));
+                 timeout);
 
     cmd.Parse(argc, argv);
 

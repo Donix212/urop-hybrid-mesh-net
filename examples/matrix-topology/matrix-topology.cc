@@ -18,6 +18,11 @@
  * Work supported in part by NSF FIND (Future Internet Design) Program
  * under grant CNS-0626918 (Postmodern Internet Architecture) and
  * by NSF grant CNS-1050226 (Multilayer Network Resilience Analysis and Experimentation on GENI)
+ */
+
+/**
+ * @file
+ * @ingroup examples
  *
  * This program reads an upper triangular adjacency matrix (e.g. adjacency_matrix.txt) and
  * node coordinates file (e.g. node_coordinates.txt). The program also set-ups a
@@ -48,9 +53,32 @@ using namespace ns3;
 
 // ---------- Prototypes ------------------------------------------------------
 
+/**
+ * Read a square matrix of booleans representing an adjaceny matrix from a file
+ * @param adj_mat_file_name The file
+ * @return The adjacency matrix
+ */
 std::vector<std::vector<bool>> readNxNMatrix(std::string adj_mat_file_name);
+
+/**
+ * Read 2D coordinates from a file
+ * @param node_coordinates_file_name The file
+ * @return A vector of 2D coordinates
+ */
 std::vector<std::vector<double>> readCoordinatesFile(std::string node_coordinates_file_name);
+
+/**
+ * Print a coordinate vector
+ * @param description Label for the table
+ * @param coord_array The coordinate table
+ */
 void printCoordinateArray(const char* description, std::vector<std::vector<double>> coord_array);
+
+/**
+ * Print an adjacency matrix
+ * @param description Label for the table
+ * @param array The adjacency matrix
+ */
 void printMatrix(const char* description, std::vector<std::vector<bool>> array);
 
 NS_LOG_COMPONENT_DEFINE("GenericTopologyCreation");

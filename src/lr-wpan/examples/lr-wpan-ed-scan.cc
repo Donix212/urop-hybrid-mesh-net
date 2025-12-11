@@ -5,16 +5,18 @@
  *
  * Author:  Alberto Gallegos Ramonet <alramonet@is.tokushima-u.ac.jp>
  */
-
-/*         [00:01]                 [00:02]                                 [00:03]
- *  PAN 5 Coordinator             End Device                           PAN 7 Coordinator
- *    N0 (dev0)   ----------------N1 (dev1) ------------------------------ N2 (dev2)
- *   Channel 12             ED Scan Channels 11-14                         Channel 14
- *
- *       |--------10 m----------------|----------30 m -----------------------|
- *
+/**
+ * @file
+ * @ingroup lr-wpan
  * This example demonstrate the usage of the MAC ED Scan primitive  as
  * described by IEEE 802.15.4-2011.
+ *
+ *            [00:01]                 [00:02]                                 [00:03]
+ *     PAN 5 Coordinator             End Device                           PAN 7 Coordinator
+ *       N0 (dev0)   ----------------N1 (dev1) ------------------------------ N2 (dev2)
+ *      Channel 12             ED Scan Channels 11-14                         Channel 14
+ *
+ *          |--------10 m----------------|----------30 m -----------------------|
  *
  * At the beginning of the simulation, PAN coordinators N0 (Channel 12) and N2 (Channel 14)
  * start transmitting beacon frames on their respective channels.  At the same time,
@@ -43,6 +45,10 @@
 using namespace ns3;
 using namespace ns3::lrwpan;
 
+/**
+ * Log successful ED scan
+ * @param params The scan parameters
+ */
 static void
 ScanConfirm(MlmeScanConfirmParams params)
 {

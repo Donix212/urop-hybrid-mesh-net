@@ -11,6 +11,12 @@
 #ifndef WIFI_MAC_HEADER_H
 #define WIFI_MAC_HEADER_H
 
+/**
+ * @file
+ * @ingroup wifi
+ * Class ns3::WifiMacHeader declaration.
+ */
+
 #include "ns3/header.h"
 #include "ns3/mac48-address.h"
 

@@ -3,6 +3,10 @@
  *
  * Author: John Abraham <john.abraham.in@gmail.com>
  */
+/**
+ * @file
+ * @ingroup netanim
+ */
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -16,24 +20,19 @@
 
 using namespace ns3;
 
-AnimationInterface* pAnim = nullptr;
+/** Shorthand for an RGB triple. */
+using Rgb = AnimationInterface::Rgb;
 
-/// RGB structure
-struct Rgb
-{
-    uint8_t r; ///< red
-    uint8_t g; ///< green
-    uint8_t b; ///< blue
-};
+/** Shorthand for the RGB primary colors. */
+const auto& colors = AnimationInterface::PrimaryColors;
 
-Rgb colors[] = {
-    {255, 0, 0}, // Red
-    {0, 255, 0}, // Blue
-    {0, 0, 255}, // Green
-};
-
+/**
+ * Update the display by labeling the links with the current time,
+ * relabeling Node2, changing the color for nodes 4-11
+ * @param pAnim The animation.
+ */
 void
-modify()
+modify(AnimationInterface* pAnim)
 {
     std::ostringstream oss;
     oss << "Update:" << Simulator::Now().GetSeconds();
@@ -70,7 +69,7 @@ modify()
     if (Simulator::Now().GetSeconds() < 10)
     { // This is important or the simulation
         // will run endlessly
-        Simulator::Schedule(Seconds(1), modify);
+        Simulator::Schedule(Seconds(1), modify, pAnim);
     }
 }
 
@@ -142,8 +141,8 @@ main(int argc, char* argv[])
     // Set the bounding box for animation
 
     // Create the animation object and configure for specified output
-    pAnim = new AnimationInterface(animFile);
-    Simulator::Schedule(Seconds(1), modify);
+    auto pAnim = new AnimationInterface(animFile);
+    Simulator::Schedule(Seconds(1), modify, pAnim);
 
     // Set up the actual simulation
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();

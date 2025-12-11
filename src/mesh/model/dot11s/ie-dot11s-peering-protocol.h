@@ -38,6 +38,16 @@ class IePeeringProtocol : public WifiInformationElement
   private:
     uint8_t m_protocol; ///< the protocol
 };
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] protocol The IePeeringProtocol object
+ * @returns The reference to the output stream.
+ */
+std::ostream& operator<<(std::ostream& os, const IePeeringProtocol& protocol);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

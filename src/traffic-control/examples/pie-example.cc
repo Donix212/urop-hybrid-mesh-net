@@ -9,7 +9,11 @@
  *
  */
 
-/** Network topology
+/**
+ * @file
+ * @ingroup traffic-control
+ *
+ * Network topology
  *
  *    10Mb/s, 2ms                            10Mb/s, 4ms
  * n0--------------|                    |---------------n4
@@ -32,17 +36,21 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("PieExample");
 
-uint32_t checkTimes;
-double avgQueueDiscSize;
+/** @{ */
+/** Start/stop time global variable. */
+const Time global_start_time{0};
+const Time global_stop_time = Seconds(7);
+const Time sink_start_time = global_start_time;
+const Time sink_stop_time = global_stop_time + Seconds(3);
+const Time client_start_time = global_start_time + Seconds(1.5);
+const Time client_stop_time = global_stop_time - Seconds(2.0);
 
-// The times
-double global_start_time;
-double global_stop_time;
-double sink_start_time;
-double sink_stop_time;
-double client_start_time;
-double client_stop_time;
+/** @} */
 
+/**
+ * Node and interface container
+ * @{
+ */
 NodeContainer n0n2;
 NodeContainer n1n2;
 NodeContainer n2n3;
@@ -55,12 +63,28 @@ Ipv4InterfaceContainer i2i3;
 Ipv4InterfaceContainer i3i4;
 Ipv4InterfaceContainer i3i5;
 
+/** @} */
+
+/**
+ * Plot file output stream
+ * @{
+ */
 std::stringstream filePlotQueueDisc;
 std::stringstream filePlotQueueDiscAvg;
 
+/** @} */
+
+/**
+ * Periodically log the instantaneous and average queue size
+ * @param queue The queue
+ * @todo Keep the output files open, instead of re-opening every iteration
+ */
 void
 CheckQueueDiscSize(Ptr<QueueDisc> queue)
 {
+    static uint32_t checkTimes{};
+    static double avgQueueDiscSize{};
+
     uint32_t qSize = queue->GetCurrentSize().GetValue();
 
     avgQueueDiscSize += qSize;
@@ -79,6 +103,7 @@ CheckQueueDiscSize(Ptr<QueueDisc> queue)
     fPlotQueueDiscAvg.close();
 }
 
+/** Instantiate all the applications */
 void
 BuildAppsTest()
 {
@@ -87,8 +112,8 @@ BuildAppsTest()
     Address sinkLocalAddress(InetSocketAddress(Ipv4Address::GetAny(), port));
     PacketSinkHelper sinkHelper("ns3::TcpSocketFactory", sinkLocalAddress);
     ApplicationContainer sinkApp = sinkHelper.Install(n3n4.Get(1));
-    sinkApp.Start(Seconds(sink_start_time));
-    sinkApp.Stop(Seconds(sink_stop_time));
+    sinkApp.Start(sink_start_time);
+    sinkApp.Stop(sink_stop_time);
 
     // Connection one
     // Clients are in left side
@@ -113,14 +138,14 @@ BuildAppsTest()
     AddressValue remoteAddress(InetSocketAddress(i3i4.GetAddress(1), port));
     clientHelper1.SetAttribute("Remote", remoteAddress);
     clientApps1.Add(clientHelper1.Install(n0n2.Get(0)));
-    clientApps1.Start(Seconds(client_start_time));
-    clientApps1.Stop(Seconds(client_stop_time));
+    clientApps1.Start(client_start_time);
+    clientApps1.Stop(client_stop_time);
 
     ApplicationContainer clientApps2;
     clientHelper2.SetAttribute("Remote", remoteAddress);
     clientApps2.Add(clientHelper2.Install(n1n2.Get(0)));
-    clientApps2.Start(Seconds(client_start_time));
-    clientApps2.Stop(Seconds(client_stop_time));
+    clientApps2.Start(client_start_time);
+    clientApps2.Stop(client_stop_time);
 }
 
 int
@@ -138,13 +163,6 @@ main(int argc, char* argv[])
 
     bool printPieStats = true;
 
-    global_start_time = 0.0;
-    sink_start_time = global_start_time;
-    client_start_time = global_start_time + 1.5;
-    global_stop_time = 7.0;
-    sink_stop_time = global_stop_time + 3.0;
-    client_stop_time = global_stop_time - 2.0;
-
     // Configuration and command line parameter parsing
     // Will only save in the directory if enable opts below
     pathOut = "."; // Current directory
@@ -152,11 +170,9 @@ main(int argc, char* argv[])
     cmd.AddValue("pathOut",
                  "Path to save results from --writeForPlot/--writePcap/--writeFlowMonitor",
                  pathOut);
-    cmd.AddValue("writeForPlot", "<0/1> to write results for plot (gnuplot)", writeForPlot);
-    cmd.AddValue("writePcap", "<0/1> to write results in pcapfile", writePcap);
-    cmd.AddValue("writeFlowMonitor",
-                 "<0/1> to enable Flow Monitor and write their results",
-                 flowMonitor);
+    cmd.AddValue("writeForPlot", "Write results for plot (gnuplot)", writeForPlot);
+    cmd.AddValue("writePcap", "Write results in pcapfile", writePcap);
+    cmd.AddValue("writeFlowMonitor", "Enable Flow Monitor and write their results", flowMonitor);
 
     cmd.Parse(argc, argv);
 
@@ -293,7 +309,7 @@ main(int argc, char* argv[])
         Simulator::ScheduleNow(&CheckQueueDiscSize, queue);
     }
 
-    Simulator::Stop(Seconds(sink_stop_time));
+    Simulator::Stop(sink_stop_time);
     Simulator::Run();
 
     QueueDisc::Stats st = queueDiscs.Get(0)->GetStats();

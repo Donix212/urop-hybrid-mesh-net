@@ -7,6 +7,10 @@
  * Authors: Ken Renard <kenneth.d.renard.ctr@mail.mil>
  *
  */
+/**
+ * @file
+ * @ingroup internet-test
+ */
 
 #include "ns3/arp-l3-protocol.h"
 #include "ns3/config.h"
@@ -102,6 +106,10 @@ class DualStackTestCase : public TestCase
     Address receivedAddr4; //!< Received address (4).
 };
 
+/**
+ * Create the test scenario
+ * @return The configured Node
+ */
 Ptr<Node>
 CreateDualStackNode()
 {
@@ -158,6 +166,15 @@ CreateDualStackNode()
     return node;
 }
 
+/**
+ * Configure a SimpleNetDevice
+ * @param node The node to host the device
+ * @param v4Addr The IPv4 address.
+ * @param v4Mask The IPv4 mask.
+ * @param v6Addr The IPv6 address.
+ * @param v6Prefix The IPv6 prefix.
+ * @return The configured device
+ */
 Ptr<SimpleNetDevice>
 AddSimpleNetDevice(Ptr<Node> node,
                    Ipv4Address v4Addr,

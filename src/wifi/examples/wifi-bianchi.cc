@@ -7,13 +7,21 @@
  *
  * Updated by Tom Henderson, Rohan Patidar, Hao Yin and Sébastien Deronne
  */
-
-// This program conducts a Bianchi analysis of a wifi network.
-// Bianchi analysis involves saturating the network and observing how
-// the maximum achievable throughput is governed by the DCF or ECDA
-// channel access mechanisms.  This program offers many configurable
-// options, traces, and a validation option; the main output is a Gnuplot
-// plot file plotting throughput vs. number of nodes.
+/**
+ * @file
+ * @ingroup wifi
+ *
+ * Example comparing ns-3 to the Bianchi model.
+ *
+ * This program conducts a Bianchi analysis of a wifi network.
+ * Bianchi analysis involves saturating the network and observing how
+ * the maximum achievable throughput is governed by the DCF or ECDA
+ * channel access mechanisms.  This program offers many configurable
+ * options, traces, and a validation option; the main output is a Gnuplot
+ * plot file plotting throughput vs. number of nodes.
+ *
+ * See the Wi-Fi Module documentation in the Models chapter.
+ */
 
 #include "ns3/ampdu-subframe-header.h"
 #include "ns3/application-container.h"
@@ -45,17 +53,11 @@
 
 #include <fstream>
 #include <iomanip>
+#include <numbers>
 #include <vector>
 
-/**
- * @file
- * Example comparing ns-3 to the Bianchi model.
- *
- * See the Wi-Fi Module documentation in the Models chapter.
- */
-
-/// Avoid std::numbers::pi because it's C++20
-#define PI 3.1415926535
+/** Shorthand for PI */
+constexpr double PI{std::numbers::pi};
 
 NS_LOG_COMPONENT_DEFINE("WifiBianchi");
 

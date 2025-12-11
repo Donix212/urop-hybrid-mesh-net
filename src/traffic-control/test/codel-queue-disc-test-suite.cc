@@ -19,12 +19,20 @@
 
 using namespace ns3;
 
-// The following code borrowed from Linux codel.h, for unit testing
-#define REC_INV_SQRT_BITS_ns3 (8 * sizeof(uint16_t))
-/* or sizeof_in_bits(rec_inv_sqrt) */
-/* needed shift to get a Q0.32 number from rec_inv_sqrt */
-#define REC_INV_SQRT_SHIFT_ns3 (32 - REC_INV_SQRT_BITS_ns3)
+/** Borrowed from Linux codel.h, for unit testing @{ */
+/** `sizeof_in_bits(rec_inv_sqrt)` */
+constexpr std::size_t REC_INV_SQRT_BITS_ns3{8 * sizeof(uint16_t)};
+/** Shift to get a Q0.32 number from rec_inv_sqrt */
+constexpr std::size_t REC_INV_SQRT_SHIFT_ns3{32 - REC_INV_SQRT_BITS_ns3};
 
+/** @} */
+
+/**
+ * Compute Linux value for the Newton step
+ * @param rec_inv_sqrt Sample point in estimating the reciprocal square root of @c count
+ * @param count Sample number of packets dropped since entering drop state
+ * @return The value
+ */
 static uint16_t
 _codel_Newton_step(uint16_t rec_inv_sqrt, uint32_t count)
 {
@@ -37,6 +45,12 @@ _codel_Newton_step(uint16_t rec_inv_sqrt, uint32_t count)
     return static_cast<uint16_t>(val >> REC_INV_SQRT_SHIFT_ns3);
 }
 
+/**
+ * Scale a value, borrowed from Linux codel.h,
+ * @param val The value
+ * @param ep_ro The multiplier
+ * @return The scaled value
+ */
 static uint32_t
 _reciprocal_scale(uint32_t val, uint32_t ep_ro)
 {
@@ -1314,7 +1328,7 @@ CoDelQueueDiscBasicMark::Dequeue(Ptr<CoDelQueueDisc> queue, uint32_t modeSize, u
  *
  * @brief CoDel Queue Disc Test Suite
  */
-static class CoDelQueueDiscTestSuite : public TestSuite
+class CoDelQueueDiscTestSuite : public TestSuite
 {
   public:
     CoDelQueueDiscTestSuite()
@@ -1341,4 +1355,7 @@ static class CoDelQueueDiscTestSuite : public TestSuite
         AddTestCase(new CoDelQueueDiscBasicMark(QueueSizeUnit::PACKETS), TestCase::Duration::QUICK);
         AddTestCase(new CoDelQueueDiscBasicMark(QueueSizeUnit::BYTES), TestCase::Duration::QUICK);
     }
-} g_coDelQueueTestSuite; ///< the test suite
+};
+
+/** Test suite instance variable. */
+CoDelQueueDiscTestSuite g_coDelQueueTestSuite;

@@ -70,6 +70,19 @@ class DynamicQueueLimits : public QueueLimits
 
   private:
     /**
+     * Set some static maximums
+     * @{
+     */
+    /** Shorthand max value */
+    static constexpr uint32_t DQL_MAX_SLACK{std::numeric_limits<uint32_t>::max()};
+    /** Maximum number of objects which can be enqueued at once. */
+    static constexpr uint32_t DQL_MAX_OBJECT = DQL_MAX_SLACK / 16;
+    /** Default value for Maxlimit attribute */
+    static constexpr uint32_t DQL_MAX_LIMIT = (DQL_MAX_SLACK / 2) - DQL_MAX_OBJECT;
+
+    /** @} */
+
+    /**
      * Calculates the difference between the two operators and
      * returns the number if positive, zero otherwise.
      * @param a First operator.
@@ -91,8 +104,8 @@ class DynamicQueueLimits : public QueueLimits
     uint32_t m_prevNumQueued{0};  //!< Previous queue total
     uint32_t m_prevLastObjCnt{0}; //!< Previous queuing cnt
 
-    uint32_t m_lowestSlack{std::numeric_limits<uint32_t>::max()}; //!< Lowest slack found
-    Time m_slackStartTime{Seconds(0)};                            //!< Time slacks seen
+    uint32_t m_lowestSlack{DQL_MAX_SLACK}; //!< Lowest slack found
+    Time m_slackStartTime{};               //!< Time slacks seen
 
     // Configuration
     uint32_t m_maxLimit;  //!< Max limit

@@ -20,6 +20,12 @@
 #ifndef DSR_OPTION_HEADER_H
 #define DSR_OPTION_HEADER_H
 
+/**
+ * @file
+ * @ingroup dsr
+ * Declaration of the various DSR Option Header classes.
+ */
+
 #include "ns3/header.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/simulator.h"

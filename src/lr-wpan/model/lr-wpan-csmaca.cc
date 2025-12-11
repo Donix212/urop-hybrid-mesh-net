@@ -9,6 +9,12 @@
  *  Alberto Gallegos Ramonet <ramonet@fc.ritsumei.ac.jp>
  */
 
+/**
+ * @file
+ * @ingroup lr-wpan
+ * Class ns3::lrwpan::LrWpanCsmaCa implementation.
+ */
+
 #include "lr-wpan-csmaca.h"
 
 #include "lr-wpan-constants.h"
@@ -20,6 +26,7 @@
 #include <algorithm>
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     std::clog << "[" << m_mac->GetShortAddress() << " | " << m_mac->GetExtendedAddress() << "] ";
 

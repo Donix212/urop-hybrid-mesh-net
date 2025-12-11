@@ -5,6 +5,11 @@
  *
  * Author: Tommaso Pecorella <tommaso.pecorella@unifi.it>
  */
+/**
+ * @file
+ * @ingroup rip
+ * Class ns3::RipRoutingTableEntry and ns3::Rip implementations.
+ */
 
 #include "rip.h"
 
@@ -24,9 +29,6 @@
 #include "ns3/uinteger.h"
 
 #include <iomanip>
-
-#define RIP_ALL_NODE "224.0.0.9"
-#define RIP_PORT 520
 
 namespace ns3
 {

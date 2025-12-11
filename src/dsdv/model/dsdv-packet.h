@@ -20,6 +20,12 @@
 #ifndef DSDV_PACKET_H
 #define DSDV_PACKET_H
 
+/**
+ * @file
+ * @ingroup dsdv
+ * Class ns3::dsdv::DsdvHeader declaration
+ */
+
 #include "ns3/header.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/nstime.h"
@@ -129,6 +135,13 @@ class DsdvHeader : public Header
     uint32_t m_dstSeqNo; ///< Destination Sequence Number
 };
 
+/**
+ * @brief Stream insertion operator for DsdvHeader
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] packet The DsdvHeader object
+ * @returns The reference to the output stream.
+ */
 static inline std::ostream&
 operator<<(std::ostream& os, const DsdvHeader& packet)
 {

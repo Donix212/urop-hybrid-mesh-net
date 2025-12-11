@@ -5,6 +5,10 @@
  *
  * Author: Nicola Baldo <nbaldo@cttc.es>
  */
+/**
+ * @file
+ * @ingroup spectrum
+ */
 
 #include "ns3/log.h"
 #include "ns3/object.h"
@@ -20,7 +24,8 @@ using namespace ns3;
 
 // NS_LOG_COMPONENT_DEFINE ("SpectrumValueTest");
 
-#define TOLERANCE 1e-6
+/** Tolerance for comparing double values. */
+constexpr double TOLERANCE{1e-6};
 
 /**
  * @ingroup spectrum-tests

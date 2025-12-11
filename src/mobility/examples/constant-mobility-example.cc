@@ -6,20 +6,23 @@
  * Author: Alberto Gallegos Ramonet <alramonet@is.tokushima-u.ac.jp>
  */
 
-/*
-   This example shows a comparison between node mobility set with and without the
-   use of helpers. Furthermore it shows a simple way to update the node positions.
-   More advanced position allocations and mobility patterns can be achieve with
-   the use of other helpers.
-
-   In this example, node N1 moves to the right in 3 different instances
-   during the simulation while node N0 remains static. A trace is used to print a
-   message when movement is detected in node N1.
-
-               10 m         {Sec 2}      10m         {Sec 4}      10 m      {Sec 6}
-   N0,N1 --------------------->N1--------------------> N1 ------------------> N1
-  (0,0,0)     Move Right    (10,0,0)   Move Right   (20,0,0)   Move Right   (30,0,0)
-*/
+/**
+ * @file
+ * @ingroup mobility
+ *
+ * This example shows a comparison between node mobility set with and without the
+ * use of helpers. Furthermore it shows a simple way to update the node positions.
+ * More advanced position allocations and mobility patterns can be achieve with
+ * the use of other helpers.
+ *
+ * In this example, node N1 moves to the right in 3 different instances
+ * during the simulation while node N0 remains static. A trace is used to print a
+ * message when movement is detected in node N1.
+ *
+ *                 10 m         {Sec 2}      10m         {Sec 4}      10 m      {Sec 6}
+ *     N0,N1 --------------------->N1--------------------> N1 ------------------> N1
+ *    (0,0,0)     Move Right    (10,0,0)   Move Right   (20,0,0)   Move Right   (30,0,0)
+ */
 
 #include "ns3/mobility-module.h"
 #include "ns3/node.h"
@@ -27,6 +30,10 @@
 
 using namespace ns3;
 
+/**
+ * Log a course change
+ * @param mobility The Mobility model
+ */
 void
 CourseChangeCallback(Ptr<const MobilityModel> mobility)
 {
@@ -34,6 +41,11 @@ CourseChangeCallback(Ptr<const MobilityModel> mobility)
               << mobility->GetObject<Node>()->GetId() << ")!\n";
 }
 
+/**
+ * Reposition a node
+ * @param node The Node
+ * @param pos The new position
+ */
 void
 MoveNode(Ptr<Node> node, const Vector& pos)
 {

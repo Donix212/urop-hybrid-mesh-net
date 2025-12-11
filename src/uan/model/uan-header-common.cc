@@ -5,15 +5,15 @@
  *
  * Author: Leonard Tracy <lentracy@gmail.com>
  */
+/**
+ * @file
+ * @ingroup uan
+ * Class ns3::UanHeaderCommon implementation.
+ */
 
 #include "uan-header-common.h"
 
 #include "ns3/mac8-address.h"
-
-static const uint16_t ARP_PROT_NUMBER = 0x0806;
-static const uint16_t IPV4_PROT_NUMBER = 0x0800;
-static const uint16_t IPV6_PROT_NUMBER = 0x86DD;
-static const uint16_t SIXLOWPAN_PROT_NUMBER = 0xA0ED;
 
 namespace ns3
 {

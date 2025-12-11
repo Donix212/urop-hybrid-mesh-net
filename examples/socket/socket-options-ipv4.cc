@@ -1,15 +1,19 @@
 /*
  * SPDX-License-Identifier: GPL-2.0-only
  */
-
-// Network topology
-//
-//       n0              n1
-//       |               |
-//       =================
-//              LAN
-//
-// - UDP flows from n0 to n1
+/**
+ * @file
+ * @ingroup socket
+ *
+ * Network topology
+ *
+ *     n0              n1
+ *     |               |
+ *     =================
+ *           LAN
+ *
+ * - UDP flows from n0 to n1
+ */
 
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
@@ -22,6 +26,10 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("SocketOptionsIpv4");
 
+/**
+ * Receive a packet from a socket. Log the TOS and TTL tags, if present.
+ * @param socket The socket
+ */
 void
 ReceivePacket(Ptr<Socket> socket)
 {
@@ -39,6 +47,13 @@ ReceivePacket(Ptr<Socket> socket)
     }
 }
 
+/**
+ * Send @c pktCount packets on a socket, then close the socket.
+ * @param socket The socket
+ * @param pktSize The size of packet to send
+ * @param pktCount The number of packets remaining to send
+ * @param pktInterval The time between sends
+ */
 static void
 SendPacket(Ptr<Socket> socket, uint32_t pktSize, uint32_t pktCount, Time pktInterval)
 {

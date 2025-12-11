@@ -18,6 +18,12 @@
  * NSF grant CNS-1050226 (Multilayer Network Resilience Analysis and Experimentation on GENI),
  * US Department of Defense (DoD), and ITTC at The University of Kansas.
  */
+/**
+ * @file
+ * @ingroup dsr
+ * Classes ns3::dsr::DsrLinkStab, ns3::dsr::DsrNodeStab, ns3::dsr::DsrRouteCacheEntry, and
+ * ns3::dsr::DsrRouteCache implementations.
+ */
 
 #include "dsr-rcache.h"
 
@@ -120,8 +126,6 @@ DsrLinkStab::Print() const
 {
     NS_LOG_LOGIC("LifeTime: " << GetLinkStability().As(Time::S));
 }
-
-typedef std::list<DsrRouteCacheEntry>::value_type route_pair;
 
 DsrRouteCacheEntry::DsrRouteCacheEntry(IP_VECTOR const& ip, Ipv4Address dst, Time exp)
     : m_ackTimer(Timer::CANCEL_ON_DESTROY),

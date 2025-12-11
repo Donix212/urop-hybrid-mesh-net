@@ -15,6 +15,7 @@
 /// implemented here.
 ///
 
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     if (GetObject<Node>())                                                                         \
     {                                                                                              \

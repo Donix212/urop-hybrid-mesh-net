@@ -13,6 +13,11 @@
  *                    Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  *
  */
+/**
+ * @file
+ * @ingroup traffic-control
+ * Class ns3::CobaltQueueDisc declaration.
+ */
 
 #ifndef COBALT_H
 #define COBALT_H
@@ -30,9 +35,6 @@
 
 namespace ns3
 {
-
-#define REC_INV_SQRT_CACHE (16)
-#define DEFAULT_COBALT_LIMIT 1000
 
 class TraceContainer;
 
@@ -54,6 +56,12 @@ class CobaltQueueDisc : public QueueDisc
      * @return the object TypeId
      */
     static TypeId GetTypeId();
+
+    /** Size of reciprocal inverse square root cache. */
+    static constexpr uint32_t REC_INV_SQRT_CACHE{16};
+
+    /** Default queue size limit, in packets. */
+    static constexpr uint32_t DEFAULT_COBALT_LIMIT{1000};
 
     /**
      * @brief CobaltQueueDisc Constructor
@@ -245,6 +253,25 @@ class CobaltQueueDisc : public QueueDisc
     double m_decrement; //!< decrement value for marking probability
     double m_pDrop;     //!< Drop Probability
 };
+
+/**
+ * @ingroup traffic-control
+ * @{
+ */
+
+// clang-format off
+/** @copydoc CobaltQueueDisc::REC_INV_SQRT_CACHE */
+constexpr uint32_t REC_INV_SQRT_CACHE
+     NS_DEPRECATED_3_47("Use CobaltQueueDisc::REC_INV_SQRT_CACHE") =
+     CobaltQueueDisc::REC_INV_SQRT_CACHE;
+
+/** @copydoc CobaltQueueDisc::DEFAULT_COBALT_LIMIT */
+constexpr uint32_t DEFAULT_COBALT_LIMIT
+     NS_DEPRECATED_3_47("Use CobaltQueueDisc::DEFAULT_COBALT_LIMIT") =
+     CobaltQueueDisc::DEFAULT_COBALT_LIMIT;
+// clang-format on
+
+/** @} */
 
 } // namespace ns3
 

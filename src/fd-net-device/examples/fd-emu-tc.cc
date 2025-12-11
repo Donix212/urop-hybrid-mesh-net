@@ -5,23 +5,25 @@
  *
  * Author: Pasquale Imputato <p.imputato@gmail.com>
  */
-
-/*
- *                                          node
- *                     --------------------------------------------------
- *                     |                                                |
- *                     |        pfifo_fast    queueDiscType [pfifo_fast]|
- *                     |                      bql [false]               |
- *                     |        interface 0   interface 1               |
- *                     |             |             |                    |
- *                     --------------------------------------------------
- *                                   |             |
- *   1 Gbps access incoming link     |             |           100 Mbps bottleneck outgoing link
- * -----------------------------------             -----------------------------------
+/**
+ * @file
+ * @ingroup fd-net-device
  *
  * This example builds a node with two interfaces in emulation mode in
  * either {raw, netmap}. The aim is to explore different qdiscs behaviours
  * on the backlog of a device emulated bottleneck side.
+ *
+ *                                              node
+ *                         --------------------------------------------------
+ *                         |                                                |
+ *                         |        pfifo_fast    queueDiscType [pfifo_fast]|
+ *                         |                      bql [false]               |
+ *                         |        interface 0   interface 1               |
+ *                         |             |             |                    |
+ *                         --------------------------------------------------
+ *                                       |             |
+ *       1 Gbps access incoming link     |             |           100 Mbps bottleneck outgoing link
+ *     -----------------------------------             -----------------------------------
  *
  * If you run emulation in netmap mode, you need before to load the
  * netmap.ko module.  The user is responsible for configuring and building
@@ -41,6 +43,11 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("TrafficControlEmu");
 
+/**
+ * Log the queue backlog and total drops to a stream
+ * @param q The packet queue
+ * @param stream The output stream to write to
+ */
 void
 TcPacketsInQueue(Ptr<QueueDisc> q, Ptr<OutputStreamWrapper> stream)
 {
@@ -52,6 +59,11 @@ TcPacketsInQueue(Ptr<QueueDisc> q, Ptr<OutputStreamWrapper> stream)
 }
 
 #ifdef HAVE_NETMAP_USER_H
+/**
+ * Log bytes in transmit ring (bytes in flight) to a stream
+ * @param dev The device
+ * @param stream The output stream to write to
+ */
 void
 Inflight(Ptr<NetmapNetDevice> dev, Ptr<OutputStreamWrapper> stream)
 {

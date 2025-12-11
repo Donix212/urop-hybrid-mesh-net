@@ -9,12 +9,20 @@
 #ifndef WIFI_EMLSR_LINK_SWITCH_TEST_H
 #define WIFI_EMLSR_LINK_SWITCH_TEST_H
 
+/**
+ * @file
+ * @ingroup wifi-test
+ */
+
 #include "wifi-emlsr-test-base.h"
 
 #include <list>
 
 using namespace ns3;
+/** @cond */ // Doxygen mysteriously doesn't know about this
 using namespace std::string_literals;
+
+/** @endcond */
 
 // forward declaration
 namespace ns3

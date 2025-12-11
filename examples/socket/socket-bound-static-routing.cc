@@ -2,21 +2,24 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
-
-/* Test program for multi-interface host, static routing
-
-         Destination host (10.20.1.2)
-                 |
-                 | 10.20.1.0/24
-              DSTRTR
-  10.10.1.0/24 /   \  10.10.2.0/24
-              / \
-           Rtr1    Rtr2
- 10.1.1.0/24 |      | 10.1.2.0/24
-             |      /
-              \    /
-             Source
-*/
+/**
+ * @file
+ * @ingroup ipv4Routing
+ *
+ * Test program for multi-interface host, static routing
+ *
+ *             Destination host (10.20.1.2)
+ *                     |
+ *                     | 10.20.1.0/24
+ *                  DSTRTR
+ *      10.10.1.0/24 /   \  10.10.2.0/24
+ *                  /     \
+ *               Rtr1    Rtr2
+ *     10.1.1.0/24 |       | 10.1.2.0/24
+ *                  \     /
+ *                   \   /
+ *                  Source
+ */
 
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
@@ -34,9 +37,31 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("SocketBoundRoutingExample");
 
-void SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
-void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
+/**
+ * Send a packet on a @c sock to @c port at @c dstaddr
+ * @param socket The socket to send from
+ * @param dstaddr The destination address
+ * @param port The destination port
+ */
+void SendStuff(Ptr<Socket> socket, Ipv4Address dstaddr, uint16_t port);
+
+/**
+ * Bind the Socket to the NetDevice
+ * @param socket The socket
+ * @param netdev The NetDevice
+ */
+void BindSock(Ptr<Socket> socket, Ptr<NetDevice> netdev);
+
+/**
+ * Receive and log a packet from the socket
+ * @param socket The socket
+ */
 void srcSocketRecv(Ptr<Socket> socket);
+
+/**
+ * Receive and log a packet from the socket. The packet is sent back to the source.
+ * @param socket The socket
+ */
 void dstSocketRecv(Ptr<Socket> socket);
 
 int
@@ -162,17 +187,17 @@ main(int argc, char* argv[])
 }
 
 void
-SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port)
+SendStuff(Ptr<Socket> socket, Ipv4Address dstaddr, uint16_t port)
 {
     Ptr<Packet> p = Create<Packet>();
     p->AddPaddingAtEnd(100);
-    sock->SendTo(p, 0, InetSocketAddress(dstaddr, port));
+    socket->SendTo(p, 0, InetSocketAddress(dstaddr, port));
 }
 
 void
-BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev)
+BindSock(Ptr<Socket> socket, Ptr<NetDevice> netdev)
 {
-    sock->BindToNetDevice(netdev);
+    socket->BindToNetDevice(netdev);
 }
 
 void

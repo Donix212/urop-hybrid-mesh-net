@@ -15,10 +15,20 @@
 #ifndef LR_WPAN_CONSTANTS_H
 #define LR_WPAN_CONSTANTS_H
 
+/**
+ * @file
+ * @ingroup lr-wpan
+ * LR-WPAN constants
+ */
+
 #include <cstdint>
 
 namespace ns3
 {
+/**
+ * @ingroup lr-wpan
+ * LR-WPAN namespace
+ */
 namespace lrwpan
 {
 

@@ -4,13 +4,15 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  *
- */
-
-/* BurstErrorModel additions
- *
  * Author: Truc Anh N. Nguyen   <annguyen@ittc.ku.edu>
  *         ResiliNets Research Group   https://resilinets.org/
  *         James P.G. Sterbenz <jpgs@ittc.ku.edu>, director
+ */
+
+/**
+ * @file
+ * @ingroup network-test
+ * BurstErrorModel additions
  */
 
 #include "ns3/address.h"
@@ -31,6 +33,12 @@
 
 using namespace ns3;
 
+/**
+ * Send @c num packets on @c device to @c addr
+ * @param num The number of packets to send
+ * @param device The device to send on
+ * @param addr The Address to send to
+ */
 static void
 SendPacket(int num, Ptr<NetDevice> device, Address& addr)
 {
@@ -41,7 +49,17 @@ SendPacket(int num, Ptr<NetDevice> device, Address& addr)
     }
 }
 
-// Two nodes, two devices, one channel
+/**
+ * Two nodes, two devices, one channel
+ * This configures each node @c a and @c b with a DropTailQueue,
+ * adds the @c input device to @c a, the @c output device to @c b,
+ * and connects them via the @c channel.
+ * @param a The @c input Node
+ * @param b The @c output Node
+ * @param input The Node @c a device
+ * @param output The Node @c b device
+ * @param channel The channel to connect the devices
+ */
 static void
 BuildSimpleTopology(Ptr<Node> a,
                     Ptr<Node> b,

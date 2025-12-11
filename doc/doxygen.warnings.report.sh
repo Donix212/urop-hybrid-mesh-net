@@ -386,7 +386,7 @@ else
 
     # doxygen.warnings.report.sh:
     EXTRACT_ALL = no
-    WARNINGS = no
+    WARNINGS = yes
     WARN_LOGFILE = $WARNINGSLOGFILE
     SOURCE_BROWSER = no
     HTML_OUTPUT = html-warn

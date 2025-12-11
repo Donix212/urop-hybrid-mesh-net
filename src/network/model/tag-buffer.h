@@ -5,18 +5,27 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
+
 #ifndef TAG_BUFFER_H
 #define TAG_BUFFER_H
 
+/**
+ * @file
+ * @ingroup packet
+ * Class ns3::TagBuffer declaration.
+ */
+
 #include <stdint.h>
 
+/** Enable inlining of key functions. @{ */
 #define TAG_BUFFER_USE_INLINE 1
-
 #ifdef TAG_BUFFER_USE_INLINE
 #define TAG_BUFFER_INLINE inline
 #else
 #define TAG_BUFFER_INLINE
 #endif
+
+/** @} */
 
 namespace ns3
 {

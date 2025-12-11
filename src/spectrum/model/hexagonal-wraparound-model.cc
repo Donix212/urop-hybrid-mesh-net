@@ -11,7 +11,8 @@
 
 #include <algorithm>
 
-constexpr double M_SQRT3 = 1.732050807568877; // sqrt(3)
+/** Shorthand for @f$ \sqrt{3} @f$ */
+constexpr double M_SQRT3 = 1.732050807568877;
 
 namespace ns3
 {

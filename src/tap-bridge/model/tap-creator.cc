@@ -3,7 +3,13 @@
  *
  * SPDX-License-Identifier: GPL-2.0-only
  */
+/**
+ * @file
+ * @ingroup tap-bridge
+ * Example handler for a tap.
+ */
 
+#include "tap-bridge.h"
 #include "tap-encode-decode.h"
 
 #include "ns3/mac48-address.h"
@@ -27,16 +33,29 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define TAP_MAGIC 95549
-
+/**
+ * Implementation-defined logging control
+ * @todo Reference the symbols in src/fd-net-device/helper/creator-utils.
+ */
 static bool gVerbose = false; // Set to true to turn on logging messages.
 
+/**
+ * Implementation-defined logging.
+ * @param msg The message to log
+ * @todo Reference the symbols in src/fd-net-device/helper/creator-utils.
+ */
 #define LOG(msg)                                                                                   \
     if (gVerbose)                                                                                  \
     {                                                                                              \
         std::cout << __FUNCTION__ << "(): " << msg << std::endl;                                   \
     }
 
+/**
+ * Implementation-defined abort.
+ * @param msg The message to log
+ * @param printErrno Print the @c errno if @c true
+ * @todo Reference the symbols in src/fd-net-device/helper/creator-utils.
+ */
 #define ABORT(msg, printErrno)                                                                     \
     std::cout << __FILE__ << ": fatal error at line " << __LINE__ << ": " << __FUNCTION__          \
               << "(): " << msg << std::endl;                                                       \
@@ -46,12 +65,24 @@ static bool gVerbose = false; // Set to true to turn on logging messages.
     }                                                                                              \
     std::exit(-1);
 
+/**
+ * Implementation-defined conditional abort.
+ * @param cond The condition to test
+ * @param msg The message to log
+ * @param printErrno Print the @c errno if @c true
+ * @todo Reference the symbols in src/fd-net-device/helper/creator-utils.
+ */
 #define ABORT_IF(cond, msg, printErrno)                                                            \
     if (cond)                                                                                      \
     {                                                                                              \
         ABORT(msg, printErrno);                                                                    \
     }
 
+/**
+ * Create a @c sockaddr
+ * @param networkOrder The host socket address
+ * @return The corresponding @c sockaddr, in network order.
+ */
 static sockaddr
 CreateInetAddress(uint32_t networkOrder)
 {
@@ -66,6 +97,12 @@ CreateInetAddress(uint32_t networkOrder)
     return s.any_socket;
 }
 
+/**
+ * Open a Unix (local interprocess) socket to call back to the tap bridge
+ * @param path Hex representation of the endpoint that the tap bridge created.
+ * @param fd File descriptor to send to the tap bridge.
+ * @todo Reference the symbols in src/fd-net-device/helper/creator-utils.
+ */
 static void
 SendSocket(const char* path, int fd)
 {
@@ -112,7 +149,7 @@ SendSocket(const char* path, int fd)
     // data that we're going to send back to the tap bridge (that magic number).
     //
     struct iovec iov;
-    uint32_t magic = TAP_MAGIC;
+    uint32_t magic = ns3::TapBridge::TAP_MAGIC;
     iov.iov_base = &magic;
     iov.iov_len = sizeof(magic);
 
@@ -188,6 +225,15 @@ SendSocket(const char* path, int fd)
     LOG("sendmsg complete");
 }
 
+/**
+ * Creation and management of Tap devices is done via the tun device
+ * @param dev Name of the tap device
+ * @param ip IP address of the new interface/device
+ * @param mac Mac48Address of the new device
+ * @param mode Operating mode "2" corresponds to USE_LOCAL and "3" to USE_BRIDGE mode.
+ * @param netmask The net mask of the new interface/device.2
+ * @return The tap device file descriptor
+ */
 static int
 CreateTap(const char* dev, const char* ip, const char* mac, const char* mode, const char* netmask)
 {

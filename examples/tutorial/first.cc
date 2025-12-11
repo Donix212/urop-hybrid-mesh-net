@@ -2,6 +2,19 @@
  * SPDX-License-Identifier: GPL-2.0-only
  */
 
+/**
+ * @file
+ * @ingroup tutorial
+ * The "Hello World" of a network simulator: create a simple point-to-point link between two nodes
+ * and echo a single packet between the nodes.
+ *
+ * Default Network Topology
+ *
+ *           10.1.1.0
+ *     n0 -------------- n1
+ *        point-to-point
+ */
+
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"

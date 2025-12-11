@@ -16,6 +16,10 @@
  * NSF grant CNS-1050226 (Multilayer Network Resilience Analysis and Experimentation on GENI),
  * US Department of Defense (DoD), and ITTC at The University of Kansas.
  */
+/**
+ * @file
+ * @ingroup dsr-test
+ */
 
 #include "ns3/boolean.h"
 #include "ns3/double.h"
@@ -631,4 +635,7 @@ class DsrTestSuite : public TestSuite
         AddTestCase(new DsrCacheEntryTest, TestCase::Duration::QUICK);
         AddTestCase(new DsrSendBuffTest, TestCase::Duration::QUICK);
     }
-} g_dsrTestSuite;
+};
+
+/** Testsuite instance variable. */
+DsrTestSuite g_dsrTestSuite;

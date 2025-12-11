@@ -4,33 +4,55 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  */
+/**
+ * @file
+ * @ingroup internet-test
+ */
 
-#define __STDC_LIMIT_MACROS
 #include "ns3/buffer.h"
 #include "ns3/core-module.h"
 #include "ns3/tcp-header.h"
 #include "ns3/tcp-option-rfc793.h"
 #include "ns3/test.h"
 
-#include <stdint.h>
-
 using namespace ns3;
 
-#define GET_RANDOM_UINT32(RandomVariable)                                                          \
-    static_cast<uint32_t>(RandomVariable->GetInteger(0, UINT32_MAX))
+/**
+ * @name
+ * Get random values of specified sizes.
+ * @{
+ */
+/**
+ * @param rv The RandomVariableStream instance to sample.
+ * @returns The random value.
+ */
+uint32_t
+GetRandomUint32(Ptr<UniformRandomVariable> rv)
+{
+    return rv->GetInteger(0, UINT32_MAX);
+}
 
-#define GET_RANDOM_UINT16(RandomVariable)                                                          \
-    static_cast<uint16_t>(RandomVariable->GetInteger(0, UINT16_MAX))
+uint16_t
+GetRandomUint16(Ptr<UniformRandomVariable> rv)
+{
+    return rv->GetInteger(0, UINT16_MAX);
+}
 
-#define GET_RANDOM_UINT8(RandomVariable)                                                           \
-    static_cast<uint8_t>(RandomVariable->GetInteger(0, UINT8_MAX))
+uint8_t
+GetRandomUint8(Ptr<UniformRandomVariable> rv)
+{
+    return rv->GetInteger(0, UINT8_MAX);
+}
 
-#define GET_RANDOM_UINT6(RandomVariable)                                                           \
-    static_cast<uint8_t>(RandomVariable->GetInteger(0, UINT8_MAX >> 2))
+uint8_t
+GetRandomUint6(Ptr<UniformRandomVariable> rv)
+{
+    return rv->GetInteger(0, UINT8_MAX >> 2);
+}
+
+/** @} */
 
 /**
- * @ingroup internet-test
- *
  * @brief TCP header Get/Set test.
  */
 class TcpHeaderGetSetTestCase : public TestCase
@@ -69,13 +91,13 @@ TcpHeaderGetSetTestCase::DoRun()
     Ptr<UniformRandomVariable> x = CreateObject<UniformRandomVariable>();
     for (uint32_t i = 0; i < 1000; ++i)
     {
-        sourcePort = GET_RANDOM_UINT16(x);
-        destinationPort = GET_RANDOM_UINT16(x);
-        sequenceNumber = SequenceNumber32(GET_RANDOM_UINT32(x));
-        ackNumber = SequenceNumber32(GET_RANDOM_UINT32(x));
-        flags = GET_RANDOM_UINT6(x);
-        windowSize = GET_RANDOM_UINT16(x);
-        urgentPointer = GET_RANDOM_UINT16(x);
+        sourcePort = GetRandomUint16(x);
+        destinationPort = GetRandomUint16(x);
+        sequenceNumber = SequenceNumber32(GetRandomUint32(x));
+        ackNumber = SequenceNumber32(GetRandomUint32(x));
+        flags = GetRandomUint6(x);
+        windowSize = GetRandomUint16(x);
+        urgentPointer = GetRandomUint16(x);
 
         header.SetSourcePort(sourcePort);
         header.SetDestinationPort(destinationPort);
@@ -146,8 +168,6 @@ TcpHeaderGetSetTestCase::DoTeardown()
 }
 
 /**
- * @ingroup internet-test
- *
  * @brief TCP header with RFC793 Options test.
  */
 class TcpHeaderWithRFC793OptionTestCase : public TestCase
@@ -372,8 +392,6 @@ TcpHeaderWithRFC793OptionTestCase::DoTeardown()
 }
 
 /**
- * @ingroup internet-test
- *
  * @brief TCP header Flags to String test.
  */
 class TcpHeaderFlagsToString : public TestCase
@@ -441,8 +459,6 @@ TcpHeaderFlagsToString::DoRun()
 }
 
 /**
- * @ingroup internet-test
- *
  * @brief TCP header TestSuite
  */
 class TcpHeaderTestSuite : public TestSuite

@@ -8,6 +8,12 @@
 #ifndef NODE_CONTAINER_H
 #define NODE_CONTAINER_H
 
+/**
+ * @file
+ * @ingroup network
+ * Class ns3::NodeContainer declaration.
+ */
+
 #include "ns3/node.h"
 
 #include <type_traits>

@@ -5,6 +5,11 @@
  *
  * Author: Peter D. Barnes, Jr. <pdbarnes@llnl.gov>
  */
+/**
+ * @file
+ * @ingroup mpi-tests
+ * MPI tests using SimpleDistributedSimulatorImpl and SimpleDistributedSimulatorImpl.
+ */
 
 #include "ns3/example-as-test.h"
 
@@ -13,8 +18,6 @@
 using namespace ns3;
 
 /**
- * @ingroup mpi-tests
- *
  * This version of ns3::ExampleTestCase is specialized for MPI
  * by accepting the number of ranks as a parameter,
  * then building a `--command-template` string which
@@ -87,10 +90,7 @@ MpiTestCase::GetPostProcessingCommand() const
     return command;
 }
 
-/**
- * @ingroup mpi-tests
- * MPI specialization of ns3::ExampleTestSuite.
- */
+/** MPI specialization of ns3::ExampleTestSuite. */
 class MpiTestSuite : public TestSuite
 {
   public:
@@ -115,7 +115,10 @@ class MpiTestSuite : public TestSuite
     // end of class MpiTestSuite
 };
 
-/* Tests using SimpleDistributedSimulatorImpl */
+/**
+ * Tests using SimpleDistributedSimulatorImpl
+ * @{
+ */
 static MpiTestSuite g_mpiNms2("mpi-example-nms-2", "nms-p2p-nix-distributed", NS_TEST_SOURCEDIR, 2);
 static MpiTestSuite g_mpiComm2("mpi-example-comm-2",
                                "simple-distributed-mpi-comm",
@@ -144,8 +147,12 @@ static MpiTestSuite g_mpiSimple2("mpi-example-simple-2",
                                  NS_TEST_SOURCEDIR,
                                  2);
 static MpiTestSuite g_mpiThird2("mpi-example-third-2", "third-distributed", NS_TEST_SOURCEDIR, 2);
+/** @} */
 
-/* Tests using NullMessageSimulatorImpl */
+/**
+ * Tests using NullMessageSimulatorImpl
+ * @{
+ */
 static MpiTestSuite g_mpiSimple2NullMsg("mpi-example-simple-2-nullmsg",
                                         "simple-distributed",
                                         NS_TEST_SOURCEDIR,
@@ -161,3 +168,4 @@ static MpiTestSuite g_mpiEmpty3NullMsg("mpi-example-empty-3-nullmsg",
                                        NS_TEST_SOURCEDIR,
                                        3,
                                        "-nullmsg");
+/** @} */

@@ -6,18 +6,10 @@
  * Author: Alberto Gallegos Ramonet <alramonet@is.tokushima-u.ac.jp>
  */
 
-#include "ns3/core-module.h"
-#include "ns3/energy-module.h"
-#include "ns3/gnuplot.h"
-
-#include <fstream>
-#include <sstream>
-#include <string>
-
-using namespace ns3;
-using namespace ns3::energy;
-
 /**
+ * @file
+ * @ingroup energy
+ *
  * This example shows the use of batteries in ns-3.
  * 5 batteries of different chemistries are discharged
  * using a constant current. Batteries can be configured
@@ -34,32 +26,52 @@ using namespace ns3::energy;
  *
  * Plot files are produced as a result of this example.
  * Graphs can be obtained from the plot using:
- * \code{.sh}
-   $> gnuplot <plotname>.plt
-   \endcode
  *
+ *     $ gnuplot <plotname>.plt
  */
 
-Gnuplot battDischPlot1 = Gnuplot("BattDisch1.eps");
+#include "ns3/core-module.h"
+#include "ns3/energy-module.h"
+#include "ns3/gnuplot.h"
+
+#include <fstream>
+#include <sstream>
+#include <string>
+
+using namespace ns3;
+using namespace ns3::energy;
+
+/**
+ * File streams, datasets and plots.
+ * @{
+ */
+Gnuplot battDischPlot1 = Gnuplot{"BattDisch1.eps"};
 Gnuplot2dDataset battDischDataset1;
-std::ofstream battDischFile1("BattDischCurve1.plt");
+std::ofstream battDischFile1{"BattDischCurve1.plt"};
 
-Gnuplot battDischPlot2 = Gnuplot("BattDisch2.eps");
+Gnuplot battDischPlot2 = Gnuplot{"BattDisch2.eps"};
 Gnuplot2dDataset battDischDataset2;
-std::ofstream battDischFile2("BattDischCurve2.plt");
+std::ofstream battDischFile2{"BattDischCurve2.plt"};
 
-Gnuplot battDischPlot3 = Gnuplot("BattDisch3.eps");
+Gnuplot battDischPlot3 = Gnuplot{"BattDisch3.eps"};
 Gnuplot2dDataset battDischDataset3;
-std::ofstream battDischFile3("BattDischCurve3.plt");
+std::ofstream battDischFile3{"BattDischCurve3.plt"};
 
-Gnuplot battDischPlot4 = Gnuplot("BattDisch4.eps");
+Gnuplot battDischPlot4 = Gnuplot{"BattDisch4.eps"};
 Gnuplot2dDataset battDischDataset4;
-std::ofstream battDischFile4("BattDischCurve4.plt");
+std::ofstream battDischFile4{"BattDischCurve4.plt"};
 
-Gnuplot battDischPlot5 = Gnuplot("BattDisch5.eps");
+Gnuplot battDischPlot5 = Gnuplot{"BattDisch5.eps"};
 Gnuplot2dDataset battDischDataset5;
-std::ofstream battDischFile5("BattDischCurve5.plt");
+std::ofstream battDischFile5{"BattDischCurve5.plt"};
 
+/** @} */
+
+/**
+ * @{
+ * Record the battery voltage in the dataset.
+ * @param es The battery model.
+ */
 void
 GraphBattery1(Ptr<GenericBatteryModel> es)
 {
@@ -133,6 +145,8 @@ GraphBattery5(Ptr<GenericBatteryModel> es)
         Simulator::Schedule(Seconds(20), &GraphBattery5, es);
     }
 }
+
+/** @} */
 
 int
 main(int argc, char** argv)

@@ -9,6 +9,12 @@
 #ifndef IPV4_HEADER_H
 #define IPV4_HEADER_H
 
+/**
+ * @file
+ * @ingroup ipv4
+ * Class ns3::Ipv4Header declaration.
+ */
+
 #include "ns3/header.h"
 #include "ns3/ipv4-address.h"
 

@@ -50,9 +50,9 @@ IePeeringProtocol::Print(std::ostream& os) const
 }
 
 std::ostream&
-operator<<(std::ostream& os, const IePeeringProtocol& a)
+operator<<(std::ostream& os, const IePeeringProtocol& protocol)
 {
-    a.Print(os);
+    protocol.Print(os);
     return os;
 }
 } // namespace dot11s

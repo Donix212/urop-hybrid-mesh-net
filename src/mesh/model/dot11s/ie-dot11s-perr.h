@@ -9,6 +9,12 @@
 #ifndef PERR_INFORMATION_ELEMENT_H
 #define PERR_INFORMATION_ELEMENT_H
 
+/**
+ * @file
+ * @ingroup dot11s
+ * Class ns3::dot11s::IePerr declaration.
+ */
+
 #include "hwmp-protocol.h"
 
 #include "ns3/mac48-address.h"
@@ -75,7 +81,16 @@ class IePerr : public WifiInformationElement
 };
 
 bool operator==(const IePerr& a, const IePerr& b);
+
+/**
+ * @brief Stream insertion operator.
+ *
+ * @param [in] os The reference to the output stream.
+ * @param [in] perr The IePeer object.
+ * @returns The reference to the output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const IePerr& perr);
+
 } // namespace dot11s
 } // namespace ns3
 #endif

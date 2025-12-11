@@ -50,6 +50,7 @@ NS_OBJECT_ENSURE_REGISTERED(TcpL4Protocol);
 // TcpL4Protocol stuff----------------------------------------------------------
 
 #undef NS_LOG_APPEND_CONTEXT
+/** File local log context. */
 #define NS_LOG_APPEND_CONTEXT                                                                      \
     if (m_node)                                                                                    \
     {                                                                                              \
