@@ -2697,9 +2697,9 @@ ThreeGppChannelModel::GenerateClusterDelays(double DS,
     NS_ASSERT_MSG(DS > 0, "Delay spread must be positive");
     NS_ASSERT_MSG(table3gpp->m_numOfCluster > 0, "Number of clusters must be positive");
 
-    // Clear output vector and reserve space for efficiency
+    // Clear output vector and resize
     clusterDelays->clear();
-    clusterDelays->reserve(table3gpp->m_numOfCluster);
+    clusterDelays->resize(table3gpp->m_numOfCluster);
 
     for (uint8_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
     {
@@ -2708,7 +2708,7 @@ ThreeGppChannelModel::GenerateClusterDelays(double DS,
         {
             *minTau = tau;
         }
-        clusterDelays->push_back(tau);
+        (*clusterDelays)[cIndex] = tau;
     }
 
     for (uint8_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
@@ -2724,11 +2724,12 @@ ThreeGppChannelModel::GenerateClusterShadowingTerm(const Ptr<const ParamsTable> 
 {
     NS_LOG_FUNCTION(this);
     clusterShadowing->clear();
-    clusterShadowing->reserve(table3gpp->m_numOfCluster);
+    clusterShadowing->resize(table3gpp->m_numOfCluster);
 
     for (uint8_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
     {
-        clusterShadowing->push_back(m_normalRv->GetValue() * table3gpp->m_perClusterShadowingStd);
+        (*clusterShadowing)[cIndex] = (m_normalRv->GetValue() * table3gpp->
+            m_perClusterShadowingStd);
     }
 }
 
@@ -2760,7 +2761,7 @@ ThreeGppChannelModel::GenerateClusterPowers(const DoubleVector& clusterDelays,
     NS_LOG_FUNCTION(this);
     // Clear and resize the output vector
     clusterPowers->clear();
-    clusterPowers->reserve(table3gpp->m_numOfCluster);
+    clusterPowers->resize(table3gpp->m_numOfCluster);
 
     double powerSum = 0;
     for (size_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
@@ -2769,7 +2770,7 @@ ThreeGppChannelModel::GenerateClusterPowers(const DoubleVector& clusterDelays,
             exp(-1 * clusterDelays[cIndex] * (table3gpp->m_rTau - 1) / table3gpp->m_rTau / DS) *
             pow(10, -1 * clusterShadowing[cIndex] / 10.0); //(7.5-5)
         powerSum += power;
-        clusterPowers->push_back(power);
+        (*clusterPowers)[cIndex] = power;
     }
 
     // Normalize cluster powers with NS_ASSERT for division by zero protection
@@ -2916,7 +2917,7 @@ ThreeGppChannelModel::GenerateClusterXnNLos(double clusterNumber,
 {
     NS_LOG_FUNCTION(this);
     clusterSign->clear();
-    clusterSign->reserve(clusterNumber);
+    clusterSign->resize(clusterNumber);
 
     for (uint8_t cIndex = 0; cIndex < clusterNumber; cIndex++)
     {
@@ -2926,7 +2927,7 @@ ThreeGppChannelModel::GenerateClusterXnNLos(double clusterNumber,
             Xn = -1;
         }
 
-        clusterSign->push_back(Xn);
+        (*clusterSign)[cIndex] = Xn;
     }
 }
 
@@ -2951,20 +2952,20 @@ ThreeGppChannelModel::GenerateClusterAngles(const Ptr<const ThreeGppChannelParam
     DoubleVector clusterZoa;
     DoubleVector clusterZod;
 
-    clusterAoa.reserve(channelParams->m_reducedClusterNumber);
-    clusterAod.reserve(channelParams->m_reducedClusterNumber);
-    clusterZoa.reserve(channelParams->m_reducedClusterNumber);
-    clusterZod.reserve(channelParams->m_reducedClusterNumber);
+    clusterAoa.resize(channelParams->m_reducedClusterNumber);
+    clusterAod.resize(channelParams->m_reducedClusterNumber);
+    clusterZoa.resize(channelParams->m_reducedClusterNumber);
+    clusterZod.resize(channelParams->m_reducedClusterNumber);
 
     for (uint8_t cIndex = 0; cIndex < channelParams->m_reducedClusterNumber; cIndex++)
     {
         double logCalc = -1 * log(clusterPowerForAngles[cIndex] / powerMax);
         double angle = 2 * sqrt(logCalc) / 1.4 / cPhi; //(7.5-9)
-        clusterAoa.push_back(lsps.ASA * angle);
-        clusterAod.push_back(lsps.ASD * angle);
+        clusterAoa[cIndex] = lsps.ASA * angle;
+        clusterAod[cIndex] = lsps.ASD * angle;
         angle = logCalc / cTheta; //(7.5-14)
-        clusterZoa.push_back(lsps.ZSA * angle);
-        clusterZod.push_back(lsps.ZSD * angle);
+        clusterZoa[cIndex] = lsps.ZSA * angle;
+        clusterZod[cIndex] = lsps.ZSD * angle;
     }
 
     Angles sAngle(bMob->GetPosition(), aMob->GetPosition());
@@ -3091,7 +3092,7 @@ ThreeGppChannelModel::UpdateClusterDelay(DoubleVector* clusterDelay,
     NS_LOG_FUNCTION(this);
 
     clusterDelay->clear();
-    clusterDelay->reserve(channelParams->m_reducedClusterNumber);
+    clusterDelay->resize(channelParams->m_reducedClusterNumber);
 
     NS_ASSERT(channelParams->m_delayConsistency.empty() == false);
     NS_ASSERT(Simulator::Now() != channelParams->m_generatedTime);
@@ -3119,7 +3120,7 @@ ThreeGppChannelModel::UpdateClusterDelay(DoubleVector* clusterDelay,
     }
 
     // normalize the delays by removing the min value (7.6-10a)
-    double minTau = 100.0;
+    double minTau = std::numeric_limits<double>::max();
     for (size_t cInd = 0; cInd < channelParams->m_reducedClusterNumber; cInd++)
     {
         if (minTau > (*delayConsistency)[cInd])
@@ -3575,8 +3576,8 @@ ThreeGppChannelModel::GenerateDopplerTerms(uint8_t reducedClusterNumber,
 
     dopplerTermAlpha->clear();
     dopplerTermD->clear();
-    dopplerTermAlpha->reserve(updatedClusterNumber);
-    dopplerTermD->reserve(updatedClusterNumber);
+    dopplerTermAlpha->resize(updatedClusterNumber);
+    dopplerTermD->resize(updatedClusterNumber);
 
     for (uint8_t cIndex = 0; cIndex < updatedClusterNumber; cIndex++)
     {
@@ -3587,8 +3588,8 @@ ThreeGppChannelModel::GenerateDopplerTerms(uint8_t reducedClusterNumber,
             alpha = m_uniformRvDoppler->GetValue(-1, 1);
             D = m_uniformRvDoppler->GetValue(-m_vScatt, m_vScatt);
         }
-        dopplerTermAlpha->push_back(alpha);
-        dopplerTermD->push_back(D);
+        (*dopplerTermAlpha)[cIndex] = alpha;
+        (*dopplerTermD)[cIndex] = D;
     }
 }
 
