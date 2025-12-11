@@ -182,7 +182,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         double m_dis2D;                     //!< 2D distance between tx and rx
         double m_dis3D;                     //!< 3D distance between tx and rx
         DoubleVector m_clusterShadowing;    //!< cluster shadowing
-        DoubleVector m_clusterPowers;       //!< cluster powers
+        DoubleVector m_clusterPower; //!< cluster powers
         DoubleVector m_attenuation_dB;      //!< vector that stores the attenuation of the blockage
         uint8_t m_cluster1st;               //!< index of the first strongest cluster
         uint8_t m_cluster2nd;               //!< index of the second strongest cluster

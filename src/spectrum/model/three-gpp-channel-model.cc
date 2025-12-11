@@ -3416,18 +3416,18 @@ ThreeGppChannelModel::FindStrongestClusters(const Ptr<const ThreeGppChannelParam
     double maxPower = 0;
     for (uint8_t cIndex = 0; cIndex < channelParams->m_reducedClusterNumber; cIndex++)
     {
-        if (maxPower < channelParams->m_clusterPowers[cIndex])
+        if (maxPower < channelParams->m_clusterPower[cIndex])
         {
-            maxPower = channelParams->m_clusterPowers[cIndex];
+            maxPower = channelParams->m_clusterPower[cIndex];
             *cluster1st = cIndex;
         }
     }
     maxPower = 0;
     for (uint8_t cIndex = 0; cIndex < channelParams->m_reducedClusterNumber; cIndex++)
     {
-        if (maxPower < channelParams->m_clusterPowers[cIndex] && *cluster1st != cIndex)
+        if (maxPower < channelParams->m_clusterPower[cIndex] && *cluster1st != cIndex)
         {
-            maxPower = channelParams->m_clusterPowers[cIndex];
+            maxPower = channelParams->m_clusterPower[cIndex];
             *cluster2nd = cIndex;
         }
     }
@@ -3652,9 +3652,9 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
                           lsps.DS,
                           table3gpp,
                           channelParams->m_clusterShadowing,
-                          &channelParams->m_clusterPowers);
+                          &channelParams->m_clusterPower);
     double powerMax = 0;
-    DoubleVector clusterPowerForAngles = RemoveWeakClusters(&channelParams->m_clusterPowers,
+    DoubleVector clusterPowerForAngles = RemoveWeakClusters(&channelParams->m_clusterPower,
                                                             &channelParams->m_clusterShadowing,
                                                             &channelParams->m_delay,
                                                             channelParams->m_losCondition,
@@ -3662,7 +3662,7 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
                                                             lsps.kFactor,
                                                             &powerMax);
 
-    channelParams->m_reducedClusterNumber = channelParams->m_clusterPowers.size();
+    channelParams->m_reducedClusterNumber = channelParams->m_clusterPower.size();
     // Resume step 5 to compute the delay for LoS condition.
     if (channelParams->m_losCondition == ChannelCondition::LOS)
     {
@@ -3688,7 +3688,7 @@ ThreeGppChannelModel::GenerateChannelParameters(const Ptr<const ChannelCondition
 
     // if blockage enabled, calculate, apply and store attenuation
     ApplyAttenuationToClusterPowers(&(channelParams->m_nonSelfBlocking),
-                                    &(channelParams->m_clusterPowers),
+                                    &(channelParams->m_clusterPower),
                                     &(channelParams->m_attenuation_dB),
                                     channelParams,
                                     channelParams->m_angle[MBCM::AOA_INDEX],
@@ -3789,7 +3789,7 @@ ThreeGppChannelModel::UpdateChannelParameters(Ptr<ThreeGppChannelParams> channel
                           channelParams->m_DS,
                           table3gpp,
                           channelParams->m_clusterShadowing,
-                          &channelParams->m_clusterPowers);
+                          &channelParams->m_clusterPower);
 
     // check if channelParams structure is generated in direction s-to-u or u-to-s
     bool isSameDirection =
@@ -3816,14 +3816,14 @@ ThreeGppChannelModel::UpdateChannelParameters(Ptr<ThreeGppChannelParams> channel
     Double2DVector previousAngles = channelParams->m_angle;
     UpdateClusterAngles(channelParams, &channelParams->m_angle, prevClusterDelay, isSameDirection);
 
-    NS_ABORT_IF(channelParams->m_clusterPowers.empty());
+    NS_ABORT_IF(channelParams->m_clusterPower.empty());
 
     // Apply blockage attenuation
     if (m_blockage)
     {
-        for (size_t cInd = 0; cInd < channelParams->m_clusterPowers.size(); cInd++)
+        for (size_t cInd = 0; cInd < channelParams->m_clusterPower.size(); cInd++)
         {
-            channelParams->m_clusterPowers[cInd] /=
+            channelParams->m_clusterPower[cInd] /=
                 pow(10, (channelParams->m_attenuation_dB)[cInd] / 10.0);
         }
     }
@@ -3925,7 +3925,7 @@ ThreeGppChannelModel::GetNewChannel(Ptr<const ThreeGppChannelParams> channelPara
                                      : channelParams->m_reducedClusterNumber + 2;
     Complex3DVector hUsn(uSize, sSize, numOverallCluster); // channel coefficient hUsn (u, s, n);
     NS_ASSERT(channelParams->m_reducedClusterNumber <= channelParams->m_clusterPhase.size());
-    NS_ASSERT(channelParams->m_reducedClusterNumber <= channelParams->m_clusterPowers.size());
+    NS_ASSERT(channelParams->m_reducedClusterNumber <= channelParams->m_clusterPower.size());
     NS_ASSERT(channelParams->m_reducedClusterNumber <=
               channelParams->m_crossPolarizationPowerRatios.size());
     NS_ASSERT(channelParams->m_reducedClusterNumber <= rayZoaRadian.size());
@@ -4074,7 +4074,7 @@ ThreeGppChannelModel::GetNewChannel(Ptr<const ThreeGppChannelParams> channelPara
                                 std::complex<double>(cos(txPhaseDiff), sin(txPhaseDiff));
                     }
                     rays *=
-                        sqrt(channelParams->m_clusterPowers[nIndex] / table3gpp->m_raysPerCluster);
+                        sqrt(channelParams->m_clusterPower[nIndex] / table3gpp->m_raysPerCluster);
                     hUsn(uIndex, sIndex, nIndex) = rays;
                 }
                 else //(7.5-28)
@@ -4126,11 +4126,11 @@ ThreeGppChannelModel::GetNewChannel(Ptr<const ThreeGppChannelParams> channelPara
                         }
                     }
                     raysSub1 *=
-                        sqrt(channelParams->m_clusterPowers[nIndex] / table3gpp->m_raysPerCluster);
+                        sqrt(channelParams->m_clusterPower[nIndex] / table3gpp->m_raysPerCluster);
                     raysSub2 *=
-                        sqrt(channelParams->m_clusterPowers[nIndex] / table3gpp->m_raysPerCluster);
+                        sqrt(channelParams->m_clusterPower[nIndex] / table3gpp->m_raysPerCluster);
                     raysSub3 *=
-                        sqrt(channelParams->m_clusterPowers[nIndex] / table3gpp->m_raysPerCluster);
+                        sqrt(channelParams->m_clusterPower[nIndex] / table3gpp->m_raysPerCluster);
                     hUsn(uIndex, sIndex, nIndex) = raysSub1;
                     hUsn(uIndex,
                          sIndex,
