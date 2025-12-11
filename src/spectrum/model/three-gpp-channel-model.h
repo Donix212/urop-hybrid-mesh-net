@@ -124,7 +124,6 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
      */
     int64_t AssignStreams(int64_t stream);
 
-  protected:
     /**
      * Wrap an (azimuth, inclination) angle pair in a valid range.
      * Specifically, inclination must be in [0, M_PI] and azimuth in [0, 2*M_PI).
@@ -252,6 +251,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         const Ptr<const MobilityModel> bMob,
         Ptr<const ChannelCondition> channelCondition) const;
 
+protected:
     /**
      * The function calculates 2D and 3D distance between two nodes
      * @param aMob the mobility model of the node a

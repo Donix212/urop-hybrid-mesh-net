@@ -516,64 +516,232 @@ ThreeGppChannelMatrixUpdateTest::DoRun()
 /**
  * @ingroup spectrum-tests
  *
- * Test case for channel consistency Procedure A according to 3GPP Section 7.6.3.
- * This test verifies that consistent updates produce smoother changes
- * than generating a completely new channel.
+ * Test case for channel consistency Procedure A (according to 3GPP 38.901 Section 7.6.3.)
+ *
+ * This test verifies that the consistent channel updates produce smoother changes in the channel matrix
+ * than generating a completely new channel. The test checks both channel condition LOS and NLOS. This is very
+ * important because, according to the Procedure A, the per-cluster variables updates are performed differently for
+ * LOS and NLOS. For example, there are different formulas for different channel conditions for cluster delay update
+ * (eq. 7.6-9) and cluster departure/arrival angles (eq. 7.6-10b and 7.6-10c). The test allows configuring different
+ * speeds and frequencies. Based on these parameters is calculated the channel coherence time and
+ * the channel update period is set based on this value.
+ *
+ * The test verifies that the evolution of the general metric like the Frobenius channel norm, and per-cluster
+ * variables such as cluster delay, cluster power, and cluster angles (AOA and ZOA) is smoother with channel updates than
+ * with the new channel realizations. For the cluster metrics is selected the third cluster as defined in Table
+ * 7.8.5 for the calibration of the channel consistency.
+ *
+ * The test checks that the channel consistent updates according 3GPP 38.901 Procedure A result in a channel that
+ * evolves more smoothly than generating a completely new channel. Variations are at least 5 times lower than these of
+ * new channel realizations.
+ *
+ * To be able to get the results not only for the updated channel but also for the new channel realizations,
+ * we create new nodes that are tracking the update positions of the original node for which the channel updates are
+ * being generated. New nodes are forcing new channel realizations.
  */
 class ThreeGppChannelConsistencyTest : public TestCase
 {
-  public:
+public:
     /**
      *Constructor
      */
-    ThreeGppChannelConsistencyTest();
+    ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue losCondition,
+                                   double speedKmh,
+                                   double freqHz);
 
     /**
      * Destructor
      */
     ~ThreeGppChannelConsistencyTest() override;
 
-  private:
+    /**
+     * ChannelConsistencyMetrics structure contains the metrics that are needed to test the channel consistency.
+     */
+    struct ChannelConsistencyMetrics
+    {
+        //<! the channel norm value
+        double channelNorm;
+        //!< the third cluster power in dB
+        double thirdClusterPower_dB;
+        //!< the third cluster delay
+        double thirdClusterDelay;
+        //!< the third cluster AOA
+        double thirdClusterAoa;
+        //!< the third cluster ZOA
+        double thirdClusterZoa;
+
+        /**
+         * Operator + for easier calculations of the other metrics (e.g., mean values).
+         * @param other the other object of ChannelConsistencyMetrics
+         * @return the sum of the metrics
+         */
+        ChannelConsistencyMetrics operator+(ChannelConsistencyMetrics const& other) const
+        {
+            return ChannelConsistencyMetrics{
+                channelNorm + other.channelNorm, thirdClusterPower_dB + other.thirdClusterPower_dB,
+                thirdClusterDelay + other.thirdClusterDelay, thirdClusterAoa + other.thirdClusterAoa,
+                thirdClusterZoa + other.thirdClusterZoa
+            };
+        }
+
+        /**
+         * Operator += for easier calculations of the other metrics (e.g., mean)
+         * @param other the other object of the  channel consistency metrics
+         * @return the sum of the metrics
+         */
+        ChannelConsistencyMetrics operator+=(ChannelConsistencyMetrics const& other)
+        {
+            this->channelNorm = this->channelNorm + other.channelNorm;
+            this->thirdClusterPower_dB = this->thirdClusterPower_dB + other.thirdClusterPower_dB;
+            this->thirdClusterDelay = this->thirdClusterDelay + other.thirdClusterDelay;
+            this->thirdClusterAoa = this->thirdClusterAoa + other.thirdClusterAoa;
+            this->thirdClusterZoa = this->thirdClusterZoa + other.thirdClusterZoa;
+            return *this;
+        }
+
+
+        /**
+         * Operator / used for easier calculations of the statistics, and test conditions.
+         * @param iterations The value with which will be divided each metric.
+         * @return the new object with the metrics that are divided by the given value.
+         */
+        ChannelConsistencyMetrics operator/(double iterations) const
+        {
+            ChannelConsistencyMetrics result;
+            result.channelNorm = this->channelNorm / iterations;
+            result.thirdClusterPower_dB = this->thirdClusterPower_dB / iterations;
+            result.thirdClusterDelay = this->thirdClusterDelay / iterations;
+            result.thirdClusterAoa = this->thirdClusterAoa / iterations;
+            result.thirdClusterZoa = this->thirdClusterZoa / iterations;
+            return result;
+        }
+
+        /**
+         * Operator /= used for easier calculations of the statistics, and test conditions.
+         * @param iterations The value with which will be divided each metric.
+         * @return the new object with the metrics that are divided by the given value.s
+         */
+        ChannelConsistencyMetrics operator/=(double iterations)
+        {
+            *this = *this / iterations;
+            return *this;
+        }
+
+
+        /**
+         *Used for easier calculations of the statistics, and test conditions.
+         *@return the new object with the absolute values of all the metrics
+         */
+        ChannelConsistencyMetrics abs() const
+        {
+            return ChannelConsistencyMetrics{
+                std::abs(channelNorm), std::abs(thirdClusterPower_dB), std::abs(thirdClusterDelay),
+                std::abs(thirdClusterAoa), std::abs(thirdClusterZoa)
+            };
+        }
+
+        /**
+         * Used for checking the channel consistency test condition.
+         * @param other the values of the object containing the set of consistency metric
+         * @return true if the metrics of this object have lower values than these of the other object
+         */
+        bool operator<(ChannelConsistencyMetrics const& other) const
+        {
+            if ((this->channelNorm < other.channelNorm) &&
+                (this->thirdClusterPower_dB < other.thirdClusterPower_dB) &&
+                (this->thirdClusterDelay < other.thirdClusterDelay) &&
+                (this->thirdClusterAoa < other.thirdClusterAoa) &&
+                (this->thirdClusterZoa < other.thirdClusterZoa))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    };
+
+
+    /**
+     * Used for the calculation of the delta of all the metrics between 2 channel consistency metric objects. Returns a
+     * new object containing these delta values for each of the metrics.
+     * @param metrics1 The first channel consistency metrics object.
+     * @param metrics2 The second channel consistency metrics object.
+     * @return The channel consistency object containing the deltas of each of the metrics between the first and the second object.
+     */
+    ChannelConsistencyMetrics ComputeDeltas(ChannelConsistencyMetrics metrics1, ChannelConsistencyMetrics metrics2)
+    {
+        ChannelConsistencyMetrics deltas;
+        deltas.channelNorm = metrics1.channelNorm - metrics2.channelNorm;
+        deltas.thirdClusterPower_dB = metrics1.thirdClusterPower_dB - metrics2.thirdClusterPower_dB;
+        deltas.thirdClusterDelay = metrics1.thirdClusterDelay - metrics2.thirdClusterDelay;
+        deltas.thirdClusterAoa = metrics1.thirdClusterAoa - metrics2.thirdClusterAoa;
+        deltas.thirdClusterZoa = metrics1.thirdClusterZoa - metrics2.thirdClusterZoa;
+        return deltas;
+    }
+
+private:
     /**
      * Build the test scenario
      */
     void DoRun() override;
 
     /**
-     * Compute the Frobenius norm of the channel matrix and stores it in m_normVector
+     * Compute the channel consistency metrics to evaluate the varying rate of general channel metrics like:
+     *    - Frobenius norm of the channel matrix and stores it in m_normVector, and per-cluster metrics like:
+     *    - Cluster power (of the third cluster as per Table 7.8.5 from 38.901 for the calibration of the channel consistency)
+     *    - Cluster delay (of the third cluster as per Table 7.8.5 from 38.901 for the calibration of the channel consistency)
+     *    - Cluster AOA and ZOA (of the third cluster as per Table 7.8.5 from 38.901 for the calibration of the channel consistency)
+     *
      * @param channelModel the ThreeGppChannelModel object used to generate the channel matrix
      * @param txMob the mobility model of the first node
      * @param rxMob the mobility model of the second node
      * @param txAntenna the antenna object associated to the first node
      * @param rxAntenna the antenna object associated to the second node
-     * @param normVectorToBeUsed the norm vector to be used as the output of the function
-     * @param distancesVectorToBeUsed the distances vector to be used as the output of the function
+     * @param metricsVectorToBeUsed the metrics vector to be used as the output of the function
+     * @param distancesVectorToBeUsed the metrics distances vector to be used as the output of the function
      */
-    void DoComputeNorm(Ptr<ThreeGppChannelModel> channelModel,
-                       Ptr<MobilityModel> txMob,
-                       Ptr<MobilityModel> rxMob,
-                       Ptr<PhasedArrayModel> txAntenna,
-                       Ptr<PhasedArrayModel> rxAntenna,
-                       std::vector<double>* normVectorToBeUsed,
-                       std::vector<double>* distancesVectorToBeUsed);
+    void DoComputeConsistencyMetrics(Ptr<ThreeGppChannelModel> channelModel,
+                                     Ptr<MobilityModel> txMob,
+                                     Ptr<MobilityModel> rxMob,
+                                     Ptr<PhasedArrayModel> txAntenna,
+                                     Ptr<PhasedArrayModel> rxAntenna,
+                                     std::vector<ChannelConsistencyMetrics>* metricsVectorToBeUsed,
+                                     std::vector<ChannelConsistencyMetrics>*
+                                     distancesVectorToBeUsed);
 
-    std::vector<double> m_normsChannelUpdates; //!< each element is the norm of channel updates
-    std::vector<double> m_normsNewChannelRealizations;
-    //!< each element is the norm of new channel realizations
-    std::vector<double> m_channelUpdateDistance;
-    //!< each element is the distance between two consecutive channel updates
-    std::vector<double> m_newChannelRealizationDistance;
-    //!< each element is the distance between two consecutive new channel realizations
+
+    //!< consistency metrics for the channel updates
+    std::vector<ChannelConsistencyMetrics> m_consistencyMetricsChannelUpdates;
+    //!< consistency metrics for the new channel realizations
+    std::vector<ChannelConsistencyMetrics> m_consistencyMetricsNewChannelRealizations;
+    //!< consistency metric deltas for the channel updates
+    std::vector<ChannelConsistencyMetrics> m_consistencyMetricsDeltasChannelUpdates;
+    //!< consistency metric deltas for the new channel realizations
+    std::vector<ChannelConsistencyMetrics> m_consistencyMetricsDeltasNewChannelRealizations;
 
     uint32_t m_txAntennaElements{4}; //!< number of rows and columns of tx antenna array
     uint32_t m_rxAntennaElements{4}; //!< number of rows and columns of rx antenna array
-    uint32_t m_txPorts{1}; //!< number of horizontal and vertical ports of tx antenna array
-    uint32_t m_rxPorts{1}; //!< number of horizontal and vertical ports of rx antenna array
+    //!<The type of channel condition to be set; can be LOS or NLOS
+    ChannelCondition::LosConditionValue m_losCondition{ChannelCondition::LOS};
+    //!<The speed of the user to be used in the test case
+    double m_speedKmh{30.0};
+    //!<The carrier frequency to be used in the test case
+    double m_freqHz{4.0e9};
 };
 
-ThreeGppChannelConsistencyTest::ThreeGppChannelConsistencyTest()
-    : TestCase("Check the channel consistency feature")
+ThreeGppChannelConsistencyTest::ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue losCondition,
+                                                               double speedKmh,
+                                                               double freqHz)
+    : TestCase(std::string("Check the channel consistency feature for losCondition ") +
+        ((losCondition == ChannelCondition::LOS) ? "LOS" : "NLOS") +
+        ", speed=" + std::to_string(speedKmh) +
+        " kmph, and freq=" + std::to_string(freqHz / 1e9) + " GHz.")
 {
+    m_losCondition = losCondition;
+    m_speedKmh = speedKmh;
+    m_freqHz = freqHz;
 }
 
 ThreeGppChannelConsistencyTest::~ThreeGppChannelConsistencyTest()
@@ -581,13 +749,15 @@ ThreeGppChannelConsistencyTest::~ThreeGppChannelConsistencyTest()
 }
 
 void
-ThreeGppChannelConsistencyTest::DoComputeNorm(Ptr<ThreeGppChannelModel> channelModel,
-                                              Ptr<MobilityModel> txMob,
-                                              Ptr<MobilityModel> rxMob,
-                                              Ptr<PhasedArrayModel> txAntenna,
-                                              Ptr<PhasedArrayModel> rxAntenna,
-                                              std::vector<double>* normVectorToBeUsed,
-                                              std::vector<double>* distancesVectorToBeUsed)
+ThreeGppChannelConsistencyTest::DoComputeConsistencyMetrics(Ptr<ThreeGppChannelModel> channelModel,
+                                                            Ptr<MobilityModel> txMob,
+                                                            Ptr<MobilityModel> rxMob,
+                                                            Ptr<PhasedArrayModel> txAntenna,
+                                                            Ptr<PhasedArrayModel> rxAntenna,
+                                                            std::vector<ChannelConsistencyMetrics>*
+                                                            metricsVectorToBeUsed,
+                                                            std::vector<ChannelConsistencyMetrics>*
+                                                            distancesVectorToBeUsed)
 {
     uint64_t txAntennaElements = txAntenna->GetNumElems();
     uint64_t rxAntennaElements = rxAntenna->GetNumElems();
@@ -610,13 +780,43 @@ ThreeGppChannelConsistencyTest::DoComputeNorm(Ptr<ThreeGppChannelModel> channelM
         }
         channelNorm += clusterNorm;
     }
-    normVectorToBeUsed->push_back(channelNorm);
 
-    if (normVectorToBeUsed->size() > 1)
+
+    Ptr<const MatrixBasedChannelModel::ChannelParams> baseParams =
+        channelModel->GetParams(txMob, rxMob);
+    Ptr<const ThreeGppChannelModel::ThreeGppChannelParams> channelParams =
+        DynamicCast<const ThreeGppChannelModel::ThreeGppChannelParams>(baseParams);
+
+    double thirdClusterPower_dB = std::numeric_limits<double>::quiet_NaN();
+    // delay of the third cluster
+    double thirdClusterDelay = std::numeric_limits<double>::quiet_NaN();
+    // AOA of the third cluster
+    double thirdClusterAoa = std::numeric_limits<double>::quiet_NaN();
+    // ZOA of the third cluster
+    double thirdClusterZoa = std::numeric_limits<double>::quiet_NaN();
+
+    if (channelParams->m_clusterPower.size() > 2)
     {
+        uint8_t thirdClusterIndex = 2; // the index of the third cluster
+        thirdClusterPower_dB = 10 * log10(channelParams->m_clusterPower.at(thirdClusterIndex));
+        // delay of the third cluster
+        thirdClusterDelay = channelParams->m_delay.at(thirdClusterIndex);
+        // AOA of the third cluster
+        thirdClusterAoa = channelParams->m_angle.at(0).at(thirdClusterIndex);
+        // ZOA of the third cluster
+        thirdClusterZoa = channelParams->m_angle.at(1).at(thirdClusterIndex);
+    }
+
+    metricsVectorToBeUsed->push_back({
+        channelNorm, thirdClusterPower_dB, thirdClusterDelay, thirdClusterAoa, thirdClusterZoa
+    });
+
+    if (metricsVectorToBeUsed->size() > 1)
+    {
+        ChannelConsistencyMetrics deltas = ComputeDeltas(metricsVectorToBeUsed->at(metricsVectorToBeUsed->size() - 2),
+                                                         metricsVectorToBeUsed->at(metricsVectorToBeUsed->size() - 1));
         // we calculate the absolute value of the difference between the last two norms
-        distancesVectorToBeUsed->push_back(
-            std::abs(channelNorm - normVectorToBeUsed->at(normVectorToBeUsed->size() - 2)));
+        distancesVectorToBeUsed->push_back(deltas);
     }
 }
 
@@ -625,19 +825,39 @@ ThreeGppChannelConsistencyTest::DoRun()
 {
     RngSeedManager::SetSeed(1);
     RngSeedManager::SetRun(1);
-    // Build the scenario for the test
-    uint32_t updatePeriodMs = 1; // update period in ms
+    double speedMps = m_speedKmh * 1000 / 3600;
+    // calculate doppler spread
+    double fDoppler = (speedMps * m_freqHz) / 3e8;
+    // calculate channel coherence time
+    Time cTime = Seconds(1 / fDoppler);
+    // set update period
+    Time updatePeriod = cTime;
+
+    uint16_t iterations = 100;
+    m_consistencyMetricsChannelUpdates.reserve(iterations);
+    m_consistencyMetricsNewChannelRealizations.reserve(iterations);
+    m_consistencyMetricsDeltasChannelUpdates.reserve(iterations - 1);
+    m_consistencyMetricsDeltasNewChannelRealizations.reserve(iterations - 1);
+
 
     // create the channel condition model
-    Ptr<ChannelConditionModel> channelConditionModel =
-        CreateObject<AlwaysLosChannelConditionModel>();
+    Ptr<ChannelConditionModel> channelConditionModel;
+
+    if (m_losCondition == ChannelCondition::LOS)
+    {
+        channelConditionModel = CreateObject<AlwaysLosChannelConditionModel>();
+    }
+    else
+    {
+        channelConditionModel = CreateObject<NeverLosChannelConditionModel>();
+    }
 
     // create the ThreeGppChannelModel object used to generate the channel matrix
     Ptr<ThreeGppChannelModel> channelModel = CreateObject<ThreeGppChannelModel>();
-    channelModel->SetAttribute("Frequency", DoubleValue(4.0e9));
+    channelModel->SetAttribute("Frequency", DoubleValue(m_freqHz));
     channelModel->SetAttribute("Scenario", StringValue("RMa"));
     channelModel->SetAttribute("ChannelConditionModel", PointerValue(channelConditionModel));
-    channelModel->SetAttribute("UpdatePeriod", TimeValue(MilliSeconds(updatePeriodMs)));
+    channelModel->SetAttribute("UpdatePeriod", TimeValue(updatePeriod));
     channelModel->AssignStreams(1);
 
     // create the tx and rx nodes
@@ -655,7 +875,7 @@ ThreeGppChannelConsistencyTest::DoRun()
     Ptr<SimpleNetDevice> rxDev = CreateObject<SimpleNetDevice>();
     std::vector<Ptr<SimpleNetDevice>> rxDevOther{100};
 
-    for (uint32_t i = 0; i < 100; i++)
+    for (uint32_t i = 0; i < iterations; i++)
     {
         rxDevOther[i] = CreateObject<SimpleNetDevice>();
     }
@@ -667,7 +887,7 @@ ThreeGppChannelConsistencyTest::DoRun()
     nodeRx.Get(0)->AddDevice(rxDev);
     rxDev->SetNode(nodeRx.Get(0));
 
-    for (uint32_t i = 0; i < 100; i++)
+    for (uint32_t i = 0; i < iterations; i++)
     {
         nodesRxOther.Get(i)->AddDevice(rxDevOther[i]);
         rxDevOther[i]->SetNode(nodesRxOther.Get(i));
@@ -677,8 +897,8 @@ ThreeGppChannelConsistencyTest::DoRun()
     Ptr<MobilityModel> txMob = CreateObject<ConstantPositionMobilityModel>();
     txMob->SetPosition(Vector(0.0, 0.0, 10.0));
     Ptr<ConstantVelocityMobilityModel> rxMob = CreateObject<ConstantVelocityMobilityModel>();
-    rxMob->SetPosition(Vector(30.0, 0.0, 10.0));
-    rxMob->SetVelocity(Vector(10, 0, 0));
+    rxMob->SetPosition(Vector(30.0, 0.0, 1.0));
+    rxMob->SetVelocity(Vector(speedMps, 0, 0));
 
     // associate the nodes and the mobility models
     nodeTx.Get(0)->AggregateObject(txMob);
@@ -689,7 +909,7 @@ ThreeGppChannelConsistencyTest::DoRun()
     {
         Ptr<ConstantVelocityMobilityModel> rxMobCopy =
             CreateObject<ConstantVelocityMobilityModel>();
-        rxMob->SetPosition(Vector(30.0, 0.0, 10.0));
+        rxMob->SetPosition(Vector(30.0, 0.0, 1.0));
         rxMob->SetVelocity(Vector(10, 0, 0));
         nodesRxOther.Get(i)->AggregateObject(rxMobCopy);
         rxMobCopies[i] = rxMobCopy;
@@ -703,10 +923,8 @@ ThreeGppChannelConsistencyTest::DoRun()
         UintegerValue(m_txAntennaElements),
         "AntennaElement",
         PointerValue(CreateObject<IsotropicAntennaModel>()),
-        "NumVerticalPorts",
-        UintegerValue(m_txPorts),
-        "NumHorizontalPorts",
-        UintegerValue(m_txPorts));
+        "BearingAngle",
+        DoubleValue(0));
 
     Ptr<PhasedArrayModel> rxAntenna = CreateObjectWithAttributes<UniformPlanarArray>(
         "NumColumns",
@@ -715,61 +933,59 @@ ThreeGppChannelConsistencyTest::DoRun()
         UintegerValue(m_rxAntennaElements),
         "AntennaElement",
         PointerValue(CreateObject<IsotropicAntennaModel>()),
-        "NumVerticalPorts",
-        UintegerValue(m_rxPorts),
-        "NumHorizontalPorts",
-        UintegerValue(m_rxPorts));
+        "BearingAngle",
+        DoubleValue(M_PI));
 
     // test if the channel matrix is correctly updated
-    uint16_t numIt = 100;
-    for (uint16_t i = 0; i < numIt; i++)
+    for (uint16_t i = 0; i < iterations; i++)
     {
-        Simulator::Schedule(MilliSeconds(updatePeriodMs * i + 1),
-                            &ThreeGppChannelConsistencyTest::DoComputeNorm,
+        Simulator::Schedule(updatePeriod * i + NanoSeconds(1),
+                            &ThreeGppChannelConsistencyTest::DoComputeConsistencyMetrics,
                             this,
                             channelModel,
                             txMob,
                             rxMob,
                             txAntenna,
                             rxAntenna,
-                            &m_normsChannelUpdates,
-                            &m_channelUpdateDistance);
+                            &m_consistencyMetricsChannelUpdates,
+                            &m_consistencyMetricsDeltasChannelUpdates);
 
-        Simulator::Schedule(MilliSeconds(updatePeriodMs * i + 1),
-                            &ThreeGppChannelConsistencyTest::DoComputeNorm,
+        Simulator::Schedule(updatePeriod * i + NanoSeconds(1),
+                            &ThreeGppChannelConsistencyTest::DoComputeConsistencyMetrics,
                             this,
                             channelModel,
                             txMob,
                             rxMobCopies[i],
                             txAntenna,
                             rxAntenna,
-                            &m_normsNewChannelRealizations,
-                            &m_newChannelRealizationDistance);
+                            &m_consistencyMetricsNewChannelRealizations,
+                            &m_consistencyMetricsDeltasNewChannelRealizations);
     }
 
     Simulator::Run();
 
     // compute the sample mean of the channel updates
-    double sampleMeanChannelUpdates = 0;
-    for (auto i : m_channelUpdateDistance)
-    {
-        sampleMeanChannelUpdates += i;
-    }
-    sampleMeanChannelUpdates /= m_channelUpdateDistance.size();
+    ChannelConsistencyMetrics metricMeanChannelUpdates = m_consistencyMetricsDeltasChannelUpdates.at(0).abs();
+    ChannelConsistencyMetrics metricMeanNewChannelRealizations = m_consistencyMetricsDeltasNewChannelRealizations.at(0).
+        abs();
 
-    // compute the sample mean of the channel updates
-    double sampleMeanIndependentChannels = 0;
-    for (auto i : m_newChannelRealizationDistance)
+    for (auto i : m_consistencyMetricsDeltasChannelUpdates)
     {
-        sampleMeanIndependentChannels += i;
+        metricMeanChannelUpdates += i.abs();
     }
-    sampleMeanIndependentChannels /= m_newChannelRealizationDistance.size();
+    metricMeanChannelUpdates /= m_consistencyMetricsDeltasChannelUpdates.size();
+
+    for (auto i : m_consistencyMetricsDeltasNewChannelRealizations)
+    {
+        metricMeanNewChannelRealizations += i.abs();
+    }
+    metricMeanNewChannelRealizations /= m_consistencyMetricsDeltasNewChannelRealizations.size();
 
     NS_TEST_ASSERT_MSG_EQ(
-        sampleMeanChannelUpdates < sampleMeanIndependentChannels,
+        metricMeanChannelUpdates < metricMeanNewChannelRealizations/5,
         true,
-        "Check that the average distances between channel norms of the consecutive channel updates "
-        "is lower tan of the consecutive new channel generations.");
+        "Check that the average distances between the consisntency metrics of the consecutive channel updates "
+        " are lower than of the consecutive new channel generations.");
 
     /*
     std::cout
@@ -1763,7 +1979,22 @@ class ThreeGppChannelTestSuite : public TestSuite
 ThreeGppChannelTestSuite::ThreeGppChannelTestSuite()
     : TestSuite("three-gpp-channel", Type::UNIT)
 {
-    AddTestCase(new ThreeGppChannelConsistencyTest(), TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::LOS, 30, 4e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::NLOS, 30, 4e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::LOS, 30, 30e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::NLOS, 30, 30e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::LOS, 10, 30e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::NLOS, 10, 30e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::LOS, 10, 4e9),
+                TestCase::Duration::QUICK);
+    AddTestCase(new ThreeGppChannelConsistencyTest(ChannelCondition::LosConditionValue::NLOS, 10, 4e9),
+                TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(2, 2, 1, 1), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(4, 2, 1, 1), TestCase::Duration::QUICK);
     AddTestCase(new ThreeGppChannelMatrixComputationTest(2, 2, 2, 2), TestCase::Duration::QUICK);
