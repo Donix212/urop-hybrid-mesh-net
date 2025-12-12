@@ -991,7 +991,7 @@ ThreeGppChannelConsistencyTest::DoRun()
 
     NS_TEST_ASSERT_MSG_EQ(metricMeanChannelUpdates < metricMeanNewChannelRealizations / 5,
                           true,
-                          "Check that the average distances between the consisntency metrics of "
+                          "Check that the average distances between the consistency metrics of "
                           "the consecutive channel updates "
                           " are lower than of the consecutive new channel generations.");
 
