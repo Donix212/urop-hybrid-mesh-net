@@ -28,7 +28,6 @@
 namespace ns3
 {
 
-class SixLowPanNdiscCache;
 class SixLowPanNdPrefix;
 class SixLowPanNdContext;
 class SixLowPanNetDevice;

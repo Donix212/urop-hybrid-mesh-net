@@ -14,7 +14,6 @@ build_lib(
     model/sixlowpan-nd-header.cc
     model/sixlowpan-nd-prefix.cc
     model/sixlowpan-nd-protocol.cc
-    model/sixlowpan-ndisc-cache.cc
     model/sixlowpan-net-device.cc
     model/sixlowpan-nd-binding-table.cc
   HEADER_FILES
@@ -24,7 +23,6 @@ build_lib(
     model/sixlowpan-nd-header.h
     model/sixlowpan-nd-prefix.h
     model/sixlowpan-nd-protocol.h
-    model/sixlowpan-ndisc-cache.h
     model/sixlowpan-net-device.h
     model/sixlowpan-nd-binding-table.h
   LIBRARIES_TO_LINK ${libinternet}

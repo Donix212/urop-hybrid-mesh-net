@@ -16,7 +16,6 @@
 #include "sixlowpan-nd-context.h"
 #include "sixlowpan-nd-header.h"
 #include "sixlowpan-nd-prefix.h"
-#include "sixlowpan-ndisc-cache.h"
 #include "sixlowpan-net-device.h"
 
 #include "ns3/abort.h"
