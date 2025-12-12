@@ -220,10 +220,10 @@ ThreeGppSpectrumPropagationLossModel::CalcBeamformingGain(
     // are of the correct dimensions before using the operator [].
     NS_ASSERT(numCluster <= channelParams->m_alpha.size());
     NS_ASSERT(numCluster <= channelParams->m_D.size());
-    NS_ASSERT(numCluster <= channelParams->m_angle[MatrixBasedChannelModel::ZOA_INDEX].size());
-    NS_ASSERT(numCluster <= channelParams->m_angle[MatrixBasedChannelModel::ZOD_INDEX].size());
-    NS_ASSERT(numCluster <= channelParams->m_angle[MatrixBasedChannelModel::AOA_INDEX].size());
-    NS_ASSERT(numCluster <= channelParams->m_angle[MatrixBasedChannelModel::AOD_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::ZOA_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::ZOD_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::AOA_INDEX].size());
+    NS_ASSERT(numCluster <= channelParams->m_angle[MBCM::AOD_INDEX].size());
     NS_ASSERT(numCluster <= longTerm->GetNumPages());
 
     // check if channelParams structure is generated in direction s-to-u or u-to-s
@@ -234,7 +234,6 @@ ThreeGppSpectrumPropagationLossModel::CalcBeamformingGain(
     // just set them to corresponding variable that will be used for the generation
     // of channel matrix, otherwise we need to flip angles and zeniths of departure and arrival
     using DPV = std::vector<std::pair<double, double>>;
-    using MBCM = MatrixBasedChannelModel;
     const auto& cachedAngleSincos = channelParams->m_cachedAngleSincos;
     const DPV& zoa = cachedAngleSincos[isSameDir ? MBCM::ZOA_INDEX : MBCM::ZOD_INDEX];
     const DPV& zod = cachedAngleSincos[isSameDir ? MBCM::ZOD_INDEX : MBCM::ZOA_INDEX];
