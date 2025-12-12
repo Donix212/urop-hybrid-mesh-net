@@ -390,6 +390,12 @@ WifiNetDevice::GetAddress() const
     return m_mac->GetAddress();
 }
 
+Address
+WifiNetDevice::GetAddressFor(const Address& remoteAddr) const
+{
+    return m_mac->GetLocalAddress(Mac48Address::ConvertFrom(remoteAddr));
+}
+
 bool
 WifiNetDevice::SetMtu(const uint16_t mtu)
 {
@@ -507,7 +513,7 @@ WifiNetDevice::ForwardUp(Ptr<const Packet> packet, Mac48Address from, Mac48Addre
     {
         type = NetDevice::PACKET_MULTICAST;
     }
-    else if (to == GetAddress())
+    else if (to == GetAddress() || to == m_mac->GetLocalAddress(from))
     {
         type = NetDevice::PACKET_HOST;
     }
