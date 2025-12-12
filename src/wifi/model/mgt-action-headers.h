@@ -93,6 +93,8 @@ class WifiActionHeader : public Header
     {
         QAB_REQUEST = 16,
         QAB_RESPONSE = 17,
+        FTM_REQUEST = 32,
+        FTM_RESPONSE = 33,
         FILS_DISCOVERY = 34
     };
 
