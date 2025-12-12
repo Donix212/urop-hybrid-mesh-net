@@ -223,13 +223,13 @@ SixlowpanIphcStatefulImplTest::DoRun()
         }
     }
 
-    sixlowpan.AddContext(m_sixDevices, 0, Ipv6Prefix("2001:2::", 64), Time(Minutes(30)));
-    sixlowpan.AddContext(m_sixDevices, 1, Ipv6Prefix("2001:1::", 64), Time(Minutes(30)));
+    sixlowpan.AddContext(m_sixDevices, 0, Ipv6NetworkAddress("2001:2::", 64), Time(Minutes(30)));
+    sixlowpan.AddContext(m_sixDevices, 1, Ipv6NetworkAddress("2001:1::", 64), Time(Minutes(30)));
 
     Ipv6Address srcElided = deviceInterfaces.GetAddress(0, 1);
     Ipv6Address dstElided =
         Ipv6Address::MakeAutoconfiguredAddress(Mac48Address("00:00:00:00:00:02"),
-                                               Ipv6Prefix("2001:2::", 64));
+                                               Ipv6Address("2001:2::"));
 
     Simulator::Schedule(Seconds(1),
                         &SixlowpanIphcStatefulImplTest::SendOnePacket,

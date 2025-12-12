@@ -10,6 +10,7 @@
 #ifndef SIXLOWPAN_NET_DEVICE_H
 #define SIXLOWPAN_NET_DEVICE_H
 
+#include "ns3/ipv6-network-address.h"
 #include "ns3/net-device.h"
 #include "ns3/nstime.h"
 #include "ns3/random-variable-stream.h"
@@ -202,7 +203,7 @@ class SixLowPanNetDevice : public NetDevice
      *
      */
     void AddContext(uint8_t contextId,
-                    Ipv6Prefix contextPrefix,
+                    Ipv6NetworkAddress contextPrefix,
                     bool compressionAllowed,
                     Time validLifetime);
 
@@ -219,7 +220,7 @@ class SixLowPanNetDevice : public NetDevice
      *
      */
     bool GetContext(uint8_t contextId,
-                    Ipv6Prefix& contextPrefix,
+                    Ipv6NetworkAddress& contextPrefix,
                     bool& compressionAllowed,
                     Time& validLifetime);
 
@@ -632,14 +633,16 @@ class SixLowPanNetDevice : public NetDevice
      */
     struct ContextEntry
     {
-        Ipv6Prefix contextPrefix; //!< context prefix to be used in compression/decompression
-        bool compressionAllowed;  //!< compression and decompression allowed (true), decompression
-                                  //!< only (false)
-        Time validLifetime;       //!< validity period
+        /// context prefix to be used in compression/decompression
+        Ipv6NetworkAddress contextPrefix;
+        /// compression and decompression allowed (true), decompression only (false)
+        bool compressionAllowed;
+        /// validity period
+        Time validLifetime;
     };
 
-    std::map<uint8_t, ContextEntry>
-        m_contextTable; //!< Table of the contexts used in compression/decompression
+    /// Table of the contexts used in compression/decompression
+    std::map<uint8_t, ContextEntry> m_contextTable;
 
     /**
      * @brief Finds if the given unicast address matches a context for compression
@@ -669,7 +672,7 @@ class SixLowPanNetDevice : public NetDevice
      * @param prefix the prefix to remove
      * @return An address with the prefix zeroed.
      */
-    Ipv6Address CleanPrefix(Ipv6Address address, Ipv6Prefix prefix);
+    Ipv6Address CleanPrefix(Ipv6Address address, Ipv6NetworkAddress prefix);
 };
 
 } // namespace ns3

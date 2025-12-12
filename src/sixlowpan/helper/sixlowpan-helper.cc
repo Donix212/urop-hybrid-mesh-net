@@ -8,6 +8,7 @@
 
 #include "sixlowpan-helper.h"
 
+#include "ns3/ipv6-network-address.h"
 #include "ns3/log.h"
 #include "ns3/names.h"
 #include "ns3/net-device.h"
@@ -60,7 +61,7 @@ SixLowPanHelper::Install(const NetDeviceContainer c)
 void
 SixLowPanHelper::AddContext(NetDeviceContainer c,
                             uint8_t contextId,
-                            Ipv6Prefix context,
+                            Ipv6NetworkAddress context,
                             Time validity)
 {
     NS_LOG_FUNCTION(this << +contextId << context << validity);

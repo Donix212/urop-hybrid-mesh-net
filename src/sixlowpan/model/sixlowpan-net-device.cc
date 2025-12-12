@@ -1103,7 +1103,7 @@ SixLowPanNetDevice::CompressLowPanIphc(Ptr<Packet> packet, const Address& src, c
 
                 if (Ipv6Address::MakeAutoconfiguredAddress(
                         src,
-                        m_contextTable[srcContextId].contextPrefix) == srcAddr)
+                        m_contextTable[srcContextId].contextPrefix.GetAddress()) == srcAddr)
                 {
                     iphcHeader.SetSam(SixLowPanIphc::HC_COMPR_0);
                 }
@@ -1205,7 +1205,7 @@ SixLowPanNetDevice::CompressLowPanIphc(Ptr<Packet> packet, const Address& src, c
                     // 128 bits).
                     if (Ipv6Address::MakeAutoconfiguredAddress(
                             dst,
-                            m_contextTable[dstContextId].contextPrefix) == dstAddr)
+                            m_contextTable[dstContextId].contextPrefix.GetAddress()) == dstAddr)
                     {
                         iphcHeader.SetDam(SixLowPanIphc::HC_COMPR_0);
                     }
@@ -1404,8 +1404,8 @@ SixLowPanNetDevice::DecompressLowPanIphc(Ptr<Packet> packet, const Address& src,
             }
 
             uint8_t contextPrefix[16];
-            m_contextTable[contextId].contextPrefix.GetBytes(contextPrefix);
-            uint8_t contextLength = m_contextTable[contextId].contextPrefix.GetPrefixLength();
+            m_contextTable[contextId].contextPrefix.GetAddress().GetBytes(contextPrefix);
+            uint8_t contextLength = m_contextTable[contextId].contextPrefix.GetNetworkLength();
 
             uint8_t srcAddress[16] = {};
             if (encoding.GetSam() == SixLowPanIphc::HC_COMPR_64)
@@ -1501,8 +1501,8 @@ SixLowPanNetDevice::DecompressLowPanIphc(Ptr<Packet> packet, const Address& src,
         }
 
         uint8_t contextPrefix[16];
-        m_contextTable[contextId].contextPrefix.GetBytes(contextPrefix);
-        uint8_t contextLength = m_contextTable[contextId].contextPrefix.GetPrefixLength();
+        m_contextTable[contextId].contextPrefix.GetAddress().GetBytes(contextPrefix);
+        uint8_t contextLength = m_contextTable[contextId].contextPrefix.GetNetworkLength();
 
         if (!encoding.GetM())
         {
@@ -1523,7 +1523,7 @@ SixLowPanNetDevice::DecompressLowPanIphc(Ptr<Packet> packet, const Address& src,
                 Ipv6Address::MakeAutoconfiguredLinkLocalAddress(dst).GetBytes(dstAddress);
             }
 
-            uint8_t bytesToCopy = m_contextTable[contextId].contextPrefix.GetPrefixLength() / 8;
+            uint8_t bytesToCopy = m_contextTable[contextId].contextPrefix.GetNetworkLength() / 8;
             uint8_t bitsToCopy = contextLength % 8;
 
             // Do not combine the prefix - we want to override the bytes.
@@ -2719,12 +2719,12 @@ SixLowPanNetDevice::HandleTimeout()
 
 void
 SixLowPanNetDevice::AddContext(uint8_t contextId,
-                               Ipv6Prefix contextPrefix,
+                               Ipv6NetworkAddress contextPrefix,
                                bool compressionAllowed,
                                Time validLifetime)
 {
-    NS_LOG_FUNCTION(this << +contextId << Ipv6Address::GetOnes().CombinePrefix(contextPrefix)
-                         << contextPrefix << compressionAllowed << validLifetime.As(Time::S));
+    NS_LOG_FUNCTION(this << +contextId << contextPrefix << compressionAllowed
+                         << validLifetime.As(Time::S));
 
     if (contextId > 15)
     {
@@ -2746,7 +2746,7 @@ SixLowPanNetDevice::AddContext(uint8_t contextId,
 
 bool
 SixLowPanNetDevice::GetContext(uint8_t contextId,
-                               Ipv6Prefix& contextPrefix,
+                               Ipv6NetworkAddress& contextPrefix,
                                bool& compressionAllowed,
                                Time& validLifetime)
 {
@@ -2841,12 +2841,10 @@ SixLowPanNetDevice::FindUnicastCompressionContext(Ipv6Address address, uint8_t& 
 
         if (context.compressionAllowed && context.validLifetime > Simulator::Now())
         {
-            if (address.HasPrefix(context.contextPrefix))
+            if (context.contextPrefix.Includes(address))
             {
-                NS_LOG_LOGIC("Found context "
-                             << +contextId << " "
-                             << Ipv6Address::GetOnes().CombinePrefix(context.contextPrefix)
-                             << context.contextPrefix << " matching");
+                NS_LOG_LOGIC("Found context " << +contextId << " " << context.contextPrefix
+                                              << " matching");
 
                 contextId = iter.first;
                 return true;
@@ -2870,14 +2868,14 @@ SixLowPanNetDevice::FindMulticastCompressionContext(Ipv6Address address, uint8_t
 
         if (context.compressionAllowed && context.validLifetime > Simulator::Now())
         {
-            uint8_t contextLength = context.contextPrefix.GetPrefixLength();
+            uint8_t contextLength = context.contextPrefix.GetNetworkLength();
 
             if (contextLength <= 64) // only 64-bit prefixes or less are allowed.
             {
                 uint8_t contextBytes[16];
                 uint8_t addressBytes[16];
 
-                context.contextPrefix.GetBytes(contextBytes);
+                context.contextPrefix.GetAddress().GetBytes(contextBytes);
                 address.GetBytes(addressBytes);
 
                 if (addressBytes[3] == contextLength && addressBytes[4] == contextBytes[0] &&
@@ -2886,10 +2884,8 @@ SixLowPanNetDevice::FindMulticastCompressionContext(Ipv6Address address, uint8_t
                     addressBytes[9] == contextBytes[5] && addressBytes[10] == contextBytes[6] &&
                     addressBytes[11] == contextBytes[7])
                 {
-                    NS_LOG_LOGIC("Found context "
-                                 << +contextId << " "
-                                 << Ipv6Address::GetOnes().CombinePrefix(context.contextPrefix)
-                                 << context.contextPrefix << " matching");
+                    NS_LOG_LOGIC("Found context " << +contextId << " " << context.contextPrefix
+                                                  << " matching");
 
                     contextId = iter.first;
                     return true;
@@ -2901,11 +2897,11 @@ SixLowPanNetDevice::FindMulticastCompressionContext(Ipv6Address address, uint8_t
 }
 
 Ipv6Address
-SixLowPanNetDevice::CleanPrefix(Ipv6Address address, Ipv6Prefix prefix)
+SixLowPanNetDevice::CleanPrefix(Ipv6Address address, Ipv6NetworkAddress prefix)
 {
     uint8_t addressBytes[16];
     address.GetBytes(addressBytes);
-    uint8_t prefixLength = prefix.GetPrefixLength();
+    uint8_t prefixLength = prefix.GetNetworkLength();
 
     uint8_t bytesToClean = prefixLength / 8;
     uint8_t bitsToClean = prefixLength % 8;
