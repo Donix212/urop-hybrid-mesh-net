@@ -795,22 +795,22 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
                             Double2DVector* rayAoaRadian,
                             Double2DVector* rayAodRadian,
                             Double2DVector* rayZoaRadian,
-                            Double2DVector* rayZodRadian)
-        const; /**
-                * @brief Generate cross-polarization power ratios and initial per-ray phases.
-                *
-                * For each cluster and ray, draws the cross-polarization power ratio (XPR) according
-                * to the 3GPP parameters and initializes four polarization-dependent phases
-                * uniformly in [-pi, pi]. The outputs are resized/filled by this function.
-                *
-                * @param[out] crossPolarizationPowerRatios Matrix [numClusters][raysPerCluster] with
-                * XPR values (linear scale).
-                * @param[out] clusterPhase 3D array [numClusters][raysPerCluster][4] with initial
-                * phases (radians).
-                * @param reducedClusterNumber Number of (possibly reduced) clusters to generate.
-                * @param table3gpp Pointer to the 3GPP parameters table (uXpr, sigXpr, rays per
-                * cluster).
-                */
+                            Double2DVector* rayZodRadian) const;
+    /**
+     * @brief Generate cross-polarization power ratios and initial per-ray phases.
+     *
+     * For each cluster and ray, draws the cross-polarization power ratio (XPR) according
+     * to the 3GPP parameters and initializes four polarization-dependent phases
+     * uniformly in [-pi, pi]. The outputs are resized/filled by this function.
+     *
+     * @param[out] crossPolarizationPowerRatios Matrix [numClusters][raysPerCluster] with
+     * XPR values (linear scale).
+     * @param[out] clusterPhase 3D array [numClusters][raysPerCluster][4] with initial
+     * phases (radians).
+     * @param reducedClusterNumber Number of (possibly reduced) clusters to generate.
+     * @param table3gpp Pointer to the 3GPP parameters table (uXpr, sigXpr, rays per
+     * cluster).
+     */
     void GenerateCrossPolPowerRatiosAndInitialPhases(Double2DVector* crossPolarizationPowerRatios,
                                                      Double3DVector* clusterPhase,
                                                      uint8_t reducedClusterNumber,
