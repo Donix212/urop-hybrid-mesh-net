@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * Author: Ankit Deepak <adadeepak8@gmail.com>
+ * Modified by: S B L Prateek <sblprateek@gmail.com>
  *
  */
 
@@ -172,17 +173,18 @@ class TcpLedbat : public TcpNewReno
      */
     void UpdateBaseDelay(uint32_t owd);
 
-    Time m_target;             //!< Target Queue Delay
-    double m_gain;             //!< GAIN value from RFC
-    SlowStartType m_doSs;      //!< Permissible Slow Start State
-    uint32_t m_baseHistoLen;   //!< Length of base delay history buffer
-    uint32_t m_noiseFilterLen; //!< Length of current delay buffer
-    uint64_t m_lastRollover;   //!< Timestamp of last added delay
-    int32_t m_sndCwndCnt;      //!< The congestion window addition parameter
-    OwdCircBuf m_baseHistory;  //!< Buffer to store the base delay
-    OwdCircBuf m_noiseFilter;  //!< Buffer to store the current delay
-    uint32_t m_flag;           //!< LEDBAT Flag
-    uint32_t m_minCwnd;        //!< Minimum cWnd value mentioned in RFC 6817
+    Time m_target;               //!< Target Queue Delay
+    uint32_t m_gain;             //!< GAIN value from RFC
+    SlowStartType m_doSs;        //!< Permissible Slow Start State
+    uint32_t m_baseHistoLen;     //!< Length of base delay history buffer
+    uint32_t m_noiseFilterLen;   //!< Length of current delay buffer
+    uint64_t m_lastRollover;     //!< Timestamp of last added delay
+    int32_t m_sndCwndCnt;        //!< The congestion window addition parameter
+    OwdCircBuf m_baseHistory;    //!< Buffer to store the base delay
+    OwdCircBuf m_noiseFilter;    //!< Buffer to store the current delay
+    uint32_t m_flag;             //!< LEDBAT Flag
+    uint32_t m_minCwnd;          //!< Minimum cWnd value mentioned in RFC 6817
+    uint32_t m_allowed_increase; //!< ALLOWED INCREASE value mentioned in RFC 6817
 };
 
 } // namespace ns3
