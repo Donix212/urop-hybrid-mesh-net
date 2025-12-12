@@ -994,14 +994,6 @@ ThreeGppChannelConsistencyTest::DoRun()
                           "Check that the average distances between the consistency metrics of "
                           "the consecutive channel updates "
                           " are lower than of the consecutive new channel generations.");
-
-    /*
-    std::cout
-        << "The average distances between channel norms of the consecutive channel updates is:"
-        << sampleMeanChannelUpdates << std::endl;
-    std::cout << "The average distances between new channel generations is:"
-              << sampleMeanIndependentChannels << std::endl;*/
-
     Simulator::Destroy();
 }
 
