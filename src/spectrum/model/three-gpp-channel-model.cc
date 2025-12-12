@@ -2728,8 +2728,8 @@ ThreeGppChannelModel::GenerateClusterShadowingTerm(const Ptr<const ParamsTable> 
 
     for (uint8_t cIndex = 0; cIndex < table3gpp->m_numOfCluster; cIndex++)
     {
-        (*clusterShadowing)[cIndex] = (m_normalRv->GetValue() * table3gpp->
-            m_perClusterShadowingStd);
+        (*clusterShadowing)[cIndex] =
+            (m_normalRv->GetValue() * table3gpp->m_perClusterShadowingStd);
     }
 }
 
@@ -3799,8 +3799,8 @@ ThreeGppChannelModel::UpdateChannelParameters(Ptr<ThreeGppChannelParams> channel
 
     // draw random signs from cluster angles +1,-1 and save them to reuse them for the channel
     // update
-    if (channelParams->m_losCondition == ChannelCondition::NLOS && channelParams->
-                                                                   m_clusterXnNlosSign.empty())
+    if (channelParams->m_losCondition == ChannelCondition::NLOS &&
+        channelParams->m_clusterXnNlosSign.empty())
     {
         GenerateClusterXnNLos(channelParams->m_reducedClusterNumber,
                               &channelParams->m_clusterXnNlosSign);

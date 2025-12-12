@@ -181,7 +181,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         double m_dis2D;                     //!< 2D distance between tx and rx
         double m_dis3D;                     //!< 3D distance between tx and rx
         DoubleVector m_clusterShadowing;    //!< cluster shadowing
-        DoubleVector m_clusterPower; //!< cluster powers
+        DoubleVector m_clusterPower;        //!< cluster powers
         DoubleVector m_attenuation_dB;      //!< vector that stores the attenuation of the blockage
         uint8_t m_cluster1st;               //!< index of the first strongest cluster
         uint8_t m_cluster2nd;               //!< index of the second strongest cluster
@@ -251,7 +251,7 @@ class ThreeGppChannelModel : public MatrixBasedChannelModel
         const Ptr<const MobilityModel> bMob,
         Ptr<const ChannelCondition> channelCondition) const;
 
-protected:
+  protected:
     /**
      * The function calculates 2D and 3D distance between two nodes
      * @param aMob the mobility model of the node a
