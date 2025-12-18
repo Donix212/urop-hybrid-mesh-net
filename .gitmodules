@@ -1,0 +1,3 @@
+[submodule "src/lorawan"]
+	path = src/lorawan
+	url = https://github.com/Donix212/urop-lorawan.git
